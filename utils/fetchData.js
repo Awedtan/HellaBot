@@ -85,9 +85,22 @@ function initSkills() {
     const skillTable = require(`../${dataPath}/excel/skill_table.json`);
 
     for (const skill of Object.values(skillTable)) {
-        const skillId = skill.skillId.toLowerCase()
+        const skillId = skill.skillId.toLowerCase();
+        const skillName = skill.levels[0].name.toLowerCase();
+
         skillDict[skillId] = skill;
-        skillDict[skill.levels[0].name] = skillDict[skillId];
+
+        if (!skillDict.hasOwnProperty(skillName)) {
+            skillDict[skillName] = skillDict[skillId];
+
+            let newName = ''
+            const skillRegex = /[^a-z|0-9|'|\s]/;
+            for (const split of skillName.split(skillRegex)) {
+                newName += split.trim() + ' ';
+            }
+            newName = newName.split('\'').join('').trim();
+            skillDict[newName] = skillDict[skillId];
+        }
     }
 }
 

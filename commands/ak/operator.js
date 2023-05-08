@@ -1,6 +1,74 @@
 const { iconPath, operatorImagePath, operatorAvatarPath } = require('../../paths.json');
-const { AttachmentBuilder, EmbedBuilder, SlashCommandBuilder } = require('discord.js');
+const { AttachmentBuilder, EmbedBuilder, SlashCommandBuilder, GuildTextThreadManager } = require('discord.js');
 const { fetchOperators } = require('../../utils/fetchData.js');
+
+const professions = {
+    PIONEER: 'Vanguard',
+    WARRIOR: 'Guard',
+    TANK: 'Defender',
+    SNIPER: 'Sniper',
+    CASTER: 'Caster',
+    MEDIC: 'Medic',
+    SUPPORT: 'Supporter',
+    SPECIAL: 'Specialist'
+};
+const archetypes = {
+    tactician: 'Tactician',
+    agent: 'Agent',
+    pioneer: 'Pioneer',
+    bearer: 'Flagbearer',
+    charger: 'Charger',
+    lord: 'Lord',
+    fighter: 'Fighter',
+    librator: 'Liberator',
+    centurion: 'Centurion',
+    sword: 'Swordmaster',
+    fearless: 'Dreadnought',
+    instructor: 'Instructor',
+    artsfighter: 'Arts Fighter',
+    musha: 'Musha',
+    reaper: 'Reaper',
+    unyield: 'Juggernaut',
+    fortress: 'Fortress',
+    guardian: 'Guardian',
+    duelist: 'Duelist',
+    protector: 'Protector',
+    artsprotector: 'Arts Protector',
+    closerange: 'Heavyshooter',
+    aoesniper: 'Artilleryman',
+    longrange: 'Deadeye',
+    reapperrange: 'Spreadshooter',
+    fastshot: 'Marksman',
+    bombarder: 'Flinger',
+    siegesniper: 'Beseiger',
+    corecaster: 'Core Caster',
+    phalanx: 'Phalanx Caster',
+    mystic: 'Mystic Caster',
+    funnel: 'Mech-Accord',
+    chain: 'Chain Caster',
+    splashcaster: 'Slash Caster',
+    blastcaster: 'Blast Caster',
+    incantationmedic: 'Incantation',
+    healer: 'Therapist',
+    physician: 'Medic',
+    ringhealer: 'Multi-target Medic',
+    chainhealer: 'Chain Healer',
+    wandermedic: 'Wandering Medic',
+    blessing: 'Abjurer',
+    craftsman: 'Artificer',
+    summoner: 'Summoner',
+    underminer: 'Hexer',
+    bard: 'Bard',
+    slower: 'Decel Binder',
+    executor: 'Executor',
+    traper: 'Trapmaster',
+    dollkeeper: 'Dollkeeper',
+    merchant: 'Merchant',
+    stalker: 'Ambusher',
+    hookmaster: 'Hookmaster',
+    pusher: 'Push Stroker',
+    geek: 'Sacrificial Specialist'
+};
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -20,10 +88,11 @@ module.exports = {
             const opId = operatorDict[operatorName].operatorId;
             const icon = new AttachmentBuilder(iconPath);
             const avatar = new AttachmentBuilder(`./${operatorAvatarPath}/${opId}.png`);
-            const image = new AttachmentBuilder(`./${operatorImagePath}/${opId}_1.png`);
+            // const image = new AttachmentBuilder(`./${operatorImagePath}/${opId}_1.png`);
 
+            const tagRegex = /<@ba\..{2,6}>|<\/>/;
             const name = op.name;
-            const description = `**${op.profession} - ${op.subProfessionId}**\n${op.description}`;
+            const description = `**${op.profession} - ${op.subProfessionId}**\n${op.description.split(tagRegex).join('')}`;
 
             const embed = new EmbedBuilder()
                 .setColor(0xebca60)
@@ -35,7 +104,7 @@ module.exports = {
 
             for (const talent of op.talents) {
                 const candidate = talent.candidates[talent.candidates.length - 1];
-                embed.addFields({ name: candidate.name, value: candidate.description },);
+                embed.addFields({ name: candidate.name, value: `Talent: ${candidate.description.split(tagRegex).join('')}` },);
             }
 
             let potentialString = '';
