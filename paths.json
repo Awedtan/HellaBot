@@ -1,0 +1,6 @@
+{
+    "iconPath": "icon.png",
+    "dataPath": "ArknightsGameData/en_US/gamedata",
+    "enemyImagePath": "Arknight-Images/enemy",
+    "stageImagePath": "images/stages"
+}
