@@ -2,5 +2,8 @@
     "iconPath": "icon.png",
     "dataPath": "ArknightsGameData/en_US/gamedata",
     "enemyImagePath": "Arknight-Images/enemy",
+    "operatorImagePath": "Arknight-Images/characters",
+    "operatorAvatarPath": "Arknight-Images/avatars",
+    "skillImagePath": "Arknight-Images/skills",
     "stageImagePath": "images/stages"
 }

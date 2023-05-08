@@ -2,6 +2,7 @@ const { iconPath, stageImagePath } = require('../../paths.json');
 const { AttachmentBuilder, EmbedBuilder, SlashCommandBuilder } = require('discord.js');
 const { fetchEnemies, fetchStages } = require('../../utils/fetchData.js');
 
+//TODO: stage drops, sanity cost
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('stage')
@@ -38,12 +39,6 @@ module.exports = {
             const icon = new AttachmentBuilder(iconPath);
             const titleString = isChallenge ? `Challenge ${stageInfo.code} - ${stageInfo.name}` : `${stageInfo.code} - ${stageInfo.name}`;
 
-            const embed = new EmbedBuilder()
-                .setColor(0xebca60)
-                .setTitle(titleString)
-                .setAuthor({ name: 'Hellabot', iconURL: `attachment://${iconPath}`, url: 'https://discord.js.org' }
-                );
-
             const stageEnemies = stageData.enemyDbRefs;
             const enemyDict = fetchEnemies();
             let enemyString = '', eliteString = '', bossString = '';
@@ -64,6 +59,11 @@ module.exports = {
                 }
             }
 
+            const embed = new EmbedBuilder()
+                .setColor(0xebca60)
+                .setAuthor({ name: 'Hellabot', iconURL: `attachment://${iconPath}` })
+                .setTitle(titleString);
+
             if (enemyString != '') {
                 embed.addFields({ name: 'Enemies', value: enemyString, inline: true });
             }
@@ -71,7 +71,7 @@ module.exports = {
                 embed.addFields({ name: 'Elites', value: eliteString, inline: true });
             }
             if (bossString != '') {
-                embed.addFields({ name: 'Leaders', value: bossString, inline: true });
+                embed.addFields({ name: 'Leaders', value: bossString, inline: false });
             }
 
             // Not all stage images were found in the .obb file

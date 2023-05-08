@@ -35,10 +35,10 @@ module.exports = {
 
             const embed = new EmbedBuilder()
                 .setColor(0xebca60)
+                .setAuthor({ name: 'Hellabot', iconURL: `attachment://${iconPath}` })
                 .setTitle(`${enemyInfo.enemyIndex} - ${enemyInfo.name}`)
-                .setAuthor({ name: 'Hellabot', iconURL: `attachment://${iconPath}`, url: 'https://discord.js.org' })
-                .setDescription(enemyInfo.description)
                 .setThumbnail(`attachment://${enemyInfo.enemyId}.png`)
+                .setDescription(enemyInfo.description)
                 .addFields(
                     { name: '❤️ HP', value: hp, inline: true },
                     { name: '⚔️ ATK', value: atk, inline: true },
