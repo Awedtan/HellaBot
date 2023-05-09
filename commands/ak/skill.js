@@ -6,11 +6,138 @@ const skillLevels = ['Lv1', 'Lv2', 'Lv3', 'Lv4', 'Lv5', 'Lv6', 'Lv7', 'M1', 'M2'
 const skillTypes = ['Passive', 'Manual Trigger', 'Auto Trigger'];
 const spTypes = [undefined, 'Per Second', 'Offensive', undefined, 'Defensive', undefined, undefined, undefined, 'Passive'];
 
-function createSkillEmbed(skill, level) {
-    const icon = new AttachmentBuilder(iconPath);
-    const image = new AttachmentBuilder(`./${skillImagePath}/skill_icon_${skill.skillId}.png`);
+module.exports = {
+    data: new SlashCommandBuilder()
+        .setName('skill')
+        .setDescription('tbd')
+        .addStringOption(option =>
+            option.setName('name')
+                .setDescription('name')
+                .setRequired(true)
+        ),
+    async execute(interaction) {
+        const skillDict = fetchSkills();
+        const skillName = interaction.options.getString('name').toLowerCase();
 
+        if (skillDict.hasOwnProperty(skillName)) {
+            this.replySkillEmbed(interaction, skillName);
+        }
+        else {
+            await interaction.reply('That skill doesn\'t exist!');
+        }
+    },
+    async replySkillEmbed(interaction, skillName) {
+        let level = 0;
+        const skillEmbed = createSkillEmbed(skillName, level);
+        let response = await interaction.reply(skillEmbed);
+
+        while (true) {
+            try {
+                const confirm = await response.awaitMessageComponent({ time: 300000 });
+
+                switch (confirm.customId) {
+                    case 'l1':
+                        level = 0;
+                        break;
+                    case 'l2':
+                        level = 1;
+                        break;
+                    case 'l3':
+                        level = 2;
+                        break;
+                    case 'l4':
+                        level = 3;
+                        break;
+                    case 'l5':
+                        level = 4;
+                        break;
+                    case 'l6':
+                        level = 5;
+                        break;
+                    case 'l7':
+                        level = 6;
+                        break;
+                    case 'm1':
+                        level = 7;
+                        break;
+                    case 'm2':
+                        level = 8;
+                        break;
+                    case 'm3':
+                        level = 9;
+                        break;
+                }
+
+                await confirm.update({ content: '' });
+                response = await response.edit(createSkillEmbed(skillName, level));
+
+            } catch (e) {
+                await response.edit({ embeds: skillEmbed.embed, files: skillEmbed.files, components: [] });
+                break;
+            }
+        }
+    },
+    async sendSkillEmbed(channel, skillName) {
+        let level = 0;
+        const skillEmbed = createSkillEmbed(skillName, level);
+        let response = await channel.send(skillEmbed);
+
+        while (true) {
+            try {
+                const confirm = await response.awaitMessageComponent({ time: 300000 });
+
+                switch (confirm.customId) {
+                    case 'l1':
+                        level = 0;
+                        break;
+                    case 'l2':
+                        level = 1;
+                        break;
+                    case 'l3':
+                        level = 2;
+                        break;
+                    case 'l4':
+                        level = 3;
+                        break;
+                    case 'l5':
+                        level = 4;
+                        break;
+                    case 'l6':
+                        level = 5;
+                        break;
+                    case 'l7':
+                        level = 6;
+                        break;
+                    case 'm1':
+                        level = 7;
+                        break;
+                    case 'm2':
+                        level = 8;
+                        break;
+                    case 'm3':
+                        level = 9;
+                        break;
+                }
+
+                await confirm.update({ content: '' });
+                response = await response.edit(createSkillEmbed(skillName, level));
+
+            } catch (e) {
+                await response.edit({ embeds: skillEmbed.embed, files: skillEmbed.files, components: [] });
+                break;
+            }
+        }
+    },
+}
+
+function createSkillEmbed(skillName, level) {
+    const skillDict = fetchSkills()
+    const skill = skillDict[skillName];
     const baseSkill = skill.levels[level];
+
+    const icon = new AttachmentBuilder(iconPath);
+    const imagePath = skill.iconId === null ? skill.skillId : skill.iconId;
+    const image = new AttachmentBuilder(`./${skillImagePath}/skill_icon_${imagePath}.png`);
 
     const skillKeys = {};
     for (const stat of baseSkill.blackboard) {
@@ -26,24 +153,28 @@ function createSkillEmbed(skill, level) {
     }
 
     const name = `${baseSkill.name} - ${skillLevels[level]}`;
-    const skillRegex = /<.ba\..{2,5}>|<\/>|{|}|:0%|:0.0%/;
+    const skillRegex = /<.ba\..{2,7}>|<\/>|:0%|:0|:0.0%/;
 
     const spCost = baseSkill.spData.spCost;
     const initSp = baseSkill.spData.initSp;
     const spType = spTypes[baseSkill.spData.spType];
     const skillType = skillTypes[baseSkill.skillType];
 
-    let description = `** ${spType} - ${skillType}**\n***Cost:* ${spCost} SP - *Initial:* ${initSp} SP**\n${baseSkill.description.split(skillRegex).join('')} `;
+    let description = `**${spType} - ${skillType}**\n***Cost:* ${spCost} SP - *Initial:* ${initSp} SP**\n${baseSkill.description.split(skillRegex).join('')} `;
 
-    for (const key of Object.keys(skillKeys).reverse()) {
-        description = description.split(key).join(`\`${skillKeys[key]}\``);
+    const temp = description.split(/{|}/);
+    for (let i = 0; i < temp.length; i++) {
+        if (skillKeys.hasOwnProperty(temp[i].toLowerCase())) {
+            temp[i] = `\`${skillKeys[temp[i]]}\``;
+        }
     }
+    description = temp.join('');
 
     const embed = new EmbedBuilder()
         .setColor(0xebca60)
         .setAuthor({ name: 'Hellabot', iconURL: `attachment://${iconPath}` })
         .setTitle(name)
-        .setThumbnail(`attachment://skill_icon_${skill.skillId}.png`)
+        .setThumbnail(`attachment://skill_icon_${imagePath.split(/\[|\]/).join('')}.png`)
         .setDescription(description);
 
     const lOne = new ButtonBuilder()
@@ -123,78 +254,5 @@ function createSkillEmbed(skill, level) {
     const rowOne = new ActionRowBuilder().addComponents(lOne, lTwo, lThree, lFour, lFive);
     const rowTwo = new ActionRowBuilder().addComponents(lSix, lSeven, mOne, mTwo, mThree);
 
-    return { embed: [embed], files: [icon, image], components: [rowOne, rowTwo] };
-}
-
-module.exports = {
-    data: new SlashCommandBuilder()
-        .setName('skill')
-        .setDescription('tbd')
-        .addStringOption(option =>
-            option.setName('name')
-                .setDescription('name')
-                .setRequired(true)
-        ),
-    async execute(interaction) {
-        const skillDict = fetchSkills();
-        const skillName = interaction.options.getString('name').toLowerCase();
-
-        if (skillDict.hasOwnProperty(skillName)) {
-            const skill = skillDict[skillName];
-            let level = 0;
-
-            let embed = createSkillEmbed(skill, level);
-            let response = await interaction.reply({ embeds: embed.embed, files: embed.files, components: embed.components })
-
-            while (true) {
-                try {
-                    const confirm = await response.awaitMessageComponent({ time: 300000 });
-
-                    switch (confirm.customId) {
-                        case 'l1':
-                            level = 0;
-                            break;
-                        case 'l2':
-                            level = 1;
-                            break;
-                        case 'l3':
-                            level = 2;
-                            break;
-                        case 'l4':
-                            level = 3;
-                            break;
-                        case 'l5':
-                            level = 4;
-                            break;
-                        case 'l6':
-                            level = 5;
-                            break;
-                        case 'l7':
-                            level = 6;
-                            break;
-                        case 'm1':
-                            level = 7;
-                            break;
-                        case 'm2':
-                            level = 8;
-                            break;
-                        case 'm3':
-                            level = 9;
-                            break;
-                    }
-
-                    embed = createSkillEmbed(skill, level);
-                    await confirm.update({ content: '' });
-                    response = await interaction.editReply({ embeds: embed.embed, files: embed.files, components: embed.components });
-
-                } catch (e) {
-                    await interaction.editReply({ embeds: embed.embed, files: embed.files, components: [] });
-                    break;
-                }
-            }
-        }
-        else {
-            await interaction.reply('That skill doesn\'t exist!');
-        }
-    }
+    return { embeds: [embed], files: [icon, image], components: [rowOne, rowTwo] };
 }
