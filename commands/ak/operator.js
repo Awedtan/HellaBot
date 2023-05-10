@@ -1,6 +1,7 @@
 const { iconPath, operatorAvatarPath } = require('../../paths.json');
 const { AttachmentBuilder, EmbedBuilder, SlashCommandBuilder } = require('discord.js');
-const { fetchOperators } = require('../../utils/fetchData.js');
+const { fetchOperators, fetchArchetypes } = require('../../utils/fetchData.js');
+const { createRangeEmbedField, formatTextBlackboardTags } = require('../../utils/utils.js');
 
 const professions = {
     PIONEER: 'Vanguard',
@@ -11,63 +12,6 @@ const professions = {
     MEDIC: 'Medic',
     SUPPORT: 'Supporter',
     SPECIAL: 'Specialist'
-};
-const archetypes = {
-    tactician: 'Tactician',
-    agent: 'Agent',
-    pioneer: 'Pioneer',
-    bearer: 'Flagbearer',
-    charger: 'Charger',
-    lord: 'Lord',
-    fighter: 'Fighter',
-    librator: 'Liberator',
-    centurion: 'Centurion',
-    sword: 'Swordmaster',
-    fearless: 'Dreadnought',
-    instructor: 'Instructor',
-    artsfighter: 'Arts Fighter',
-    musha: 'Musha',
-    reaper: 'Reaper',
-    unyield: 'Juggernaut',
-    fortress: 'Fortress',
-    guardian: 'Guardian',
-    duelist: 'Duelist',
-    protector: 'Protector',
-    artsprotector: 'Arts Protector',
-    closerange: 'Heavyshooter',
-    aoesniper: 'Artilleryman',
-    longrange: 'Deadeye',
-    reapperrange: 'Spreadshooter',
-    fastshot: 'Marksman',
-    bombarder: 'Flinger',
-    siegesniper: 'Beseiger',
-    corecaster: 'Core Caster',
-    phalanx: 'Phalanx Caster',
-    mystic: 'Mystic Caster',
-    funnel: 'Mech-Accord',
-    chain: 'Chain Caster',
-    splashcaster: 'Slash Caster',
-    blastcaster: 'Blast Caster',
-    incantationmedic: 'Incantation',
-    healer: 'Therapist',
-    physician: 'Medic',
-    ringhealer: 'Multi-target Medic',
-    chainhealer: 'Chain Healer',
-    wandermedic: 'Wandering Medic',
-    blessing: 'Abjurer',
-    craftsman: 'Artificer',
-    summoner: 'Summoner',
-    underminer: 'Hexer',
-    bard: 'Bard',
-    slower: 'Decel Binder',
-    executor: 'Executor',
-    traper: 'Trapmaster',
-    dollkeeper: 'Dollkeeper',
-    merchant: 'Merchant',
-    stalker: 'Ambusher',
-    hookmaster: 'Hookmaster',
-    pusher: 'Push Stroker',
-    geek: 'Sacrificial Specialist'
 };
 
 module.exports = {
@@ -95,26 +39,38 @@ module.exports = {
 
 function createOperatorEmbed(operatorName) {
     const operatorDict = fetchOperators();
-    const op = operatorDict[operatorName].operatorData;
-    const opId = operatorDict[operatorName].operatorId;
-    
+    const archetypeDict = fetchArchetypes();
+    const op = operatorDict[operatorName].data;
+    const opId = operatorDict[operatorName].id;
+    const opMax = op.phases[op.phases.length - 1];
+
     const icon = new AttachmentBuilder(iconPath);
     const avatar = new AttachmentBuilder(`./${operatorAvatarPath}/${opId}.png`);
 
-    const tagRegex = /<.ba\..{2,7}>|<\/>/;
     const name = op.name;
-    const description = `**${professions[op.profession]} - ${archetypes[op.subProfessionId]}**\n${op.description.split(tagRegex).join('')}`;
+
+    let description = formatTextBlackboardTags(op.description, []);
+    if (op.trait != null) {
+        const candidate = op.trait.candidates[op.trait.candidates.length - 1];
+        if (candidate.overrideDescripton != null) {
+            description = formatTextBlackboardTags(candidate.overrideDescripton, candidate.blackboard);
+        }
+    }
+    
+    const embedDescription = `***${professions[op.profession]}* - ${archetypeDict[op.subProfessionId]}**\n${description}`;
+    const rangeField = createRangeEmbedField(opMax.rangeId);
 
     const embed = new EmbedBuilder()
         .setColor(0xebca60)
         .setAuthor({ name: 'Hellabot', iconURL: `attachment://${iconPath}` })
         .setTitle(name)
         .setThumbnail(`attachment://${opId}.png`)
-        .setDescription(description);
+        .setDescription(embedDescription)
+        .addFields(rangeField);
 
     for (const talent of op.talents) {
         const candidate = talent.candidates[talent.candidates.length - 1];
-        embed.addFields({ name: `Talent: ${candidate.name}`, value: candidate.description.split(tagRegex).join('') });
+        embed.addFields({ name: `*Talent:* ${candidate.name}`, value: formatTextBlackboardTags(candidate.description, []) });
     }
 
     let potentialString = '';
@@ -125,15 +81,15 @@ function createOperatorEmbed(operatorName) {
 
     let trustString = '';
     const trustBonus = op.favorKeyFrames[1].data;
-    for (const trustValue of Object.values(trustBonus)) {
+    for (const trustKey of Object.keys(trustBonus)) {
+        const trustValue = trustBonus[trustKey];
         if (trustValue != 0 && trustValue != 0.0 && trustValue != false) {
-            const trustStat = Object.keys(trustBonus).find(key => trustBonus[key] === trustValue).toUpperCase();
-            trustString += `${trustStat} +${trustValue}\n`;
+            trustString += `${trustKey.toUpperCase()} +${trustValue}\n`;
         }
     }
     embed.addFields({ name: 'Trust Bonus', value: trustString, inline: true });
 
-    const maxStats = op.phases[op.phases.length - 1].attributesKeyFrames[1].data;
+    const maxStats = opMax.attributesKeyFrames[1].data;
     const hp = maxStats.maxHp.toString();
     const atk = maxStats.atk.toString();
     const def = maxStats.def.toString();
@@ -144,7 +100,7 @@ function createOperatorEmbed(operatorName) {
     const atkInterval = maxStats.baseAttackTime.toString();
 
     embed.addFields(
-        { name: '\u200B', value: '**Stats**' },
+        { name: '\u200B', value: '**Max Stats**' },
         { name: '❤️ HP', value: hp, inline: true },
         { name: '⚔️ ATK', value: atk, inline: true },
         { name: '🛡️ DEF', value: def, inline: true },

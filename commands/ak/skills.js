@@ -17,8 +17,7 @@ module.exports = {
         const operatorName = interaction.options.getString('name').toLowerCase();
 
         if (operatorDict.hasOwnProperty(operatorName)) {
-
-            const op = operatorDict[operatorName].operatorData;
+            const op = operatorDict[operatorName].data;
             let first = true;
             for (const skill of op.skills) {
                 if (first) {
@@ -28,7 +27,7 @@ module.exports = {
                 else {
                     sendSkillEmbed(interaction.channel, skill.skillId);
                 }
-                await wait(100);
+                await wait(200);
             }
         }
         else {

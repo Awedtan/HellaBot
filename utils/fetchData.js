@@ -1,6 +1,8 @@
 const { dataPath } = require('../paths.json');
 
+const archetypeDict = {};
 const enemyDict = {};
+const moduleDict = {};
 const operatorDict = {};
 const rangeDict = {};
 const skillDict = {};
@@ -9,15 +11,23 @@ const stageDict = {};
 
 module.exports = {
     initializeAll() {
+        initArchetypes();
         initEnemies();
-        initStages();
+        initModules();
+        initOperators();
         initRanges();
         initSkills();
         initSkins();
-        initOperators();
+        initStages();
+    },
+    fetchArchetypes() {
+        return archetypeDict;
     },
     fetchEnemies() {
         return enemyDict;
+    },
+    fetchModules() {
+        return moduleDict;
     },
     fetchOperators() {
         return operatorDict;
@@ -33,7 +43,14 @@ module.exports = {
     },
     fetchStages() {
         return stageDict;
-    },
+    }
+}
+
+function initArchetypes() {
+    const { subProfDict } = require(`../${dataPath}/excel/uniequip_table.json`)
+    for (const subProf of Object.values(subProfDict)) {
+        archetypeDict[subProf.subProfessionId] = subProf.subProfessionName;
+    }
 }
 
 // Brute force matches between enemy_handbook_table and enemy_database
@@ -64,13 +81,32 @@ function initEnemies() {
     }
 }
 
+function initModules() {
+    const { equipDict } = require(`../${dataPath}/excel/uniequip_table.json`);
+    const battleDict = require(`../${dataPath}/excel/battle_equip_table.json`);
+
+    for (const module of Object.values(equipDict)) {
+        const moduleId = module.uniEquipId.toLowerCase()
+        moduleDict[moduleId] = { info: module, data: battleDict[moduleId] };
+    }
+}
+
 function initOperators() {
     const operatorTable = require(`../${dataPath}/excel/character_table.json`);
+    const { charEquip } = require(`../${dataPath}/excel/uniequip_table.json`);
 
     for (const operator of Object.values(operatorTable)) {
+        const operatorName = operator.name.toLowerCase();
         const operatorId = operator.potentialItemId.substring(2);
-        operatorDict[operator.name.toLowerCase()] = { operatorData: operator, operatorId: operatorId };
+        const operatorModules = charEquip.hasOwnProperty(operatorId) ? charEquip[operatorId] : null;
+
+        operatorDict[operatorName] = { data: operator, id: operatorId, modules: operatorModules };
+        operatorDict[operatorName.split('\'').join('')] = operatorDict[operatorName];
+        operatorDict[operatorId] = operatorDict[operatorName];
     }
+
+    operatorDict['mlynar'] = operatorDict['młynar'];
+    operatorDict['pozemka'] = operatorDict['pozëmka'];
 }
 
 function initRanges() {
