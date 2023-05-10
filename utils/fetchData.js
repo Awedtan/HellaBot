@@ -95,14 +95,16 @@ function initOperators() {
     const operatorTable = require(`../${dataPath}/excel/character_table.json`);
     const { charEquip } = require(`../${dataPath}/excel/uniequip_table.json`);
 
-    for (const operator of Object.values(operatorTable)) {
+    for (const operatorId of Object.keys(operatorTable)) {
+        const operator = operatorTable[operatorId];
         const operatorName = operator.name.toLowerCase();
-        const operatorId = operator.potentialItemId.substring(2);
         const operatorModules = charEquip.hasOwnProperty(operatorId) ? charEquip[operatorId] : null;
 
-        operatorDict[operatorName] = { data: operator, id: operatorId, modules: operatorModules };
-        operatorDict[operatorName.split('\'').join('')] = operatorDict[operatorName];
-        operatorDict[operatorId] = operatorDict[operatorName];
+        operatorDict[operatorId] = { data: operator, id: operatorId, modules: operatorModules };
+        if (!operatorDict.hasOwnProperty(operatorName)) {
+            operatorDict[operatorName] = operatorDict[operatorId];
+            operatorDict[operatorName.split('\'').join('')] = operatorDict[operatorId];
+        }
     }
 
     operatorDict['mlynar'] = operatorDict['młynar'];

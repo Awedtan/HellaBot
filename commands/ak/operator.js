@@ -56,7 +56,7 @@ function createOperatorEmbed(operatorName) {
             description = formatTextBlackboardTags(candidate.overrideDescripton, candidate.blackboard);
         }
     }
-    
+
     const embedDescription = `***${professions[op.profession]}* - ${archetypeDict[op.subProfessionId]}**\n${description}`;
     const rangeField = createRangeEmbedField(opMax.rangeId);
 
@@ -77,7 +77,9 @@ function createOperatorEmbed(operatorName) {
     for (const potential of op.potentialRanks) {
         potentialString += `${potential.description}\n`;
     }
-    embed.addFields({ name: 'Potentials', value: potentialString, inline: true });
+    if (potentialString != '') {
+        embed.addFields({ name: 'Potentials', value: potentialString, inline: true });
+    }
 
     let trustString = '';
     const trustBonus = op.favorKeyFrames[1].data;
