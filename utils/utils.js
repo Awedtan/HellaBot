@@ -2,7 +2,6 @@ const { fetchRanges } = require('./fetchData.js');
 
 module.exports = {
     createRangeEmbedField(rangeId) {
-        console.log(rangeId);
         const rangeDict = fetchRanges();
         const rangeGrid = rangeDict[rangeId].grids;
         

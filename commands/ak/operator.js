@@ -47,7 +47,10 @@ function createOperatorEmbed(operatorName) {
     const icon = new AttachmentBuilder(iconPath);
     const avatar = new AttachmentBuilder(`./${operatorAvatarPath}/${opId}.png`);
 
-    const name = op.name;
+    let name = `${op.name} - `;
+    for (let i = -1; i < op.rarity; i++) {
+        name += '★';
+    }
 
     let description = formatTextBlackboardTags(op.description, []);
     if (op.trait != null) {

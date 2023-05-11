@@ -18,16 +18,21 @@ module.exports = {
 
         if (operatorDict.hasOwnProperty(operatorName)) {
             const op = operatorDict[operatorName].data;
-            let first = true;
-            for (const skill of op.skills) {
-                if (first) {
-                    replySkillEmbed(interaction, skill.skillId);
-                    first = false;
+            if (op.skills.length != 0) {
+                let first = true;
+                for (const skill of op.skills) {
+                    if (first) {
+                        replySkillEmbed(interaction, skill.skillId);
+                        first = false;
+                    }
+                    else {
+                        sendSkillEmbed(interaction.channel, skill.skillId);
+                    }
+                    await wait(200);
                 }
-                else {
-                    sendSkillEmbed(interaction.channel, skill.skillId);
-                }
-                await wait(200);
+            }
+            else {
+                await interaction.reply('That operator doesn\'t have any skills!');
             }
         }
         else {
