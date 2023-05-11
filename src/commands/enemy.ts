@@ -1,6 +1,8 @@
 const { iconPath, enemyImagePath } = require('../../paths.json');
 const { AttachmentBuilder, EmbedBuilder, SlashCommandBuilder } = require('discord.js');
-const { fetchEnemies } = require('../../utils/fetchData.js');
+const { fetchEnemies } = require('../utils/fetchData');
+
+import { Enemy } from '../utils/types';
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -11,12 +13,13 @@ module.exports = {
             .setRequired(true)
         ),
     async execute(interaction) {
-        const enemyDict = fetchEnemies();
+        const enemyDict: { [key: string]: Enemy } = fetchEnemies();
         const enemyName = interaction.options.getString('name').toLowerCase();
 
         if (enemyDict.hasOwnProperty(enemyName)) {
-            const enemyInfo = enemyDict[enemyName].excel;
-            const enemyData = enemyDict[enemyName].levels.Value[0].enemyData;
+            const enemy = enemyDict[enemyName];
+            const enemyInfo = enemy.excel;
+            const enemyData = enemy.levels.Value[0].enemyData;
             const icon = new AttachmentBuilder(iconPath);
             const image = new AttachmentBuilder(`./${enemyImagePath}/${enemyInfo.enemyId}.png`);
 

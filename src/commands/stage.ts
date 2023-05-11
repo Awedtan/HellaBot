@@ -1,6 +1,8 @@
 const { iconPath, stageImagePath } = require('../../paths.json');
 const { AttachmentBuilder, EmbedBuilder, SlashCommandBuilder } = require('discord.js');
-const { fetchEnemies, fetchStages } = require('../../utils/fetchData.js');
+const { fetchEnemies, fetchStages } = require('../utils/fetchData');
+
+import { Enemy, Stage } from '../utils/types';
 
 //TODO: stage drops, sanity cost
 module.exports = {
@@ -21,7 +23,9 @@ module.exports = {
                 )
         ),
     async execute(interaction) {
-        const stageDict = fetchStages();
+        const stageDict: { [key: string]: Stage } = fetchStages();
+        const enemyDict: { [key: string]: Enemy } = fetchEnemies();
+
         const stageName = interaction.options.getString('name').toLowerCase();
         const stageMode = interaction.options.getString('difficulty');
 
@@ -32,7 +36,7 @@ module.exports = {
             const stageData = isChallenge ? stage.challenge.levels : stage.normal.levels;
 
             if (stageInfo === undefined || stageData === undefined) {
-                await interaction.reply('The stage data doesn\'t exist!');
+                await interaction.reply('That stage data doesn\'t exist!');
                 return;
             }
 
@@ -40,8 +44,8 @@ module.exports = {
             const titleString = isChallenge ? `Challenge ${stageInfo.code} - ${stageInfo.name}` : `${stageInfo.code} - ${stageInfo.name}`;
 
             const stageEnemies = stageData.enemyDbRefs;
-            const enemyDict = fetchEnemies();
             let enemyString = '', eliteString = '', bossString = '';
+            
             for (const enemy of stageEnemies) {
                 if (enemyDict.hasOwnProperty(enemy.id)) {
                     const enemyInfo = enemyDict[enemy.id].excel;
@@ -74,8 +78,7 @@ module.exports = {
                 embed.addFields({ name: 'Leaders', value: bossString, inline: false });
             }
 
-            // Not all stage images were found in the .obb file
-            // TODO: find some other way of getting them
+            // TODO: find some other way of getting stage images
             try {
                 const image = new AttachmentBuilder(`${stageImagePath}/${stageInfo.stageId}.png`);
                 embed.setImage(`attachment://${stageInfo.stageId}.png`);

@@ -1,13 +1,21 @@
-const { dataPath } = require('../paths.json');
+const { dataPath } = require('../../paths.json');
 
-const archetypeDict = {};
-const enemyDict = {};
-const moduleDict = {};
-const operatorDict = {};
-const rangeDict = {};
-const skillDict = {};
-const skinDict = {};
-const stageDict = {};
+import { Enemy, Module, Operator, Range, Skill, Stage, StageData, StageInfo } from "./types";
+
+const archetypeDict: { [key: string]: string } = {};
+const enemyDict: { [key: string]: Enemy } = {};
+const moduleDict: { [key: string]: Module } = {};
+const operatorDict: { [key: string]: Operator } = {};
+const rangeDict: { [key: string]: Range } = {};
+const skillDict: { [key: string]: Skill } = {};
+// const skinDict = {};
+const stageDict: { [key: string]: Stage } = {};
+
+type SubProf = {
+    subProfessionId: string;
+    subProfessionName: string;
+    subProfessionCatagory: number;
+}
 
 module.exports = {
     initializeAll() {
@@ -17,7 +25,7 @@ module.exports = {
         initOperators();
         initRanges();
         initSkills();
-        initSkins();
+        // initSkins();
         initStages();
     },
     fetchArchetypes() {
@@ -38,16 +46,18 @@ module.exports = {
     fetchSkills() {
         return skillDict;
     },
-    fetchSkins() {
-        return skinDict;
-    },
+    // fetchSkins() {
+    //     return skinDict;
+    // },
     fetchStages() {
         return stageDict;
     }
 }
 
 function initArchetypes() {
-    const { subProfDict } = require(`../${dataPath}/excel/uniequip_table.json`)
+    const moduleTable: { [key: string]: any } = require(`${dataPath}/excel/uniequip_table.json`);
+    const subProfDict: { [key: string]: SubProf } = moduleTable.subProfDict;
+
     for (const subProf of Object.values(subProfDict)) {
         archetypeDict[subProf.subProfessionId] = subProf.subProfessionName;
     }
@@ -62,8 +72,9 @@ function initArchetypes() {
 // Unique enemy key is enemyId (enemy_1007_slime)
 // Additional keys are name (Originium Slug) and enemyIndex (B1)
 function initEnemies() {
-    const enemyHandbook = require(`../${dataPath}/excel/enemy_handbook_table.json`);
-    const { enemies } = require(`../${dataPath}/levels/enemydata/enemy_database.json`);
+    const enemyHandbook: { [key: string]: Enemy['excel'] } = require(`${dataPath}/excel/enemy_handbook_table.json`);
+    const enemyDatabase: { [key: string]: Enemy['levels'][] } = require(`${dataPath}/levels/enemydata/enemy_database.json`);
+    const enemies = enemyDatabase.enemies;
 
     for (const excel of Object.values(enemyHandbook)) {
         for (const levels of enemies) {
@@ -82,8 +93,10 @@ function initEnemies() {
 }
 
 function initModules() {
-    const { equipDict } = require(`../${dataPath}/excel/uniequip_table.json`);
-    const battleDict = require(`../${dataPath}/excel/battle_equip_table.json`);
+    const moduleTable: { [key: string]: any } = require(`${dataPath}/excel/uniequip_table.json`);
+    const battleDict: { [key: string]: Module['data'] } = require(`${dataPath}/excel/battle_equip_table.json`);
+
+    const equipDict: { [key: string]: Module['info'] } = moduleTable.equipDict;
 
     for (const module of Object.values(equipDict)) {
         const moduleId = module.uniEquipId.toLowerCase()
@@ -92,15 +105,16 @@ function initModules() {
 }
 
 function initOperators() {
-    const operatorTable = require(`../${dataPath}/excel/character_table.json`);
-    const { charEquip } = require(`../${dataPath}/excel/uniequip_table.json`);
+    const operatorTable: { [key: string]: Operator['data'] } = require(`${dataPath}/excel/character_table.json`);
+    const moduleTable: { [key: string]: any } = require(`${dataPath}/excel/uniequip_table.json`);
+    const charEquip: { [key: string]: string[] } = moduleTable.charEquip;
 
     for (const operatorId of Object.keys(operatorTable)) {
-        const operator = operatorTable[operatorId];
-        const operatorName = operator.name.toLowerCase();
+        const operatorData = operatorTable[operatorId];
+        const operatorName = operatorData.name.toLowerCase();
         const operatorModules = charEquip.hasOwnProperty(operatorId) ? charEquip[operatorId] : null;
 
-        operatorDict[operatorId] = { data: operator, id: operatorId, modules: operatorModules };
+        operatorDict[operatorId] = { data: operatorData, id: operatorId, modules: operatorModules };
         if (!operatorDict.hasOwnProperty(operatorName)) {
             operatorDict[operatorName] = operatorDict[operatorId];
             operatorDict[operatorName.split('\'').join('')] = operatorDict[operatorId];
@@ -112,7 +126,7 @@ function initOperators() {
 }
 
 function initRanges() {
-    const rangeTable = require(`../${dataPath}/excel/range_table.json`);
+    const rangeTable: { [key: string]: Range } = require(`${dataPath}/excel/range_table.json`);
 
     for (const range of Object.values(rangeTable)) {
         rangeDict[range.id.toLowerCase()] = range;
@@ -120,7 +134,7 @@ function initRanges() {
 }
 
 function initSkills() {
-    const skillTable = require(`../${dataPath}/excel/skill_table.json`);
+    const skillTable: { [key: string]: Skill } = require(`${dataPath}/excel/skill_table.json`);
 
     for (const skill of Object.values(skillTable)) {
         const skillId = skill.skillId.toLowerCase();
@@ -142,27 +156,27 @@ function initSkills() {
     }
 }
 
-function initSkins() {
-    const { charSkins } = require(`../${dataPath}/excel/skin_table.json`);
+// function initSkins() {
+//     const { charSkins } = require(`${dataPath}/excel/skin_table.json`);
 
-    for (const skin of Object.values(charSkins)) {
-        try {
-            if (skin.displaySkin.modelName === null) {
-                return;
-            }
+//     for (const skin of Object.values(charSkins)) {
+//         try {
+//             if (skin.displaySkin.modelName === null) {
+//                 return;
+//             }
 
-            const modelName = skin.displaySkin.modelName.toLowerCase();
+//             const modelName = skin.displaySkin.modelName.toLowerCase();
 
-            if (skinDict[modelName] === undefined) {
-                skinDict[modelName] = [];
-            }
+//             if (skinDict[modelName] === undefined) {
+//                 skinDict[modelName] = [];
+//             }
 
-            skinDict[modelName].push(skin);
-        } catch (e) {
-            console.log(e);
-        }
-    }
-}
+//             skinDict[modelName].push(skin);
+//         } catch (e) {
+//             console.log(e);
+//         }
+//     }
+// }
 
 // Read stage data from stage_table and individual stage files
 // Stores data in stageDict[stage] = {excel, levels}
@@ -175,7 +189,8 @@ function initSkins() {
 // stageId and levelId are inconsistent between chapters, do not use!
 // TODO: add roguelike, sss, anything not stored in stage_table.json
 function initStages() {
-    const { stages } = require(`../${dataPath}/excel/stage_table.json`);
+    const stageTable: { [key: string]: any } = require(`${dataPath}/excel/stage_table.json`);
+    const stages: { [key: string]: StageInfo } = stageTable.stages;
 
     for (const excel of Object.values(stages)) {
         try {
@@ -186,11 +201,11 @@ function initStages() {
 
                 // Initialize key if it doesn't exist
                 if (!stageDict.hasOwnProperty(name)) {
-                    stageDict[name] = { normal: {}, challenge: {} };
+                    stageDict[name] = { normal: null, challenge: null };
                 }
 
                 if (excel.diffGroup === 'TOUGH' || excel.difficulty === 'FOUR_STAR') {
-                    const levels = require(`../${dataPath}/levels/${levelId}.json`);
+                    const levels: StageData = require(`${dataPath}/levels/${levelId}.json`);
                     stageDict[name].challenge = { excel: excel, levels: levels };
                 } else if (excel.difficulty === 'NORMAL') {
                     if (levelId.includes('easy_sub')) { // Not sure if easy levels are all that different, ignore for now
@@ -202,7 +217,7 @@ function initStages() {
                         // const levels = require(`../${dataPath}/levels/${newId}.json`);
                         // stageDict[name].normal = { excel: excel, levels: levels };
                     } else {
-                        const levels = require(`../${dataPath}/levels/${levelId}.json`);
+                        const levels = require(`${dataPath}/levels/${levelId}.json`);
                         stageDict[name].normal = { excel: excel, levels: levels };
                     }
                 }

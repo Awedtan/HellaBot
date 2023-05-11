@@ -1,6 +1,6 @@
 {
     "iconPath": "icon.png",
-    "dataPath": "ArknightsGameData/en_US/gamedata",
+    "dataPath": "../../ArknightsGameData/en_US/gamedata",
     "enemyImagePath": "Arknight-Images/enemy",
     "moduleImagePath": "Arknight-Images/equip/icon",
     "operatorImagePath": "Arknight-Images/characters",

@@ -1,10 +1,12 @@
 const { iconPath, moduleImagePath } = require('../../paths.json');
 const { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, SlashCommandBuilder } = require('discord.js');
-const { formatTextBlackboardTags } = require('../../utils/utils.js');
-const { fetchModules, fetchOperators } = require('../../utils/fetchData.js');
+const { formatTextBlackboardTags } = require('../utils/utils');
+const { fetchModules, fetchOperators } = require('../utils/fetchData');
 const wait = require('node:timers/promises').setTimeout;
 
-const levelId = { l1: 0, l2: 1, l3: 2 };
+import { Module, Operator } from "../utils/types";
+
+const levelId: { [key: string]: number } = { l1: 0, l2: 1, l3: 2 };
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -16,7 +18,7 @@ module.exports = {
                 .setRequired(true)
         ),
     async execute(interaction) {
-        const operatorDict = fetchOperators();
+        const operatorDict: { [key: string]: Operator } = fetchOperators();
         const operatorName = interaction.options.getString('name').toLowerCase();
 
         if (operatorDict.hasOwnProperty(operatorName)) {
@@ -37,7 +39,7 @@ module.exports = {
                     await wait(200);
                 }
             }
-            else{
+            else {
                 await interaction.reply('That operator doesn\'t have any modules!');
             }
         }
@@ -47,7 +49,7 @@ module.exports = {
     }
 }
 
-async function replyModuleEmbed(interaction, moduleId) {
+async function replyModuleEmbed(interaction, moduleId: string) {
     let level = 0;
     const moduleEmbed = createModuleEmbed(moduleId, level);
     let response = await interaction.reply(moduleEmbed);
@@ -70,7 +72,7 @@ async function replyModuleEmbed(interaction, moduleId) {
     }
 }
 
-async function sendModuleEmbed(channel, moduleId) {
+async function sendModuleEmbed(channel, moduleId: string) {
     let level = 0;
     const moduleEmbed = createModuleEmbed(moduleId, level);
     let response = await channel.send(moduleEmbed);
@@ -93,11 +95,12 @@ async function sendModuleEmbed(channel, moduleId) {
     }
 }
 
-function createModuleEmbed(moduleId, level) {
-    const moduleDict = fetchModules();
-    const moduleInfo = moduleDict[moduleId].info;
-    const moduleData = moduleDict[moduleId].data;
-    const baseModule = moduleData.phases[level];
+function createModuleEmbed(moduleId: string, level: number) {
+    const moduleDict: { [key: string]: Module } = fetchModules();
+    const module = moduleDict[moduleId]
+    const moduleInfo = module.info;
+    const moduleData = module.data;
+    const moduleLevel = moduleData.phases[level];
 
     const icon = new AttachmentBuilder(iconPath);
     const image = new AttachmentBuilder(`./${moduleImagePath}/${moduleId}.png`);
@@ -105,7 +108,7 @@ function createModuleEmbed(moduleId, level) {
     const name = `${moduleInfo.typeIcon.toUpperCase()} - ${moduleInfo.uniEquipName}`;
 
     let traitDescription = '', talentName = '', talentDescription = '';
-    for (const part of baseModule.parts) {
+    for (const part of moduleLevel.parts) {
         if (part.overrideTraitDataBundle.candidates != null) {
             const candidates = part.overrideTraitDataBundle.candidates;
             const candidate = candidates[candidates.length - 1];

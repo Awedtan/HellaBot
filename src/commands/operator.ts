@@ -1,9 +1,11 @@
 const { iconPath, operatorAvatarPath } = require('../../paths.json');
 const { AttachmentBuilder, EmbedBuilder, SlashCommandBuilder } = require('discord.js');
-const { fetchOperators, fetchArchetypes } = require('../../utils/fetchData.js');
-const { createRangeEmbedField, formatTextBlackboardTags } = require('../../utils/utils.js');
+const { fetchOperators, fetchArchetypes } = require('../utils/fetchData');
+const { createRangeEmbedField, formatTextBlackboardTags } = require('../utils/utils');
 
-const professions = {
+import { Operator } from '../utils/types';
+
+const professions: { [key: string]: string } = {
     PIONEER: 'Vanguard',
     WARRIOR: 'Guard',
     TANK: 'Defender',
@@ -24,7 +26,7 @@ module.exports = {
                 .setRequired(true)
         ),
     async execute(interaction) {
-        const operatorDict = fetchOperators();
+        const operatorDict: { [key: string]: Operator } = fetchOperators();
         const operatorName = interaction.options.getString('name').toLowerCase();
 
         if (operatorDict.hasOwnProperty(operatorName)) {
@@ -37,30 +39,31 @@ module.exports = {
     }
 }
 
-function createOperatorEmbed(operatorName) {
-    const operatorDict = fetchOperators();
-    const archetypeDict = fetchArchetypes();
-    const op = operatorDict[operatorName].data;
-    const opId = operatorDict[operatorName].id;
-    const opMax = op.phases[op.phases.length - 1];
+function createOperatorEmbed(operatorName: string) {
+    const operatorDict: { [key: string]: Operator } = fetchOperators();
+    const archetypeDict: { [key: string]: string } = fetchArchetypes();
+    const op = operatorDict[operatorName];
+    const opData = op.data;
+    const opId = op.id;
+    const opMax = opData.phases[opData.phases.length - 1];
 
     const icon = new AttachmentBuilder(iconPath);
     const avatar = new AttachmentBuilder(`./${operatorAvatarPath}/${opId}.png`);
 
-    let name = `${op.name} - `;
-    for (let i = -1; i < op.rarity; i++) {
+    let name = `${opData.name} - `;
+    for (let i = -1; i < opData.rarity; i++) {
         name += '★';
     }
 
-    let description = formatTextBlackboardTags(op.description, []);
-    if (op.trait != null) {
-        const candidate = op.trait.candidates[op.trait.candidates.length - 1];
+    let description = formatTextBlackboardTags(opData.description, []);
+    if (opData.trait != null) {
+        const candidate = opData.trait.candidates[opData.trait.candidates.length - 1];
         if (candidate.overrideDescripton != null) {
             description = formatTextBlackboardTags(candidate.overrideDescripton, candidate.blackboard);
         }
     }
 
-    const embedDescription = `***${professions[op.profession]}* - ${archetypeDict[op.subProfessionId]}**\n${description}`;
+    const embedDescription = `***${professions[opData.profession]}* - ${archetypeDict[opData.subProfessionId]}**\n${description}`;
     const rangeField = createRangeEmbedField(opMax.rangeId);
 
     const embed = new EmbedBuilder()
@@ -71,13 +74,13 @@ function createOperatorEmbed(operatorName) {
         .setDescription(embedDescription)
         .addFields(rangeField);
 
-    for (const talent of op.talents) {
+    for (const talent of opData.talents) {
         const candidate = talent.candidates[talent.candidates.length - 1];
         embed.addFields({ name: `*Talent:* ${candidate.name}`, value: formatTextBlackboardTags(candidate.description, []) });
     }
 
     let potentialString = '';
-    for (const potential of op.potentialRanks) {
+    for (const potential of opData.potentialRanks) {
         potentialString += `${potential.description}\n`;
     }
     if (potentialString != '') {
@@ -85,7 +88,7 @@ function createOperatorEmbed(operatorName) {
     }
 
     let trustString = '';
-    const trustBonus = op.favorKeyFrames[1].data;
+    const trustBonus: { [key: string]: number | boolean } = opData.favorKeyFrames[1].data;
     for (const trustKey of Object.keys(trustBonus)) {
         const trustValue = trustBonus[trustKey];
         if (trustValue != 0 && trustValue != 0.0 && trustValue != false) {

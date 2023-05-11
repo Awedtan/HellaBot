@@ -1,10 +1,13 @@
-const { fetchRanges } = require('./fetchData.js');
+const { fetchRanges } = require('./fetchData');
+
+import { Blackboard, Range } from "./types";
 
 module.exports = {
-    createRangeEmbedField(rangeId) {
-        const rangeDict = fetchRanges();
-        const rangeGrid = rangeDict[rangeId].grids;
-        
+    createRangeEmbedField(rangeId: string) {
+        const rangeDict: { [key: string]: Range } = fetchRanges();
+        const range = rangeDict[rangeId];
+        const rangeGrid = range.grids;
+
         let left = 0, right = 0, top = 0, bottom = 0;
         for (const square of rangeGrid) {
             if (square.col < left)
@@ -47,8 +50,8 @@ module.exports = {
         }
         return { name: 'Range', value: rangeString };
     },
-    formatTextBlackboardTags(text, blackboard) {
-        const skillKeys = {};
+    formatTextBlackboardTags(text: string, blackboard: Blackboard[]) {
+        const skillKeys: { [key: string]: number | string } = {};
         for (const stat of blackboard) {
             const key = stat.key;
             const value = stat.value;
@@ -62,7 +65,7 @@ module.exports = {
         }
 
         const endTagRegex = /<\/>/;
-        const tagRegex = /<.ba\.[^<]+>|:0%|:0|:0.0%/;
+        const tagRegex = /<.ba\.[^<]+>|:0%|:0|:0.0%|-/;
         text = text.split(endTagRegex).join('').split(tagRegex).join('');
 
         const temp = text.split(/{|}/);
