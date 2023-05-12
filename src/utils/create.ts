@@ -1,6 +1,6 @@
 const { enemyImagePath, moduleImagePath, operatorAvatarPath, skillImagePath, stageImagePath } = require('../../paths.json');
 const { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } = require('discord.js');
-const { fetchArchetypes, fetchEnemies, fetchRanges, fetchSkills } = require('../utils/fetchData');
+const { fetchArchetypes, fetchEnemies, fetchModules, fetchRanges, fetchSkills } = require('../utils/fetchData');
 const { formatTextBlackboardTags } = require('../utils/utils');
 
 import { Enemy, Module, Operator, Range, Skill, Stage, StageData, StageInfo } from "./types";
@@ -61,86 +61,16 @@ module.exports = {
         return { embeds: [embed], files: [image] };
     },
     infoEmbed(op: Operator, currentType: number, currentPage: number, currentLevel: number) {
-        const archetypeDict: { [key: string]: string } = fetchArchetypes();
-        const skillDict: { [key: string]: Skill } = fetchSkills();
-        const opData = op.data;
-        const opId = op.id;
-        const opMax = opData.phases[opData.phases.length - 1];
+        const embedArr = [], fileArr = [], componentRows = [];
 
-        const avatar = new AttachmentBuilder(`./${operatorAvatarPath}/${opId}.png`);
-        const fileArr = [avatar];
+        const operatorEmbed = this.operatorEmbed(op);
 
-        let name = `${opData.name} - *`;
-        for (let i = -1; i < opData.rarity; i++) {
-            name += '★';
+        for (const embed of operatorEmbed.embeds) {
+            embedArr.push(embed);
         }
-        name += '*';
-
-        const urlName = opData.name.split(' the ').join('-').split('\'').join('').split(' ').join('-').split('ë').join('e').split('ł').join('l');
-
-        let description = formatTextBlackboardTags(opData.description, []);
-        if (opData.trait != null) {
-            const candidate = opData.trait.candidates[opData.trait.candidates.length - 1];
-            if (candidate.overrideDescripton != null) {
-                description = formatTextBlackboardTags(candidate.overrideDescripton, candidate.blackboard);
-            }
+        for (const file of operatorEmbed.files) {
+            fileArr.push(file);
         }
-
-        const embedDescription = `**${professions[opData.profession]} - *${archetypeDict[opData.subProfessionId]}***\n${description}`;
-        const rangeField = this.rangeEmbedField(opMax.rangeId);
-
-        const infoEmbed = new EmbedBuilder()
-            .setColor(0xebca60)
-            .setTitle(name)
-            .setThumbnail(`attachment://${opId}.png`)
-            .setURL(`https://gamepress.gg/arknights/operator/${urlName}`)
-            .setDescription(embedDescription)
-            .addFields(rangeField);
-
-        for (const talent of opData.talents) {
-            const candidate = talent.candidates[talent.candidates.length - 1];
-            infoEmbed.addFields({ name: `*Talent:* ${candidate.name}`, value: formatTextBlackboardTags(candidate.description, []) });
-        }
-
-        let potentialString = '';
-        for (const potential of opData.potentialRanks) {
-            potentialString += `${potential.description}\n`;
-        }
-        if (potentialString != '') {
-            infoEmbed.addFields({ name: 'Potentials', value: potentialString, inline: true });
-        }
-
-        let trustString = '';
-        const trustBonus: { [key: string]: number | boolean } = opData.favorKeyFrames[1].data;
-        for (const trustKey of Object.keys(trustBonus)) {
-            const trustValue = trustBonus[trustKey];
-            if (trustValue != 0 && trustValue != 0.0 && trustValue != false) {
-                trustString += `${trustKey.toUpperCase()} +${trustValue}\n`;
-            }
-        }
-        infoEmbed.addFields({ name: 'Trust Bonus', value: trustString, inline: true });
-
-        const maxStats = opMax.attributesKeyFrames[1].data;
-        const hp = maxStats.maxHp.toString();
-        const atk = maxStats.atk.toString();
-        const def = maxStats.def.toString();
-        const res = maxStats.magicResistance.toString();
-        const dpCost = maxStats.cost.toString();
-        const block = maxStats.blockCnt.toString();
-        const redeploy = maxStats.respawnTime.toString();
-        const atkInterval = maxStats.baseAttackTime.toString();
-
-        infoEmbed.addFields(
-            { name: '\u200B', value: '**Max Stats**' },
-            { name: '❤️ HP', value: hp, inline: true },
-            { name: '⚔️ ATK', value: atk, inline: true },
-            { name: '🛡️ DEF', value: def, inline: true },
-            { name: '✨ RES', value: res, inline: true },
-            { name: '🏁 DP', value: dpCost, inline: true },
-            { name: '✋ Block', value: block, inline: true },
-            { name: '⌛ Redeploy Time', value: redeploy, inline: true },
-            { name: '⏱️ Attack Interval', value: atkInterval, inline: true },
-        );
 
         const skillsButton = new ButtonBuilder()
             .setCustomId('skills')
@@ -160,7 +90,6 @@ module.exports = {
             .setStyle(ButtonStyle.Success);
 
         const pageRow = new ActionRowBuilder().addComponents(skillsButton, modulesButton, artButton, baseButton);
-        const embedArr = [infoEmbed], componentRows = [];
 
         switch (currentType) {
             case 0:
@@ -171,50 +100,44 @@ module.exports = {
                 const skills = op.data.skills;
 
                 if (skills.length != 0) {
+                    const skillDict: { [key: string]: Skill } = fetchSkills();
                     const skill = skillDict[skills[currentPage].skillId];
                     const skillEmbed = this.skillEmbed(skill, currentLevel, op);
-
-                    for (const file of skillEmbed.files) {
-                        fileArr.push(file);
-                    }
 
                     for (const embed of skillEmbed.embeds) {
                         embedArr.push(embed);
                     }
+                    for (const file of skillEmbed.files) {
+                        fileArr.push(file);
+                    }
                     for (const componentRow of skillEmbed.components) {
-                        componentRows.push(componentRow)
+                        componentRows.push(componentRow);
                     }
 
                     const skillOne = new ButtonBuilder()
                         .setCustomId('p1')
                         .setLabel('Skill 1')
-                        .setStyle(ButtonStyle.Primary);
+                        .setStyle(ButtonStyle.Secondary)
+                        .setDisabled(true);
                     const skillTwo = new ButtonBuilder()
                         .setCustomId('p2')
                         .setLabel('Skill 2')
-                        .setStyle(ButtonStyle.Primary);
+                        .setStyle(ButtonStyle.Secondary)
+                        .setDisabled(true);
                     const skillThree = new ButtonBuilder()
                         .setCustomId('p3')
                         .setLabel('Skill 3')
-                        .setStyle(ButtonStyle.Primary);
+                        .setStyle(ButtonStyle.Secondary)
+                        .setDisabled(true);
 
                     const skillRow = new ActionRowBuilder().addComponents(skillOne, skillTwo, skillThree);
                     const skillArr = [skillOne, skillTwo, skillThree];
 
-                    for (let i = skills.length; i < 3; i++) {
-                        skillArr[i].setStyle(ButtonStyle.Secondary);
-                        skillArr[i].setDisabled(true);
-                    }
-                    switch (currentPage) {
-                        case 0:
-                            skillOne.setDisabled(true);
-                            break;
-                        case 1:
-                            skillTwo.setDisabled(true);
-                            break;
-                        case 2:
-                            skillThree.setDisabled(true);
-                            break;
+                    for (let i = 0; i < skills.length; i++) {
+                        skillArr[i].setStyle(ButtonStyle.Primary);
+                        if (i != currentPage) {
+                            skillArr[i].setDisabled(false);
+                        }
                     }
 
                     componentRows.push(skillRow);
@@ -222,6 +145,48 @@ module.exports = {
                 break;
             case 2:
                 modulesButton.setDisabled(true);
+
+                const modules = op.modules;
+
+                if (modules != null) {
+                    const moduleDict: { [key: string]: Module } = fetchModules();
+                    const module = moduleDict[modules[currentPage + 1]];
+                    const moduleEmbed = this.moduleEmbed(module, currentLevel, op);
+
+                    for (const embed of moduleEmbed.embeds) {
+                        embedArr.push(embed);
+                    }
+                    for (const file of moduleEmbed.files) {
+                        fileArr.push(file);
+                    }
+                    for (const componentRow of moduleEmbed.components) {
+                        componentRows.push(componentRow);
+                    }
+
+                    const moduleOne = new ButtonBuilder()
+                        .setCustomId('p1')
+                        .setLabel('Module 1')
+                        .setStyle(ButtonStyle.Secondary)
+                        .setDisabled(true);
+                    const moduleTwo = new ButtonBuilder()
+                        .setCustomId('p2')
+                        .setLabel('Module 2')
+                        .setStyle(ButtonStyle.Secondary)
+                        .setDisabled(true);
+
+                    const moduleRow = new ActionRowBuilder().addComponents(moduleOne, moduleTwo);
+                    const moduleArr = [moduleOne, moduleTwo];
+
+                    for (let i = 0; i < modules.length - 1; i++) {
+                        moduleArr[i].setStyle(ButtonStyle.Primary);
+                        if (i != currentPage) {
+                            moduleArr[i].setDisabled(false);
+                        }
+                    }
+
+                    componentRows.push(moduleRow);
+                }
+
                 break;
             case 3:
                 artButton.setDisabled(true);
@@ -286,7 +251,7 @@ module.exports = {
         for (const attribute of moduleLevel.attributeBlackboard) {
             statDescription += `${attribute.key.toUpperCase()} +${attribute.value}\n`;
         }
-        embed.addFields({ name: `Stats:`, value: statDescription });
+        embed.addFields({ name: `Stats`, value: statDescription });
 
         const lOne = new ButtonBuilder()
             .setCustomId('l1')
@@ -316,6 +281,88 @@ module.exports = {
         const rowOne = new ActionRowBuilder().addComponents(lOne, lTwo, lThree);
 
         return { embeds: [embed], files: [image, avatar], components: [rowOne] };
+    },
+    operatorEmbed(op: Operator) {
+        const archetypeDict: { [key: string]: string } = fetchArchetypes();
+
+        const opData = op.data;
+        const opId = op.id;
+        const opMax = opData.phases[opData.phases.length - 1];
+        const avatar = new AttachmentBuilder(`./${operatorAvatarPath}/${opId}.png`);
+
+        let name = `${opData.name} - *`;
+        for (let i = -1; i < opData.rarity; i++) {
+            name += '★';
+        }
+        name += '*';
+
+        const urlName = opData.name.split(' the ').join('-').split('\'').join('').split(' ').join('-').split('ë').join('e').split('ł').join('l');
+
+        let description = formatTextBlackboardTags(opData.description, []);
+        if (opData.trait != null) {
+            const candidate = opData.trait.candidates[opData.trait.candidates.length - 1];
+            if (candidate.overrideDescripton != null) {
+                description = formatTextBlackboardTags(candidate.overrideDescripton, candidate.blackboard);
+            }
+        }
+
+        const embedDescription = `**${professions[opData.profession]} - *${archetypeDict[opData.subProfessionId]}***\n${description}`;
+        const rangeField = this.rangeEmbedField(opMax.rangeId);
+
+        const embed = new EmbedBuilder()
+            .setColor(0xebca60)
+            .setTitle(name)
+            .setThumbnail(`attachment://${opId}.png`)
+            .setURL(`https://gamepress.gg/arknights/operator/${urlName}`)
+            .setDescription(embedDescription)
+            .addFields(rangeField);
+
+        for (const talent of opData.talents) {
+            const candidate = talent.candidates[talent.candidates.length - 1];
+            embed.addFields({ name: `*Talent:* ${candidate.name}`, value: formatTextBlackboardTags(candidate.description, []) });
+        }
+
+        let potentialString = '';
+        for (const potential of opData.potentialRanks) {
+            potentialString += `${potential.description}\n`;
+        }
+        if (potentialString != '') {
+            embed.addFields({ name: 'Potentials', value: potentialString, inline: true });
+        }
+
+        let trustString = '';
+        const trustBonus: { [key: string]: number | boolean } = opData.favorKeyFrames[1].data;
+        for (const trustKey of Object.keys(trustBonus)) {
+            const trustValue = trustBonus[trustKey];
+            if (trustValue != 0 && trustValue != 0.0 && trustValue != false) {
+                trustString += `${trustKey.toUpperCase()} +${trustValue}\n`;
+            }
+        }
+        embed.addFields({ name: 'Trust Bonus', value: trustString, inline: true });
+
+        const maxStats = opMax.attributesKeyFrames[1].data;
+        const hp = maxStats.maxHp.toString();
+        const atk = maxStats.atk.toString();
+        const def = maxStats.def.toString();
+        const res = maxStats.magicResistance.toString();
+        const dpCost = maxStats.cost.toString();
+        const block = maxStats.blockCnt.toString();
+        const redeploy = maxStats.respawnTime.toString();
+        const atkInterval = maxStats.baseAttackTime.toString();
+
+        embed.addFields(
+            { name: '\u200B', value: '**Max Stats**' },
+            { name: '❤️ HP', value: hp, inline: true },
+            { name: '⚔️ ATK', value: atk, inline: true },
+            { name: '🛡️ DEF', value: def, inline: true },
+            { name: '✨ RES', value: res, inline: true },
+            { name: '🏁 DP', value: dpCost, inline: true },
+            { name: '✋ Block', value: block, inline: true },
+            { name: '⌛ Redeploy Time', value: redeploy, inline: true },
+            { name: '⏱️ Attack Interval', value: atkInterval, inline: true },
+        );
+
+        return { embeds: [embed], files: [avatar] };
     },
     rangeEmbedField(rangeId: string) {
         const rangeDict: { [key: string]: Range } = fetchRanges();
@@ -429,15 +476,15 @@ module.exports = {
         const mOne = new ButtonBuilder()
             .setCustomId('m1')
             .setLabel('M1')
-            .setStyle(ButtonStyle.Secondary);
+            .setStyle(ButtonStyle.Danger);
         const mTwo = new ButtonBuilder()
             .setCustomId('m2')
             .setLabel('M2')
-            .setStyle(ButtonStyle.Secondary);
+            .setStyle(ButtonStyle.Danger);
         const mThree = new ButtonBuilder()
             .setCustomId('m3')
             .setLabel('M3')
-            .setStyle(ButtonStyle.Secondary);
+            .setStyle(ButtonStyle.Danger);
 
         if (skill.levels.length === 7) {
             mOne.setDisabled(true);

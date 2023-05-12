@@ -23,10 +23,10 @@ module.exports = {
 
         if (operatorDict.hasOwnProperty(operatorName)) {
             const op = operatorDict[operatorName];
-            
+
             if (op.modules != null) {
                 let first = true;
-                
+
                 for (const moduleId of op.modules) {
                     if (moduleId.indexOf('uniequip_001') != -1) {
                         continue;
