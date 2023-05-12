@@ -48,7 +48,6 @@ async function replyInfoEmbed(interaction, operator: Operator) {
                 level = 0;
             } else if (pageId.hasOwnProperty(confirm.customId)) {
                 page = pageId[confirm.customId];
-                level = 0;
             } else if (levelId.hasOwnProperty(confirm.customId)) {
                 level = levelId[confirm.customId];
             }

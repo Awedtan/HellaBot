@@ -91,6 +91,15 @@ module.exports = {
 
         const pageRow = new ActionRowBuilder().addComponents(skillsButton, modulesButton, artButton, baseButton);
 
+        if (op.data.skills.length == 0) {
+            skillsButton.setStyle(ButtonStyle.Secondary);
+            skillsButton.setDisabled(true);
+        }
+        if (op.modules == null) {
+            modulesButton.setStyle(ButtonStyle.Secondary);
+            modulesButton.setDisabled(true);
+        }
+
         switch (currentType) {
             case 0:
                 break;
@@ -131,6 +140,7 @@ module.exports = {
                         .setDisabled(true);
 
                     const skillRow = new ActionRowBuilder().addComponents(skillOne, skillTwo, skillThree);
+                    componentRows.push(skillRow);
                     const skillArr = [skillOne, skillTwo, skillThree];
 
                     for (let i = 0; i < skills.length; i++) {
@@ -139,8 +149,6 @@ module.exports = {
                             skillArr[i].setDisabled(false);
                         }
                     }
-
-                    componentRows.push(skillRow);
                 }
                 break;
             case 2:
@@ -175,6 +183,7 @@ module.exports = {
                         .setDisabled(true);
 
                     const moduleRow = new ActionRowBuilder().addComponents(moduleOne, moduleTwo);
+                    componentRows.push(moduleRow);
                     const moduleArr = [moduleOne, moduleTwo];
 
                     for (let i = 0; i < modules.length - 1; i++) {
@@ -183,8 +192,6 @@ module.exports = {
                             moduleArr[i].setDisabled(false);
                         }
                     }
-
-                    componentRows.push(moduleRow);
                 }
 
                 break;
@@ -290,13 +297,12 @@ module.exports = {
         const opMax = opData.phases[opData.phases.length - 1];
         const avatar = new AttachmentBuilder(`./${operatorAvatarPath}/${opId}.png`);
 
-        let name = `${opData.name} - *`;
+        let name = `${opData.name} - `;
         for (let i = -1; i < opData.rarity; i++) {
             name += '★';
         }
-        name += '*';
 
-        const urlName = opData.name.split(' the ').join('-').split('\'').join('').split(' ').join('-').split('ë').join('e').split('ł').join('l');
+        const urlName = opData.name.toLowerCase().split(' the ').join('-').split('\'').join('').split(' ').join('-').split('ë').join('e').split('ł').join('l');
 
         let description = formatTextBlackboardTags(opData.description, []);
         if (opData.trait != null) {
@@ -306,7 +312,7 @@ module.exports = {
             }
         }
 
-        const embedDescription = `**${professions[opData.profession]} - *${archetypeDict[opData.subProfessionId]}***\n${description}`;
+        const embedDescription = `**${professions[opData.profession]} - ${archetypeDict[opData.subProfessionId]}**\n${description}`;
         const rangeField = this.rangeEmbedField(opMax.rangeId);
 
         const embed = new EmbedBuilder()
@@ -429,7 +435,7 @@ module.exports = {
 
         let embedDescription = `**${spType} - ${skillType}**\n***Cost:* ${spCost} SP - *Initial:* ${initSp} SP`;
         if (skillDuration > 0) {
-            embedDescription += ` - *Duration:* ${skillDuration}s`;
+            embedDescription += ` - *Duration:* ${skillDuration} sec`;
         }
         embedDescription += `**\n${description} `;
 
