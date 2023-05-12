@@ -1,8 +1,7 @@
-const { iconPath, moduleImagePath } = require('../../paths.json');
-const { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, SlashCommandBuilder } = require('discord.js');
-const { formatTextBlackboardTags } = require('../utils/utils');
+const { SlashCommandBuilder } = require('discord.js');
 const { fetchModules, fetchOperators } = require('../utils/fetchData');
 const wait = require('node:timers/promises').setTimeout;
+const create = require('../utils/create');
 
 import { Module, Operator } from "../utils/types";
 
@@ -19,22 +18,28 @@ module.exports = {
         ),
     async execute(interaction) {
         const operatorDict: { [key: string]: Operator } = fetchOperators();
+        const moduleDict: { [key: string]: Module } = fetchModules();
         const operatorName = interaction.options.getString('name').toLowerCase();
 
         if (operatorDict.hasOwnProperty(operatorName)) {
-            const opModules = operatorDict[operatorName].modules;
-            if (opModules != null) {
+            const op = operatorDict[operatorName];
+            
+            if (op.modules != null) {
                 let first = true;
-                for (const moduleId of opModules) {
+                
+                for (const moduleId of op.modules) {
                     if (moduleId.indexOf('uniequip_001') != -1) {
                         continue;
                     }
+
+                    const module = moduleDict[moduleId];
+
                     if (first) {
-                        replyModuleEmbed(interaction, moduleId);
+                        replyModuleEmbed(interaction, module, op);
                         first = false;
                     }
                     else {
-                        sendModuleEmbed(interaction.channel, moduleId);
+                        sendModuleEmbed(interaction.channel, module, op);
                     }
                     await wait(200);
                 }
@@ -49,9 +54,9 @@ module.exports = {
     }
 }
 
-async function replyModuleEmbed(interaction, moduleId: string) {
+async function replyModuleEmbed(interaction, module: Module, operator: Operator) {
     let level = 0;
-    const moduleEmbed = createModuleEmbed(moduleId, level);
+    const moduleEmbed = create.moduleEmbed(module, level, operator);
     let response = await interaction.reply(moduleEmbed);
 
     while (true) {
@@ -63,7 +68,7 @@ async function replyModuleEmbed(interaction, moduleId: string) {
             } catch (e) {
                 continue;
             }
-            response = await response.edit(createModuleEmbed(moduleId, level));
+            response = await response.edit(create.moduleEmbed(module, level, operator));
         } catch (e) {
             console.log(e);
             await response.edit({ embeds: moduleEmbed.embeds, files: moduleEmbed.files, components: [] });
@@ -72,9 +77,9 @@ async function replyModuleEmbed(interaction, moduleId: string) {
     }
 }
 
-async function sendModuleEmbed(channel, moduleId: string) {
+async function sendModuleEmbed(channel, module: Module, operator: Operator) {
     let level = 0;
-    const moduleEmbed = createModuleEmbed(moduleId, level);
+    const moduleEmbed = create.moduleEmbed(module, level, operator);
     let response = await channel.send(moduleEmbed);
 
     while (true) {
@@ -86,90 +91,11 @@ async function sendModuleEmbed(channel, moduleId: string) {
             } catch (e) {
                 continue;
             }
-            response = await response.edit(createModuleEmbed(moduleId, level));
+            response = await response.edit(create.moduleEmbed(module, level, operator));
         } catch (e) {
             console.log(e);
             await response.edit({ embeds: moduleEmbed.embeds, files: moduleEmbed.files, components: [] });
             break;
         }
     }
-}
-
-function createModuleEmbed(moduleId: string, level: number) {
-    const moduleDict: { [key: string]: Module } = fetchModules();
-    const module = moduleDict[moduleId]
-    const moduleInfo = module.info;
-    const moduleData = module.data;
-    const moduleLevel = moduleData.phases[level];
-
-    const icon = new AttachmentBuilder(iconPath);
-    const image = new AttachmentBuilder(`./${moduleImagePath}/${moduleId}.png`);
-
-    const name = `${moduleInfo.typeIcon.toUpperCase()} - ${moduleInfo.uniEquipName}`;
-
-    let traitDescription = '', talentName = '', talentDescription = '';
-    for (const part of moduleLevel.parts) {
-        if (part.overrideTraitDataBundle.candidates != null) {
-            const candidates = part.overrideTraitDataBundle.candidates;
-            const candidate = candidates[candidates.length - 1];
-
-            if (candidate.additionalDescription != null) {
-                traitDescription += `${formatTextBlackboardTags(candidate.additionalDescription, candidate.blackboard)}\n`;
-            }
-            if (candidate.overrideDescripton != null) {
-                traitDescription += `${formatTextBlackboardTags(candidate.overrideDescripton, candidate.blackboard)}\n`;
-            }
-        }
-        if (part.addOrOverrideTalentDataBundle.candidates != null) {
-            const candidates = part.addOrOverrideTalentDataBundle.candidates;
-            const candidate = candidates[candidates.length - 1];
-
-            if (candidate.name != null) {
-                talentName = candidate.name;
-            }
-            if (candidate.upgradeDescription != null) {
-                talentDescription += `${formatTextBlackboardTags(candidate.upgradeDescription, candidate.blackboard)}\n`;
-            }
-        }
-    }
-
-    const embed = new EmbedBuilder()
-        .setColor(0xebca60)
-        .setAuthor({ name: 'Hellabot', iconURL: `attachment://${iconPath}` })
-        .setTitle(name)
-        .setThumbnail(`attachment://${moduleId}.png`)
-        .setDescription(traitDescription);
-
-    if (talentName != '' && talentDescription != '') {
-        embed.addFields({ name: `*Talent:* ${talentName}`, value: talentDescription });
-    }
-
-    const lOne = new ButtonBuilder()
-        .setCustomId('l1')
-        .setLabel('Lv1')
-        .setStyle(ButtonStyle.Secondary);
-    const lTwo = new ButtonBuilder()
-        .setCustomId('l2')
-        .setLabel('Lv2')
-        .setStyle(ButtonStyle.Secondary);
-    const lThree = new ButtonBuilder()
-        .setCustomId('l3')
-        .setLabel('Lv3')
-        .setStyle(ButtonStyle.Secondary);
-
-    switch (level) {
-        case 0:
-            lOne.setDisabled(true);
-            break;
-        case 1:
-            lTwo.setDisabled(true);
-            break;
-        case 2:
-            lThree.setDisabled(true);
-            break;
-    }
-
-    const rowOne = new ActionRowBuilder().addComponents(lOne, lTwo, lThree);
-
-    return { embeds: [embed], files: [icon, image], components: [rowOne] };
 }

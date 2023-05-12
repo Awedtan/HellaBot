@@ -2,8 +2,6 @@
  
 todo:
 
-add module base stats
-
 add skill, elite, module costs
 
 count enemies in a stage

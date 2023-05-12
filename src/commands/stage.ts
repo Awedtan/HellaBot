@@ -1,6 +1,7 @@
-const { iconPath, stageImagePath } = require('../../paths.json');
-const { AttachmentBuilder, EmbedBuilder, SlashCommandBuilder } = require('discord.js');
+const { SlashCommandBuilder } = require('discord.js');
 const { fetchEnemies, fetchStages } = require('../utils/fetchData');
+const create = require('../utils/create');
+
 
 import { Enemy, Stage } from '../utils/types';
 
@@ -24,7 +25,6 @@ module.exports = {
         ),
     async execute(interaction) {
         const stageDict: { [key: string]: Stage } = fetchStages();
-        const enemyDict: { [key: string]: Enemy } = fetchEnemies();
 
         const stageName = interaction.options.getString('name').toLowerCase();
         const stageMode = interaction.options.getString('difficulty');
@@ -32,59 +32,18 @@ module.exports = {
         if (stageDict.hasOwnProperty(stageName)) {
             const stage = stageDict[stageName];
             const isChallenge = stageMode === 'challenge';
-            const stageInfo = isChallenge ? stage.challenge.excel : stage.normal.excel;
-            const stageData = isChallenge ? stage.challenge.levels : stage.normal.levels;
+            const stageDifficulty = isChallenge ? stage.challenge : stage.normal;
 
-            if (stageInfo === undefined || stageData === undefined) {
+            if (stageDifficulty.excel === undefined || stageDifficulty.levels === undefined) {
                 await interaction.reply('That stage data doesn\'t exist!');
                 return;
             }
 
-            const icon = new AttachmentBuilder(iconPath);
-            const titleString = isChallenge ? `Challenge ${stageInfo.code} - ${stageInfo.name}` : `${stageInfo.code} - ${stageInfo.name}`;
-
-            const stageEnemies = stageData.enemyDbRefs;
-            let enemyString = '', eliteString = '', bossString = '';
-            
-            for (const enemy of stageEnemies) {
-                if (enemyDict.hasOwnProperty(enemy.id)) {
-                    const enemyInfo = enemyDict[enemy.id].excel;
-                    switch (enemyInfo.enemyLevel) {
-                        case ('NORMAL'):
-                            enemyString += `${enemyInfo.enemyIndex} - ${enemyInfo.name}\n`;
-                            break;
-                        case ('ELITE'):
-                            eliteString += `${enemyInfo.enemyIndex} - ${enemyInfo.name}\n`;
-                            break;
-                        case ('BOSS'):
-                            bossString += `${enemyInfo.enemyIndex} - ${enemyInfo.name}\n`;
-                            break;
-                    }
-                }
-            }
-
-            const embed = new EmbedBuilder()
-                .setColor(0xebca60)
-                .setAuthor({ name: 'Hellabot', iconURL: `attachment://${iconPath}` })
-                .setTitle(titleString);
-
-            if (enemyString != '') {
-                embed.addFields({ name: 'Enemies', value: enemyString, inline: true });
-            }
-            if (eliteString != '') {
-                embed.addFields({ name: 'Elites', value: eliteString, inline: true });
-            }
-            if (bossString != '') {
-                embed.addFields({ name: 'Leaders', value: bossString, inline: false });
-            }
-
-            // TODO: find some other way of getting stage images
+            const stageEmbed = create.stageEmbed(stage, isChallenge);
             try {
-                const image = new AttachmentBuilder(`${stageImagePath}/${stageInfo.stageId}.png`);
-                embed.setImage(`attachment://${stageInfo.stageId}.png`);
-                await interaction.reply({ embeds: [embed], files: [icon, image] });
+                await interaction.reply(stageEmbed);
             } catch (e) {
-                await interaction.reply({ embeds: [embed], files: [icon] });
+                await interaction.reply({ embeds: stageEmbed.embeds });
             }
         }
         else {

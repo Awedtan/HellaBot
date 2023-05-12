@@ -1,4 +1,4 @@
-const { iconPath, operatorAvatarPath } = require('../../paths.json');
+const { operatorAvatarPath } = require('../../paths.json');
 const { AttachmentBuilder, EmbedBuilder, SlashCommandBuilder } = require('discord.js');
 const { fetchOperators, fetchArchetypes } = require('../utils/fetchData');
 const { createRangeEmbedField, formatTextBlackboardTags } = require('../utils/utils');
@@ -47,13 +47,15 @@ function createOperatorEmbed(operatorName: string) {
     const opId = op.id;
     const opMax = opData.phases[opData.phases.length - 1];
 
-    const icon = new AttachmentBuilder(iconPath);
     const avatar = new AttachmentBuilder(`./${operatorAvatarPath}/${opId}.png`);
 
-    let name = `${opData.name} - `;
+    let name = `${opData.name} - *`;
     for (let i = -1; i < opData.rarity; i++) {
         name += '★';
     }
+    name += '*';
+
+    const urlName = opData.name.split(' the ').join('-').split('\'').join('').split(' ').join('-').split('ë').join('e').split('ł').join('l');
 
     let description = formatTextBlackboardTags(opData.description, []);
     if (opData.trait != null) {
@@ -63,14 +65,14 @@ function createOperatorEmbed(operatorName: string) {
         }
     }
 
-    const embedDescription = `***${professions[opData.profession]}* - ${archetypeDict[opData.subProfessionId]}**\n${description}`;
+    const embedDescription = `**${professions[opData.profession]} - *${archetypeDict[opData.subProfessionId]}***\n${description}`;
     const rangeField = createRangeEmbedField(opMax.rangeId);
 
     const embed = new EmbedBuilder()
         .setColor(0xebca60)
-        .setAuthor({ name: 'Hellabot', iconURL: `attachment://${iconPath}` })
         .setTitle(name)
         .setThumbnail(`attachment://${opId}.png`)
+        .setURL(`https://gamepress.gg/arknights/operator/${urlName}`)
         .setDescription(embedDescription)
         .addFields(rangeField);
 
@@ -119,5 +121,5 @@ function createOperatorEmbed(operatorName: string) {
         { name: '⏱️ Attack Interval', value: atkInterval, inline: true },
     );
 
-    return { embeds: [embed], files: [icon, avatar] };
+    return { embeds: [embed], files: [avatar] };
 }

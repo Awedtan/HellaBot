@@ -1,4 +1,4 @@
-const { iconPath, skillImagePath } = require('../../paths.json');
+const { skillImagePath } = require('../../paths.json');
 const { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, SlashCommandBuilder } = require('discord.js');
 const { fetchSkills } = require('../utils/fetchData');
 const { createRangeEmbedField, formatTextBlackboardTags } = require('../utils/utils');
@@ -24,56 +24,58 @@ module.exports = {
         const skillName = interaction.options.getString('name').toLowerCase();
 
         if (skillDict.hasOwnProperty(skillName)) {
-            this.replySkillEmbed(interaction, skillName);
+            replySkillEmbed(interaction, skillName);
         }
         else {
             await interaction.reply('That skill doesn\'t exist!');
         }
     },
-    async replySkillEmbed(interaction, skillName: string) {
-        let level = 0;
-        const skillEmbed = createSkillEmbed(skillName, level);
-        let response = await interaction.reply(skillEmbed);
+}
 
-        while (true) {
-            try {
-                const confirm = await response.awaitMessageComponent({ time: 300000 });
-                level = levelId[confirm.customId];
-                try {
-                    await confirm.update({ content: '' });
-                } catch (e) {
-                    continue;
-                }
-                response = await response.edit(createSkillEmbed(skillName, level));
-            } catch (e) {
-                console.log(e);
-                await response.edit({ embeds: skillEmbed.embeds, files: skillEmbed.files, components: [] });
-                break;
-            }
-        }
-    },
-    async sendSkillEmbed(channel, skillName: string) {
-        let level = 0;
-        const skillEmbed = createSkillEmbed(skillName, level);
-        let response = await channel.send(skillEmbed);
+async function replySkillEmbed(interaction, skillName: string) {
+    let level = 0;
+    const skillEmbed = createSkillEmbed(skillName, level);
+    let response = await interaction.reply(skillEmbed);
 
-        while (true) {
+    while (true) {
+        try {
+            const confirm = await response.awaitMessageComponent({ time: 300000 });
+            level = levelId[confirm.customId];
             try {
-                const confirm = await response.awaitMessageComponent({ time: 300000 });
-                level = levelId[confirm.customId];
-                try {
-                    await confirm.update({ content: '' });
-                } catch (e) {
-                    continue;
-                }
-                response = await response.edit(createSkillEmbed(skillName, level));
+                await confirm.update({ content: '' });
             } catch (e) {
-                console.log(e);
-                await response.edit({ embeds: skillEmbed.embeds, files: skillEmbed.files, components: [] });
-                break;
+                continue;
             }
+            response = await response.edit(createSkillEmbed(skillName, level));
+        } catch (e) {
+            console.log(e);
+            await response.edit({ embeds: skillEmbed.embeds, files: skillEmbed.files, components: [] });
+            break;
         }
-    },
+    }
+}
+
+async function sendSkillEmbed(channel, skillName: string) {
+    let level = 0;
+    const skillEmbed = createSkillEmbed(skillName, level);
+    let response = await channel.send(skillEmbed);
+
+    while (true) {
+        try {
+            const confirm = await response.awaitMessageComponent({ time: 300000 });
+            level = levelId[confirm.customId];
+            try {
+                await confirm.update({ content: '' });
+            } catch (e) {
+                continue;
+            }
+            response = await response.edit(createSkillEmbed(skillName, level));
+        } catch (e) {
+            console.log(e);
+            await response.edit({ embeds: skillEmbed.embeds, files: skillEmbed.files, components: [] });
+            break;
+        }
+    }
 }
 
 function createSkillEmbed(skillName: string, level: number) {
@@ -81,22 +83,26 @@ function createSkillEmbed(skillName: string, level: number) {
     const skill = skillDict[skillName];
     const skillLevel = skill.levels[level];
 
-    const icon = new AttachmentBuilder(iconPath);
     const imagePath = skill.iconId === null ? skill.skillId : skill.iconId;
     const image = new AttachmentBuilder(`./${skillImagePath}/skill_icon_${imagePath}.png`);
 
     const name = `${skillLevel.name} - ${skillLevels[level]}`;
     const spCost = skillLevel.spData.spCost;
     const initSp = skillLevel.spData.initSp;
+    const skillDuration = skillLevel.duration;
     const spType = spTypes[skillLevel.spData.spType];
     const skillType = skillTypes[skillLevel.skillType];
 
     const description = formatTextBlackboardTags(skillLevel.description, skillLevel.blackboard);
-    const embedDescription = `**${spType} - ${skillType}**\n***Cost:* ${spCost} SP - *Initial:* ${initSp} SP**\n${description} `;
+
+    let embedDescription = `**${spType} - ${skillType}**\n***Cost:* ${spCost} SP - *Initial:* ${initSp} SP`;
+    if (skillDuration > 0) {
+        embedDescription += ` - *Duration:* ${skillDuration}s`;
+    }
+    embedDescription += `**\n${description} `;
 
     const embed = new EmbedBuilder()
         .setColor(0xebca60)
-        .setAuthor({ name: 'Hellabot', iconURL: `attachment://${iconPath}` })
         .setTitle(name)
         .setThumbnail(`attachment://skill_icon_${imagePath.split(/\[|\]/).join('')}.png`)
         .setDescription(embedDescription);
@@ -189,5 +195,5 @@ function createSkillEmbed(skillName: string, level: number) {
     const rowOne = new ActionRowBuilder().addComponents(lOne, lTwo, lThree, lFour, lFive);
     const rowTwo = new ActionRowBuilder().addComponents(lSix, lSeven, mOne, mTwo, mThree);
 
-    return { embeds: [embed], files: [icon, image], components: [rowOne, rowTwo] };
+    return { embeds: [embed], files: [image], components: [rowOne, rowTwo] };
 }

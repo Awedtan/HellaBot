@@ -3,53 +3,6 @@ const { fetchRanges } = require('./fetchData');
 import { Blackboard, Range } from "./types";
 
 module.exports = {
-    createRangeEmbedField(rangeId: string) {
-        const rangeDict: { [key: string]: Range } = fetchRanges();
-        const range = rangeDict[rangeId];
-        const rangeGrid = range.grids;
-
-        let left = 0, right = 0, top = 0, bottom = 0;
-        for (const square of rangeGrid) {
-            if (square.col < left)
-                left = square.col
-            else if (square.col > right)
-                right = square.col;
-            if (square.row < bottom)
-                bottom = square.row
-            else if (square.row > top)
-                top = square.row;
-        }
-
-        const arrCols = right - left + 1;
-        const arrRows = top - bottom + 1;
-        const rangeArr = new Array(arrCols);
-        for (let i = 0; i < arrCols; i++) {
-            rangeArr[i] = new Array(arrRows);
-        }
-        for (const square of rangeGrid) {
-            rangeArr[square.col - left][-square.row - bottom] = 1;
-        }
-        rangeArr[-left][-bottom] = 2;
-
-        let rangeString = '';
-        for (let i = 0; i < arrRows; i++) {
-            for (let j = 0; j < arrCols; j++) {
-                switch (rangeArr[j][i]) {
-                    case (1):
-                        rangeString += '🔳';
-                        break;
-                    case (2):
-                        rangeString += '🟦';
-                        break;
-                    default:
-                        rangeString += '⬛';
-                        break;
-                }
-            }
-            rangeString += '\n';
-        }
-        return { name: 'Range', value: rangeString };
-    },
     formatTextBlackboardTags(text: string, blackboard: Blackboard[]) {
         const skillKeys: { [key: string]: number | string } = {};
         for (const stat of blackboard) {
