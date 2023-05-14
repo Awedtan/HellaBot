@@ -1,9 +1,9 @@
-const { enemyImagePath, moduleImagePath, operatorAvatarPath, skillImagePath, stageImagePath } = require('../../paths.json');
+const { enemyImagePath, moduleImagePath, operatorAvatarPath, operatorImagePath, skillImagePath, stageImagePath } = require('../../paths.json');
 const { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } = require('discord.js');
-const { fetchArchetypes, fetchEnemies, fetchModules, fetchRanges, fetchSkills } = require('../utils/fetchData');
+const { fetchArchetypes, fetchEnemies, fetchModules, fetchRanges, fetchSkills, fetchSkins } = require('../utils/fetchData');
 const { formatTextBlackboardTags } = require('../utils/utils');
 
-import { Enemy, Module, Operator, Range, Skill, Stage, StageData, StageInfo } from "./types";
+import { Enemy, Module, Operator, Range, Skill, Skin, Stage, StageData, StageInfo } from "./types";
 
 const professions: { [key: string]: string } = {
     PIONEER: 'Vanguard',
@@ -536,6 +536,45 @@ module.exports = {
 
         return { embeds: [embed], files: [image, avatar], components: [rowOne, rowTwo] };
     },
+    skinEmbed(operator: Operator, page: number) {
+        const skinDict: { [key: string]: Skin[] } = fetchSkins();
+
+        const skins = skinDict[operator.id];
+        const skin = skins[page];
+        const skinsNum = skins.length;
+        console.log(skins);
+        const displaySkin = skin.displaySkin;
+        const portraitId = skin.portraitId;
+
+        const avatar = new AttachmentBuilder(`./${operatorAvatarPath}/${operator.id}.png`);
+        const image = new AttachmentBuilder(`./${operatorImagePath}/${portraitId}.png`);
+
+        const skinName = displaySkin.skinName;
+        const skinGroupName = displaySkin.skinGroupName.split('/')[0];
+        const name = skinName === null ? skinGroupName : `${skinGroupName} - ${skinName}`;
+
+        const embed = new EmbedBuilder()
+            .setColor(0xebca60)
+            .setAuthor({ name: operator.data.name, iconURL: `attachment://${operator.id}.png` })
+            .setTitle(`${name}`)
+            .setImage(`attachment://${portraitId.split('#').join('')}.png`);
+
+
+        const buttonArr = [];
+        for (let i = 0; i < skinsNum; i++) {
+            buttonArr[i] = new ButtonBuilder()
+                .setCustomId(`l${i + 1}`)
+                .setLabel(skins[i].displaySkin.skinGroupName)
+                .setStyle(ButtonStyle.Primary);
+            if (i === page) {
+                buttonArr[i].setDisabled(true);
+            }
+        }
+
+        const pageRow = new ActionRowBuilder().addComponents(buttonArr);
+
+        return { embeds: [embed], files: [image, avatar], components: [pageRow] };
+    },
     stageEmbed(stage: Stage, isChallenge: boolean) {
         const enemyDict: { [key: string]: Enemy } = fetchEnemies();
 
@@ -543,6 +582,9 @@ module.exports = {
         const stageData = isChallenge ? stage.challenge.levels : stage.normal.levels;
 
         const titleString = isChallenge ? `Challenge ${stageInfo.code} - ${stageInfo.name}` : `${stageInfo.code} - ${stageInfo.name}`;
+
+        // TODO: find some other way of getting stage images
+        const image = new AttachmentBuilder(`${stageImagePath}/${stageInfo.stageId}.png`);
 
         const stageEnemies = stageData.enemyDbRefs;
         let enemyString = '', eliteString = '', bossString = '';
@@ -566,7 +608,8 @@ module.exports = {
 
         const embed = new EmbedBuilder()
             .setColor(0xebca60)
-            .setTitle(titleString);
+            .setTitle(titleString)
+            .setImage(`attachment://${stageInfo.stageId}.png`);
 
         if (enemyString != '') {
             embed.addFields({ name: 'Enemies', value: enemyString, inline: true });
@@ -578,9 +621,6 @@ module.exports = {
             embed.addFields({ name: 'Leaders', value: bossString, inline: false });
         }
 
-        // TODO: find some other way of getting stage images
-        const image = new AttachmentBuilder(`${stageImagePath}/${stageInfo.stageId}.png`);
-        embed.setImage(`attachment://${stageInfo.stageId}.png`);
         return { embeds: [embed], files: [image] };
     }
 }

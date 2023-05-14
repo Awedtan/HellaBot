@@ -405,6 +405,50 @@ export type Skill = {
     }[];
 };
 
+export type Skin = {
+    skinId: string;
+    charId: string;
+    tokenSkinMap: {
+        tokenId: string;
+        tokenSkinId: string;
+    }[];
+    illustId: string;
+    dynIllustId: string;
+    avatarId: string;
+    portraitId: string;
+    dynPortraitId: string;
+    dynEntranceId: string;
+    buildingId: string;
+    battleSkin: {
+        overwritePrefab: boolean;
+        skinOrPrefabId: string;
+    };
+    isBuySkin: boolean;
+    tmplId: string;
+    voiceId: string;
+    voiceType: string;
+    displaySkin: {
+        skinName: string;
+        colorList: [string, string, string, string, string];
+        titleList: [string, string];
+        modelName: string;
+        drawerName: string;
+        skinGroupId: string;
+        skinGroupName: string;
+        skinGroupSortIndex: number;
+        content: string;
+        dialog: string;
+        usage: string;
+        description: string;
+        obtainApproach: string;
+        sortId: number;
+        displayTagId: string;
+        getTime: number;
+        onYear: number;
+        onPeriod: number;
+    };
+};
+
 export type Stage = {
     normal: { excel: StageInfo, levels: StageData };
     challenge: { excel: StageInfo, levels: StageData };

@@ -1,6 +1,6 @@
 const { dataPath } = require('../../paths.json');
 
-import { Enemy, Module, Operator, Range, Skill, Stage, StageData, StageInfo } from "./types";
+import { Enemy, Module, Operator, Range, Skill, Skin, Stage, StageData, StageInfo } from "./types";
 
 const archetypeDict: { [key: string]: string } = {};
 const enemyDict: { [key: string]: Enemy } = {};
@@ -8,7 +8,7 @@ const moduleDict: { [key: string]: Module } = {};
 const operatorDict: { [key: string]: Operator } = {};
 const rangeDict: { [key: string]: Range } = {};
 const skillDict: { [key: string]: Skill } = {};
-// const skinDict = {};
+const skinDict: { [key: string]: Skin[] } = {};
 const stageDict: { [key: string]: Stage } = {};
 
 type SubProf = {
@@ -25,7 +25,7 @@ module.exports = {
         initOperators();
         initRanges();
         initSkills();
-        // initSkins();
+        initSkins();
         initStages();
     },
     fetchArchetypes() {
@@ -46,9 +46,9 @@ module.exports = {
     fetchSkills() {
         return skillDict;
     },
-    // fetchSkins() {
-    //     return skinDict;
-    // },
+    fetchSkins() {
+        return skinDict;
+    },
     fetchStages() {
         return stageDict;
     }
@@ -156,27 +156,20 @@ function initSkills() {
     }
 }
 
-// function initSkins() {
-//     const { charSkins } = require(`${dataPath}/excel/skin_table.json`);
+function initSkins() {
+    const skinTable: { [key: string]: any } = require(`${dataPath}/excel/skin_table.json`);
+    const charSkins: { [key: string]: Skin } = skinTable.charSkins;
+    {
+        for (const skin of Object.values(charSkins)) {
+            const opId = skin.charId;
 
-//     for (const skin of Object.values(charSkins)) {
-//         try {
-//             if (skin.displaySkin.modelName === null) {
-//                 return;
-//             }
-
-//             const modelName = skin.displaySkin.modelName.toLowerCase();
-
-//             if (skinDict[modelName] === undefined) {
-//                 skinDict[modelName] = [];
-//             }
-
-//             skinDict[modelName].push(skin);
-//         } catch (e) {
-//             console.log(e);
-//         }
-//     }
-// }
+            if (!skinDict.hasOwnProperty(opId)) {
+                skinDict[opId] = [];
+            }
+            skinDict[opId].push(skin);
+        }
+    }
+}
 
 // Read stage data from stage_table and individual stage files
 // Stores data in stageDict[stage] = {excel, levels}
