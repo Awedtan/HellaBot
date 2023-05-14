@@ -1,10 +1,12 @@
 {
     "iconPath": "icon.png",
     "dataPath": "../../ArknightsGameData/en_US/gamedata",
+    "eliteImagePath": "Arknight-Images/ui/elite",
     "enemyImagePath": "Arknight-Images/enemy",
     "moduleImagePath": "Arknight-Images/equip/icon",
     "operatorImagePath": "Arknight-Images/characters",
     "operatorAvatarPath": "Arknight-Images/avatars",
     "skillImagePath": "Arknight-Images/skills",
+    "skinGroupPath": "images/skingroups",
     "stageImagePath": "images/stages"
 }

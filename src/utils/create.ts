@@ -1,9 +1,9 @@
-const { enemyImagePath, moduleImagePath, operatorAvatarPath, operatorImagePath, skillImagePath, stageImagePath } = require('../../paths.json');
+const { eliteImagePath, enemyImagePath, moduleImagePath, operatorAvatarPath, operatorImagePath, stageImagePath, skillImagePath, skinGroupPath } = require('../../paths.json');
 const { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } = require('discord.js');
 const { fetchArchetypes, fetchEnemies, fetchModules, fetchRanges, fetchSkills, fetchSkins } = require('../utils/fetchData');
 const { formatTextBlackboardTags } = require('../utils/utils');
 
-import { Enemy, Module, Operator, Range, Skill, Skin, Stage, StageData, StageInfo } from "./types";
+import { Enemy, Module, Operator, Range, Skill, Skin, Stage } from "./types";
 
 const professions: { [key: string]: string } = {
     PIONEER: 'Vanguard',
@@ -20,6 +20,11 @@ const skillTypes = ['Passive', 'Manual Trigger', 'Auto Trigger'];
 const spTypes = [undefined, 'Per Second', 'Offensive', undefined, 'Defensive', undefined, undefined, undefined, 'Passive'];
 
 module.exports = {
+    authorField(op: Operator) {
+        const urlName = op.data.name.toLowerCase().split(' the ').join('-').split('\'').join('').split(' ').join('-').split('ë').join('e').split('ł').join('l');
+        const authorField = { name: op.data.name, iconURL: `attachment://${op.id}.png`, url: `https://gamepress.gg/arknights/operator/${urlName}` };
+        return authorField;
+    },
     enemyEmbed(enemy: Enemy) {
         const enemyInfo = enemy.excel;
         const enemyData = enemy.levels.Value[0].enemyData;
@@ -197,6 +202,19 @@ module.exports = {
                 break;
             case 3:
                 artButton.setDisabled(true);
+
+                const skinEmbed = this.skinEmbed(op, currentPage);
+
+                for (const embed of skinEmbed.embeds) {
+                    embedArr.push(embed);
+                }
+                for (const file of skinEmbed.files) {
+                    fileArr.push(file);
+                }
+                for (const componentRow of skinEmbed.components) {
+                    componentRows.push(componentRow);
+                }
+
                 break;
             case 4:
                 baseButton.setDisabled(true);
@@ -207,14 +225,15 @@ module.exports = {
 
         return { embeds: embedArr, files: fileArr, components: componentRows };
     },
-    moduleEmbed(module: Module, level: number, operator: Operator) {
+    moduleEmbed(module: Module, level: number, op: Operator) {
         const moduleInfo = module.info;
         const moduleId = moduleInfo.uniEquipId;
         const moduleLevel = module.data.phases[level];
 
-        const avatar = new AttachmentBuilder(`./${operatorAvatarPath}/${operator.id}.png`);
+        const avatar = new AttachmentBuilder(`./${operatorAvatarPath}/${op.id}.png`);
         const image = new AttachmentBuilder(`./${moduleImagePath}/${moduleId}.png`);
 
+        const authorField = this.authorField(op);
         const name = `${moduleInfo.typeIcon.toUpperCase()} - ${moduleInfo.uniEquipName}`;
 
         let traitDescription = '', talentName = '', talentDescription = '';
@@ -245,7 +264,7 @@ module.exports = {
 
         const embed = new EmbedBuilder()
             .setColor(0xebca60)
-            .setAuthor({ name: operator.data.name, iconURL: `attachment://${operator.id}.png` })
+            .setAuthor(authorField)
             .setTitle(name)
             .setThumbnail(`attachment://${moduleId}.png`)
             .setDescription(traitDescription);
@@ -313,7 +332,7 @@ module.exports = {
         }
 
         const embedDescription = `**${professions[opData.profession]} - ${archetypeDict[opData.subProfessionId]}**\n${description}`;
-        const rangeField = this.rangeEmbedField(opMax.rangeId);
+        const rangeField = this.rangeField(opMax.rangeId);
 
         const embed = new EmbedBuilder()
             .setColor(0xebca60)
@@ -370,7 +389,7 @@ module.exports = {
 
         return { embeds: [embed], files: [avatar] };
     },
-    rangeEmbedField(rangeId: string) {
+    rangeField(rangeId: string) {
         const rangeDict: { [key: string]: Range } = fetchRanges();
         const range = rangeDict[rangeId];
         const rangeGrid = range.grids;
@@ -417,13 +436,14 @@ module.exports = {
         }
         return { name: 'Range', value: rangeString };
     },
-    skillEmbed(skill: Skill, level: number, operator: Operator) {
+    skillEmbed(skill: Skill, level: number, op: Operator) {
         const skillLevel = skill.levels[level];
 
-        const avatar = new AttachmentBuilder(`./${operatorAvatarPath}/${operator.id}.png`);
+        const avatar = new AttachmentBuilder(`./${operatorAvatarPath}/${op.id}.png`);
         const imagePath = skill.iconId === null ? skill.skillId : skill.iconId;
         const image = new AttachmentBuilder(`./${skillImagePath}/skill_icon_${imagePath}.png`);
 
+        const authorField = this.authorField(op);
         const name = `${skillLevel.name} - ${skillLevels[level]}`;
         const spCost = skillLevel.spData.spCost;
         const initSp = skillLevel.spData.initSp;
@@ -441,13 +461,13 @@ module.exports = {
 
         const embed = new EmbedBuilder()
             .setColor(0xebca60)
-            .setAuthor({ name: operator.data.name, iconURL: `attachment://${operator.id}.png` })
+            .setAuthor(authorField)
             .setTitle(name)
             .setThumbnail(`attachment://skill_icon_${imagePath.split(/\[|\]/).join('')}.png`)
             .setDescription(embedDescription);
 
         if (skillLevel.rangeId != null) {
-            const rangeField = this.rangeEmbedField(skillLevel.rangeId);
+            const rangeField = this.rangeField(skillLevel.rangeId);
             embed.addFields(rangeField);
         }
 
@@ -536,44 +556,81 @@ module.exports = {
 
         return { embeds: [embed], files: [image, avatar], components: [rowOne, rowTwo] };
     },
-    skinEmbed(operator: Operator, page: number) {
+    skinEmbed(op: Operator, page: number) {
         const skinDict: { [key: string]: Skin[] } = fetchSkins();
 
-        const skins = skinDict[operator.id];
+        const skins = skinDict[op.id];
         const skin = skins[page];
         const skinsNum = skins.length;
-        console.log(skins);
+
         const displaySkin = skin.displaySkin;
         const portraitId = skin.portraitId;
+        const skinGroupId = displaySkin.skinGroupId;
 
-        const avatar = new AttachmentBuilder(`./${operatorAvatarPath}/${operator.id}.png`);
+        const avatar = new AttachmentBuilder(`./${operatorAvatarPath}/${op.id}.png`);
         const image = new AttachmentBuilder(`./${operatorImagePath}/${portraitId}.png`);
 
+        const authorField = this.authorField(op);
         const skinName = displaySkin.skinName;
         const skinGroupName = displaySkin.skinGroupName.split('/')[0];
         const name = skinName === null ? skinGroupName : `${skinGroupName} - ${skinName}`;
 
         const embed = new EmbedBuilder()
             .setColor(0xebca60)
-            .setAuthor({ name: operator.data.name, iconURL: `attachment://${operator.id}.png` })
+            .setAuthor(authorField)
             .setTitle(`${name}`)
-            .setImage(`attachment://${portraitId.split('#').join('')}.png`);
+            .addFields({ name: `Artist`, value: displaySkin.drawerName })
+            .setImage(`attachment://${portraitId.split(/[#\+]/).join('')}.png`);
 
+        let thumbnail;
+        switch (skinGroupId) {
+            case 'ILLUST_0':
+                thumbnail = new AttachmentBuilder(`./${eliteImagePath}/0.png`);
+                embed.setThumbnail(`attachment://0.png`);
+                break;
+            case 'ILLUST_1':
+                thumbnail = new AttachmentBuilder(`./${eliteImagePath}/1.png`);
+                embed.setThumbnail(`attachment://1.png`);
+                break;
+            case 'ILLUST_2':
+                thumbnail = new AttachmentBuilder(`./${eliteImagePath}/2.png`);
+                embed.setThumbnail(`attachment://2.png`);
+                break;
+            case 'ILLUST_3':
+                thumbnail = new AttachmentBuilder(`./${eliteImagePath}/3.png`);
+                embed.setThumbnail(`attachment://3.png`);
+                break;
+            default:
+                thumbnail = new AttachmentBuilder(`./${skinGroupPath}/${skinGroupId}.png`);
+                embed.setThumbnail(`attachment://${skinGroupId.split(/[#\+]/).join('')}.png`);
+                break;
+        }
 
-        const buttonArr = [];
+        const defaultSkinArr = new ActionRowBuilder();
+        const skinArr = new ActionRowBuilder();
+        const components = [];
+
         for (let i = 0; i < skinsNum; i++) {
-            buttonArr[i] = new ButtonBuilder()
-                .setCustomId(`l${i + 1}`)
-                .setLabel(skins[i].displaySkin.skinGroupName)
+            const skinGroup = skins[i].displaySkin.skinGroupName;
+
+            const skillButton = new ButtonBuilder()
+                .setCustomId(`p${i + 1}`)
+                .setLabel(skinGroup)
                 .setStyle(ButtonStyle.Primary);
             if (i === page) {
-                buttonArr[i].setDisabled(true);
+                skillButton.setDisabled(true);
+            }
+
+            if (skinGroup === 'Default Outfit') {
+                defaultSkinArr.addComponents(skillButton);
+                components[0] = defaultSkinArr;
+            } else {
+                skinArr.addComponents(skillButton);
+                components[1] = skinArr;
             }
         }
 
-        const pageRow = new ActionRowBuilder().addComponents(buttonArr);
-
-        return { embeds: [embed], files: [image, avatar], components: [pageRow] };
+        return { embeds: [embed], files: [image, avatar, thumbnail], components: components };
     },
     stageEmbed(stage: Stage, isChallenge: boolean) {
         const enemyDict: { [key: string]: Enemy } = fetchEnemies();

@@ -1,11 +1,10 @@
 const { SlashCommandBuilder } = require('discord.js');
 const { fetchOperators, fetchSkins } = require('../utils/fetchData');
-const wait = require('node:timers/promises').setTimeout;
 const create = require('../utils/create');
 
-import { Module, Operator, Skin } from "../utils/types";
+import { Operator, Skin } from "../utils/types";
 
-const pageId: { [key: string]: number } = { l1: 0, l2: 1, l3: 2, l4: 3, l5: 4, l6: 5, l7: 6 };
+const pageId: { [key: string]: number } = { p1: 0, p2: 1, p3: 2, p4: 3, p5: 4, p6: 5, p7: 6, p8: 7, p9: 8 };
 
 module.exports = {
     data: new SlashCommandBuilder()

@@ -5,7 +5,7 @@ const create = require('../utils/create');
 import { Operator } from '../utils/types';
 
 const typeId: { [key: string]: number } = { null: 0, skills: 1, modules: 2, art: 3, base: 4 };
-const pageId: { [key: string]: number } = { p1: 0, p2: 1, p3: 2 };
+const pageId: { [key: string]: number } = { p1: 0, p2: 1, p3: 2, p4: 3, p5: 4, p6: 5, p7: 6, p8: 7, p9: 8 };
 const levelId: { [key: string]: number } = { l1: 0, l2: 1, l3: 2, l4: 3, l5: 4, l6: 5, l7: 6, m1: 7, m2: 8, m3: 9 };
 
 
