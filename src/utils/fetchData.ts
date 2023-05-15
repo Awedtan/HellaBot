@@ -1,8 +1,9 @@
 const { dataPath } = require('../../paths.json');
 
-import { Enemy, Module, Operator, Range, Skill, Skin, Stage, StageData, StageInfo } from "./types";
+import { Base, Enemy, Module, Operator, Range, Skill, Skin, Stage, StageData, StageInfo } from "./types";
 
 const archetypeDict: { [key: string]: string } = {};
+const baseDict: { [key: string]: Base } = {};
 const enemyDict: { [key: string]: Enemy } = {};
 const moduleDict: { [key: string]: Module } = {};
 const operatorDict: { [key: string]: Operator } = {};
@@ -20,16 +21,21 @@ type SubProf = {
 module.exports = {
     initializeAll() {
         initArchetypes();
+        initBases();
         initEnemies();
         initModules();
-        initOperators();
         initRanges();
         initSkills();
         initSkins();
         initStages();
+
+        initOperators();
     },
     fetchArchetypes() {
         return archetypeDict;
+    },
+    fetchBases() {
+        return baseDict;
     },
     fetchEnemies() {
         return enemyDict;
@@ -60,6 +66,15 @@ function initArchetypes() {
 
     for (const subProf of Object.values(subProfDict)) {
         archetypeDict[subProf.subProfessionId] = subProf.subProfessionName;
+    }
+}
+
+function initBases() {
+    const buildingData: { [key: string]: any } = require(`${dataPath}/excel/building_data.json`);
+    const buffs: { [key: string]: Base } = buildingData.buffs;
+
+    for (const buff of Object.values(buffs)) {
+        baseDict[buff.buffId] = buff;
     }
 }
 
@@ -105,19 +120,32 @@ function initModules() {
 }
 
 function initOperators() {
+    const buildingData: { [key: string]: any } = require(`${dataPath}/excel/building_data.json`);
     const operatorTable: { [key: string]: Operator['data'] } = require(`${dataPath}/excel/character_table.json`);
     const moduleTable: { [key: string]: any } = require(`${dataPath}/excel/uniequip_table.json`);
+
+    const chars: { [key: string]: any } = buildingData.chars;
     const charEquip: { [key: string]: string[] } = moduleTable.charEquip;
 
-    for (const operatorId of Object.keys(operatorTable)) {
-        const operatorData = operatorTable[operatorId];
-        const operatorName = operatorData.name.toLowerCase();
-        const operatorModules = charEquip.hasOwnProperty(operatorId) ? charEquip[operatorId] : null;
+    for (const opId of Object.keys(operatorTable)) {
+        const opData = operatorTable[opId];
+        const opName = opData.name.toLowerCase();
 
-        operatorDict[operatorId] = { data: operatorData, id: operatorId, modules: operatorModules };
-        if (!operatorDict.hasOwnProperty(operatorName)) {
-            operatorDict[operatorName] = operatorDict[operatorId];
-            operatorDict[operatorName.split('\'').join('')] = operatorDict[operatorId];
+        const opModules = charEquip.hasOwnProperty(opId) ? charEquip[opId] : [];
+        const opBases = [];
+
+        if (chars.hasOwnProperty(opId)) {
+            for (const baseData of chars[opId].buffChar) {
+                for (const data of baseData.buffData) {
+                    opBases.push(data.buffId);
+                }
+            }
+        }
+        operatorDict[opId] = { data: opData, id: opId, modules: opModules, bases: opBases };
+
+        if (!operatorDict.hasOwnProperty(opName)) {
+            operatorDict[opName] = operatorDict[opId];
+            operatorDict[opName.split('\'').join('')] = operatorDict[opId];
         }
     }
 

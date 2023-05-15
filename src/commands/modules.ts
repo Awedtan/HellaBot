@@ -24,7 +24,7 @@ module.exports = {
         if (operatorDict.hasOwnProperty(operatorName)) {
             const op = operatorDict[operatorName];
 
-            if (op.modules != null) {
+            if (op.modules.length != 0) {
                 let first = true;
 
                 for (const moduleId of op.modules) {
@@ -41,7 +41,7 @@ module.exports = {
                     else {
                         sendModuleEmbed(interaction.channel, module, op);
                     }
-                    await wait(200);
+                    await wait(100);
                 }
             }
             else {

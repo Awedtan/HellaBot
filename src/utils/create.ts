@@ -1,9 +1,9 @@
-const { eliteImagePath, enemyImagePath, moduleImagePath, operatorAvatarPath, operatorImagePath, stageImagePath, skillImagePath, skinGroupPath } = require('../../paths.json');
+const { baseImagePath, eliteImagePath, enemyImagePath, moduleImagePath, operatorAvatarPath, operatorImagePath, stageImagePath, skillImagePath, skinGroupPath } = require('../../paths.json');
 const { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } = require('discord.js');
 const { fetchArchetypes, fetchEnemies, fetchModules, fetchRanges, fetchSkills, fetchSkins } = require('../utils/fetchData');
 const { formatTextBlackboardTags } = require('../utils/utils');
 
-import { Enemy, Module, Operator, Range, Skill, Skin, Stage } from "./types";
+import { Base, Enemy, Module, Operator, Range, Skill, Skin, Stage } from "./types";
 
 const professions: { [key: string]: string } = {
     PIONEER: 'Vanguard',
@@ -24,6 +24,24 @@ module.exports = {
         const urlName = op.data.name.toLowerCase().split(' the ').join('-').split('\'').join('').split(' ').join('-').split('ë').join('e').split('ł').join('l');
         const authorField = { name: op.data.name, iconURL: `attachment://${op.id}.png`, url: `https://gamepress.gg/arknights/operator/${urlName}` };
         return authorField;
+    },
+    baseEmbed(base: Base, level: number, op: Operator) {
+        const name = base.buffName;
+
+        const avatar = new AttachmentBuilder(`./${operatorAvatarPath}/${op.id}.png`);
+        const image = new AttachmentBuilder(`./${baseImagePath}/${base.skillIcon}.png`);
+
+        const authorField = this.authorField(op);
+
+        const embed = new EmbedBuilder()
+            .setColor(0xebca60)
+            .setAuthor(authorField)
+            .setTitle(name)
+            .setThumbnail(`attachment://${base.skillIcon}.png`)
+            .setDescription(base.description);
+
+        return { embeds: [embed], files: [image, avatar], components: [] };
+
     },
     enemyEmbed(enemy: Enemy) {
         const enemyInfo = enemy.excel;

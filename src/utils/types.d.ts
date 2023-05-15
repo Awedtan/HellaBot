@@ -32,29 +32,79 @@ export type Blackboard = {
     valueStr: string;
 };
 
-export type Enemy = {
-    excel: EnemyInfo;
-    levels: EnemyData;
+export type Base = {
+    buffId: string;
+    buffName: string;
+    buffIcon: string;
+    skillIcon: string;
+    sortId: number;
+    buffColor: string;
+    textColor: string;
+    buffCategory: string;
+    roomType: string;
+    description: string;
 };
 
-type EnemyInfo = {
-    enemyId: string;
-    enemyIndex: string;
-    enemyTags: string[];
-    sortId: number;
-    name: string;
-    enemyRace: string;
-    enemyLevel: string;
-    description: string;
-    attackType: string;
-    endure: string;
-    attack: string;
-    defence: string;
-    resistance: string;
-    ability: string;
-    isInvalidKilled: boolean;
-    overrideKillCntInfos: {};
-    hideInHandbook: boolean;
+export type Enemy = {
+    excel: {
+        enemyId: string;
+        enemyIndex: string;
+        enemyTags: string[];
+        sortId: number;
+        name: string;
+        enemyRace: string;
+        enemyLevel: string;
+        description: string;
+        attackType: string;
+        endure: string;
+        attack: string;
+        defence: string;
+        resistance: string;
+        ability: string;
+        isInvalidKilled: boolean;
+        overrideKillCntInfos: {};
+        hideInHandbook: boolean;
+    };
+    levels: {
+        Key: string;
+        Value: {
+            level: number;
+            enemyData: {
+                name: {
+                    m_defined: boolean;
+                    m_value: string;
+                };
+                description: {
+                    m_defined: boolean;
+                    m_value: string;
+                };
+                prefabKey: {
+                    m_defined: boolean;
+                    m_value: string;
+                };
+                attributes: EnemyAttributes;
+                lifePointReduce: {
+                    m_defined: boolean;
+                    m_value: number;
+                };
+                levelType: {
+                    m_defined: boolean;
+                    m_value: number;
+                };
+                rangeRadius: {
+                    m_defined: boolean;
+                    m_value: number;
+                };
+                numOfExtraDrops: {
+                    m_defined: boolean;
+                    m_value: number;
+                };
+                talentBlackboard: Blackboard[];
+                skills: EnemySkills[];
+                spData: EnemySpData;
+            };
+        }[];
+    };
 };
 
 type EnemyAttributes = {
@@ -160,47 +210,6 @@ type EnemySpData = {
     increment: number;
 };
 
-type EnemyData = {
-    Key: string;
-    Value: {
-        level: number;
-        enemyData: {
-            name: {
-                m_defined: boolean;
-                m_value: string;
-            };
-            description: {
-                m_defined: boolean;
-                m_value: string;
-            };
-            prefabKey: {
-                m_defined: boolean;
-                m_value: string;
-            };
-            attributes: EnemyAttributes;
-            lifePointReduce: {
-                m_defined: boolean;
-                m_value: number;
-            };
-            levelType: {
-                m_defined: boolean;
-                m_value: number;
-            };
-            rangeRadius: {
-                m_defined: boolean;
-                m_value: number;
-            };
-            numOfExtraDrops: {
-                m_defined: boolean;
-                m_value: number;
-            };
-            talentBlackboard: Blackboard[];
-            skills: EnemySkills[];
-            spData: EnemySpData;
-        };
-    }[];
-};
-
 type LevelUpCost = {
     id: string;
     count: number;
@@ -280,9 +289,10 @@ type ModuleData = {
 };
 
 export type Operator = {
-    data: OperatorData;
     id: string;
+    data: OperatorData;
     modules: string[];
+    bases: string[];
 };
 
 type OperatorUnlockCond = {

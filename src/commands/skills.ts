@@ -37,7 +37,7 @@ module.exports = {
                     else {
                         sendSkillEmbed(interaction.channel, skill, op);
                     }
-                    await wait(200);
+                    await wait(100);
                 }
             }
             else {
