@@ -1,6 +1,6 @@
 const { dataPath } = require('../../paths.json');
 
-import { Base, Enemy, Module, Operator, Range, Skill, Skin, Stage, StageData, StageInfo } from "./types";
+import { Base, BaseInfo, Enemy, Module, Operator, Range, Skill, Skin, Stage, StageData, StageInfo } from "./types";
 
 const archetypeDict: { [key: string]: string } = {};
 const baseDict: { [key: string]: Base } = {};
@@ -78,15 +78,16 @@ function initBases() {
     }
 }
 
-// Brute force matches between enemy_handbook_table and enemy_database
-// Stores data in enemyDict[enemy] = {excel, levels}
-//      excel = /excel/enemy_handbook_table.json
-//          Contains name, ID, category, description
-//      levels = /levels/enemydata/enemy_database.json
-//          Contains stats, skills, range
-// Unique enemy key is enemyId (enemy_1007_slime)
-// Additional keys are name (Originium Slug) and enemyIndex (B1)
 function initEnemies() {
+    // Brute force matches between enemy_handbook_table and enemy_database
+    // Stores data in enemyDict[enemy] = {excel, levels}
+    //      excel = /excel/enemy_handbook_table.json
+    //          Contains name, ID, category, description
+    //      levels = /levels/enemydata/enemy_database.json
+    //          Contains stats, skills, range
+    // Unique enemy key is enemyId (enemy_1007_slime)
+    // Additional keys are name (Originium Slug) and enemyIndex (B1)
+
     const enemyHandbook: { [key: string]: Enemy['excel'] } = require(`${dataPath}/excel/enemy_handbook_table.json`);
     const enemyDatabase: { [key: string]: Enemy['levels'][] } = require(`${dataPath}/levels/enemydata/enemy_database.json`);
     const enemies = enemyDatabase.enemies;
@@ -132,12 +133,12 @@ function initOperators() {
         const opName = opData.name.toLowerCase();
 
         const opModules = charEquip.hasOwnProperty(opId) ? charEquip[opId] : [];
-        const opBases = [];
+        const opBases: BaseInfo[] = [];
 
         if (chars.hasOwnProperty(opId)) {
-            for (const baseData of chars[opId].buffChar) {
-                for (const data of baseData.buffData) {
-                    opBases.push(data.buffId);
+            for (const buff of chars[opId].buffChar) {
+                for (const baseData of buff.buffData) {
+                    opBases.push(baseData);
                 }
             }
         }
@@ -199,17 +200,18 @@ function initSkins() {
     }
 }
 
-// Read stage data from stage_table and individual stage files
-// Stores data in stageDict[stage] = {excel, levels}
-//      excel = /excel/stage_table.json
-//          Contains name, code, description, sanity, drops
-//      levels = /levels/{levelId}.json
-//          Contains layout, pathing, enemy types, enemy waves
-// Unique stage key is name (Collapse)
-// Additional key is code (0-1), note: annihalation stages don't have codes
-// stageId and levelId are inconsistent between chapters, do not use!
-// TODO: add roguelike, sss, anything not stored in stage_table.json
 function initStages() {
+    // Read stage data from stage_table and individual stage files
+    // Stores data in stageDict[stage] = {excel, levels}
+    //      excel = /excel/stage_table.json
+    //          Contains name, code, description, sanity, drops
+    //      levels = /levels/{levelId}.json
+    //          Contains layout, pathing, enemy types, enemy waves
+    // Unique stage key is name (Collapse)
+    // Additional key is code (0-1), note: annihalation stages don't have codes
+    // stageId and levelId are inconsistent between chapters, do not use!
+    // TODO: add roguelike, sss, anything not stored in stage_table.json
+
     const stageTable: { [key: string]: any } = require(`${dataPath}/excel/stage_table.json`);
     const stages: { [key: string]: StageInfo } = stageTable.stages;
 

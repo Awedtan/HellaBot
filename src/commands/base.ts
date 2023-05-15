@@ -3,9 +3,7 @@ const { fetchBases, fetchOperators } = require('../utils/fetchData');
 const wait = require('node:timers/promises').setTimeout;
 const create = require('../utils/create');
 
-import { Base, Operator } from "../utils/types";
-
-const levelId: { [key: string]: number } = { l1: 0, l2: 1, l3: 2 };
+import { Base, BaseInfo, Operator } from "../utils/types";
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -25,15 +23,15 @@ module.exports = {
             const op = operatorDict[operatorName];
 
             let first = true;
-            for (const baseId of op.bases) {
-                const base = baseBuffDict[baseId];
+            for (const baseInfo of op.bases) {
+                const base = baseBuffDict[baseInfo.buffId];
 
                 if (first) {
-                    replyBaseEmbed(interaction, base, op);
+                    replyBaseEmbed(interaction, base, baseInfo, op);
                     first = false;
                 }
                 else {
-                    sendBaseEmbed(interaction.channel, base, op);
+                    sendBaseEmbed(interaction.channel, base, baseInfo, op);
                 }
                 await wait(100);
             }
@@ -44,21 +42,19 @@ module.exports = {
     }
 }
 
-async function replyBaseEmbed(interaction, base: Base, operator: Operator) {
-    let level = 0;
-    const baseEmbed = create.baseEmbed(base, level, operator);
+async function replyBaseEmbed(interaction, base: Base, baseInfo: BaseInfo, operator: Operator) {
+    const baseEmbed = create.baseEmbed(base, baseInfo, operator);
     let response = await interaction.reply(baseEmbed);
 
     while (true) {
         try {
             const confirm = await response.awaitMessageComponent({ time: 300000 });
-            level = levelId[confirm.customId];
             try {
                 await confirm.update({ content: '' });
             } catch (e) {
                 continue;
             }
-            response = await response.edit(create.baseEmbed(base, level, operator));
+            response = await response.edit(create.baseEmbed(base, baseInfo, operator));
         } catch (e) {
             console.log(e);
             await response.edit({ embeds: baseEmbed.embeds, files: baseEmbed.files, components: [] });
@@ -67,21 +63,19 @@ async function replyBaseEmbed(interaction, base: Base, operator: Operator) {
     }
 }
 
-async function sendBaseEmbed(channel, base: Base, operator: Operator) {
-    let level = 0;
-    const baseEmbed = create.baseEmbed(base, level, operator);
+async function sendBaseEmbed(channel, base: Base, baseInfo: BaseInfo, operator: Operator) {
+    const baseEmbed = create.baseEmbed(base, baseInfo, operator);
     let response = await channel.send(baseEmbed);
 
     while (true) {
         try {
             const confirm = await response.awaitMessageComponent({ time: 300000 });
-            level = levelId[confirm.customId];
             try {
                 await confirm.update({ content: '' });
             } catch (e) {
                 continue;
             }
-            response = await response.edit(create.baseEmbed(base, level, operator));
+            response = await response.edit(create.baseEmbed(base, baseInfo, operator));
         } catch (e) {
             console.log(e);
             await response.edit({ embeds: baseEmbed.embeds, files: baseEmbed.files, components: [] });

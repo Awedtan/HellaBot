@@ -1,8 +1,10 @@
-const { fetchRanges } = require('./fetchData');
-
 import { Blackboard, Range } from "./types";
 
 module.exports = {
+    cleanFilename(text: string) {
+        text = text.split(/[#\+]|&|\[|\]/).join('');
+        return text;
+    },
     formatTextBlackboardTags(text: string, blackboard: Blackboard[]) {
         const skillKeys: { [key: string]: number | string } = {};
         for (const stat of blackboard) {
@@ -18,10 +20,10 @@ module.exports = {
         }
 
         const endTagRegex = /<\/>/;
-        const tagRegex = /<.ba\.[^<]+>|:0%|:0|:0.0%|-/;
+        const tagRegex = /<.ba\.[^<]+>|<.cc\.[^<]+>|:0%|:0|:0.0%/;
         text = text.split(endTagRegex).join('').split(tagRegex).join('');
 
-        const temp = text.split(/{|}/);
+        const temp = text.split(/-?{-?|}/);
 
         for (let i = 0; i < temp.length; i++) {
             if (skillKeys.hasOwnProperty(temp[i].toLowerCase())) {

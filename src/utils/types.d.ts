@@ -45,6 +45,11 @@ export type Base = {
     description: string;
 };
 
+export type BaseInfo = {
+    buffId: string,
+    cond: OperatorUnlockCond
+};
+
 export type Enemy = {
     excel: {
         enemyId: string;
@@ -292,7 +297,7 @@ export type Operator = {
     id: string;
     data: OperatorData;
     modules: string[];
-    bases: string[];
+    bases: BaseInfo[];
 };
 
 type OperatorUnlockCond = {

@@ -1,10 +1,11 @@
 const { baseImagePath, eliteImagePath, enemyImagePath, moduleImagePath, operatorAvatarPath, operatorImagePath, stageImagePath, skillImagePath, skinGroupPath } = require('../../paths.json');
 const { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } = require('discord.js');
-const { fetchArchetypes, fetchEnemies, fetchModules, fetchRanges, fetchSkills, fetchSkins } = require('../utils/fetchData');
-const { formatTextBlackboardTags } = require('../utils/utils');
+const { fetchArchetypes, fetchBases, fetchEnemies, fetchModules, fetchRanges, fetchSkills, fetchSkins } = require('../utils/fetchData');
+const { cleanFilename, formatTextBlackboardTags } = require('../utils/utils');
 
-import { Base, Enemy, Module, Operator, Range, Skill, Skin, Stage } from "./types";
+import { Base, BaseInfo, Enemy, Module, Operator, Range, Skill, Skin, Stage } from "./types";
 
+const eliteLevels = ['E0', 'E1', 'E2', 'E3'];
 const professions: { [key: string]: string } = {
     PIONEER: 'Vanguard',
     WARRIOR: 'Guard',
@@ -25,20 +26,22 @@ module.exports = {
         const authorField = { name: op.data.name, iconURL: `attachment://${op.id}.png`, url: `https://gamepress.gg/arknights/operator/${urlName}` };
         return authorField;
     },
-    baseEmbed(base: Base, level: number, op: Operator) {
-        const name = base.buffName;
+    baseEmbed(base: Base, baseInfo: BaseInfo, op: Operator) {
+        const baseCond = baseInfo.cond;
 
         const avatar = new AttachmentBuilder(`./${operatorAvatarPath}/${op.id}.png`);
         const image = new AttachmentBuilder(`./${baseImagePath}/${base.skillIcon}.png`);
 
+        const name = `${base.buffName} - ${eliteLevels[baseCond.phase]} Lv${baseCond.level}`;
         const authorField = this.authorField(op);
+        const description = formatTextBlackboardTags(base.description, []);
 
         const embed = new EmbedBuilder()
             .setColor(0xebca60)
             .setAuthor(authorField)
             .setTitle(name)
-            .setThumbnail(`attachment://${base.skillIcon}.png`)
-            .setDescription(base.description);
+            .setThumbnail(`attachment://${cleanFilename(base.skillIcon)}.png`)
+            .setDescription(description);
 
         return { embeds: [embed], files: [image, avatar], components: [] };
 
@@ -118,7 +121,7 @@ module.exports = {
             skillsButton.setStyle(ButtonStyle.Secondary);
             skillsButton.setDisabled(true);
         }
-        if (op.modules == null) {
+        if (op.modules.length == 0) {
             modulesButton.setStyle(ButtonStyle.Secondary);
             modulesButton.setDisabled(true);
         }
@@ -236,6 +239,23 @@ module.exports = {
                 break;
             case 4:
                 baseButton.setDisabled(true);
+
+                for (const baseInfo of op.bases) {
+                    const baseDict = fetchBases();
+                    const base = baseDict[baseInfo.buffId];
+                    const baseEmbed = this.baseEmbed(base, baseInfo, op);
+
+                    for (const embed of baseEmbed.embeds) {
+                        embedArr.push(embed);
+                    }
+                    for (const file of baseEmbed.files) {
+                        fileArr.push(file);
+                    }
+                    for (const componentRow of baseEmbed.components) {
+                        componentRows.push(componentRow);
+                    }
+                }
+
                 break;
         }
 
@@ -252,7 +272,7 @@ module.exports = {
         const image = new AttachmentBuilder(`./${moduleImagePath}/${moduleId}.png`);
 
         const authorField = this.authorField(op);
-        const name = `${moduleInfo.typeIcon.toUpperCase()} - ${moduleInfo.uniEquipName}`;
+        const name = `${moduleInfo.typeIcon.toUpperCase()} ${moduleInfo.uniEquipName} - Lv${level + 1}`;
 
         let traitDescription = '', talentName = '', talentDescription = '';
         for (const part of moduleLevel.parts) {
@@ -339,8 +359,6 @@ module.exports = {
             name += '★';
         }
 
-        const urlName = opData.name.toLowerCase().split(' the ').join('-').split('\'').join('').split(' ').join('-').split('ë').join('e').split('ł').join('l');
-
         let description = formatTextBlackboardTags(opData.description, []);
         if (opData.trait != null) {
             const candidate = opData.trait.candidates[opData.trait.candidates.length - 1];
@@ -356,7 +374,7 @@ module.exports = {
             .setColor(0xebca60)
             .setTitle(name)
             .setThumbnail(`attachment://${opId}.png`)
-            .setURL(`https://gamepress.gg/arknights/operator/${urlName}`)
+            .setURL(this.authorField(op).url)
             .setDescription(embedDescription)
             .addFields(rangeField);
 
@@ -481,7 +499,7 @@ module.exports = {
             .setColor(0xebca60)
             .setAuthor(authorField)
             .setTitle(name)
-            .setThumbnail(`attachment://skill_icon_${imagePath.split(/\[|\]/).join('')}.png`)
+            .setThumbnail(`attachment://skill_icon_${cleanFilename(imagePath)}.png`)
             .setDescription(embedDescription);
 
         if (skillLevel.rangeId != null) {
@@ -590,7 +608,7 @@ module.exports = {
 
         const authorField = this.authorField(op);
         const skinName = displaySkin.skinName;
-        const skinGroupName = displaySkin.skinGroupName.split('/')[0];
+        const skinGroupName = displaySkin.skinGroupName;
         const name = skinName === null ? skinGroupName : `${skinGroupName} - ${skinName}`;
 
         const embed = new EmbedBuilder()
@@ -598,7 +616,7 @@ module.exports = {
             .setAuthor(authorField)
             .setTitle(`${name}`)
             .addFields({ name: `Artist`, value: displaySkin.drawerName })
-            .setImage(`attachment://${portraitId.split(/[#\+]/).join('')}.png`);
+            .setImage(`attachment://${cleanFilename(portraitId)}.png`);
 
         let thumbnail;
         switch (skinGroupId) {
