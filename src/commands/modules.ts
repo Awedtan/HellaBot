@@ -21,35 +21,29 @@ module.exports = {
         const moduleDict: { [key: string]: Module } = fetchModules();
         const operatorName = interaction.options.getString('name').toLowerCase();
 
-        if (operatorDict.hasOwnProperty(operatorName)) {
-            const op = operatorDict[operatorName];
+        if (!operatorDict.hasOwnProperty(operatorName))
+            return await interaction.reply('That operator doesn\'t exist!');
 
-            if (op.modules.length != 0) {
-                let first = true;
+        const op = operatorDict[operatorName];
 
-                for (const moduleId of op.modules) {
-                    if (moduleId.indexOf('uniequip_001') != -1) {
-                        continue;
-                    }
+        if (op.modules.length != 0)
+            return await interaction.reply('That operator doesn\'t have any modules!');
 
-                    const module = moduleDict[moduleId];
+        let first = true;
 
-                    if (first) {
-                        replyModuleEmbed(interaction, module, op);
-                        first = false;
-                    }
-                    else {
-                        sendModuleEmbed(interaction.channel, module, op);
-                    }
-                    await wait(100);
-                }
+        for (const moduleId of op.modules) {
+            if (moduleId.indexOf('uniequip_001') != -1) continue;
+
+            const module = moduleDict[moduleId];
+
+            if (first) {
+                replyModuleEmbed(interaction, module, op);
+                first = false;
             }
             else {
-                await interaction.reply('That operator doesn\'t have any modules!');
+                sendModuleEmbed(interaction.channel, module, op);
             }
-        }
-        else {
-            await interaction.reply('That operator doesn\'t exist!');
+            await wait(100);
         }
     }
 }

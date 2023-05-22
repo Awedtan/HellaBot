@@ -19,25 +19,23 @@ module.exports = {
         const baseBuffDict: { [key: string]: Base } = fetchBases();
         const operatorName = interaction.options.getString('name').toLowerCase();
 
-        if (operatorDict.hasOwnProperty(operatorName)) {
-            const op = operatorDict[operatorName];
+        if (!operatorDict.hasOwnProperty(operatorName))
+            return await interaction.reply('That operator doesn\'t exist!');
 
-            let first = true;
-            for (const baseInfo of op.bases) {
-                const base = baseBuffDict[baseInfo.buffId];
+        const op = operatorDict[operatorName];
 
-                if (first) {
-                    replyBaseEmbed(interaction, base, baseInfo, op);
-                    first = false;
-                }
-                else {
-                    sendBaseEmbed(interaction.channel, base, baseInfo, op);
-                }
-                await wait(100);
+        let first = true;
+        for (const baseInfo of op.bases) {
+            const base = baseBuffDict[baseInfo.buffId];
+
+            if (first) {
+                replyBaseEmbed(interaction, base, baseInfo, op);
+                first = false;
             }
-        }
-        else {
-            await interaction.reply('That operator doesn\'t exist!');
+            else {
+                sendBaseEmbed(interaction.channel, base, baseInfo, op);
+            }
+            await wait(100);
         }
     }
 }

@@ -21,14 +21,11 @@ module.exports = {
         const operatorDict: { [key: string]: Operator } = fetchOperators();
         const operatorName = interaction.options.getString('name').toLowerCase();
 
-        if (operatorDict.hasOwnProperty(operatorName)) {
-            const operator = operatorDict[operatorName];
+        if (!operatorDict.hasOwnProperty(operatorName))
+            return await interaction.reply('That operator doesn\'t exist!');
 
-            await replyInfoEmbed(interaction, operator);
-        }
-        else {
-            await interaction.reply('That operator doesn\'t exist!');
-        }
+        const operator = operatorDict[operatorName];
+        await replyInfoEmbed(interaction, operator);
     }
 }
 

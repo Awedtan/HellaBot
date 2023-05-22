@@ -2,23 +2,61 @@ const { baseImagePath, eliteImagePath, enemyImagePath, moduleImagePath, operator
 const { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } = require('discord.js');
 const { fetchArchetypes, fetchBases, fetchEnemies, fetchModules, fetchRanges, fetchSkills, fetchSkins } = require('../utils/fetchData');
 const { cleanFilename, formatTextBlackboardTags } = require('../utils/utils');
+const fs = require('fs');
 
 import { Base, BaseInfo, Enemy, Module, Operator, Range, Skill, Skin, Stage } from "./types";
 
 const eliteLevels = ['E0', 'E1', 'E2', 'E3'];
-const professions: { [key: string]: string } = {
-    PIONEER: 'Vanguard',
-    WARRIOR: 'Guard',
-    TANK: 'Defender',
-    SNIPER: 'Sniper',
-    CASTER: 'Caster',
-    MEDIC: 'Medic',
-    SUPPORT: 'Supporter',
-    SPECIAL: 'Specialist'
-};
+const professions: { [key: string]: string } = { PIONEER: 'Vanguard', WARRIOR: 'Guard', TANK: 'Defender', SNIPER: 'Sniper', CASTER: 'Caster', MEDIC: 'Medic', SUPPORT: 'Supporter', SPECIAL: 'Specialist' };
 const skillLevels = ['Lv1', 'Lv2', 'Lv3', 'Lv4', 'Lv5', 'Lv6', 'Lv7', 'M1', 'M2', 'M3'];
 const skillTypes = ['Passive', 'Manual Trigger', 'Auto Trigger'];
 const spTypes = [undefined, 'Per Second', 'Offensive', undefined, 'Defensive', undefined, undefined, undefined, 'Passive'];
+const tileDict = {
+    tile_bigforce: { emoji: '💪', name: 'Specialist Tactical Point' },
+    tile_corrosion: { emoji: '💔', name: 'Corrosive Ground' },
+    tile_deepwater: { emoji: '🔷', name: 'Deep Water Zone' },
+    tile_defup: { emoji: '🛡️', name: 'Defensive Rune' },
+    tile_end: { emoji: '🟦', name: 'Protection Objective' },
+    tile_fence: { emoji: '🟫', name: 'Fence' },
+    tile_fence_bound: { emoji: '🟫', name: 'Fence' },
+    tile_floor: { emoji: '🟨', name: 'Non-deployable Area' },
+    tile_flystart: { emoji: '🔴', name: 'Aerial Unit Incursion Point' },
+    tile_forbidden: { emoji: '⬛', name: 'No Entry Zone' },
+    tile_gazebo: { emoji: '🔫', name: 'Anti-Air Rune' },
+    tile_grass: { emoji: '🌱', name: 'Bush' },
+    tile_healing: { emoji: '💟', name: 'Medical Rune' },
+    tile_hole: { emoji: '🔳', name: 'Hole' },
+    tile_infection: { emoji: '☢️', name: 'Active Originium' },
+    tile_rcm_crate: { emoji: '❎', name: 'Recommended Roadblock Point' },
+    tile_rcm_operator: { emoji: '❎', name: 'Recommended Deployment Point' },
+    tile_road: { emoji: '🟩', name: 'Flat Ground' },
+    tile_shallowwater: { emoji: '💧', name: 'Shallow Water Zone' },
+    tile_start: { emoji: '🟥', name: 'Incursion Point' },
+    tile_telin: { emoji: '🔻', name: 'Tunnel Entry' },
+    tile_telout: { emoji: '🔺', name: 'Tunnel Exit' },
+    tile_volcano: { emoji: '🔥', name: 'Heat Pump Passage' },
+    tile_volspread: { emoji: '🌋', name: 'Lava Crack' },
+    tile_wall: { emoji: '⬜', name: 'High Ground' },
+    tile_defbreak: { emoji: '💔', name: 'Corrosive Ground' },
+    tile_smog: { emoji: '☁️', name: 'Exhaust Grille' },
+    tile_yinyang_road: { emoji: '☯️', name: 'Mark of Hui and Ming (Road)' },
+    tile_yinyang_wall: { emoji: '☯️', name: 'Mark of Hui and Ming (Wall)' },
+    tile_yinyang_switch: { emoji: '☯️', name: 'Mark of Dusk and Dawn' },
+    tile_poison: { emoji: '☠️', name: 'Gas Spray' },
+    tile_deepsea: { emoji: '🔷', name: 'Deep Water Zone' },
+    tile_icestr: { emoji: '🧊', name: 'Icy Surface' },
+    tile_icestr_lb: { emoji: '🧊', name: 'Icy Corner' },
+    tile_icestr_lt: { emoji: '🧊', name: 'Icy Corner' },
+    tile_icestr_rb: { emoji: '🧊', name: 'Icy Corner' },
+    tile_icestr_rt: { emoji: '🧊', name: 'Icy Corner' },
+    tile_magic_circle: { emoji: '✨', name: 'Activated "Resonator"' },
+    tile_magic_circle_h: { emoji: '✨', name: 'Activated "Resonator"' },
+    tile_aircraft: { emoji: '🛫', name: 'Aircraft' },
+    tile_creep: { emoji: '🟩', name: 'Flat Ground (Nethersea Brand)' },
+    tile_creepf: { emoji: '🟫', name: 'Non-deployable Area (Nethersea Brand)' },
+    tile_empty: { emoji: '🔳', name: 'Empty' },
+    tile_volcano_emp: { emoji: '🔥', name: 'Heat Pump Passage' },
+};
 
 module.exports = {
     authorField(op: Operator) {
@@ -115,8 +153,6 @@ module.exports = {
             .setLabel('Base Skills')
             .setStyle(ButtonStyle.Success);
 
-        const pageRow = new ActionRowBuilder().addComponents(skillsButton, modulesButton, artButton, baseButton);
-
         if (op.data.skills.length == 0) {
             skillsButton.setStyle(ButtonStyle.Secondary);
             skillsButton.setDisabled(true);
@@ -134,89 +170,90 @@ module.exports = {
 
                 const skills = op.data.skills;
 
-                if (skills.length != 0) {
-                    const skillDict: { [key: string]: Skill } = fetchSkills();
-                    const skill = skillDict[skills[currentPage].skillId];
-                    const skillEmbed = this.skillEmbed(skill, currentLevel, op);
+                if (skills.length === 0) break;
 
-                    for (const embed of skillEmbed.embeds) {
-                        embedArr.push(embed);
-                    }
-                    for (const file of skillEmbed.files) {
-                        fileArr.push(file);
-                    }
-                    for (const componentRow of skillEmbed.components) {
-                        componentRows.push(componentRow);
-                    }
+                const skillDict: { [key: string]: Skill } = fetchSkills();
+                const skill = skillDict[skills[currentPage].skillId];
+                const skillEmbed = this.skillEmbed(skill, currentLevel, op);
 
-                    const skillOne = new ButtonBuilder()
-                        .setCustomId('p1')
-                        .setLabel('Skill 1')
-                        .setStyle(ButtonStyle.Secondary)
-                        .setDisabled(true);
-                    const skillTwo = new ButtonBuilder()
-                        .setCustomId('p2')
-                        .setLabel('Skill 2')
-                        .setStyle(ButtonStyle.Secondary)
-                        .setDisabled(true);
-                    const skillThree = new ButtonBuilder()
-                        .setCustomId('p3')
-                        .setLabel('Skill 3')
-                        .setStyle(ButtonStyle.Secondary)
-                        .setDisabled(true);
+                for (const embed of skillEmbed.embeds) {
+                    embedArr.push(embed);
+                }
+                for (const file of skillEmbed.files) {
+                    fileArr.push(file);
+                }
+                for (const componentRow of skillEmbed.components) {
+                    componentRows.push(componentRow);
+                }
 
-                    const skillRow = new ActionRowBuilder().addComponents(skillOne, skillTwo, skillThree);
-                    componentRows.push(skillRow);
-                    const skillArr = [skillOne, skillTwo, skillThree];
+                const skillOne = new ButtonBuilder()
+                    .setCustomId('p1')
+                    .setLabel('Skill 1')
+                    .setStyle(ButtonStyle.Secondary)
+                    .setDisabled(true);
+                const skillTwo = new ButtonBuilder()
+                    .setCustomId('p2')
+                    .setLabel('Skill 2')
+                    .setStyle(ButtonStyle.Secondary)
+                    .setDisabled(true);
+                const skillThree = new ButtonBuilder()
+                    .setCustomId('p3')
+                    .setLabel('Skill 3')
+                    .setStyle(ButtonStyle.Secondary)
+                    .setDisabled(true);
 
-                    for (let i = 0; i < skills.length; i++) {
-                        skillArr[i].setStyle(ButtonStyle.Primary);
-                        if (i != currentPage) {
-                            skillArr[i].setDisabled(false);
-                        }
+                const skillRow = new ActionRowBuilder().addComponents(skillOne, skillTwo, skillThree);
+                componentRows.push(skillRow);
+                const skillArr = [skillOne, skillTwo, skillThree];
+
+                for (let i = 0; i < skills.length; i++) {
+                    skillArr[i].setStyle(ButtonStyle.Primary);
+                    if (i != currentPage) {
+                        skillArr[i].setDisabled(false);
                     }
                 }
+
                 break;
             case 2:
                 modulesButton.setDisabled(true);
 
                 const modules = op.modules;
 
-                if (modules != null) {
-                    const moduleDict: { [key: string]: Module } = fetchModules();
-                    const module = moduleDict[modules[currentPage + 1]];
-                    const moduleEmbed = this.moduleEmbed(module, currentLevel, op);
+                if (modules === null) break;
 
-                    for (const embed of moduleEmbed.embeds) {
-                        embedArr.push(embed);
-                    }
-                    for (const file of moduleEmbed.files) {
-                        fileArr.push(file);
-                    }
-                    for (const componentRow of moduleEmbed.components) {
-                        componentRows.push(componentRow);
-                    }
+                const moduleDict: { [key: string]: Module } = fetchModules();
+                const module = moduleDict[modules[currentPage + 1]];
+                const moduleEmbed = this.moduleEmbed(module, currentLevel, op);
 
-                    const moduleOne = new ButtonBuilder()
-                        .setCustomId('p1')
-                        .setLabel('Module 1')
-                        .setStyle(ButtonStyle.Secondary)
-                        .setDisabled(true);
-                    const moduleTwo = new ButtonBuilder()
-                        .setCustomId('p2')
-                        .setLabel('Module 2')
-                        .setStyle(ButtonStyle.Secondary)
-                        .setDisabled(true);
+                for (const embed of moduleEmbed.embeds) {
+                    embedArr.push(embed);
+                }
+                for (const file of moduleEmbed.files) {
+                    fileArr.push(file);
+                }
+                for (const componentRow of moduleEmbed.components) {
+                    componentRows.push(componentRow);
+                }
 
-                    const moduleRow = new ActionRowBuilder().addComponents(moduleOne, moduleTwo);
-                    componentRows.push(moduleRow);
-                    const moduleArr = [moduleOne, moduleTwo];
+                const moduleOne = new ButtonBuilder()
+                    .setCustomId('p1')
+                    .setLabel('Module 1')
+                    .setStyle(ButtonStyle.Secondary)
+                    .setDisabled(true);
+                const moduleTwo = new ButtonBuilder()
+                    .setCustomId('p2')
+                    .setLabel('Module 2')
+                    .setStyle(ButtonStyle.Secondary)
+                    .setDisabled(true);
 
-                    for (let i = 0; i < modules.length - 1; i++) {
-                        moduleArr[i].setStyle(ButtonStyle.Primary);
-                        if (i != currentPage) {
-                            moduleArr[i].setDisabled(false);
-                        }
+                const moduleRow = new ActionRowBuilder().addComponents(moduleOne, moduleTwo);
+                componentRows.push(moduleRow);
+                const moduleArr = [moduleOne, moduleTwo];
+
+                for (let i = 0; i < modules.length - 1; i++) {
+                    moduleArr[i].setStyle(ButtonStyle.Primary);
+                    if (i != currentPage) {
+                        moduleArr[i].setDisabled(false);
                     }
                 }
 
@@ -259,6 +296,7 @@ module.exports = {
                 break;
         }
 
+        const pageRow = new ActionRowBuilder().addComponents(skillsButton, modulesButton, artButton, baseButton);
         componentRows.push(pageRow);
 
         return { embeds: embedArr, files: fileArr, components: componentRows };
@@ -273,8 +311,8 @@ module.exports = {
 
         const authorField = this.authorField(op);
         const name = `${moduleInfo.typeIcon.toUpperCase()} ${moduleInfo.uniEquipName} - Lv${level + 1}`;
-
         let traitDescription = '', talentName = '', talentDescription = '';
+
         for (const part of moduleLevel.parts) {
             if (part.overrideTraitDataBundle.candidates != null) {
                 const candidates = part.overrideTraitDataBundle.candidates;
@@ -355,7 +393,7 @@ module.exports = {
         const avatar = new AttachmentBuilder(`./${operatorAvatarPath}/${opId}.png`);
 
         let name = `${opData.name} - `;
-        for (let i = -1; i < opData.rarity; i++) {
+        for (let i = 0; i <= opData.rarity; i++) {
             name += '★';
         }
 
@@ -676,9 +714,6 @@ module.exports = {
 
         const titleString = isChallenge ? `Challenge ${stageInfo.code} - ${stageInfo.name}` : `${stageInfo.code} - ${stageInfo.name}`;
 
-        // TODO: find some other way of getting stage images
-        const image = new AttachmentBuilder(`${stageImagePath}/${stageInfo.stageId}.png`);
-
         const stageEnemies = stageData.enemyDbRefs;
         let enemyString = '', eliteString = '', bossString = '';
 
@@ -714,6 +749,33 @@ module.exports = {
             embed.addFields({ name: 'Leaders', value: bossString, inline: false });
         }
 
-        return { embeds: [embed], files: [image] };
+        if (fs.existsSync(`${stageImagePath}/${stageInfo.stageId}.png`)) {
+            const image = new AttachmentBuilder(`${stageImagePath}/${stageInfo.stageId}.png`);
+            return { embeds: [embed], files: [image] };
+        }
+        else {
+            const mapData = stageData.mapData;
+            const map = mapData.map;
+            const tiles = mapData.tiles;
+
+            let mapString = '', legendString = '';
+
+            for (let i = 0; i < map.length; i++) {
+                for (let j = 0; j < map[0].length; j++) {
+                    const tileKey = tiles[map[i][j]].tileKey;
+                    const tile = tileDict[tileKey];
+                    mapString += tile.emoji;
+
+                    if (legendString.includes(tile.name)) continue;
+
+                    legendString += `${tile.emoji} - ${tile.name}\n`;
+                }
+                mapString += '\n';
+            }
+
+            embed.addFields({ name: 'Map', value: mapString }, { name: 'Legend', value: legendString });
+
+            return { embeds: [embed] };
+        }
     }
 }

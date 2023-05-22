@@ -21,31 +21,27 @@ module.exports = {
         const skillDict: { [key: string]: Skill } = fetchSkills();
         const operatorName = interaction.options.getString('name').toLowerCase();
 
-        if (operatorDict.hasOwnProperty(operatorName)) {
-            const op = operatorDict[operatorName];
+        if (operatorDict.hasOwnProperty(operatorName))
+            return await interaction.reply('That operator doesn\'t exist!');
 
-            if (op.data.skills.length != 0) {
-                let first = true;
+        const op = operatorDict[operatorName];
 
-                for (const opSkill of op.data.skills) {
-                    const skill = skillDict[opSkill.skillId];
+        if (op.data.skills.length != 0)
+            return await interaction.reply('That operator doesn\'t have any skills!');
 
-                    if (first) {
-                        replySkillEmbed(interaction, skill, op);
-                        first = false;
-                    }
-                    else {
-                        sendSkillEmbed(interaction.channel, skill, op);
-                    }
-                    await wait(100);
-                }
+        let first = true;
+
+        for (const opSkill of op.data.skills) {
+            const skill = skillDict[opSkill.skillId];
+
+            if (first) {
+                replySkillEmbed(interaction, skill, op);
+                first = false;
             }
             else {
-                await interaction.reply('That operator doesn\'t have any skills!');
+                sendSkillEmbed(interaction.channel, skill, op);
             }
-        }
-        else {
-            await interaction.reply('That operator doesn\'t exist!');
+            await wait(100);
         }
     }
 }

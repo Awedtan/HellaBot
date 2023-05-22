@@ -94,25 +94,20 @@ function initEnemies() {
 
     for (const excel of Object.values(enemyHandbook)) {
         for (const levels of enemies) {
-            try {
-                if (levels.Key === excel.enemyId) {
-                    const enemyId = excel.enemyId.toLowerCase();
-                    enemyDict[enemyId] = { excel: excel, levels: levels };
-                    enemyDict[excel.name.toLowerCase()] = enemyDict[enemyId];
-                    enemyDict[excel.enemyIndex.toLowerCase()] = enemyDict[enemyId];
-                }
-            } catch (e) {
-                console.log(e);
-            }
+            if (levels.Key != excel.enemyId) continue;
+
+            const enemyId = excel.enemyId.toLowerCase();
+            enemyDict[enemyId] = { excel: excel, levels: levels };
+            enemyDict[excel.name.toLowerCase()] = enemyDict[enemyId];
+            enemyDict[excel.enemyIndex.toLowerCase()] = enemyDict[enemyId];
         }
     }
 }
 
 function initModules() {
     const moduleTable: { [key: string]: any } = require(`${dataPath}/excel/uniequip_table.json`);
-    const battleDict: { [key: string]: Module['data'] } = require(`${dataPath}/excel/battle_equip_table.json`);
-
     const equipDict: { [key: string]: Module['info'] } = moduleTable.equipDict;
+    const battleDict: { [key: string]: Module['data'] } = require(`${dataPath}/excel/battle_equip_table.json`);
 
     for (const module of Object.values(equipDict)) {
         const moduleId = module.uniEquipId.toLowerCase()
@@ -131,7 +126,6 @@ function initOperators() {
     for (const opId of Object.keys(operatorTable)) {
         const opData = operatorTable[opId];
         const opName = opData.name.toLowerCase();
-
         const opModules = charEquip.hasOwnProperty(opId) ? charEquip[opId] : [];
         const opBases: BaseInfo[] = [];
 
@@ -144,10 +138,11 @@ function initOperators() {
         }
         operatorDict[opId] = { data: opData, id: opId, modules: opModules, bases: opBases };
 
-        if (!operatorDict.hasOwnProperty(opName)) {
-            operatorDict[opName] = operatorDict[opId];
-            operatorDict[opName.split('\'').join('')] = operatorDict[opId];
-        }
+        if (operatorDict.hasOwnProperty(opName)) continue;
+
+        operatorDict[opName] = operatorDict[opId];
+        operatorDict[opName.split('\'').join('')] = operatorDict[opId];
+
     }
 
     operatorDict['mlynar'] = operatorDict['młynar'];
@@ -171,17 +166,18 @@ function initSkills() {
 
         skillDict[skillId] = skill;
 
-        if (!skillDict.hasOwnProperty(skillName)) {
-            skillDict[skillName] = skillDict[skillId];
+        if (skillDict.hasOwnProperty(skillName)) continue;
 
-            let newName = ''
-            const skillRegex = /[^a-z|0-9|'|\s]/;
-            for (const split of skillName.split(skillRegex)) {
-                newName += split.trim() + ' ';
-            }
-            newName = newName.split('\'').join('').trim();
-            skillDict[newName] = skillDict[skillId];
+        skillDict[skillName] = skillDict[skillId];
+
+        let newName = ''
+        const skillRegex = /[^a-z|0-9|'|\s]/;
+        for (const split of skillName.split(skillRegex)) {
+            newName += split.trim() + ' ';
         }
+        newName = newName.split('\'').join('').trim();
+
+        skillDict[newName] = skillDict[skillId];
     }
 }
 
@@ -218,35 +214,36 @@ function initStages() {
     for (const excel of Object.values(stages)) {
         try {
             // Skip story and 'guide' levels (whatever those are)
-            if (!excel.isStoryOnly && excel.stageType != 'GUIDE') {
-                const levelId = excel.levelId.toLowerCase();
-                const name = excel.name.toLowerCase();
+            if (excel.isStoryOnly || excel.stageType === 'GUIDE') continue;
 
-                // Initialize key if it doesn't exist
-                if (!stageDict.hasOwnProperty(name)) {
-                    stageDict[name] = { normal: null, challenge: null };
-                }
+            const levelId = excel.levelId.toLowerCase();
+            const name = excel.name.toLowerCase();
 
-                if (excel.diffGroup === 'TOUGH' || excel.difficulty === 'FOUR_STAR') {
-                    const levels: StageData = require(`${dataPath}/levels/${levelId}.json`);
-                    stageDict[name].challenge = { excel: excel, levels: levels };
-                } else if (excel.difficulty === 'NORMAL') {
-                    if (levelId.includes('easy_sub')) { // Not sure if easy levels are all that different, ignore for now
-                        // const newId = levelId.split('easy_sub').join('sub');
-                        // const levels = require(`../${dataPath}/levels/${newId}.json`);
-                        // stageDict[name].normal = { excel: excel, levels: levels };
-                    } else if (levelId.includes('easy')) {
-                        // const newId = levelId.split('easy').join('main');
-                        // const levels = require(`../${dataPath}/levels/${newId}.json`);
-                        // stageDict[name].normal = { excel: excel, levels: levels };
-                    } else {
-                        const levels = require(`${dataPath}/levels/${levelId}.json`);
-                        stageDict[name].normal = { excel: excel, levels: levels };
-                    }
+            // Initialize key if it doesn't exist
+            if (!stageDict.hasOwnProperty(name)) {
+                stageDict[name] = { normal: null, challenge: null };
+            }
+
+            if (excel.diffGroup === 'TOUGH' || excel.difficulty === 'FOUR_STAR') {
+                const levels: StageData = require(`${dataPath}/levels/${levelId}.json`);
+                stageDict[name].challenge = { excel: excel, levels: levels };
+            } else if (excel.difficulty === 'NORMAL') {
+                if (levelId.includes('easy_sub')) { // Not sure if easy levels are all that different, ignore for now
+                    // const newId = levelId.split('easy_sub').join('sub');
+                    // const levels = require(`../${dataPath}/levels/${newId}.json`);
+                    // stageDict[name].normal = { excel: excel, levels: levels };
+                } else if (levelId.includes('easy')) {
+                    // const newId = levelId.split('easy').join('main');
+                    // const levels = require(`../${dataPath}/levels/${newId}.json`);
+                    // stageDict[name].normal = { excel: excel, levels: levels };
+                } else {
+                    const levels = require(`${dataPath}/levels/${levelId}.json`);
+                    stageDict[name].normal = { excel: excel, levels: levels };
                 }
-                if (excel.code != null && !(excel.levelId.includes('camp'))) {
-                    stageDict[excel.code.toLowerCase()] = stageDict[name];
-                }
+            }
+
+            if (excel.code != null && !(excel.levelId.includes('camp'))) {
+                stageDict[excel.code.toLowerCase()] = stageDict[name];
             }
         } catch (e) {
             console.log(e);

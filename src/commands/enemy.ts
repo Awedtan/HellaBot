@@ -17,13 +17,11 @@ module.exports = {
         const enemyDict: { [key: string]: Enemy } = fetchEnemies();
         const enemyName = interaction.options.getString('name').toLowerCase();
 
-        if (enemyDict.hasOwnProperty(enemyName)) {
-            const enemy = enemyDict[enemyName];
-            const enemyEmbed = create.enemyEmbed(enemy);
-            await interaction.reply(enemyEmbed);
-        }
-        else {
-            await interaction.reply('That enemy doesn\'t exist!');
-        }
+        if (!enemyDict.hasOwnProperty(enemyName))
+            return await interaction.reply('That enemy doesn\'t exist!');
+
+        const enemy = enemyDict[enemyName];
+        const enemyEmbed = create.enemyEmbed(enemy);
+        await interaction.reply(enemyEmbed);
     }
 }

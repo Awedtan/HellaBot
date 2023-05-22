@@ -20,20 +20,15 @@ module.exports = {
         const skinDict: { [key: string]: Skin[] } = fetchSkins();
         const operatorName = interaction.options.getString('name').toLowerCase();
 
-        if (operatorDict.hasOwnProperty(operatorName)) {
-            const operator = operatorDict[operatorName];
-            const operatorId = operator.id;
+        if (!operatorDict.hasOwnProperty(operatorName))
+            return await interaction.reply('That operator doesn\'t exist!');
 
-            if (skinDict.hasOwnProperty(operatorId)) {
-                replySkinEmbed(interaction, operator);
-            }
-            else {
-                await interaction.reply('That operator doesn\'t have any skins!');
-            }
-        }
-        else {
-            await interaction.reply('That operator doesn\'t exist!');
-        }
+        const operator = operatorDict[operatorName];
+
+        if (!skinDict.hasOwnProperty(operator.id))
+            return await interaction.reply('That operator doesn\'t have any skins!');
+
+        replySkinEmbed(interaction, operator);
     }
 }
 

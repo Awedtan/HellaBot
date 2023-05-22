@@ -29,25 +29,17 @@ module.exports = {
         const stageName = interaction.options.getString('name').toLowerCase();
         const stageMode = interaction.options.getString('difficulty');
 
-        if (stageDict.hasOwnProperty(stageName)) {
-            const stage = stageDict[stageName];
-            const isChallenge = stageMode === 'challenge';
-            const stageDifficulty = isChallenge ? stage.challenge : stage.normal;
+        if (!stageDict.hasOwnProperty(stageName))
+            return await interaction.reply('That stage doesn\'t exist!');
 
-            if (stageDifficulty.excel === undefined || stageDifficulty.levels === undefined) {
-                await interaction.reply('That stage data doesn\'t exist!');
-                return;
-            }
+        const stage = stageDict[stageName];
+        const isChallenge = stageMode === 'challenge';
+        const stageDifficulty = isChallenge ? stage.challenge : stage.normal;
 
-            const stageEmbed = create.stageEmbed(stage, isChallenge);
-            try {
-                await interaction.reply(stageEmbed);
-            } catch (e) {
-                await interaction.reply({ embeds: stageEmbed.embeds });
-            }
-        }
-        else {
-            await interaction.reply('That stage doesn\'t exist!');
-        }
+        if (stageDifficulty.excel === undefined || stageDifficulty.levels === undefined)
+            return await interaction.reply('That stage data doesn\'t exist!');
+
+        const stageEmbed = create.stageEmbed(stage, isChallenge);
+        await interaction.reply(stageEmbed);
     }
 }

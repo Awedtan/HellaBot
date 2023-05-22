@@ -228,163 +228,157 @@ type LevelUpCostCond = {
 };
 
 export type Module = {
-    info: ModuleInfo;
-    data: ModuleData;
-};
-
-type ModuleInfo = {
-    uniEquipId: string;
-    uniEquipName: string;
-    uniEquipIcon: string;
-    uniEquipDesc: string;
-    typeIcon: string;
-    typeName1: string;
-    typeName2: string;
-    equipShiningColor: string;
-    showEvolvePhase: number;
-    unlockEvolvePhase: number;
-    charId: string;
-    tmplId: string;
-    showLevel: number;
-    unlockLevel: number;
-    unlockFavorPoint: number;
-    missionList: string[];
-    itemCost: { [key: string]: LevelUpCost[]; };
-    type: string;
-    uniEquipGetTime: number;
-    charEquipOrder: number;
-};
-
-type ModuleData = {
-    phases: {
-        equipLevel: number;
-        parts: {
-            resKey: string;
-            target: string;
-            isToken: boolean;
-            addOrOverrideTalentDataBundle: {
-                candidates: {
-                    displayRangeId: boolean;
-                    upgradeDescription: string;
-                    talentIndex: number;
-                    unlockCondition: OperatorUnlockCond;
-                    requiredPotentialRank: number;
-                    prefabKey: string;
-                    name: string;
-                    description: string;
-                    rangeId: string;
-                    blackboard: Blackboard[];
-                }[];
-            };
-            overrideTraitDataBundle: {
-                candidates: {
-                    additionalDescription: string;
-                    unlockCondition: OperatorUnlockCond;
-                    requiredPotentialRank: number;
-                    blackboard: Blackboard[];
-                    overrideDescripton: string;
-                    prefabKey: string;
-                    rangeId: string;
-                }[];
-            };
+    info: {
+        uniEquipId: string;
+        uniEquipName: string;
+        uniEquipIcon: string;
+        uniEquipDesc: string;
+        typeIcon: string;
+        typeName1: string;
+        typeName2: string;
+        equipShiningColor: string;
+        showEvolvePhase: number;
+        unlockEvolvePhase: number;
+        charId: string;
+        tmplId: string;
+        showLevel: number;
+        unlockLevel: number;
+        unlockFavorPoint: number;
+        missionList: string[];
+        itemCost: { [key: string]: LevelUpCost[]; };
+        type: string;
+        uniEquipGetTime: number;
+        charEquipOrder: number;
+    };
+    data: {
+        phases: {
+            equipLevel: number;
+            parts: {
+                resKey: string;
+                target: string;
+                isToken: boolean;
+                addOrOverrideTalentDataBundle: {
+                    candidates: {
+                        displayRangeId: boolean;
+                        upgradeDescription: string;
+                        talentIndex: number;
+                        unlockCondition: OperatorUnlockCond;
+                        requiredPotentialRank: number;
+                        prefabKey: string;
+                        name: string;
+                        description: string;
+                        rangeId: string;
+                        blackboard: Blackboard[];
+                    }[];
+                };
+                overrideTraitDataBundle: {
+                    candidates: {
+                        additionalDescription: string;
+                        unlockCondition: OperatorUnlockCond;
+                        requiredPotentialRank: number;
+                        blackboard: Blackboard[];
+                        overrideDescripton: string;
+                        prefabKey: string;
+                        rangeId: string;
+                    }[];
+                };
+            }[];
+            attributeBlackboard: Blackboard[];
+            tokenAttributeBlackboard: { [key: string]: Blackboard[]; };
         }[];
-        attributeBlackboard: Blackboard[];
-        tokenAttributeBlackboard: { [key: string]: Blackboard[]; };
-    }[];
+    };
 };
 
 export type Operator = {
     id: string;
-    data: OperatorData;
     modules: string[];
     bases: BaseInfo[];
+    data: {
+        name: string;
+        description: string;
+        canUseGeneralPotentialItem: boolean;
+        potentialItemId: string;
+        nationId: string;
+        groupId: string;
+        teamId: string;
+        displayNumber: string;
+        tokenKey: string;
+        appellation: string;
+        position: string;
+        tagList: string[];
+        itemUsage: string;
+        itemDesc: string;
+        itemObtainApproach: string;
+        isNotObtainable: boolean;
+        isSpChar: boolean;
+        maxPotentialLevel: number;
+        rarity: number;
+        profession: string;
+        subProfessionId: string;
+        trait: {
+            candidates: {
+                unlockCondition: OperatorUnlockCond;
+                requiredPotentialRank: number;
+                blackboard: Blackboard[];
+                overrideDescripton: string;
+                prefabKey: string;
+                rangeId: string;
+            }[];
+        };
+        phases: {
+            characterPrefabKey: string;
+            rangeId: string;
+            maxLevel: number;
+            attributesKeyFrames: AttributesKeyFrame[];
+            evolveCost: LevelUpCost[];
+        }[];
+        skills: {
+            skillId: string;
+            overridePrefabKey: string;
+            overrideTokenKey: string;
+            levelUpCostCond: LevelUpCostCond[];
+            unlockCond: OperatorUnlockCond;
+        }[];
+        talents: {
+            candidates: {
+                unlockCondition: OperatorUnlockCond;
+                requiredPotentialRank: number;
+                prefabKey: string;
+                name: string;
+                description: string;
+                rangeId: string;
+                blackboard: Blackboard[];
+            }[];
+        }[];
+        potentialRanks: {
+            type: number;
+            description: string;
+            buff: {
+                attributes: {
+                    abnormalFlags: null;
+                    abnormalImmunes: null;
+                    abnormalAntis: null;
+                    abnormalCombos: null;
+                    abnormalComboImmunes: null;
+                    attributeModifiers: {
+                        attributeType: number;
+                        formulaItem: number;
+                        value: number;
+                        loadFromBlackboard: boolean;
+                        fetchBaseValueFromSourceEntity: boolean;
+                    }[];
+                };
+            };
+            equivalentCost: null;
+        }[];
+        favorKeyFrames: AttributesKeyFrame[];
+        allSkillLvlup: LevelUpCostCond[];
+    };
 };
 
 type OperatorUnlockCond = {
     phase: number;
     level: number;
-};
-
-type OperatorData = {
-    name: string;
-    description: string;
-    canUseGeneralPotentialItem: boolean;
-    potentialItemId: string;
-    nationId: string;
-    groupId: string;
-    teamId: string;
-    displayNumber: string;
-    tokenKey: string;
-    appellation: string;
-    position: string;
-    tagList: string[];
-    itemUsage: string;
-    itemDesc: string;
-    itemObtainApproach: string;
-    isNotObtainable: boolean;
-    isSpChar: boolean;
-    maxPotentialLevel: number;
-    rarity: number;
-    profession: string;
-    subProfessionId: string;
-    trait: {
-        candidates: {
-            unlockCondition: OperatorUnlockCond;
-            requiredPotentialRank: number;
-            blackboard: Blackboard[];
-            overrideDescripton: string;
-            prefabKey: string;
-            rangeId: string;
-        }[];
-    };
-    phases: {
-        characterPrefabKey: string;
-        rangeId: string;
-        maxLevel: number;
-        attributesKeyFrames: AttributesKeyFrame[];
-        evolveCost: LevelUpCost[];
-    }[];
-    skills: {
-        skillId: string;
-        overridePrefabKey: string;
-        overrideTokenKey: string;
-        levelUpCostCond: LevelUpCostCond[];
-        unlockCond: OperatorUnlockCond;
-    }[];
-    talents: {
-        candidates: {
-            unlockCondition: OperatorUnlockCond;
-            requiredPotentialRank: number;
-            prefabKey: string;
-            name: string;
-            description: string;
-            rangeId: string;
-            blackboard: Blackboard[];
-        }[];
-    }[];
-    potentialRanks: {
-        type: number;
-        description: string;
-        buff: {
-            attributes: {
-                abnormalFlags: null;
-                abnormalImmunes: null;
-                abnormalAntis: null;
-                abnormalCombos: null;
-                abnormalComboImmunes: null;
-                attributeModifiers: {
-                    attributeType: number;
-                    formulaItem: number;
-                    value: number;
-                    loadFromBlackboard: boolean;
-                    fetchBaseValueFromSourceEntity: boolean;
-                }[];
-            };
-        };
-        equivalentCost: null;
-    }[];
-    favorKeyFrames: AttributesKeyFrame[];
-    allSkillLvlup: LevelUpCostCond[];
 };
 
 export type Range = {
@@ -535,48 +529,6 @@ type StageInfo = {
     startButtonOverrideId: string;
     isStagePatch: boolean;
     mainStageId: string;
-};
-
-type StageEffect = {
-    key: string;
-    offset: {
-        x: number;
-        y: number;
-        z: number;
-    },
-    direction: number;
-};
-
-type StageDefines = {
-    characterInsts: any[];
-    tokenInsts: {
-        position: {
-            row: number;
-            col: number;
-        };
-        direction: number;
-        hidden: boolean;
-        alias: string;
-        uniEquipIds: {
-            key: string;
-            level: number;
-        }[];
-        inst: {
-            characterKey: string;
-            level: number;
-            phase: number;
-            favorPoint: number;
-            potentialRank: number;
-        }
-        ;
-        skillIndex: number;
-        mainSkillLvl: number;
-        skinId: string;
-        tmplId: string;
-        overrideSkillBlackboard: Blackboard[];
-    }[];
-    characterCards: any[];
-    tokenCards: any[];
 };
 
 type StageData = {
@@ -752,4 +704,46 @@ type StageData = {
     excludeCharIdList: null;
     randomSeed: number;
     operaConfig: string;
+};
+
+type StageEffect = {
+    key: string;
+    offset: {
+        x: number;
+        y: number;
+        z: number;
+    },
+    direction: number;
+};
+
+type StageDefines = {
+    characterInsts: any[];
+    tokenInsts: {
+        position: {
+            row: number;
+            col: number;
+        };
+        direction: number;
+        hidden: boolean;
+        alias: string;
+        uniEquipIds: {
+            key: string;
+            level: number;
+        }[];
+        inst: {
+            characterKey: string;
+            level: number;
+            phase: number;
+            favorPoint: number;
+            potentialRank: number;
+        }
+        ;
+        skillIndex: number;
+        mainSkillLvl: number;
+        skinId: string;
+        tmplId: string;
+        overrideSkillBlackboard: Blackboard[];
+    }[];
+    characterCards: any[];
+    tokenCards: any[];
 };
