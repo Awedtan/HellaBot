@@ -1,6 +1,6 @@
 const { SlashCommandBuilder } = require('discord.js');
 const { fetchOperators, fetchSkills } = require('../utils/fetchData');
-const wait = require('node:timers/promises').setTimeout;
+const wait = require('timers/promises').setTimeout;
 const create = require('../utils/create');
 
 import { Operator, Skill } from '../utils/types';
@@ -21,12 +21,12 @@ module.exports = {
         const skillDict: { [key: string]: Skill } = fetchSkills();
         const operatorName = interaction.options.getString('name').toLowerCase();
 
-        if (operatorDict.hasOwnProperty(operatorName))
+        if (!operatorDict.hasOwnProperty(operatorName))
             return await interaction.reply('That operator doesn\'t exist!');
 
         const op = operatorDict[operatorName];
 
-        if (op.data.skills.length != 0)
+        if (op.data.skills.length === 0)
             return await interaction.reply('That operator doesn\'t have any skills!');
 
         let first = true;
