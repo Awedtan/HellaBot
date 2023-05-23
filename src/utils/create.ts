@@ -316,7 +316,7 @@ module.exports = {
         const image = new AttachmentBuilder(imagePath);
 
         const authorField = this.authorField(op);
-        const name = `*${moduleInfo.typeIcon.toUpperCase()}* ${moduleInfo.uniEquipName} - Lv${level + 1}`;
+        const name = `${moduleInfo.typeIcon.toUpperCase()} ${moduleInfo.uniEquipName} - Lv${level + 1}`;
         let traitDescription = '', talentName = '', talentDescription = '';
 
         for (const part of moduleLevel.parts) {
