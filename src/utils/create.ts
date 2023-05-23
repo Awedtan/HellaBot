@@ -700,7 +700,7 @@ module.exports = {
 
                 const thumbnailPath = path.join(__dirname, '../../', skinGroupPath, `${newSkinGroupId}.png`);
                 thumbnail = new AttachmentBuilder(thumbnailPath);
-                embed.setThumbnail(`attachment://${skinGroupId.split(/[#\+]/).join('')}.png`);
+                embed.setThumbnail(`attachment://${newSkinGroupId.split(/[#\+]/).join('')}.png`);
                 break;
             }
         }
