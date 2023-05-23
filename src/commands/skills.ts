@@ -48,7 +48,7 @@ module.exports = {
 
 async function replySkillEmbed(interaction, skill: Skill, operator: Operator) {
     let level = 0;
-    const skillEmbed = create.skillEmbed(skill, level, operator);
+    let skillEmbed = create.skillEmbed(skill, level, operator);
     let response = await interaction.reply(skillEmbed);
 
     while (true) {
@@ -60,7 +60,8 @@ async function replySkillEmbed(interaction, skill: Skill, operator: Operator) {
             } catch (e) {
                 continue;
             }
-            response = await response.edit(create.skillEmbed(skill, level, operator));
+            skillEmbed = create.skillEmbed(skill, level, operator);
+            response = await response.edit(skillEmbed);
         } catch (e) {
             console.log(e);
             await response.edit({ embeds: skillEmbed.embeds, files: skillEmbed.files, components: [] });
@@ -71,7 +72,7 @@ async function replySkillEmbed(interaction, skill: Skill, operator: Operator) {
 
 async function sendSkillEmbed(channel, skill: Skill, operator: Operator) {
     let level = 0;
-    const skillEmbed = create.skillEmbed(skill, level, operator);
+    let skillEmbed = create.skillEmbed(skill, level, operator);
     let response = await channel.send(skillEmbed);
 
     while (true) {
@@ -83,7 +84,8 @@ async function sendSkillEmbed(channel, skill: Skill, operator: Operator) {
             } catch (e) {
                 continue;
             }
-            response = await response.edit(create.skillEmbed(skill, level, operator));
+            skillEmbed = create.skillEmbed(skill, level, operator);
+            response = await response.edit(skillEmbed);
         } catch (e) {
             console.log(e);
             await response.edit({ embeds: skillEmbed.embeds, files: skillEmbed.files, components: [] });

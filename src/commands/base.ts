@@ -41,7 +41,7 @@ module.exports = {
 }
 
 async function replyBaseEmbed(interaction, base: Base, baseInfo: BaseInfo, operator: Operator) {
-    const baseEmbed = create.baseEmbed(base, baseInfo, operator);
+    let baseEmbed = create.baseEmbed(base, baseInfo, operator);
     let response = await interaction.reply(baseEmbed);
 
     while (true) {
@@ -52,7 +52,8 @@ async function replyBaseEmbed(interaction, base: Base, baseInfo: BaseInfo, opera
             } catch (e) {
                 continue;
             }
-            response = await response.edit(create.baseEmbed(base, baseInfo, operator));
+            baseEmbed = create.baseEmbed(base, baseInfo, operator);
+            response = await response.edit(baseEmbed);
         } catch (e) {
             console.log(e);
             await response.edit({ embeds: baseEmbed.embeds, files: baseEmbed.files, components: [] });
@@ -62,7 +63,7 @@ async function replyBaseEmbed(interaction, base: Base, baseInfo: BaseInfo, opera
 }
 
 async function sendBaseEmbed(channel, base: Base, baseInfo: BaseInfo, operator: Operator) {
-    const baseEmbed = create.baseEmbed(base, baseInfo, operator);
+    let baseEmbed = create.baseEmbed(base, baseInfo, operator);
     let response = await channel.send(baseEmbed);
 
     while (true) {
@@ -73,7 +74,8 @@ async function sendBaseEmbed(channel, base: Base, baseInfo: BaseInfo, operator: 
             } catch (e) {
                 continue;
             }
-            response = await response.edit(create.baseEmbed(base, baseInfo, operator));
+            baseEmbed = create.baseEmbed(base, baseInfo, operator);
+            response = await response.edit(baseEmbed);
         } catch (e) {
             console.log(e);
             await response.edit({ embeds: baseEmbed.embeds, files: baseEmbed.files, components: [] });
