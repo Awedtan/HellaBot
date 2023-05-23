@@ -774,8 +774,8 @@ module.exports = {
         try {
             const imagePath = path.join(__dirname, '../../', stageImagePath, `${stageInfo.stageId}.png`);
             await fs.promises.access(imagePath);
-
             const image = new AttachmentBuilder(imagePath);
+
             return { embeds: [embed], files: [image] };
         } catch (e) {
             const mapData = stageData.mapData;
