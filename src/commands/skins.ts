@@ -34,7 +34,7 @@ module.exports = {
 
 async function replySkinEmbed(interaction, operator: Operator) {
     let page = 0;
-    const skinEmbed = create.skinEmbed(operator, page);
+    let skinEmbed = create.skinEmbed(operator, page);
     let response = await interaction.reply(skinEmbed);
 
     while (true) {
@@ -46,7 +46,8 @@ async function replySkinEmbed(interaction, operator: Operator) {
             } catch (e) {
                 continue;
             }
-            response = await response.edit(create.skinEmbed(operator, page));
+            skinEmbed = create.skinEmbed(operator, page);
+            response = await response.edit(skinEmbed);
         } catch (e) {
             console.log(e);
             await response.edit({ embeds: skinEmbed.embeds, files: skinEmbed.files, components: [] });

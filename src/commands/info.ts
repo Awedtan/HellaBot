@@ -31,7 +31,7 @@ module.exports = {
 
 async function replyInfoEmbed(interaction, operator: Operator) {
     let type = 0, page = 0, level = 0;
-    const operatorEmbed = create.infoEmbed(operator, page, level);
+    let operatorEmbed = create.infoEmbed(operator, page, level);
     let response = await interaction.reply(operatorEmbed);
 
     while (true) {
@@ -53,7 +53,8 @@ async function replyInfoEmbed(interaction, operator: Operator) {
             } catch (e) {
                 continue;
             }
-            response = await response.edit(create.infoEmbed(operator, type, page, level));
+            operatorEmbed = create.infoEmbed(operator, page, level);
+            response = await response.edit(operatorEmbed);
         } catch (e) {
             console.log(e);
             await response.edit({ embeds: operatorEmbed.embeds, files: operatorEmbed.files, components: [] });

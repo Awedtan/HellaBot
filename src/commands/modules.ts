@@ -50,7 +50,7 @@ module.exports = {
 
 async function replyModuleEmbed(interaction, module: Module, operator: Operator) {
     let level = 0;
-    const moduleEmbed = create.moduleEmbed(module, level, operator);
+    let moduleEmbed = create.moduleEmbed(module, level, operator);
     let response = await interaction.reply(moduleEmbed);
 
     while (true) {
@@ -62,7 +62,8 @@ async function replyModuleEmbed(interaction, module: Module, operator: Operator)
             } catch (e) {
                 continue;
             }
-            response = await response.edit(create.moduleEmbed(module, level, operator));
+            moduleEmbed = create.moduleEmbed(module, level, operator);
+            response = await response.edit(moduleEmbed);
         } catch (e) {
             console.log(e);
             await response.edit({ embeds: moduleEmbed.embeds, files: moduleEmbed.files, components: [] });
@@ -73,7 +74,7 @@ async function replyModuleEmbed(interaction, module: Module, operator: Operator)
 
 async function sendModuleEmbed(channel, module: Module, operator: Operator) {
     let level = 0;
-    const moduleEmbed = create.moduleEmbed(module, level, operator);
+    let moduleEmbed = create.moduleEmbed(module, level, operator);
     let response = await channel.send(moduleEmbed);
 
     while (true) {
@@ -85,7 +86,8 @@ async function sendModuleEmbed(channel, module: Module, operator: Operator) {
             } catch (e) {
                 continue;
             }
-            response = await response.edit(create.moduleEmbed(module, level, operator));
+            moduleEmbed = create.moduleEmbed(module, level, operator);
+            response = await response.edit(moduleEmbed);
         } catch (e) {
             console.log(e);
             await response.edit({ embeds: moduleEmbed.embeds, files: moduleEmbed.files, components: [] });
