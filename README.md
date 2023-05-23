@@ -2,12 +2,12 @@
  
 todo:
 
+make git stuff auto update
+
 add skill, elite, module costs
 
 count enemies in a stage
 
-add op skins
-
-find images for all stages
+make enemy wave and pathing visualization
 
 fix the button bug
