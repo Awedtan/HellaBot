@@ -2,6 +2,8 @@
  
 todo:
 
+fix file paths for everything
+
 make git stuff auto update
 
 add skill, elite, module costs

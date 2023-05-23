@@ -39,7 +39,7 @@ module.exports = {
         if (stageDifficulty.excel === undefined || stageDifficulty.levels === undefined)
             return await interaction.reply('That stage data doesn\'t exist!');
 
-        const stageEmbed = create.stageEmbed(stage, isChallenge);
+        const stageEmbed = await create.stageEmbed(stage, isChallenge);
         await interaction.reply(stageEmbed);
     }
 }

@@ -3,6 +3,7 @@ const { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, EmbedBu
 const { fetchArchetypes, fetchBases, fetchEnemies, fetchModules, fetchRanges, fetchSkills, fetchSkins } = require('../utils/fetchData');
 const { cleanFilename, formatTextBlackboardTags } = require('../utils/utils');
 const fs = require('fs');
+const path = require('path');
 
 import { Base, BaseInfo, Enemy, Module, Operator, Range, Skill, Skin, Stage } from "./types";
 
@@ -706,7 +707,7 @@ module.exports = {
 
         return { embeds: [embed], files: [image, avatar, thumbnail], components: components };
     },
-    stageEmbed(stage: Stage, isChallenge: boolean) {
+    async stageEmbed(stage: Stage, isChallenge: boolean) {
         const enemyDict: { [key: string]: Enemy } = fetchEnemies();
 
         const stageInfo = isChallenge ? stage.challenge.excel : stage.normal.excel;
@@ -749,11 +750,13 @@ module.exports = {
             embed.addFields({ name: 'Leaders', value: bossString, inline: false });
         }
 
-        if (fs.existsSync(`${stageImagePath}/${stageInfo.stageId}.png`)) {
-            const image = new AttachmentBuilder(`${stageImagePath}/${stageInfo.stageId}.png`);
+        try {
+            const imagePath = path.join(__dirname, '../../', stageImagePath, `${stageInfo.stageId}.png`);
+            await fs.promises.access(imagePath);
+
+            const image = new AttachmentBuilder(imagePath);
             return { embeds: [embed], files: [image] };
-        }
-        else {
+        } catch (e) {
             const mapData = stageData.mapData;
             const map = mapData.map;
             const tiles = mapData.tiles;
