@@ -68,8 +68,10 @@ module.exports = {
     baseEmbed(base: Base, baseInfo: BaseInfo, op: Operator) {
         const baseCond = baseInfo.cond;
 
-        const avatar = new AttachmentBuilder(`./${operatorAvatarPath}/${op.id}.png`);
-        const image = new AttachmentBuilder(`./${baseImagePath}/${base.skillIcon}.png`);
+        const avatarPath = path.join(__dirname, '../../', operatorAvatarPath, `${op.id}.png`);
+        const imagePath = path.join(__dirname, '../../', baseImagePath, `${base.skillIcon}.png`);
+        const avatar = new AttachmentBuilder(avatarPath);
+        const image = new AttachmentBuilder(imagePath);
 
         const name = `${base.buffName} - ${eliteLevels[baseCond.phase]} Lv${baseCond.level}`;
         const authorField = this.authorField(op);
@@ -89,7 +91,8 @@ module.exports = {
         const enemyInfo = enemy.excel;
         const enemyData = enemy.levels.Value[0].enemyData;
 
-        const image = new AttachmentBuilder(`./${enemyImagePath}/${enemyInfo.enemyId}.png`);
+        const imagePath = path.join(__dirname, '../../', enemyImagePath, `${enemyInfo.enemyId}.png`);
+        const image = new AttachmentBuilder(imagePath);
 
         const hp = enemyData.attributes.maxHp.m_value.toString();
         const atk = enemyData.attributes.atk.m_value.toString();
@@ -307,8 +310,10 @@ module.exports = {
         const moduleId = moduleInfo.uniEquipId;
         const moduleLevel = module.data.phases[level];
 
-        const avatar = new AttachmentBuilder(`./${operatorAvatarPath}/${op.id}.png`);
-        const image = new AttachmentBuilder(`./${moduleImagePath}/${moduleId}.png`);
+        const avatarPath = path.join(__dirname, '../../', operatorAvatarPath, `${op.id}.png`);
+        const imagePath = path.join(__dirname, '../../', moduleImagePath, `${moduleId}.png`);
+        const avatar = new AttachmentBuilder(avatarPath);
+        const image = new AttachmentBuilder(imagePath);
 
         const authorField = this.authorField(op);
         const name = `${moduleInfo.typeIcon.toUpperCase()} ${moduleInfo.uniEquipName} - Lv${level + 1}`;
@@ -391,7 +396,9 @@ module.exports = {
         const opData = op.data;
         const opId = op.id;
         const opMax = opData.phases[opData.phases.length - 1];
-        const avatar = new AttachmentBuilder(`./${operatorAvatarPath}/${opId}.png`);
+
+        const avatarPath = path.join(__dirname, '../../', operatorAvatarPath, `${op.id}.png`);
+        const avatar = new AttachmentBuilder(avatarPath);
 
         let name = `${opData.name} - `;
         for (let i = 0; i <= opData.rarity; i++) {
@@ -514,9 +521,11 @@ module.exports = {
     skillEmbed(skill: Skill, level: number, op: Operator) {
         const skillLevel = skill.levels[level];
 
-        const avatar = new AttachmentBuilder(`./${operatorAvatarPath}/${op.id}.png`);
-        const imagePath = skill.iconId === null ? skill.skillId : skill.iconId;
-        const image = new AttachmentBuilder(`./${skillImagePath}/skill_icon_${imagePath}.png`);
+        const avatarPath = path.join(__dirname, '../../', operatorAvatarPath, `${op.id}.png`);
+        const imageFilename = skill.iconId === null ? skill.skillId : skill.iconId;
+        const imagePath = path.join(__dirname, '../../', skillImagePath, `skill_icon_${imageFilename}.png`)
+        const avatar = new AttachmentBuilder(avatarPath);
+        const image = new AttachmentBuilder(imagePath);
 
         const authorField = this.authorField(op);
         const name = `${skillLevel.name} - ${skillLevels[level]}`;
@@ -538,7 +547,7 @@ module.exports = {
             .setColor(0xebca60)
             .setAuthor(authorField)
             .setTitle(name)
-            .setThumbnail(`attachment://skill_icon_${cleanFilename(imagePath)}.png`)
+            .setThumbnail(`attachment://skill_icon_${cleanFilename(imageFilename)}.png`)
             .setDescription(embedDescription);
 
         if (skillLevel.rangeId != null) {
@@ -642,8 +651,10 @@ module.exports = {
         const portraitId = skin.portraitId;
         const skinGroupId = displaySkin.skinGroupId;
 
-        const avatar = new AttachmentBuilder(`./${operatorAvatarPath}/${op.id}.png`);
-        const image = new AttachmentBuilder(`./${operatorImagePath}/${portraitId}.png`);
+        const avatarPath = path.join(__dirname, '../../', operatorAvatarPath, `${op.id}.png`);
+        const imagePath = path.join(__dirname, '../../', operatorImagePath, `${portraitId}.png`);
+        const avatar = new AttachmentBuilder(avatarPath);
+        const image = new AttachmentBuilder(imagePath);
 
         const authorField = this.authorField(op);
         const skinName = displaySkin.skinName;
@@ -659,26 +670,36 @@ module.exports = {
 
         let thumbnail;
         switch (skinGroupId) {
-            case 'ILLUST_0':
-                thumbnail = new AttachmentBuilder(`./${eliteImagePath}/0.png`);
+            case 'ILLUST_0': {
+                const thumbnailPath = path.join(__dirname, '../../', eliteImagePath, '0.png');
+                thumbnail = new AttachmentBuilder(thumbnailPath);
                 embed.setThumbnail(`attachment://0.png`);
                 break;
-            case 'ILLUST_1':
-                thumbnail = new AttachmentBuilder(`./${eliteImagePath}/1.png`);
+            }
+            case 'ILLUST_1': {
+                const thumbnailPath = path.join(__dirname, '../../', eliteImagePath, '1.png');
+                thumbnail = new AttachmentBuilder(thumbnailPath);
                 embed.setThumbnail(`attachment://1.png`);
                 break;
-            case 'ILLUST_2':
-                thumbnail = new AttachmentBuilder(`./${eliteImagePath}/2.png`);
+            }
+            case 'ILLUST_2': {
+                const thumbnailPath = path.join(__dirname, '../../', eliteImagePath, '2.png');
+                thumbnail = new AttachmentBuilder(thumbnailPath);
                 embed.setThumbnail(`attachment://2.png`);
                 break;
-            case 'ILLUST_3':
-                thumbnail = new AttachmentBuilder(`./${eliteImagePath}/3.png`);
+            }
+            case 'ILLUST_3': {
+                const thumbnailPath = path.join(__dirname, '../../', eliteImagePath, '3.png');
+                thumbnail = new AttachmentBuilder(thumbnailPath);
                 embed.setThumbnail(`attachment://3.png`);
                 break;
-            default:
-                thumbnail = new AttachmentBuilder(`./${skinGroupPath}/${skinGroupId}.png`);
+            }
+            default: {
+                const thumbnailPath = path.join(__dirname, '../../', skinGroupPath, `${skinGroupId}.png`);
+                thumbnail = new AttachmentBuilder(thumbnailPath);
                 embed.setThumbnail(`attachment://${skinGroupId.split(/[#\+]/).join('')}.png`);
                 break;
+            }
         }
 
         const defaultSkinArr = new ActionRowBuilder();
