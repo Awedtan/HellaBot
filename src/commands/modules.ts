@@ -26,7 +26,7 @@ module.exports = {
 
         const op = operatorDict[operatorName];
 
-        if (op.modules.length != 0)
+        if (op.modules.length === 0)
             return await interaction.reply('That operator doesn\'t have any modules!');
 
         let first = true;
