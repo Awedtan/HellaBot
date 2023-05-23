@@ -695,7 +695,10 @@ module.exports = {
                 break;
             }
             default: {
-                const thumbnailPath = path.join(__dirname, '../../', skinGroupPath, `${skinGroupId}.png`);
+                const split = skinGroupId.split('#');
+                const newSkinGroupId = `${split[0]}#${split[1]}`;
+
+                const thumbnailPath = path.join(__dirname, '../../', skinGroupPath, `${newSkinGroupId}.png`);
                 thumbnail = new AttachmentBuilder(thumbnailPath);
                 embed.setThumbnail(`attachment://${skinGroupId.split(/[#\+]/).join('')}.png`);
                 break;

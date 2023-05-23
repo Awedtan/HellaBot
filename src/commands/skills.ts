@@ -60,7 +60,7 @@ async function replySkillEmbed(interaction, skill: Skill, operator: Operator) {
             } catch (e) {
                 continue;
             }
-            skillEmbed = create.skillEmbed(module, level, operator);
+            skillEmbed = create.skillEmbed(skill, level, operator);
             response = await response.edit(skillEmbed);
         } catch (e) {
             console.log(e);
@@ -84,7 +84,7 @@ async function sendSkillEmbed(channel, skill: Skill, operator: Operator) {
             } catch (e) {
                 continue;
             }
-            skillEmbed = create.skillEmbed(module, level, operator);
+            skillEmbed = create.skillEmbed(skill, level, operator);
             response = await response.edit(skillEmbed);
         } catch (e) {
             console.log(e);
