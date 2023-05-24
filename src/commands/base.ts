@@ -35,7 +35,7 @@ module.exports = {
             else {
                 sendBaseEmbed(interaction.channel, base, baseInfo, op);
             }
-            await wait(100);
+            await wait(200);
         }
     }
 }

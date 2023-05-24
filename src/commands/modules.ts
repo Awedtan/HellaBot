@@ -43,7 +43,7 @@ module.exports = {
             else {
                 sendModuleEmbed(interaction.channel, module, op);
             }
-            await wait(100);
+            await wait(200);
         }
     }
 }
