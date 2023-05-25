@@ -6,6 +6,9 @@ module.exports = {
         return text;
     },
     formatBlackboardText(text: string, blackboard: Blackboard[]) {
+        if (text === null) return;
+        if (blackboard === null) blackboard = [];
+
         text = text.trim();
         const skillKeys: { [key: string]: number | string } = {};
         for (const stat of blackboard) {
