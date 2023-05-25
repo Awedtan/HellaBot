@@ -40,12 +40,14 @@ async function replySkinEmbed(interaction, operator: Operator) {
     while (true) {
         try {
             const confirm = await response.awaitMessageComponent({ time: 300000 });
-            page = pageId[confirm.customId];
+
             try {
                 await confirm.update({ content: '' });
             } catch (e) {
                 continue;
             }
+
+            page = pageId[confirm.customId];
             skinEmbed = create.skinEmbed(operator, page);
             response = await response.edit(skinEmbed);
         } catch (e) {

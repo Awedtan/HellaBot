@@ -1,7 +1,7 @@
 const { baseImagePath, eliteImagePath, enemyImagePath, moduleImagePath, operatorAvatarPath, operatorImagePath, stageImagePath, skillImagePath, skinGroupPath } = require('../../paths.json');
-const { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } = require('discord.js');
+const { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder } = require('discord.js');
 const { fetchArchetypes, fetchBases, fetchEnemies, fetchModules, fetchRanges, fetchSkills, fetchSkins } = require('../utils/fetchData');
-const { cleanFilename, formatTextBlackboardTags } = require('../utils/utils');
+const { cleanFilename, formatBlackboardText } = require('../utils/utils');
 const fs = require('fs');
 const path = require('path');
 
@@ -75,7 +75,7 @@ module.exports = {
 
         const name = `${base.buffName} - ${eliteLevels[baseCond.phase]} Lv${baseCond.level}`;
         const authorField = this.authorField(op);
-        const description = formatTextBlackboardTags(base.description, []);
+        const description = formatBlackboardText(base.description, []);
 
         const embed = new EmbedBuilder()
             .setColor(0xebca60)
@@ -94,6 +94,9 @@ module.exports = {
         const imagePath = path.join(__dirname, '../../', enemyImagePath, `${enemyInfo.enemyId}.png`);
         const image = new AttachmentBuilder(imagePath);
 
+        const title = `${enemyInfo.enemyIndex} - ${enemyInfo.name}`;
+        const description = `${formatBlackboardText(enemyInfo.description, [])}\n\n${formatBlackboardText(enemyInfo.ability, [])}`;
+
         const hp = enemyData.attributes.maxHp.m_value.toString();
         const atk = enemyData.attributes.atk.m_value.toString();
         const def = enemyData.attributes.def.m_value.toString();
@@ -109,9 +112,9 @@ module.exports = {
 
         const embed = new EmbedBuilder()
             .setColor(0xebca60)
-            .setTitle(`${enemyInfo.enemyIndex} - ${enemyInfo.name}`)
+            .setTitle(title)
             .setThumbnail(`attachment://${enemyInfo.enemyId}.png`)
-            .setDescription(enemyInfo.description)
+            .setDescription(description)
             .addFields(
                 { name: '❤️ HP', value: hp, inline: true },
                 { name: '⚔️ ATK', value: atk, inline: true },
@@ -325,10 +328,10 @@ module.exports = {
                 const candidate = candidates[candidates.length - 1];
 
                 if (candidate.additionalDescription != null) {
-                    traitDescription += `${formatTextBlackboardTags(candidate.additionalDescription, candidate.blackboard)}\n`;
+                    traitDescription += `${formatBlackboardText(candidate.additionalDescription, candidate.blackboard)}\n`;
                 }
                 if (candidate.overrideDescripton != null) {
-                    traitDescription += `${formatTextBlackboardTags(candidate.overrideDescripton, candidate.blackboard)}\n`;
+                    traitDescription += `${formatBlackboardText(candidate.overrideDescripton, candidate.blackboard)}\n`;
                 }
             }
             if (part.addOrOverrideTalentDataBundle.candidates != null) {
@@ -339,7 +342,7 @@ module.exports = {
                     talentName = candidate.name;
                 }
                 if (candidate.upgradeDescription != null) {
-                    talentDescription += `${formatTextBlackboardTags(candidate.upgradeDescription, candidate.blackboard)}\n`;
+                    talentDescription += `${formatBlackboardText(candidate.upgradeDescription, candidate.blackboard)}\n`;
                 }
             }
         }
@@ -405,11 +408,11 @@ module.exports = {
             name += '★';
         }
 
-        let description = formatTextBlackboardTags(opData.description, []);
+        let description = formatBlackboardText(opData.description, []);
         if (opData.trait != null) {
             const candidate = opData.trait.candidates[opData.trait.candidates.length - 1];
             if (candidate.overrideDescripton != null) {
-                description = formatTextBlackboardTags(candidate.overrideDescripton, candidate.blackboard);
+                description = formatBlackboardText(candidate.overrideDescripton, candidate.blackboard);
             }
         }
 
@@ -426,7 +429,7 @@ module.exports = {
 
         for (const talent of opData.talents) {
             const candidate = talent.candidates[talent.candidates.length - 1];
-            embed.addFields({ name: `*Talent:* ${candidate.name}`, value: formatTextBlackboardTags(candidate.description, []) });
+            embed.addFields({ name: `*Talent:* ${candidate.name}`, value: formatBlackboardText(candidate.description, []) });
         }
 
         let potentialString = '';
@@ -535,7 +538,7 @@ module.exports = {
         const spType = spTypes[skillLevel.spData.spType];
         const skillType = skillTypes[skillLevel.skillType];
 
-        const description = formatTextBlackboardTags(skillLevel.description, skillLevel.blackboard);
+        const description = formatBlackboardText(skillLevel.description, skillLevel.blackboard);
 
         let embedDescription = `**${spType} - ${skillType}**\n***Cost:* ${spCost} SP - *Initial:* ${initSp} SP`;
         if (skillDuration > 0) {
@@ -731,13 +734,14 @@ module.exports = {
 
         return { embeds: [embed], files: [image, avatar, thumbnail], components: components };
     },
-    async stageEmbed(stage: Stage, isChallenge: boolean) {
+    async stageEmbed(stage: Stage) {
         const enemyDict: { [key: string]: Enemy } = fetchEnemies();
 
-        const stageInfo = isChallenge ? stage.challenge.excel : stage.normal.excel;
-        const stageData = isChallenge ? stage.challenge.levels : stage.normal.levels;
+        const stageInfo = stage.excel;
+        const stageData = stage.levels;
 
-        const titleString = isChallenge ? `Challenge ${stageInfo.code} - ${stageInfo.name}` : `${stageInfo.code} - ${stageInfo.name}`;
+        const title = stageInfo.difficulty === 'NORMAL' ? `${stageInfo.code} - ${stageInfo.name}` : `Challenge ${stageInfo.code} - ${stageInfo.name}`;
+        const description = formatBlackboardText(stageInfo.description, []);
 
         const stageEnemies = stageData.enemyDbRefs;
         let enemyString = '', eliteString = '', bossString = '';
@@ -761,7 +765,8 @@ module.exports = {
 
         const embed = new EmbedBuilder()
             .setColor(0xebca60)
-            .setTitle(titleString)
+            .setTitle(title)
+            .setDescription(description)
             .setImage(`attachment://${stageInfo.stageId}.png`);
 
         if (enemyString != '') {
@@ -802,7 +807,28 @@ module.exports = {
 
             embed.addFields({ name: 'Map', value: mapString }, { name: 'Legend', value: legendString });
 
-            return { embeds: [embed] };
+            return { embeds: [embed], files: [] };
         }
+    },
+    stageSelectEmbed(stageArr: Stage[]) {
+        const stageSelector = new StringSelectMenuBuilder()
+            .setCustomId('stage')
+            .setPlaceholder('Select a stage!');
+
+        for (let i = 0; i < stageArr.length; i++) {
+            const stage = stageArr[i];
+            const stageInfo = stage.excel;
+
+            const name = `${stageInfo.code} - ${stageInfo.name}`;
+
+            stageSelector.addOptions(new StringSelectMenuOptionBuilder()
+                .setLabel(name)
+                .setValue(`${i}`)
+            );
+        }
+
+        const componentRow = new ActionRowBuilder().addComponents(stageSelector);
+
+        return { content: 'Multiple stages with that code were found, please select a stage below:', components: [componentRow] };
     }
 }

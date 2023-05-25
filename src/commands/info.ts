@@ -38,6 +38,12 @@ async function replyInfoEmbed(interaction, operator: Operator) {
         try {
             const confirm = await response.awaitMessageComponent({ time: 300000 });
 
+            try {
+                await confirm.update({ content: '' });
+            } catch (e) {
+                continue;
+            }
+
             if (typeId.hasOwnProperty(confirm.customId)) {
                 type = typeId[confirm.customId];
                 page = 0;
@@ -48,11 +54,6 @@ async function replyInfoEmbed(interaction, operator: Operator) {
                 level = levelId[confirm.customId];
             }
 
-            try {
-                await confirm.update({ content: '' });
-            } catch (e) {
-                continue;
-            }
             operatorEmbed = create.infoEmbed(operator, type, page, level);
             response = await response.edit(operatorEmbed);
         } catch (e) {

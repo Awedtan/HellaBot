@@ -1,6 +1,6 @@
 const { dataPath } = require('../../paths.json');
 
-import { Base, BaseInfo, Enemy, Module, Operator, Range, Skill, Skin, Stage, StageData, StageInfo } from "./types";
+import { Base, BaseInfo, Enemy, Module, Operator, Range, RogueStage, RogueStageInfo, Skill, Skin, Stage, StageData, StageInfo } from "./types";
 
 const archetypeDict: { [key: string]: string } = {};
 const baseDict: { [key: string]: Base } = {};
@@ -8,9 +8,11 @@ const enemyDict: { [key: string]: Enemy } = {};
 const moduleDict: { [key: string]: Module } = {};
 const operatorDict: { [key: string]: Operator } = {};
 const rangeDict: { [key: string]: Range } = {};
+const rogueStageDict: { [key: string]: RogueStage[] } = {};
 const skillDict: { [key: string]: Skill } = {};
 const skinDict: { [key: string]: Skin[] } = {};
-const stageDict: { [key: string]: Stage } = {};
+const stageDict: { [key: string]: Stage[] } = {};
+const toughStageDict: { [key: string]: Stage[] } = {};
 
 type SubProf = {
     subProfessionId: string;
@@ -57,6 +59,9 @@ module.exports = {
     },
     fetchStages() {
         return stageDict;
+    },
+    fetchToughStages() {
+        return toughStageDict;
     }
 }
 
@@ -157,6 +162,23 @@ function initRanges() {
     }
 }
 
+function initRogueStages() {
+    const rogueTable: { [key: string]: any } = require(`${dataPath}/excel/roguelike_topic_table.json`);
+    const rogueThemes: { [key: string]: any } = rogueTable.details;
+
+    for (const rogueThemeInfo of Object.values(rogueThemes)) {
+        const rogueStages: { [key: string]: RogueStageInfo } = rogueThemeInfo.stages;
+
+        for (const excel of Object.values(rogueStages)) {
+            try {
+
+            } catch (e) {
+                console.log(e);
+            }
+        }
+    }
+}
+
 function initSkills() {
     const skillTable: { [key: string]: Skill } = require(`${dataPath}/excel/skill_table.json`);
 
@@ -197,53 +219,45 @@ function initSkins() {
 }
 
 function initStages() {
-    // Read stage data from stage_table and individual stage files
-    // Stores data in stageDict[stage] = {excel, levels}
-    //      excel = /excel/stage_table.json
-    //          Contains name, code, description, sanity, drops
-    //      levels = /levels/{levelId}.json
-    //          Contains layout, pathing, enemy types, enemy waves
-    // Unique stage key is name (Collapse)
-    // Additional key is code (0-1), note: annihalation stages don't have codes
-    // stageId and levelId are inconsistent between chapters, do not use!
-    // TODO: add roguelike, sss, anything not stored in stage_table.json
-
     const stageTable: { [key: string]: any } = require(`${dataPath}/excel/stage_table.json`);
     const stages: { [key: string]: StageInfo } = stageTable.stages;
 
     for (const excel of Object.values(stages)) {
         try {
-            // Skip story and 'guide' levels (whatever those are)
             if (excel.isStoryOnly || excel.stageType === 'GUIDE') continue;
 
-            const levelId = excel.levelId.toLowerCase();
-            const name = excel.name.toLowerCase();
-
-            // Initialize key if it doesn't exist
-            if (!stageDict.hasOwnProperty(name)) {
-                stageDict[name] = { normal: null, challenge: null };
+            const levelRegex = /\S+_m$/;
+            let temp = excel.levelId.toLowerCase();
+            if (temp.match(levelRegex)) {
+                temp = temp.substring(0, excel.levelId.length - 2).split('mission/').join('');
             }
+            const levelId = temp;
+
+            const code = excel.code.toLowerCase();
+
+            if (levelId.includes('easy_sub') || levelId.includes('easy')) continue;
+            if (levelId === 'activities/act4d0/level_act4d0_05') continue;
 
             if (excel.diffGroup === 'TOUGH' || excel.difficulty === 'FOUR_STAR') {
-                const levels: StageData = require(`${dataPath}/levels/${levelId}.json`);
-                stageDict[name].challenge = { excel: excel, levels: levels };
-            } else if (excel.difficulty === 'NORMAL') {
-                if (levelId.includes('easy_sub')) { // Not sure if easy levels are all that different, ignore for now
-                    // const newId = levelId.split('easy_sub').join('sub');
-                    // const levels = require(`../${dataPath}/levels/${newId}.json`);
-                    // stageDict[name].normal = { excel: excel, levels: levels };
-                } else if (levelId.includes('easy')) {
-                    // const newId = levelId.split('easy').join('main');
-                    // const levels = require(`../${dataPath}/levels/${newId}.json`);
-                    // stageDict[name].normal = { excel: excel, levels: levels };
-                } else {
-                    const levels = require(`${dataPath}/levels/${levelId}.json`);
-                    stageDict[name].normal = { excel: excel, levels: levels };
+                if (!toughStageDict.hasOwnProperty(code)) {
+                    toughStageDict[code] = [];
                 }
-            }
 
-            if (excel.code != null && !(excel.levelId.includes('camp'))) {
-                stageDict[excel.code.toLowerCase()] = stageDict[name];
+                const levels: StageData = require(`${dataPath}/levels/${levelId}.json`);
+                const stage: Stage = { excel: excel, levels: levels };
+
+                toughStageDict[code].push(stage);
+            } else if (excel.difficulty === 'NORMAL') {
+                if (!stageDict.hasOwnProperty(code)) {
+                    stageDict[code] = [];
+                }
+
+                const levels = require(`${dataPath}/levels/${levelId}.json`);
+                const stage: Stage = { excel: excel, levels: levels };
+
+                stageDict[code].push(stage);
+            } else {
+                console.log(code);
             }
         } catch (e) {
             console.log(e);

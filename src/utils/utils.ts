@@ -1,11 +1,12 @@
-import { Blackboard, Range } from "./types";
+import { Blackboard } from "./types";
 
 module.exports = {
     cleanFilename(text: string) {
         text = text.split(/[#\+]|&|\[|\]/).join('');
         return text;
     },
-    formatTextBlackboardTags(text: string, blackboard: Blackboard[]) {
+    formatBlackboardText(text: string, blackboard: Blackboard[]) {
+        text = text.trim();
         const skillKeys: { [key: string]: number | string } = {};
         for (const stat of blackboard) {
             const key = stat.key;
@@ -19,8 +20,8 @@ module.exports = {
             }
         }
 
-        const endTagRegex = /<\/>/;
-        const tagRegex = /<.ba\.[^<]+>|<.cc\.[^<]+>|:0%|:0|:0.0%/;
+        const endTagRegex = /<\/[^<]*>/;
+        const tagRegex = /<.[a-z]{2,3}\.[^<]+>|<color=[^<]*>|[^0-9]:0|:0%|:0.0%/;
         text = text.split(endTagRegex).join('').split(tagRegex).join('');
 
         const temp = text.split(/-?{-?|}/);

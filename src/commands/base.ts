@@ -29,57 +29,15 @@ module.exports = {
             const base = baseBuffDict[baseInfo.buffId];
 
             if (first) {
-                replyBaseEmbed(interaction, base, baseInfo, op);
+                const baseEmbed = create.baseEmbed(base, baseInfo, op);
+                await interaction.reply(baseEmbed);
                 first = false;
             }
             else {
-                sendBaseEmbed(interaction.channel, base, baseInfo, op);
+                const baseEmbed = create.baseEmbed(base, baseInfo, op);
+                await interaction.channel.send(baseEmbed);
             }
             await wait(200);
-        }
-    }
-}
-
-async function replyBaseEmbed(interaction, base: Base, baseInfo: BaseInfo, operator: Operator) {
-    let baseEmbed = create.baseEmbed(base, baseInfo, operator);
-    let response = await interaction.reply(baseEmbed);
-
-    while (true) {
-        try {
-            const confirm = await response.awaitMessageComponent({ time: 300000 });
-            try {
-                await confirm.update({ content: '' });
-            } catch (e) {
-                continue;
-            }
-            baseEmbed = create.baseEmbed(base, baseInfo, operator);
-            response = await response.edit(baseEmbed);
-        } catch (e) {
-            console.log(e);
-            await response.edit({ embeds: baseEmbed.embeds, files: baseEmbed.files, components: [] });
-            break;
-        }
-    }
-}
-
-async function sendBaseEmbed(channel, base: Base, baseInfo: BaseInfo, operator: Operator) {
-    let baseEmbed = create.baseEmbed(base, baseInfo, operator);
-    let response = await channel.send(baseEmbed);
-
-    while (true) {
-        try {
-            const confirm = await response.awaitMessageComponent({ time: 300000 });
-            try {
-                await confirm.update({ content: '' });
-            } catch (e) {
-                continue;
-            }
-            baseEmbed = create.baseEmbed(base, baseInfo, operator);
-            response = await response.edit(baseEmbed);
-        } catch (e) {
-            console.log(e);
-            await response.edit({ embeds: baseEmbed.embeds, files: baseEmbed.files, components: [] });
-            break;
         }
     }
 }

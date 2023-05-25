@@ -1,18 +1,17 @@
 const { SlashCommandBuilder } = require('discord.js');
-const { fetchEnemies, fetchStages } = require('../utils/fetchData');
+const { fetchStages, fetchToughStages } = require('../utils/fetchData');
 const create = require('../utils/create');
 
 
-import { Enemy, Stage } from '../utils/types';
+import { Stage } from '../utils/types';
 
-//TODO: stage drops, sanity cost
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('stage')
         .setDescription('tbd')
         .addStringOption(option =>
-            option.setName('name')
-                .setDescription('name')
+            option.setName('code')
+                .setDescription('code')
                 .setRequired(true)
         )
         .addStringOption(option =>
@@ -24,22 +23,39 @@ module.exports = {
                 )
         ),
     async execute(interaction) {
-        const stageDict: { [key: string]: Stage } = fetchStages();
-
-        const stageName = interaction.options.getString('name').toLowerCase();
+        const stageCode = interaction.options.getString('code').toLowerCase();
         const stageMode = interaction.options.getString('difficulty');
+        const stageDict: { [key: string]: Stage[] } = stageMode === 'challenge' ? fetchToughStages() : fetchStages();
+        const stageArr = stageDict[stageCode];
 
-        if (!stageDict.hasOwnProperty(stageName))
+        if (!stageDict.hasOwnProperty(stageCode) || stageArr.length === 0)
             return await interaction.reply('That stage doesn\'t exist!');
 
-        const stage = stageDict[stageName];
-        const isChallenge = stageMode === 'challenge';
-        const stageDifficulty = isChallenge ? stage.challenge : stage.normal;
+        if (stageArr.length == 1) {
+            const stage = stageArr[0];
+            if (stage.excel === undefined || stage.levels === undefined)
+                return await interaction.reply('That stage data doesn\'t exist!');
 
-        if (stageDifficulty.excel === undefined || stageDifficulty.levels === undefined)
-            return await interaction.reply('That stage data doesn\'t exist!');
+            const stageEmbed = await create.stageEmbed(stage);
+            await interaction.reply(stageEmbed);
+        } else {
+            const stageSelectEmbed = create.stageSelectEmbed(stageArr);
+            let response = await interaction.reply(stageSelectEmbed);
 
-        const stageEmbed = await create.stageEmbed(stage, isChallenge);
-        await interaction.reply(stageEmbed);
+            while (true) {
+                try {
+                    const confirm = await response.awaitMessageComponent({ time: 300000 });
+                    const value = parseInt(confirm.values[0]);
+                    const stage = stageArr[value];
+                    const stageEmbed = await create.stageEmbed(stage);
+
+                    response = await confirm.update(stageEmbed);
+                } catch (e) {
+                    console.log(e);
+                    await response.edit({ components: [] });
+                    break;
+                }
+            }
+        }
     }
 }

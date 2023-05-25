@@ -26,13 +26,13 @@ export type AttributesKeyFrame = {
     };
 };
 
-export type Blackboard = {
+type Blackboard = {
     key: string;
     value: number;
     valueStr: string;
 };
 
-export type Base = {
+type Base = {
     buffId: string;
     buffName: string;
     buffIcon: string;
@@ -45,12 +45,12 @@ export type Base = {
     description: string;
 };
 
-export type BaseInfo = {
+type BaseInfo = {
     buffId: string,
     cond: OperatorUnlockCond
 };
 
-export type Enemy = {
+type Enemy = {
     excel: {
         enemyId: string;
         enemyIndex: string;
@@ -227,7 +227,7 @@ type LevelUpCostCond = {
     levelUpCost: LevelUpCost[];
 };
 
-export type Module = {
+type Module = {
     info: {
         uniEquipId: string;
         uniEquipName: string;
@@ -289,7 +289,7 @@ export type Module = {
     };
 };
 
-export type Operator = {
+type Operator = {
     id: string;
     modules: string[];
     bases: BaseInfo[];
@@ -381,7 +381,7 @@ type OperatorUnlockCond = {
     level: number;
 };
 
-export type Range = {
+type Range = {
     id: string;
     direction: number;
     grids: {
@@ -390,7 +390,30 @@ export type Range = {
     }[];
 };
 
-export type Skill = {
+type RogueStage = {
+    normal: { excel: RogueStageInfo, levels: StageData };
+    challenge: { excel: RogueStageInfo, levels: StageData };
+};
+
+type RogueStageInfo = {
+    id: string;
+    linkedStageId: string;
+    levelId: string;
+    code: string;
+    name: string;
+    loadingPicId: string;
+    description: string;
+    eliteDesc: string;
+    isBoss: number;
+    isElite: number;
+    difficulty: string;
+    capsulePool: string;
+    capsuleProb: number;
+    vutresProb: number[];
+    boxProb: number[];
+};
+
+type Skill = {
     skillId: string;
     iconId: string;
     hidden: boolean;
@@ -414,7 +437,7 @@ export type Skill = {
     }[];
 };
 
-export type Skin = {
+type Skin = {
     skinId: string;
     charId: string;
     tokenSkinMap: {
@@ -458,9 +481,9 @@ export type Skin = {
     };
 };
 
-export type Stage = {
-    normal: { excel: StageInfo, levels: StageData };
-    challenge: { excel: StageInfo, levels: StageData };
+type Stage = {
+    excel: StageInfo;
+    levels: StageData;
 };
 
 type StageInfo = {

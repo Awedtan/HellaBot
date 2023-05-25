@@ -56,12 +56,14 @@ async function replyModuleEmbed(interaction, module: Module, operator: Operator)
     while (true) {
         try {
             const confirm = await response.awaitMessageComponent({ time: 300000 });
-            level = levelId[confirm.customId];
+
             try {
                 await confirm.update({ content: '' });
             } catch (e) {
                 continue;
             }
+
+            level = levelId[confirm.customId];
             moduleEmbed = create.moduleEmbed(module, level, operator);
             response = await response.edit(moduleEmbed);
         } catch (e) {
@@ -80,12 +82,14 @@ async function sendModuleEmbed(channel, module: Module, operator: Operator) {
     while (true) {
         try {
             const confirm = await response.awaitMessageComponent({ time: 300000 });
-            level = levelId[confirm.customId];
+
             try {
                 await confirm.update({ content: '' });
             } catch (e) {
                 continue;
             }
+
+            level = levelId[confirm.customId];
             moduleEmbed = create.moduleEmbed(module, level, operator);
             response = await response.edit(moduleEmbed);
         } catch (e) {

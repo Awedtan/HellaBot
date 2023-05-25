@@ -54,12 +54,14 @@ async function replySkillEmbed(interaction, skill: Skill, operator: Operator) {
     while (true) {
         try {
             const confirm = await response.awaitMessageComponent({ time: 300000 });
+
             level = levelId[confirm.customId];
             try {
                 await confirm.update({ content: '' });
             } catch (e) {
                 continue;
             }
+
             skillEmbed = create.skillEmbed(skill, level, operator);
             response = await response.edit(skillEmbed);
         } catch (e) {
@@ -78,12 +80,14 @@ async function sendSkillEmbed(channel, skill: Skill, operator: Operator) {
     while (true) {
         try {
             const confirm = await response.awaitMessageComponent({ time: 300000 });
-            level = levelId[confirm.customId];
+
             try {
                 await confirm.update({ content: '' });
             } catch (e) {
                 continue;
             }
+
+            level = levelId[confirm.customId];
             skillEmbed = create.skillEmbed(skill, level, operator);
             response = await response.edit(skillEmbed);
         } catch (e) {
