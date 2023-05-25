@@ -2,7 +2,6 @@ const { SlashCommandBuilder } = require('discord.js');
 const { fetchStages, fetchToughStages } = require('../utils/fetchData');
 const create = require('../utils/create');
 
-
 import { Stage } from '../utils/types';
 
 module.exports = {
@@ -25,6 +24,7 @@ module.exports = {
     async execute(interaction) {
         const stageCode = interaction.options.getString('code').toLowerCase();
         const stageMode = interaction.options.getString('difficulty');
+
         const stageDict: { [key: string]: Stage[] } = stageMode === 'challenge' ? fetchToughStages() : fetchStages();
         const stageArr = stageDict[stageCode];
 
@@ -48,7 +48,6 @@ module.exports = {
                     const value = parseInt(confirm.values[0]);
                     const stage = stageArr[value];
                     const stageEmbed = await create.stageEmbed(stage);
-
                     response = await confirm.update(stageEmbed);
                 } catch (e) {
                     console.log(e);

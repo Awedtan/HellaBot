@@ -8,11 +8,14 @@ const enemyDict: { [key: string]: Enemy } = {};
 const moduleDict: { [key: string]: Module } = {};
 const operatorDict: { [key: string]: Operator } = {};
 const rangeDict: { [key: string]: Range } = {};
-const rogueStageDict: { [key: string]: RogueStage[] } = {};
+const rogue1StageDict: { [key: string]: RogueStage[] } = {};
+const rogue2StageDict: { [key: string]: RogueStage[] } = {};
 const skillDict: { [key: string]: Skill } = {};
 const skinDict: { [key: string]: Skin[] } = {};
 const stageDict: { [key: string]: Stage[] } = {};
 const toughStageDict: { [key: string]: Stage[] } = {};
+const toughRogue1StageDict: { [key: string]: RogueStage[] } = {};
+const toughRogue2StageDict: { [key: string]: RogueStage[] } = {};
 
 type SubProf = {
     subProfessionId: string;
@@ -29,6 +32,7 @@ module.exports = {
         initRanges();
         initSkills();
         initSkins();
+        initRogueStages();
         initStages();
 
         initOperators();
@@ -51,6 +55,12 @@ module.exports = {
     fetchRanges() {
         return rangeDict;
     },
+    fetchRogue1Stages() {
+        return rogue1StageDict;
+    },
+    fetchRogue2Stages() {
+        return rogue2StageDict;
+    },
     fetchSkills() {
         return skillDict;
     },
@@ -59,6 +69,12 @@ module.exports = {
     },
     fetchStages() {
         return stageDict;
+    },
+    fetchToughRogue1Stages() {
+        return toughRogue1StageDict;
+    },
+    fetchToughRogue2Stages() {
+        return toughRogue2StageDict;
     },
     fetchToughStages() {
         return toughStageDict;
@@ -164,17 +180,65 @@ function initRanges() {
 
 function initRogueStages() {
     const rogueTable: { [key: string]: any } = require(`${dataPath}/excel/roguelike_topic_table.json`);
-    const rogueThemes: { [key: string]: any } = rogueTable.details;
+    const rogueDetails: { [key: string]: any } = rogueTable.details;
 
-    for (const rogueThemeInfo of Object.values(rogueThemes)) {
-        const rogueStages: { [key: string]: RogueStageInfo } = rogueThemeInfo.stages;
+    const rogue1Stages: { [key: string]: RogueStageInfo } = rogueDetails.rogue_1.stages;
+    for (const excel of Object.values(rogue1Stages)) {
+        try {
+            const levelId = excel.levelId.toLowerCase();
+            const name = excel.name.toLowerCase();
 
-        for (const excel of Object.values(rogueStages)) {
-            try {
+            if (excel.difficulty === 'FOUR_STAR') {
+                if (!toughRogue1StageDict.hasOwnProperty(name)) {
+                    toughRogue1StageDict[name] = [];
+                }
 
-            } catch (e) {
-                console.log(e);
+                const levels: StageData = require(`${dataPath}/levels/${levelId}.json`);
+                const stage: RogueStage = { excel: excel, levels: levels };
+
+                toughRogue1StageDict[name].push(stage);
+            } else if (excel.difficulty === 'NORMAL') {
+                if (!rogue1StageDict.hasOwnProperty(name)) {
+                    rogue1StageDict[name] = [];
+                }
+
+                const levels = require(`${dataPath}/levels/${levelId}.json`);
+                const stage: RogueStage = { excel: excel, levels: levels };
+
+                rogue1StageDict[name].push(stage);
             }
+        } catch (e) {
+            console.log(e);
+        }
+    }
+
+    const rogue2Stages: { [key: string]: RogueStageInfo } = rogueDetails.rogue_2.stages;
+    for (const excel of Object.values(rogue2Stages)) {
+        try {
+            const levelId = excel.levelId.toLowerCase();
+            const name = excel.name.toLowerCase();
+
+            if (excel.difficulty === 'FOUR_STAR') {
+                if (!toughRogue2StageDict.hasOwnProperty(name)) {
+                    toughRogue2StageDict[name] = [];
+                }
+
+                const levels: StageData = require(`${dataPath}/levels/${levelId}.json`);
+                const stage: RogueStage = { excel: excel, levels: levels };
+
+                toughRogue2StageDict[name].push(stage);
+            } else if (excel.difficulty === 'NORMAL') {
+                if (!rogue2StageDict.hasOwnProperty(name)) {
+                    rogue2StageDict[name] = [];
+                }
+
+                const levels = require(`${dataPath}/levels/${levelId}.json`);
+                const stage: RogueStage = { excel: excel, levels: levels };
+
+                rogue2StageDict[name].push(stage);
+            }
+        } catch (e) {
+            console.log(e);
         }
     }
 }
@@ -256,8 +320,6 @@ function initStages() {
                 const stage: Stage = { excel: excel, levels: levels };
 
                 stageDict[code].push(stage);
-            } else {
-                console.log(code);
             }
         } catch (e) {
             console.log(e);

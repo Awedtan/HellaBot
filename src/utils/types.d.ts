@@ -391,8 +391,8 @@ type Range = {
 };
 
 type RogueStage = {
-    normal: { excel: RogueStageInfo, levels: StageData };
-    challenge: { excel: RogueStageInfo, levels: StageData };
+    excel: RogueStageInfo;
+    levels: StageData;
 };
 
 type RogueStageInfo = {

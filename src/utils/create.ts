@@ -5,7 +5,7 @@ const { cleanFilename, formatBlackboardText } = require('../utils/utils');
 const fs = require('fs');
 const path = require('path');
 
-import { Base, BaseInfo, Enemy, Module, Operator, Range, Skill, Skin, Stage } from "./types";
+import { Base, BaseInfo, Enemy, Module, Operator, Range, RogueStage, Skill, Skin, Stage } from "./types";
 
 const eliteLevels = ['E0', 'E1', 'E2', 'E3'];
 const professions: { [key: string]: string } = { PIONEER: 'Vanguard', WARRIOR: 'Guard', TANK: 'Defender', SNIPER: 'Sniper', CASTER: 'Caster', MEDIC: 'Medic', SUPPORT: 'Supporter', SPECIAL: 'Specialist' };
@@ -734,6 +734,82 @@ module.exports = {
 
         return { embeds: [embed], files: [image, avatar, thumbnail], components: components };
     },
+    async rogueStageEmbed(stage: RogueStage) {
+        const enemyDict: { [key: string]: Enemy } = fetchEnemies();
+
+        const stageInfo = stage.excel;
+        const stageData = stage.levels;
+
+        const title = stageInfo.difficulty === 'NORMAL' ? `${stageInfo.code} - ${stageInfo.name}` : `Challenge ${stageInfo.code} - ${stageInfo.name}`;
+        const description = stageInfo.difficulty === 'NORMAL' ? formatBlackboardText(stageInfo.description, []) : formatBlackboardText(`${stageInfo.description}\n${stageInfo.eliteDesc}`, []);
+
+        const stageEnemies = stageData.enemyDbRefs;
+        let enemyString = '', eliteString = '', bossString = '';
+
+        for (const enemy of stageEnemies) {
+            if (enemyDict.hasOwnProperty(enemy.id)) {
+                const enemyInfo = enemyDict[enemy.id].excel;
+                switch (enemyInfo.enemyLevel) {
+                    case ('NORMAL'):
+                        enemyString += `${enemyInfo.enemyIndex} - ${enemyInfo.name}\n`;
+                        break;
+                    case ('ELITE'):
+                        eliteString += `${enemyInfo.enemyIndex} - ${enemyInfo.name}\n`;
+                        break;
+                    case ('BOSS'):
+                        bossString += `${enemyInfo.enemyIndex} - ${enemyInfo.name}\n`;
+                        break;
+                }
+            }
+        }
+
+        const embed = new EmbedBuilder()
+            .setColor(0xebca60)
+            .setTitle(title)
+            .setDescription(description)
+            .setImage(`attachment://${stageInfo.id}.png`);
+
+        if (enemyString != '') {
+            embed.addFields({ name: 'Enemies', value: enemyString, inline: true });
+        }
+        if (eliteString != '') {
+            embed.addFields({ name: 'Elites', value: eliteString, inline: true });
+        }
+        if (bossString != '') {
+            embed.addFields({ name: 'Leaders', value: bossString, inline: false });
+        }
+
+        try {
+            const imagePath = path.join(__dirname, '../../', stageImagePath, `${stageInfo.id}.png`);
+            await fs.promises.access(imagePath);
+            const image = new AttachmentBuilder(imagePath);
+
+            return { embeds: [embed], files: [image] };
+        } catch (e) {
+            const mapData = stageData.mapData;
+            const map = mapData.map;
+            const tiles = mapData.tiles;
+
+            let mapString = '', legendString = '';
+
+            for (let i = 0; i < map.length; i++) {
+                for (let j = 0; j < map[0].length; j++) {
+                    const tileKey = tiles[map[i][j]].tileKey;
+                    const tile = tileDict[tileKey];
+                    mapString += tile.emoji;
+
+                    if (legendString.includes(tile.name)) continue;
+
+                    legendString += `${tile.emoji} - ${tile.name}\n`;
+                }
+                mapString += '\n';
+            }
+
+            embed.addFields({ name: 'Map', value: mapString }, { name: 'Legend', value: legendString });
+
+            return { embeds: [embed], files: [] };
+        }
+    },
     async stageEmbed(stage: Stage) {
         const enemyDict: { [key: string]: Enemy } = fetchEnemies();
 
@@ -810,7 +886,7 @@ module.exports = {
             return { embeds: [embed], files: [] };
         }
     },
-    stageSelectEmbed(stageArr: Stage[]) {
+    stageSelectEmbed(stageArr: Stage[] | RogueStage[]) {
         const stageSelector = new StringSelectMenuBuilder()
             .setCustomId('stage')
             .setPlaceholder('Select a stage!');
