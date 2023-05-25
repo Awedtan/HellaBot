@@ -815,7 +815,9 @@ module.exports = {
 
         const stageInfo = stage.excel;
         const stageData = stage.levels;
+        const stageId = stageInfo.stageId;
         const isChallenge = stageInfo.diffGroup === 'TOUGH' || stageInfo.difficulty === 'CHALLENGE'
+
         const title = isChallenge ? `Challenge ${stageInfo.code} - ${stageInfo.name}` : `${stageInfo.code} - ${stageInfo.name}`;
         const description = formatBlackboardText(stageInfo.description, []);
 
@@ -842,8 +844,7 @@ module.exports = {
         const embed = new EmbedBuilder()
             .setColor(0xebca60)
             .setTitle(title)
-            .setDescription(description)
-            .setImage(`attachment://${stageInfo.stageId}.png`);
+            .setDescription(description);
 
         if (enemyString != '') {
             embed.addFields({ name: 'Enemies', value: enemyString, inline: true });
@@ -856,34 +857,56 @@ module.exports = {
         }
 
         try {
-            const imagePath = path.join(__dirname, '../../', stageImagePath, `${stageInfo.stageId}.png`);
+            const imagePath = path.join(__dirname, '../../', stageImagePath, `${stageId}.png`);
             await fs.promises.access(imagePath);
             const image = new AttachmentBuilder(imagePath);
 
+            embed.setImage(`attachment://${stageId}.png`)
+
             return { embeds: [embed], files: [image] };
         } catch (e) {
-            const mapData = stageData.mapData;
-            const map = mapData.map;
-            const tiles = mapData.tiles;
+            try {
+                const mainId = stageId.replace('tough', 'main');
+                const imagePath = path.join(__dirname, '../../', stageImagePath, `${mainId}.png`);
+                await fs.promises.access(imagePath);
+                const image = new AttachmentBuilder(imagePath);
 
-            let mapString = '', legendString = '';
+                embed.setImage(`attachment://${mainId}.png`)
 
-            for (let i = 0; i < map.length; i++) {
-                for (let j = 0; j < map[0].length; j++) {
-                    const tileKey = tiles[map[i][j]].tileKey;
-                    const tile = tileDict[tileKey];
-                    mapString += tile.emoji;
+                return { embeds: [embed], files: [image] };
+            } catch (e) {
+                try {
+                    const newId = stageId.substring(0, stageId.length - 3);
+                    const imagePath = path.join(__dirname, '../../', stageImagePath, `${newId}.png`);
+                    await fs.promises.access(imagePath);
+                    const image = new AttachmentBuilder(imagePath);
 
-                    if (legendString.includes(tile.name)) continue;
+                    embed.setImage(`attachment://${newId}.png`)
 
-                    legendString += `${tile.emoji} - ${tile.name}\n`;
+                    return { embeds: [embed], files: [image] };
+                } catch (e) {
+                    const mapData = stageData.mapData;
+                    const map = mapData.map;
+                    const tiles = mapData.tiles;
+                    let mapString = '', legendString = '';
+
+                    for (let i = 0; i < map.length; i++) {
+                        for (let j = 0; j < map[0].length; j++) {
+                            const tileKey = tiles[map[i][j]].tileKey;
+                            const tile = tileDict[tileKey];
+                            mapString += tile.emoji;
+
+                            if (legendString.includes(tile.name)) continue;
+
+                            legendString += `${tile.emoji} - ${tile.name}\n`;
+                        }
+                        mapString += '\n';
+                    }
+                    embed.addFields({ name: 'Map', value: mapString }, { name: 'Legend', value: legendString });
+
+                    return { embeds: [embed], files: [] };
                 }
-                mapString += '\n';
             }
-
-            embed.addFields({ name: 'Map', value: mapString }, { name: 'Legend', value: legendString });
-
-            return { embeds: [embed], files: [] };
         }
     },
     stageSelectEmbed(stageArr: Stage[] | RogueStage[]) {
