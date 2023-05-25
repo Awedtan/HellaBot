@@ -6,7 +6,7 @@ module.exports = {
         return text;
     },
     formatBlackboardText(text: string, blackboard: Blackboard[]) {
-        if (text === null) return;
+        if (text === null) return '';
         if (blackboard === null) blackboard = [];
 
         text = text.trim();
