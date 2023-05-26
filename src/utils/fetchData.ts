@@ -182,7 +182,7 @@ function initParadoxes() {
     for (const excel of Object.values(stages)) {
         try {
             const opId = excel.charId;
-            const levelId = excel.levelId;
+            const levelId = excel.levelId.toLowerCase();
             const levels: StageData = require(`${dataPath}/levels/${levelId}.json`);
             const paradox = { excel: excel, levels: levels };
 
