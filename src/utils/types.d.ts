@@ -291,6 +291,7 @@ type Module = {
 
 type Operator = {
     id: string;
+    recruitId: number;
     modules: string[];
     bases: BaseInfo[];
     data: {

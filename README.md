@@ -1,4 +1,4 @@
-# Hellabot
+# HellaBot
  
 ## todo:
 

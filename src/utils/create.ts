@@ -8,7 +8,16 @@ const path = require('path');
 import { Base, BaseInfo, Enemy, Module, Paradox, Operator, Range, RogueStage, Skill, Skin, Stage } from "./types";
 
 const eliteLevels = ['E0', 'E1', 'E2', 'E3'];
-const professions: { [key: string]: string } = { PIONEER: 'Vanguard', WARRIOR: 'Guard', TANK: 'Defender', SNIPER: 'Sniper', CASTER: 'Caster', MEDIC: 'Medic', SUPPORT: 'Supporter', SPECIAL: 'Specialist' };
+const professions: { [key: string]: string } = {
+    PIONEER: 'Vanguard',
+    WARRIOR: 'Guard',
+    TANK: 'Defender',
+    SNIPER: 'Sniper',
+    CASTER: 'Caster',
+    MEDIC: 'Medic',
+    SUPPORT: 'Supporter',
+    SPECIAL: 'Specialist'
+};
 const skillLevels = ['Lv1', 'Lv2', 'Lv3', 'Lv4', 'Lv5', 'Lv6', 'Lv7', 'M1', 'M2', 'M3'];
 const skillTypes = ['Passive', 'Manual Trigger', 'Auto Trigger'];
 const spTypes = [undefined, 'Per Second', 'Offensive', undefined, 'Defensive', undefined, undefined, undefined, 'Passive'];

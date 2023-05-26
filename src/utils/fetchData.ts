@@ -18,6 +18,47 @@ const toughStageDict: { [key: string]: Stage[] } = {};
 const toughRogue1StageDict: { [key: string]: RogueStage[] } = {};
 const toughRogue2StageDict: { [key: string]: RogueStage[] } = {};
 
+const tagValues: { [key: string]: number } = { // prime number method for shits and giggles
+    starter: 2,
+    'senior operator': 3,
+    'top operator': 5,
+    melee: 7,
+    ranged: 11,
+    guard: 13,
+    medic: 17,
+    vanguard: 19,
+    caster: 23,
+    sniper: 29,
+    defender: 31,
+    supporter: 37,
+    specialist: 41,
+    healing: 43,
+    support: 47,
+    dps: 53,
+    aoe: 59,
+    slow: 61,
+    survival: 67,
+    defense: 71,
+    debuff: 73,
+    shift: 79,
+    'crowd control': 83,
+    nuker: 89,
+    summon: 97,
+    'fast-redeploy': 101,
+    'dp-recovery': 103,
+    robot: 107
+};
+const professions: { [key: string]: string } = {
+    PIONEER: 'Vanguard',
+    WARRIOR: 'Guard',
+    TANK: 'Defender',
+    SNIPER: 'Sniper',
+    CASTER: 'Caster',
+    MEDIC: 'Medic',
+    SUPPORT: 'Supporter',
+    SPECIAL: 'Specialist'
+};
+
 type SubProf = {
     subProfessionId: string;
     subProfessionName: string;
@@ -155,6 +196,8 @@ function initOperators() {
         const opModules = charEquip.hasOwnProperty(opId) ? charEquip[opId] : [];
         const opBases: BaseInfo[] = [];
 
+        if (opData.tagList === null) continue;
+
         if (chars.hasOwnProperty(opId)) {
             for (const buff of chars[opId].buffChar) {
                 for (const baseData of buff.buffData) {
@@ -162,7 +205,17 @@ function initOperators() {
                 }
             }
         }
-        operatorDict[opId] = { data: opData, id: opId, modules: opModules, bases: opBases };
+
+        const positionId = tagValues[opData.position.toLowerCase()];
+        let tagId = 1;
+        for (const tag of opData.tagList) {
+            tagId *= tagValues[tag.toLowerCase()];
+        }
+        const classId = tagValues[professions[opData.profession].toLowerCase()];
+
+        const recruitId = positionId * tagId * classId;
+
+        operatorDict[opId] = { id: opId, recruitId: recruitId, modules: opModules, bases: opBases, data: opData };
 
         if (operatorDict.hasOwnProperty(opName)) continue;
 
