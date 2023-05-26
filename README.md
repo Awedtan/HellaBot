@@ -2,10 +2,6 @@
  
 ## todo:
 
-add paradox simulation stages
-
-add roguelike stages
-
 add stage drops
 
 add skill, elite, module costs
@@ -21,6 +17,8 @@ count enemies in a stage
 maintain bot
 
 ## maybe:
+
+find where cc stage info is stored
 
 gacha banners
 

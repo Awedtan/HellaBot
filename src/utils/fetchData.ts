@@ -1,12 +1,13 @@
 const { dataPath } = require('../../paths.json');
 
-import { Base, BaseInfo, Enemy, Module, Operator, Range, RogueStage, RogueStageInfo, Skill, Skin, Stage, StageData, StageInfo } from "./types";
+import { Base, BaseInfo, Enemy, Module, Operator, Paradox, ParadoxInfo, Range, RogueStage, RogueStageInfo, Skill, Skin, Stage, StageData, StageInfo } from "./types";
 
 const archetypeDict: { [key: string]: string } = {};
 const baseDict: { [key: string]: Base } = {};
 const enemyDict: { [key: string]: Enemy } = {};
 const moduleDict: { [key: string]: Module } = {};
 const operatorDict: { [key: string]: Operator } = {};
+const paradoxDict: { [key: string]: Paradox } = {};
 const rangeDict: { [key: string]: Range } = {};
 const rogue1StageDict: { [key: string]: RogueStage[] } = {};
 const rogue2StageDict: { [key: string]: RogueStage[] } = {};
@@ -29,6 +30,7 @@ module.exports = {
         initBases();
         initEnemies();
         initModules();
+        initParadoxes();
         initRanges();
         initSkills();
         initSkins();
@@ -51,6 +53,9 @@ module.exports = {
     },
     fetchOperators() {
         return operatorDict;
+    },
+    fetchParadoxes() {
+        return paradoxDict;
     },
     fetchRanges() {
         return rangeDict;
@@ -168,6 +173,24 @@ function initOperators() {
 
     operatorDict['mlynar'] = operatorDict['młynar'];
     operatorDict['pozemka'] = operatorDict['pozëmka'];
+}
+
+function initParadoxes() {
+    const handbookTable: { [key: string]: any } = require(`${dataPath}/excel/handbook_info_table.json`);
+    const stages: { [key: string]: ParadoxInfo } = handbookTable.handbookStageData;
+
+    for (const excel of Object.values(stages)) {
+        try {
+            const opId = excel.charId;
+            const levelId = excel.levelId;
+            const levels: StageData = require(`${dataPath}/levels/${levelId}.json`);
+            const paradox = { excel: excel, levels: levels };
+
+            paradoxDict[opId] = paradox;
+        } catch (e) {
+            console.log(e);
+        }
+    }
 }
 
 function initRanges() {

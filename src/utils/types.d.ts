@@ -381,6 +381,37 @@ type OperatorUnlockCond = {
     level: number;
 };
 
+type Paradox = {
+    excel: ParadoxInfo;
+    levels: StageData;
+};
+
+type ParadoxInfo = {
+    charId: string;
+    stageId: string;
+    levelId: string;
+    zoneId: string;
+    code: string;
+    name: string;
+    loadingPicId: string;
+    description: string;
+    unlockParam: {
+        unlockType: number;
+        unlockParam1: string;
+        unlockParam2: string;
+        unlockParam3: null;
+    }[];
+    rewardItem: {
+        id: string;
+        count: number;
+        type: string;
+    }[];
+    stageNameForShow: string;
+    zoneNameForShow: string;
+    picId: string;
+    stageGetTime: number;
+};
+
 type Range = {
     id: string;
     direction: number;

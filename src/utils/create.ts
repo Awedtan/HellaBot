@@ -1,11 +1,11 @@
 const { baseImagePath, eliteImagePath, enemyImagePath, moduleImagePath, operatorAvatarPath, operatorImagePath, stageImagePath, skillImagePath, skinGroupPath } = require('../../paths.json');
 const { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder } = require('discord.js');
-const { fetchArchetypes, fetchBases, fetchEnemies, fetchModules, fetchRanges, fetchSkills, fetchSkins } = require('../utils/fetchData');
+const { fetchArchetypes, fetchBases, fetchEnemies, fetchModules, fetchOperators, fetchRanges, fetchSkills, fetchSkins } = require('../utils/fetchData');
 const { cleanFilename, formatBlackboardText } = require('../utils/utils');
 const fs = require('fs');
 const path = require('path');
 
-import { Base, BaseInfo, Enemy, Module, Operator, Range, RogueStage, Skill, Skin, Stage } from "./types";
+import { Base, BaseInfo, Enemy, Module, Paradox, Operator, Range, RogueStage, Skill, Skin, Stage } from "./types";
 
 const eliteLevels = ['E0', 'E1', 'E2', 'E3'];
 const professions: { [key: string]: string } = { PIONEER: 'Vanguard', WARRIOR: 'Guard', TANK: 'Defender', SNIPER: 'Sniper', CASTER: 'Caster', MEDIC: 'Medic', SUPPORT: 'Supporter', SPECIAL: 'Specialist' };
@@ -474,6 +474,90 @@ module.exports = {
 
         return { embeds: [embed], files: [avatar] };
     },
+    async paradoxEmbed(paradox: Paradox) {
+        const enemyDict: { [key: string]: Enemy } = fetchEnemies();
+        const operatorDict: { [key: string]: Operator } = fetchOperators();
+
+        const stageInfo = paradox.excel;
+        const stageData = paradox.levels;
+        const stageId = stageInfo.stageId;
+
+        const op = operatorDict[stageInfo.charId];
+
+        const avatarPath = path.join(__dirname, '../../', operatorAvatarPath, `${op.id}.png`);
+        const avatar = new AttachmentBuilder(avatarPath);
+
+        const authorField = this.authorField(op);
+        const title = `Paradox Simulation - ${stageInfo.name}`;
+        const description = formatBlackboardText(stageInfo.description, []);
+
+        const embed = new EmbedBuilder()
+            .setColor(0xebca60)
+            .setAuthor(authorField)
+            .setTitle(title)
+            .setDescription(description);
+
+        const stageEnemies = stageData.enemyDbRefs;
+        let enemyString = '', eliteString = '', bossString = '';
+
+        for (const enemy of stageEnemies) {
+            if (enemyDict.hasOwnProperty(enemy.id)) {
+                const enemyInfo = enemyDict[enemy.id].excel;
+                switch (enemyInfo.enemyLevel) {
+                    case ('NORMAL'):
+                        enemyString += `${enemyInfo.enemyIndex} - ${enemyInfo.name}\n`;
+                        break;
+                    case ('ELITE'):
+                        eliteString += `${enemyInfo.enemyIndex} - ${enemyInfo.name}\n`;
+                        break;
+                    case ('BOSS'):
+                        bossString += `${enemyInfo.enemyIndex} - ${enemyInfo.name}\n`;
+                        break;
+                }
+            }
+        }
+
+        if (enemyString != '') {
+            embed.addFields({ name: 'Enemies', value: enemyString, inline: true });
+        }
+        if (eliteString != '') {
+            embed.addFields({ name: 'Elites', value: eliteString, inline: true });
+        }
+        if (bossString != '') {
+            embed.addFields({ name: 'Leaders', value: bossString, inline: false });
+        }
+
+        try {
+            const imagePath = path.join(__dirname, '../../', stageImagePath, `${stageId}.png`);
+            await fs.promises.access(imagePath);
+            const image = new AttachmentBuilder(imagePath);
+
+            embed.setImage(`attachment://${stageId}.png`)
+
+            return { embeds: [embed], files: [image, avatar] };
+        } catch (e) {
+            const mapData = stageData.mapData;
+            const map = mapData.map;
+            const tiles = mapData.tiles;
+            let mapString = '', legendString = '';
+
+            for (let i = 0; i < map.length; i++) {
+                for (let j = 0; j < map[0].length; j++) {
+                    const tileKey = tiles[map[i][j]].tileKey;
+                    const tile = tileDict[tileKey];
+                    mapString += tile.emoji;
+
+                    if (legendString.includes(tile.name)) continue;
+
+                    legendString += `${tile.emoji} - ${tile.name}\n`;
+                }
+                mapString += '\n';
+            }
+            embed.addFields({ name: 'Map', value: mapString }, { name: 'Legend', value: legendString });
+
+            return { embeds: [embed], files: [avatar] };
+        }
+    },
     rangeField(rangeId: string) {
         const rangeDict: { [key: string]: Range } = fetchRanges();
         const range = rangeDict[rangeId];
@@ -821,6 +905,11 @@ module.exports = {
         const title = isChallenge ? `Challenge ${stageInfo.code} - ${stageInfo.name}` : `${stageInfo.code} - ${stageInfo.name}`;
         const description = formatBlackboardText(stageInfo.description, []);
 
+        const embed = new EmbedBuilder()
+            .setColor(0xebca60)
+            .setTitle(title)
+            .setDescription(description);
+
         const stageEnemies = stageData.enemyDbRefs;
         let enemyString = '', eliteString = '', bossString = '';
 
@@ -840,11 +929,6 @@ module.exports = {
                 }
             }
         }
-
-        const embed = new EmbedBuilder()
-            .setColor(0xebca60)
-            .setTitle(title)
-            .setDescription(description);
 
         if (enemyString != '') {
             embed.addFields({ name: 'Enemies', value: enemyString, inline: true });

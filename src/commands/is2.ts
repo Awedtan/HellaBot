@@ -25,8 +25,8 @@ module.exports = {
             option.setName('difficulty')
                 .setDescription('difficulty')
                 .addChoices(
-                    { name: 'Normal', value: 'normal' },
-                    { name: 'Challenge', value: 'challenge' }
+                    { name: 'normal', value: 'normal' },
+                    { name: 'challenge', value: 'challenge' }
                 )
         ),
     async execute(interaction) {

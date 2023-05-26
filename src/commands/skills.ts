@@ -19,12 +19,12 @@ module.exports = {
     async execute(interaction) {
         const operatorDict: { [key: string]: Operator } = fetchOperators();
         const skillDict: { [key: string]: Skill } = fetchSkills();
-        const operatorName = interaction.options.getString('name').toLowerCase();
+        const name = interaction.options.getString('name').toLowerCase();
 
-        if (!operatorDict.hasOwnProperty(operatorName))
+        if (!operatorDict.hasOwnProperty(name))
             return await interaction.reply('That operator doesn\'t exist!');
 
-        const op = operatorDict[operatorName];
+        const op = operatorDict[name];
 
         if (op.data.skills.length === 0)
             return await interaction.reply('That operator doesn\'t have any skills!');
