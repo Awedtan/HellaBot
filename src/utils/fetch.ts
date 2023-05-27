@@ -1,12 +1,12 @@
 const { dataPath } = require('../../paths.json');
 
-import { Base, BaseInfo, Enemy, Module, Operator, Paradox, ParadoxInfo, Range, RogueStage, RogueStageInfo, Skill, Skin, Stage, StageData, StageInfo } from "./types";
+import { Base, BaseInfo, Enemy, Module, Operator, Paradox, ParadoxInfo, Range, RogueStage, RogueStageInfo, Skill, Skin, Stage, StageData, StageInfo } from "../types";
 
 const archetypeDict: { [key: string]: string } = {};
 const baseDict: { [key: string]: Base } = {};
 const enemyDict: { [key: string]: Enemy } = {};
 const moduleDict: { [key: string]: Module } = {};
-const operatorDict: { [key: string]: Operator } = {};
+export const operatorDict: { [key: string]: Operator } = {};
 const paradoxDict: { [key: string]: Paradox } = {};
 const rangeDict: { [key: string]: Range } = {};
 const rogue1StageDict: { [key: string]: RogueStage[] } = {};
@@ -80,6 +80,53 @@ module.exports = {
 
         initOperators();
     },
+
+    archetypes() {
+        return archetypeDict;
+    },
+    bases() {
+        return baseDict;
+    },
+    enemies() {
+        return enemyDict;
+    },
+    modules() {
+        return moduleDict;
+    },
+    operators() {
+        return operatorDict;
+    },
+    paradoxes() {
+        return paradoxDict;
+    },
+    ranges() {
+        return rangeDict;
+    },
+    rogue1Stages() {
+        return rogue1StageDict;
+    },
+    rogue2Stages() {
+        return rogue2StageDict;
+    },
+    skills() {
+        return skillDict;
+    },
+    skins() {
+        return skinDict;
+    },
+    stages() {
+        return stageDict;
+    },
+    toughRogue1Stages() {
+        return toughRogue1StageDict;
+    },
+    toughRogue2Stages() {
+        return toughRogue2StageDict;
+    },
+    toughStages() {
+        return toughStageDict;
+    },
+
     fetchArchetypes() {
         return archetypeDict;
     },

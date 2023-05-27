@@ -1,9 +1,9 @@
 const { skillImagePath } = require('../../paths.json');
 const { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, SlashCommandBuilder } = require('discord.js');
-const { fetchSkills } = require('../utils/fetchData');
-const { createRangeEmbedField, formatBlackboardText } = require('../utils/utils');
+const { fetchSkills } = require('../utils/fetch');
+const { createRangeEmbedField, formatText } = require('../utils/utils');
 
-import { Skill } from '../utils/types';
+import { Skill } from '../types';
 
 const levelId: { [key: string]: number } = { l1: 0, l2: 1, l3: 2, l4: 3, l5: 4, l6: 5, l7: 6, m1: 7, m2: 8, m3: 9 };
 const skillLevels = ['Lv1', 'Lv2', 'Lv3', 'Lv4', 'Lv5', 'Lv6', 'Lv7', 'M1', 'M2', 'M3'];
@@ -93,7 +93,7 @@ function createSkillEmbed(skillName: string, level: number) {
     const spType = spTypes[skillLevel.spData.spType];
     const skillType = skillTypes[skillLevel.skillType];
 
-    const description = formatBlackboardText(skillLevel.description, skillLevel.blackboard);
+    const description = formatText(skillLevel.description, skillLevel.blackboard);
 
     let embedDescription = `**${spType} - ${skillType}**\n***Cost:* ${spCost} SP - *Initial:* ${initSp} SP`;
     if (skillDuration > 0) {

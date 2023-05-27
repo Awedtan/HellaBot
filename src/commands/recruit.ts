@@ -1,8 +1,8 @@
 const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
-const { fetchOperators } = require('../utils/fetchData');
+const { fetchOperators } = require('../utils/fetch');
 const create = require('../utils/create');
 
-import { Operator } from '../utils/types';
+import { Operator } from '../types';
 
 const tagValues: { [key: string]: number } = { // prime number method for shits and giggles
     starter: 2,

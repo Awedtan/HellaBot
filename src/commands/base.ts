@@ -1,9 +1,9 @@
 const { SlashCommandBuilder } = require('discord.js');
-const { fetchBases, fetchOperators } = require('../utils/fetchData');
+const { fetchBases, fetchOperators } = require('../utils/fetch');
 const wait = require('timers/promises').setTimeout;
 const create = require('../utils/create');
 
-import { Base, BaseInfo, Operator } from "../utils/types";
+import { Base, BaseInfo, Operator } from "../types";
 
 module.exports = {
     data: new SlashCommandBuilder()

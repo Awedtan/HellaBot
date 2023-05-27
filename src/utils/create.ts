@@ -1,11 +1,11 @@
 const { baseImagePath, eliteImagePath, enemyImagePath, moduleImagePath, operatorAvatarPath, operatorImagePath, stageImagePath, skillImagePath, skinGroupPath } = require('../../paths.json');
 const { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder } = require('discord.js');
-const { fetchArchetypes, fetchBases, fetchEnemies, fetchModules, fetchOperators, fetchRanges, fetchSkills, fetchSkins } = require('../utils/fetchData');
-const { cleanFilename, formatBlackboardText } = require('../utils/utils');
+const fetch = require('../utils/fetch');
+const utils = require('../utils/utils');
 const fs = require('fs');
 const path = require('path');
 
-import { Base, BaseInfo, Enemy, Module, Paradox, Operator, Range, RogueStage, Skill, Skin, Stage } from "./types";
+import { Base, BaseInfo, Enemy, Module, Paradox, Operator, Range, RogueStage, Skill, Skin, Stage } from "../types";
 
 const eliteLevels = ['E0', 'E1', 'E2', 'E3'];
 const professions: { [key: string]: string } = {
@@ -84,13 +84,13 @@ module.exports = {
 
         const name = `${base.buffName} - ${eliteLevels[baseCond.phase]} Lv${baseCond.level}`;
         const authorField = this.authorField(op);
-        const description = formatBlackboardText(base.description, []);
+        const description = utils.formatText(base.description, []);
 
         const embed = new EmbedBuilder()
             .setColor(0xebca60)
             .setAuthor(authorField)
             .setTitle(name)
-            .setThumbnail(`attachment://${cleanFilename(base.skillIcon)}.png`)
+            .setThumbnail(`attachment://${utils.cleanFilename(base.skillIcon)}.png`)
             .setDescription(description);
 
         return { embeds: [embed], files: [image, avatar], components: [] };
@@ -104,7 +104,7 @@ module.exports = {
         const image = new AttachmentBuilder(imagePath);
 
         const title = `${enemyInfo.enemyIndex} - ${enemyInfo.name}`;
-        const description = `${formatBlackboardText(enemyInfo.description, [])}\n\n${formatBlackboardText(enemyInfo.ability, [])}`;
+        const description = `${utils.formatText(enemyInfo.description, [])}\n\n${utils.formatText(enemyInfo.ability, [])}`;
 
         const hp = enemyData.attributes.maxHp.m_value.toString();
         const atk = enemyData.attributes.atk.m_value.toString();
@@ -188,7 +188,7 @@ module.exports = {
 
                 if (skills.length === 0) break;
 
-                const skillDict: { [key: string]: Skill } = fetchSkills();
+                const skillDict: { [key: string]: Skill } = fetch.skills();
                 const skill = skillDict[skills[currentPage].skillId];
                 const skillEmbed = this.skillEmbed(skill, currentLevel, op);
 
@@ -237,7 +237,7 @@ module.exports = {
 
                 if (modules === null) break;
 
-                const moduleDict: { [key: string]: Module } = fetchModules();
+                const moduleDict: { [key: string]: Module } = fetch.modules();
                 const module = moduleDict[modules[currentPage + 1]];
                 const moduleEmbed = this.moduleEmbed(module, currentLevel, op);
 
@@ -294,7 +294,7 @@ module.exports = {
                 baseButton.setDisabled(true);
 
                 for (const baseInfo of op.bases) {
-                    const baseDict = fetchBases();
+                    const baseDict = fetch.bases();
                     const base = baseDict[baseInfo.buffId];
                     const baseEmbed = this.baseEmbed(base, baseInfo, op);
 
@@ -337,10 +337,10 @@ module.exports = {
                 const candidate = candidates[candidates.length - 1];
 
                 if (candidate.additionalDescription != null) {
-                    traitDescription += `${formatBlackboardText(candidate.additionalDescription, candidate.blackboard)}\n`;
+                    traitDescription += `${utils.formatText(candidate.additionalDescription, candidate.blackboard)}\n`;
                 }
                 if (candidate.overrideDescripton != null) {
-                    traitDescription += `${formatBlackboardText(candidate.overrideDescripton, candidate.blackboard)}\n`;
+                    traitDescription += `${utils.formatText(candidate.overrideDescripton, candidate.blackboard)}\n`;
                 }
             }
             if (part.addOrOverrideTalentDataBundle.candidates != null) {
@@ -351,7 +351,7 @@ module.exports = {
                     talentName = candidate.name;
                 }
                 if (candidate.upgradeDescription != null) {
-                    talentDescription += `${formatBlackboardText(candidate.upgradeDescription, candidate.blackboard)}\n`;
+                    talentDescription += `${utils.formatText(candidate.upgradeDescription, candidate.blackboard)}\n`;
                 }
             }
         }
@@ -403,7 +403,7 @@ module.exports = {
         return { embeds: [embed], files: [image, avatar], components: [rowOne] };
     },
     operatorEmbed(op: Operator) {
-        const archetypeDict: { [key: string]: string } = fetchArchetypes();
+        const archetypeDict: { [key: string]: string } = fetch.archetypes();
 
         const opData = op.data;
         const opId = op.id;
@@ -417,11 +417,11 @@ module.exports = {
             name += '★';
         }
 
-        let description = formatBlackboardText(opData.description, []);
+        let description = utils.formatText(opData.description, []);
         if (opData.trait != null) {
             const candidate = opData.trait.candidates[opData.trait.candidates.length - 1];
             if (candidate.overrideDescripton != null) {
-                description = formatBlackboardText(candidate.overrideDescripton, candidate.blackboard);
+                description = utils.formatText(candidate.overrideDescripton, candidate.blackboard);
             }
         }
 
@@ -438,7 +438,7 @@ module.exports = {
 
         for (const talent of opData.talents) {
             const candidate = talent.candidates[talent.candidates.length - 1];
-            embed.addFields({ name: `*Talent:* ${candidate.name}`, value: formatBlackboardText(candidate.description, []) });
+            embed.addFields({ name: `*Talent:* ${candidate.name}`, value: utils.formatText(candidate.description, []) });
         }
 
         let potentialString = '';
@@ -484,8 +484,8 @@ module.exports = {
         return { embeds: [embed], files: [avatar] };
     },
     async paradoxEmbed(paradox: Paradox) {
-        const enemyDict: { [key: string]: Enemy } = fetchEnemies();
-        const operatorDict: { [key: string]: Operator } = fetchOperators();
+        const enemyDict: { [key: string]: Enemy } = fetch.enemies();
+        const operatorDict: { [key: string]: Operator } = fetch.operators();
 
         const stageInfo = paradox.excel;
         const stageData = paradox.levels;
@@ -498,7 +498,7 @@ module.exports = {
 
         const authorField = this.authorField(op);
         const title = `Paradox Simulation - ${stageInfo.name}`;
-        const description = formatBlackboardText(stageInfo.description, []);
+        const description = utils.formatText(stageInfo.description, []);
 
         const embed = new EmbedBuilder()
             .setColor(0xebca60)
@@ -568,7 +568,7 @@ module.exports = {
         }
     },
     rangeField(rangeId: string) {
-        const rangeDict: { [key: string]: Range } = fetchRanges();
+        const rangeDict: { [key: string]: Range } = fetch.ranges();
         const range = rangeDict[rangeId];
         const rangeGrid = range.grids;
 
@@ -631,7 +631,7 @@ module.exports = {
         const spType = spTypes[skillLevel.spData.spType];
         const skillType = skillTypes[skillLevel.skillType];
 
-        const description = formatBlackboardText(skillLevel.description, skillLevel.blackboard);
+        const description = utils.formatText(skillLevel.description, skillLevel.blackboard);
 
         let embedDescription = `**${spType} - ${skillType}**\n***Cost:* ${spCost} SP - *Initial:* ${initSp} SP`;
         if (skillDuration > 0) {
@@ -643,7 +643,7 @@ module.exports = {
             .setColor(0xebca60)
             .setAuthor(authorField)
             .setTitle(name)
-            .setThumbnail(`attachment://skill_icon_${cleanFilename(imageFilename)}.png`)
+            .setThumbnail(`attachment://skill_icon_${utils.cleanFilename(imageFilename)}.png`)
             .setDescription(embedDescription);
 
         if (skillLevel.rangeId != null) {
@@ -651,46 +651,46 @@ module.exports = {
             embed.addFields(rangeField);
         }
 
-        const skillOpId = `${skill.skillId}$${op.id}`;
+        const skillOpId = `${skill.skillId}ඞ${op.id}`;
 
         const lOne = new ButtonBuilder()
-            .setCustomId(`skill$l1$${skillOpId}`)
+            .setCustomId(`skillඞl1ඞ${skillOpId}`)
             .setLabel('Lv1')
             .setStyle(ButtonStyle.Secondary);
         const lTwo = new ButtonBuilder()
-            .setCustomId(`skill$l2$${skillOpId}`)
+            .setCustomId(`skillඞl2ඞ${skillOpId}`)
             .setLabel('Lv2')
             .setStyle(ButtonStyle.Secondary);
         const lThree = new ButtonBuilder()
-            .setCustomId(`skill$l3$${skillOpId}`)
+            .setCustomId(`skillඞl3ඞ${skillOpId}`)
             .setLabel('Lv3')
             .setStyle(ButtonStyle.Secondary);
         const lFour = new ButtonBuilder()
-            .setCustomId(`skill$l4$${skillOpId}`)
+            .setCustomId(`skillඞl4ඞ${skillOpId}`)
             .setLabel('Lv4')
             .setStyle(ButtonStyle.Secondary);
         const lFive = new ButtonBuilder()
-            .setCustomId(`skill$l5$${skillOpId}`)
+            .setCustomId(`skillඞl5ඞ${skillOpId}`)
             .setLabel('Lv5')
             .setStyle(ButtonStyle.Secondary);
         const lSix = new ButtonBuilder()
-            .setCustomId(`skill$l6$${skillOpId}`)
+            .setCustomId(`skillඞl6ඞ${skillOpId}`)
             .setLabel('Lv6')
             .setStyle(ButtonStyle.Secondary);
         const lSeven = new ButtonBuilder()
-            .setCustomId(`skill$l7$${skillOpId}`)
+            .setCustomId(`skillඞl7ඞ${skillOpId}`)
             .setLabel('Lv7')
             .setStyle(ButtonStyle.Secondary);
         const mOne = new ButtonBuilder()
-            .setCustomId(`skill$m1$${skillOpId}`)
+            .setCustomId(`skillඞm1ඞ${skillOpId}`)
             .setLabel('M1')
             .setStyle(ButtonStyle.Danger);
         const mTwo = new ButtonBuilder()
-            .setCustomId(`skill$m2_${skillOpId}`)
+            .setCustomId(`skillඞm2ඞ${skillOpId}`)
             .setLabel('M2')
             .setStyle(ButtonStyle.Danger);
         const mThree = new ButtonBuilder()
-            .setCustomId(`skill$m3$${skillOpId}`)
+            .setCustomId(`skillඞm3ඞ${skillOpId}`)
             .setLabel('M3')
             .setStyle(ButtonStyle.Danger);
 
@@ -739,7 +739,7 @@ module.exports = {
         return { embeds: [embed], files: [image, avatar], components: [rowOne, rowTwo] };
     },
     skinEmbed(op: Operator, page: number) {
-        const skinDict: { [key: string]: Skin[] } = fetchSkins();
+        const skinDict: { [key: string]: Skin[] } = fetch.skins();
 
         const skins = skinDict[op.id];
         const skin = skins[page];
@@ -764,7 +764,7 @@ module.exports = {
             .setAuthor(authorField)
             .setTitle(`${name}`)
             .addFields({ name: `Artist`, value: displaySkin.drawerName })
-            .setImage(`attachment://${cleanFilename(portraitId)}.png`);
+            .setImage(`attachment://${utils.cleanFilename(portraitId)}.png`);
 
         let thumbnail;
         switch (skinGroupId) {
@@ -830,13 +830,13 @@ module.exports = {
         return { embeds: [embed], files: [image, avatar, thumbnail], components: components };
     },
     async rogueStageEmbed(stage: RogueStage) {
-        const enemyDict: { [key: string]: Enemy } = fetchEnemies();
+        const enemyDict: { [key: string]: Enemy } = fetch.enemies();
 
         const stageInfo = stage.excel;
         const stageData = stage.levels;
 
         const title = stageInfo.difficulty === 'NORMAL' ? `${stageInfo.code} - ${stageInfo.name}` : `Challenge ${stageInfo.code} - ${stageInfo.name}`;
-        const description = stageInfo.difficulty === 'NORMAL' ? formatBlackboardText(stageInfo.description, []) : formatBlackboardText(`${stageInfo.description}\n${stageInfo.eliteDesc}`, []);
+        const description = stageInfo.difficulty === 'NORMAL' ? utils.formatText(stageInfo.description, []) : utils.formatText(`${stageInfo.description}\n${stageInfo.eliteDesc}`, []);
 
         const stageEnemies = stageData.enemyDbRefs;
         let enemyString = '', eliteString = '', bossString = '';
@@ -906,7 +906,7 @@ module.exports = {
         }
     },
     async stageEmbed(stage: Stage) {
-        const enemyDict: { [key: string]: Enemy } = fetchEnemies();
+        const enemyDict: { [key: string]: Enemy } = fetch.enemies();
 
         const stageInfo = stage.excel;
         const stageData = stage.levels;
@@ -914,7 +914,7 @@ module.exports = {
         const isChallenge = stageInfo.diffGroup === 'TOUGH' || stageInfo.difficulty === 'CHALLENGE'
 
         const title = isChallenge ? `Challenge ${stageInfo.code} - ${stageInfo.name}` : `${stageInfo.code} - ${stageInfo.name}`;
-        const description = formatBlackboardText(stageInfo.description, []);
+        const description = utils.formatText(stageInfo.description, []);
 
         const embed = new EmbedBuilder()
             .setColor(0xebca60)

@@ -2,12 +2,12 @@ const fs = require('fs');
 const path = require('path');
 const { Client, Collection, Events, GatewayIntentBits } = require('discord.js');
 const { token } = require('../config.json');
-const { initializeAll } = require('./utils/fetchData');
 const create = require('./utils/create');
-const fetchData = require('./utils/fetchData');
-import { Base, BaseInfo, Enemy, Module, Paradox, Operator, Range, RogueStage, Skill, Skin, Stage } from "./utils/types";
+const fetch = require('./utils/fetch');
 
-initializeAll();
+import { Base, BaseInfo, Enemy, Module, Paradox, Operator, Range, RogueStage, Skill, Skin, Stage } from "./types";
+
+fetch.initializeAll();
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 client.commands = new Collection();
@@ -53,19 +53,17 @@ client.on(Events.InteractionCreate, async interaction => {
 client.on(Events.InteractionCreate, async interaction => {
     if (!interaction.isButton()) return;
 
-    const idArr = interaction.customId.split('$');
+    const idArr = interaction.customId.split('ඞ');
 
     switch (idArr[0]) {
         case ('skill'):
             const levelId: { [key: string]: number } = { l1: 0, l2: 1, l3: 2, l4: 3, l5: 4, l6: 5, l7: 6, m1: 7, m2: 8, m3: 9 };
-            const skillDict = fetchData.fetchSkills();
-            const opDict = fetchData.fetchOperators();
-
-            console.log(idArr);
+            const skillDict: { [key: string]: Skill } = fetch.skills();
+            const opDict: { [key: string]: Operator } = fetch.operators();
 
             const level = levelId[idArr[1]];
-            const skill: { [key: string]: Skill } = skillDict[idArr[2]];
-            const op: { [key: string]: Operator } = opDict[idArr[3]];
+            const skill = skillDict[idArr[2]];
+            const op = opDict[idArr[3]];
 
             const skillEmbed = create.skillEmbed(skill, level, op);
             await interaction.update(skillEmbed);

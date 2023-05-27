@@ -1,9 +1,9 @@
 const { operatorAvatarPath } = require('../../paths.json');
 const { AttachmentBuilder, EmbedBuilder, SlashCommandBuilder } = require('discord.js');
-const { fetchOperators, fetchArchetypes } = require('../utils/fetchData');
-const { createRangeEmbedField, formatBlackboardText } = require('../utils/utils');
+const { fetchOperators, fetchArchetypes } = require('../utils/fetch');
+const { createRangeEmbedField, formatText } = require('../utils/utils');
 
-import { Operator } from '../utils/types';
+import { Operator } from '../types';
 
 const professions: { [key: string]: string } = {
     PIONEER: 'Vanguard',
@@ -57,11 +57,11 @@ function createOperatorEmbed(operatorName: string) {
 
     const urlName = opData.name.split(' the ').join('-').split('\'').join('').split(' ').join('-').split('ë').join('e').split('ł').join('l');
 
-    let description = formatBlackboardText(opData.description, []);
+    let description = formatText(opData.description, []);
     if (opData.trait != null) {
         const candidate = opData.trait.candidates[opData.trait.candidates.length - 1];
         if (candidate.overrideDescripton != null) {
-            description = formatBlackboardText(candidate.overrideDescripton, candidate.blackboard);
+            description = formatText(candidate.overrideDescripton, candidate.blackboard);
         }
     }
 
@@ -78,7 +78,7 @@ function createOperatorEmbed(operatorName: string) {
 
     for (const talent of opData.talents) {
         const candidate = talent.candidates[talent.candidates.length - 1];
-        embed.addFields({ name: `*Talent:* ${candidate.name}`, value: formatBlackboardText(candidate.description, []) });
+        embed.addFields({ name: `*Talent:* ${candidate.name}`, value: formatText(candidate.description, []) });
     }
 
     let potentialString = '';

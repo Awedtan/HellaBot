@@ -1,8 +1,8 @@
 const { SlashCommandBuilder } = require('discord.js');
-const { fetchOperators, fetchSkins } = require('../utils/fetchData');
+const { fetchOperators, fetchSkins } = require('../utils/fetch');
 const create = require('../utils/create');
 
-import { Operator, Skin } from "../utils/types";
+import { Operator, Skin } from "../types";
 
 const pageId: { [key: string]: number } = { p1: 0, p2: 1, p3: 2, p4: 3, p5: 4, p6: 5, p7: 6, p8: 7, p9: 8 };
 

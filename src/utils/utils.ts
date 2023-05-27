@@ -1,11 +1,11 @@
-import { Blackboard } from "./types";
+import { Blackboard } from "../types";
 
 module.exports = {
     cleanFilename(text: string) {
         text = text.split(/[#\+]|&|\[|\]/).join('');
         return text;
     },
-    formatBlackboardText(text: string, blackboard: Blackboard[]) {
+    formatText(text: string, blackboard: Blackboard[]) {
         if (text === null) return '';
         if (blackboard === null) blackboard = [];
 

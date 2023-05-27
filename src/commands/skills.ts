@@ -1,11 +1,8 @@
 const { SlashCommandBuilder } = require('discord.js');
-const { fetchOperators, fetchSkills } = require('../utils/fetchData');
-const wait = require('timers/promises').setTimeout;
+const fetch = require('../utils/fetch');
 const create = require('../utils/create');
 
-import { Operator, Skill } from '../utils/types';
-
-const levelId: { [key: string]: number } = { l1: 0, l2: 1, l3: 2, l4: 3, l5: 4, l6: 5, l7: 6, m1: 7, m2: 8, m3: 9 };
+import { Operator, Skill } from '../types';
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -22,8 +19,8 @@ module.exports = {
                 .addChoices({ name: '1', value: 1 }, { name: '2', value: 2 }, { name: '3', value: 3 })
         ),
     async execute(interaction) {
-        const operatorDict: { [key: string]: Operator } = fetchOperators();
-        const skillDict: { [key: string]: Skill } = fetchSkills();
+        const operatorDict: { [key: string]: Operator } = fetch.operators();
+        const skillDict: { [key: string]: Skill } = fetch.skills();
         const name = interaction.options.getString('name').toLowerCase();
         let index = interaction.options.getInteger('index') - 1;
         const op = operatorDict[name];
@@ -46,65 +43,14 @@ module.exports = {
             const skill = skillDict[opSkill.skillId];
 
             if (first) {
-                await replySkillEmbed(interaction, skill, op);
+                let skillEmbed = create.skillEmbed(skill, 0, op);
+                await interaction.reply(skillEmbed);
                 first = false;
             }
             else {
-                await sendSkillEmbed(interaction, skill, op);
+                let skillEmbed = create.skillEmbed(skill, 0, op);
+                await interaction.followUp(skillEmbed);
             }
-            await wait(200);
         }
     }
-}
-
-async function replySkillEmbed(interaction, skill: Skill, operator: Operator) {
-    let level = 0;
-    let skillEmbed = create.skillEmbed(skill, level, operator);
-    let response = await interaction.reply(skillEmbed);
-
-    // while (true) {
-    //     try {
-    //         const confirm = await response.awaitMessageComponent({ time: 300000 });
-
-    //         level = levelId[confirm.customId];
-    //         try {
-    //             await confirm.update({ content: '' });
-    //         } catch (e) {
-    //             continue;
-    //         }
-
-    //         skillEmbed = create.skillEmbed(skill, level, operator);
-    //         response = await response.edit(skillEmbed);
-    //     } catch (e) {
-    //         console.error(e);
-    //         await response.edit({ embeds: skillEmbed.embeds, files: skillEmbed.files, components: [] });
-    //         break;
-    //     }
-    // }
-}
-
-async function sendSkillEmbed(interaction, skill: Skill, operator: Operator) {
-    let level = 0;
-    let skillEmbed = create.skillEmbed(skill, level, operator);
-    let response = await interaction.followUp(skillEmbed);
-
-    // while (true) {
-    //     try {
-    //         const confirm = await response.awaitMessageComponent({ time: 300000 });
-
-    //         try {
-    //             await confirm.update({ content: '' });
-    //         } catch (e) {
-    //             continue;
-    //         }
-
-    //         level = levelId[confirm.customId];
-    //         skillEmbed = create.skillEmbed(skill, level, operator);
-    //         response = await response.edit(skillEmbed);
-    //     } catch (e) {
-    //         console.error(e);
-    //         await response.edit({ embeds: skillEmbed.embeds, files: skillEmbed.files, components: [] });
-    //         break;
-    //     }
-    // }
 }

@@ -1,9 +1,9 @@
 const { SlashCommandBuilder } = require('discord.js');
-const { fetchModules, fetchOperators } = require('../utils/fetchData');
+const { fetchModules, fetchOperators } = require('../utils/fetch');
 const wait = require('timers/promises').setTimeout;
 const create = require('../utils/create');
 
-import { Module, Operator } from "../utils/types";
+import { Module, Operator } from "../types";
 
 const levelId: { [key: string]: number } = { l1: 0, l2: 1, l3: 2 };
 

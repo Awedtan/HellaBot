@@ -1,8 +1,8 @@
 const { SlashCommandBuilder } = require('discord.js');
-const { fetchOperators, fetchParadoxes } = require('../utils/fetchData');
+const { fetchOperators, fetchParadoxes } = require('../utils/fetch');
 const create = require('../utils/create');
 
-import { Operator, Paradox } from '../utils/types';
+import { Operator, Paradox } from '../types';
 
 module.exports = {
     data: new SlashCommandBuilder()
