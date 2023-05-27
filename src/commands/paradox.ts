@@ -1,5 +1,5 @@
 const { SlashCommandBuilder } = require('discord.js');
-const { fetchOperators, fetchParadoxes } = require('../utils/fetch');
+const fetch = require('../utils/fetch');
 const create = require('../utils/create');
 
 import { Operator, Paradox } from '../types';
@@ -15,8 +15,8 @@ module.exports = {
         ),
     async execute(interaction) {
         const name = interaction.options.getString('name').toLowerCase();
-        const operatorDict: { [key: string]: Operator } = fetchOperators();
-        const paradoxDict: { [key: string]: Paradox } = fetchParadoxes();
+        const operatorDict: { [key: string]: Operator } = fetch.operators();
+        const paradoxDict: { [key: string]: Paradox } = fetch.paradoxes();
 
         if (!operatorDict.hasOwnProperty(name))
             return await interaction.reply('That operator doesn\'t exist!');

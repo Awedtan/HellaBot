@@ -1,10 +1,8 @@
 const { SlashCommandBuilder } = require('discord.js');
-const { fetchOperators, fetchSkins } = require('../utils/fetch');
+const fetch = require('../utils/fetch');
 const create = require('../utils/create');
 
 import { Operator, Skin } from "../types";
-
-const pageId: { [key: string]: number } = { p1: 0, p2: 1, p3: 2, p4: 3, p5: 4, p6: 5, p7: 6, p8: 7, p9: 8 };
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -16,44 +14,19 @@ module.exports = {
                 .setRequired(true)
         ),
     async execute(interaction) {
-        const operatorDict: { [key: string]: Operator } = fetchOperators();
-        const skinDict: { [key: string]: Skin[] } = fetchSkins();
+        const operatorDict: { [key: string]: Operator } = fetch.operators();
+        const skinDict: { [key: string]: Skin[] } = fetch.skins();
         const operatorName = interaction.options.getString('name').toLowerCase();
 
         if (!operatorDict.hasOwnProperty(operatorName))
             return await interaction.reply('That operator doesn\'t exist!');
 
-        const operator = operatorDict[operatorName];
+        const op = operatorDict[operatorName];
 
-        if (!skinDict.hasOwnProperty(operator.id))
+        if (!skinDict.hasOwnProperty(op.id))
             return await interaction.reply('That operator doesn\'t have any skins!');
 
-        replySkinEmbed(interaction, operator);
-    }
-}
-
-async function replySkinEmbed(interaction, operator: Operator) {
-    let page = 0;
-    let skinEmbed = create.skinEmbed(operator, page);
-    let response = await interaction.reply(skinEmbed);
-
-    while (true) {
-        try {
-            const confirm = await response.awaitMessageComponent({ time: 300000 });
-
-            try {
-                await confirm.update({ content: '' });
-            } catch (e) {
-                continue;
-            }
-
-            page = pageId[confirm.customId];
-            skinEmbed = create.skinEmbed(operator, page);
-            response = await response.edit(skinEmbed);
-        } catch (e) {
-            console.error(e);
-            await response.edit({ embeds: skinEmbed.embeds, files: skinEmbed.files, components: [] });
-            break;
-        }
+        const skinEmbed = create.skinEmbed(op, 0);
+        await interaction.reply(skinEmbed);
     }
 }

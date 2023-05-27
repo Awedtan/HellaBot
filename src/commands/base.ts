@@ -1,6 +1,5 @@
 const { SlashCommandBuilder } = require('discord.js');
-const { fetchBases, fetchOperators } = require('../utils/fetch');
-const wait = require('timers/promises').setTimeout;
+const fetch = require('../utils/fetch');
 const create = require('../utils/create');
 
 import { Base, BaseInfo, Operator } from "../types";
@@ -15,16 +14,17 @@ module.exports = {
                 .setRequired(true)
         ),
     async execute(interaction) {
-        const operatorDict: { [key: string]: Operator } = fetchOperators();
-        const baseBuffDict: { [key: string]: Base } = fetchBases();
-        const operatorName = interaction.options.getString('name').toLowerCase();
+        const operatorDict: { [key: string]: Operator } = fetch.operators();
+        const baseBuffDict: { [key: string]: Base } = fetch.bases();
+        const name = interaction.options.getString('name').toLowerCase();
 
-        if (!operatorDict.hasOwnProperty(operatorName))
+        if (!operatorDict.hasOwnProperty(name))
             return await interaction.reply('That operator doesn\'t exist!');
 
-        const op = operatorDict[operatorName];
+        const op = operatorDict[name];
 
         let first = true;
+
         for (const baseInfo of op.bases) {
             const base = baseBuffDict[baseInfo.buffId];
 
@@ -35,9 +35,8 @@ module.exports = {
             }
             else {
                 const baseEmbed = create.baseEmbed(base, baseInfo, op);
-                await interaction.channel.send(baseEmbed);
+                await interaction.followUp(baseEmbed);
             }
-            await wait(200);
         }
     }
 }

@@ -1,6 +1,5 @@
 const { SlashCommandBuilder } = require('discord.js');
-const { fetchModules, fetchOperators } = require('../utils/fetch');
-const wait = require('timers/promises').setTimeout;
+const fetch = require('../utils/fetch');
 const create = require('../utils/create');
 
 import { Module, Operator } from "../types";
@@ -17,8 +16,8 @@ module.exports = {
                 .setRequired(true)
         ),
     async execute(interaction) {
-        const operatorDict: { [key: string]: Operator } = fetchOperators();
-        const moduleDict: { [key: string]: Module } = fetchModules();
+        const operatorDict: { [key: string]: Operator } = fetch.operators();
+        const moduleDict: { [key: string]: Module } = fetch.modules();
         const operatorName = interaction.options.getString('name').toLowerCase();
 
         if (!operatorDict.hasOwnProperty(operatorName))
@@ -32,70 +31,19 @@ module.exports = {
         let first = true;
 
         for (const moduleId of op.modules) {
-            if (moduleId.indexOf('uniequip_001') != -1) continue;
+            if (moduleId.indexOf('uniequip_001') === 0) continue;
 
             const module = moduleDict[moduleId];
 
             if (first) {
-                replyModuleEmbed(interaction, module, op);
+                const moduleEmbed = create.moduleEmbed(module, op, 0);
+                await interaction.reply(moduleEmbed);
                 first = false;
             }
             else {
-                sendModuleEmbed(interaction.channel, module, op);
+                const moduleEmbed = create.moduleEmbed(module, op, 0);
+                await interaction.followUp(moduleEmbed);
             }
-            await wait(200);
-        }
-    }
-}
-
-async function replyModuleEmbed(interaction, module: Module, operator: Operator) {
-    let level = 0;
-    let moduleEmbed = create.moduleEmbed(module, level, operator);
-    let response = await interaction.reply(moduleEmbed);
-
-    while (true) {
-        try {
-            const confirm = await response.awaitMessageComponent({ time: 300000 });
-
-            try {
-                await confirm.update({ content: '' });
-            } catch (e) {
-                continue;
-            }
-
-            level = levelId[confirm.customId];
-            moduleEmbed = create.moduleEmbed(module, level, operator);
-            response = await response.edit(moduleEmbed);
-        } catch (e) {
-            console.error(e);
-            await response.edit({ embeds: moduleEmbed.embeds, files: moduleEmbed.files, components: [] });
-            break;
-        }
-    }
-}
-
-async function sendModuleEmbed(channel, module: Module, operator: Operator) {
-    let level = 0;
-    let moduleEmbed = create.moduleEmbed(module, level, operator);
-    let response = await channel.send(moduleEmbed);
-
-    while (true) {
-        try {
-            const confirm = await response.awaitMessageComponent({ time: 300000 });
-
-            try {
-                await confirm.update({ content: '' });
-            } catch (e) {
-                continue;
-            }
-
-            level = levelId[confirm.customId];
-            moduleEmbed = create.moduleEmbed(module, level, operator);
-            response = await response.edit(moduleEmbed);
-        } catch (e) {
-            console.error(e);
-            await response.edit({ embeds: moduleEmbed.embeds, files: moduleEmbed.files, components: [] });
-            break;
         }
     }
 }

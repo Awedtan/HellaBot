@@ -5,8 +5,6 @@ const { token } = require('../config.json');
 const create = require('./utils/create');
 const fetch = require('./utils/fetch');
 
-import { Base, BaseInfo, Enemy, Module, Paradox, Operator, Range, RogueStage, Skill, Skin, Stage } from "./types";
-
 fetch.initializeAll();
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
@@ -30,14 +28,8 @@ client.once(Events.ClientReady, c => {
 
 client.on(Events.InteractionCreate, async interaction => {
     if (!interaction.isChatInputCommand()) return;
-
     const command = interaction.client.commands.get(interaction.commandName);
-
-    if (!command) {
-        console.error(`No command matching ${interaction.commandName} was found.`);
-        return;
-    }
-
+    if (!command) return console.error(`No command matching ${interaction.commandName} was found.`);
     try {
         await command.execute(interaction);
     } catch (error) {
@@ -50,25 +42,81 @@ client.on(Events.InteractionCreate, async interaction => {
     }
 });
 
+// Start of command interaction handling
+
+import { Base, BaseInfo, Enemy, Module, Paradox, Operator, Range, RogueStage, Skill, Skin, Stage } from "./types";
+
+const archetypeDict: { [key: string]: string } = fetch.archetypes();
+const baseDict: { [key: string]: Base } = fetch.bases();
+const enemyDict: { [key: string]: Enemy } = fetch.enemies();
+const moduleDict: { [key: string]: Module } = fetch.modules();
+const opDict: { [key: string]: Operator } = fetch.operators();
+const paradoxDict: { [key: string]: Paradox } = fetch.paradoxes();
+const rangeDict: { [key: string]: Range } = fetch.ranges();
+const is2Dict: { [key: string]: RogueStage[] } = fetch.rogue1Stages();
+const is3Dict: { [key: string]: RogueStage[] } = fetch.rogue2Stages();
+const skillDict: { [key: string]: Skill } = fetch.skills();
+const skinDict: { [key: string]: Skin[] } = fetch.skins();
+const stageDict: { [key: string]: Stage[] } = fetch.stages();
+const toughStageDict: { [key: string]: Stage[] } = fetch.toughStages();
+const toughIs2Dict: { [key: string]: RogueStage[] } = fetch.toughRogue1Stages();
+const toughIs3Dict: { [key: string]: RogueStage[] } = fetch.toughRogue2Stages();
+
 client.on(Events.InteractionCreate, async interaction => {
-    if (!interaction.isButton()) return;
+    if (!interaction.isButton() && !interaction.isStringSelectMenu()) return;
 
     const idArr = interaction.customId.split('ඞ');
 
     switch (idArr[0]) {
-        case ('skill'):
-            const levelId: { [key: string]: number } = { l1: 0, l2: 1, l3: 2, l4: 3, l5: 4, l6: 5, l7: 6, m1: 7, m2: 8, m3: 9 };
-            const skillDict: { [key: string]: Skill } = fetch.skills();
-            const opDict: { [key: string]: Operator } = fetch.operators();
+        case ('info'): {
+            const op = opDict[idArr[1]];
+            const type = parseInt(idArr[2]);
+            const page = parseInt(idArr[3]);
+            const level = parseInt(idArr[4]);
 
-            const level = levelId[idArr[1]];
-            const skill = skillDict[idArr[2]];
-            const op = opDict[idArr[3]];
+            const infoEmbed = create.infoEmbed(op, type, page, level);
+            await interaction.update(infoEmbed);
 
-            const skillEmbed = create.skillEmbed(skill, level, op);
+            break;
+        }
+        case ('module'): {
+            const module = moduleDict[idArr[1]];
+            const op = opDict[idArr[2]];
+            const level = parseInt(idArr[3]);
+
+            const moduleEmbed = create.moduleEmbed(module, op, level);
+            await interaction.update(moduleEmbed);
+
+            break;
+        }
+        case ('skill'): {
+            const skill = skillDict[idArr[1]];
+            const op = opDict[idArr[2]];
+            const level = parseInt(idArr[3]);
+
+            const skillEmbed = create.skillEmbed(skill, op, level);
             await interaction.update(skillEmbed);
 
             break;
+        }
+        case ('skin'): {
+            const op = opDict[idArr[1]];
+            const page = parseInt(idArr[2]);
+
+            const skinEmbed = create.skinEmbed(op, page);
+            await interaction.update(skinEmbed);
+
+            break;
+        }
+        case ('stage'): {
+            const stages = stageDict[idArr[1]];
+            const stage = stages[interaction.values[0]];
+
+            const stageEmbed = await create.stageEmbed(stage);
+            await interaction.update(stageEmbed);
+
+            break;
+        }
     }
 });
 

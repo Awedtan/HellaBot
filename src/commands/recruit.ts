@@ -1,5 +1,5 @@
 const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
-const { fetchOperators } = require('../utils/fetch');
+const fetch = require('../utils/fetch');
 const create = require('../utils/create');
 
 import { Operator } from '../types';

@@ -1,5 +1,5 @@
 const { SlashCommandBuilder } = require('discord.js');
-const { fetchRogue1Stages, fetchToughRogue1Stages } = require('../utils/fetch');
+const fetch = require('../utils/fetch');
 const create = require('../utils/create');
 
 import { RogueStage } from '../types';
@@ -37,7 +37,7 @@ module.exports = {
                 const stageCode = interaction.options.getString('name').toLowerCase();
                 const stageMode = interaction.options.getString('difficulty');
 
-                const stageDict: { [key: string]: RogueStage[] } = stageMode === 'challenge' ? fetchToughRogue1Stages() : fetchRogue1Stages();
+                const stageDict: { [key: string]: RogueStage[] } = stageMode === 'challenge' ? fetch.toughRogue1Stages() : fetch.rogue1Stages();
                 const stageArr = stageDict[stageCode];
 
                 if (!stageDict.hasOwnProperty(stageCode) || stageArr.length === 0)

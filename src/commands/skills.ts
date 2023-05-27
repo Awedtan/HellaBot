@@ -23,10 +23,11 @@ module.exports = {
         const skillDict: { [key: string]: Skill } = fetch.skills();
         const name = interaction.options.getString('name').toLowerCase();
         let index = interaction.options.getInteger('index') - 1;
-        const op = operatorDict[name];
 
         if (!operatorDict.hasOwnProperty(name))
             return await interaction.reply('That operator doesn\'t exist!');
+
+        const op = operatorDict[name];
 
         if (op.data.skills.length === 0)
             return await interaction.reply('That operator doesn\'t have any skills!');
@@ -43,12 +44,12 @@ module.exports = {
             const skill = skillDict[opSkill.skillId];
 
             if (first) {
-                let skillEmbed = create.skillEmbed(skill, 0, op);
+                const skillEmbed = create.skillEmbed(skill, op, 0);
                 await interaction.reply(skillEmbed);
                 first = false;
             }
             else {
-                let skillEmbed = create.skillEmbed(skill, 0, op);
+                const skillEmbed = create.skillEmbed(skill, op, 0);
                 await interaction.followUp(skillEmbed);
             }
         }

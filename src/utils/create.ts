@@ -68,6 +68,22 @@ const tileDict = {
     tile_volcano_emp: { emoji: '🔥', name: 'Heat Pump Passage' },
 };
 
+const archetypeDict: { [key: string]: string } = fetch.archetypes();
+const baseDict: { [key: string]: Base } = fetch.bases();
+const enemyDict: { [key: string]: Enemy } = fetch.enemies();
+const moduleDict: { [key: string]: Module } = fetch.modules();
+const opDict: { [key: string]: Operator } = fetch.operators();
+const paradoxDict: { [key: string]: Paradox } = fetch.paradoxes();
+const rangeDict: { [key: string]: Range } = fetch.ranges();
+const is2Dict: { [key: string]: RogueStage[] } = fetch.rogue1Stages();
+const is3Dict: { [key: string]: RogueStage[] } = fetch.rogue2Stages();
+const skillDict: { [key: string]: Skill } = fetch.skills();
+const skinDict: { [key: string]: Skin[] } = fetch.skins();
+const stageDict: { [key: string]: Stage[] } = fetch.stages();
+const toughStageDict: { [key: string]: Stage[] } = fetch.toughStages();
+const toughIs2Dict: { [key: string]: RogueStage[] } = fetch.toughRogue1Stages();
+const toughIs3Dict: { [key: string]: RogueStage[] } = fetch.toughRogue2Stages();
+
 module.exports = {
     authorField(op: Operator) {
         const urlName = op.data.name.toLowerCase().split(' the ').join('-').split('\'').join('').split(' ').join('-').split('ë').join('e').split('ł').join('l');
@@ -93,7 +109,7 @@ module.exports = {
             .setThumbnail(`attachment://${utils.cleanFilename(base.skillIcon)}.png`)
             .setDescription(description);
 
-        return { embeds: [embed], files: [image, avatar], components: [] };
+        return { embeds: [embed], files: [image, avatar] };
 
     },
     enemyEmbed(enemy: Enemy) {
@@ -140,7 +156,7 @@ module.exports = {
 
         return { embeds: [embed], files: [image] };
     },
-    infoEmbed(op: Operator, currentType: number, currentPage: number, currentLevel: number) {
+    infoEmbed(op: Operator, type: number, page: number, level: number) {
         const embedArr = [], fileArr = [], componentRows = [];
 
         const operatorEmbed = this.operatorEmbed(op);
@@ -153,19 +169,19 @@ module.exports = {
         }
 
         const skillsButton = new ButtonBuilder()
-            .setCustomId('skills')
+            .setCustomId(`infoඞ${op.id}ඞ1ඞ0ඞ0`)
             .setLabel('Skills')
             .setStyle(ButtonStyle.Success);
         const modulesButton = new ButtonBuilder()
-            .setCustomId('modules')
+            .setCustomId(`infoඞ${op.id}ඞ2ඞ0ඞ0`)
             .setLabel('Modules')
             .setStyle(ButtonStyle.Success);
         const artButton = new ButtonBuilder()
-            .setCustomId('art')
+            .setCustomId(`infoඞ${op.id}ඞ3ඞ0ඞ0`)
             .setLabel('Art')
             .setStyle(ButtonStyle.Success);
         const baseButton = new ButtonBuilder()
-            .setCustomId('base')
+            .setCustomId(`infoඞ${op.id}ඞ4ඞ0ඞ0`)
             .setLabel('Base Skills')
             .setStyle(ButtonStyle.Success);
 
@@ -178,7 +194,7 @@ module.exports = {
             modulesButton.setDisabled(true);
         }
 
-        switch (currentType) {
+        switch (type) {
             case 0:
                 break;
             case 1:
@@ -189,8 +205,8 @@ module.exports = {
                 if (skills.length === 0) break;
 
                 const skillDict: { [key: string]: Skill } = fetch.skills();
-                const skill = skillDict[skills[currentPage].skillId];
-                const skillEmbed = this.skillEmbed(skill, currentLevel, op);
+                const skill = skillDict[skills[page].skillId];
+                const skillEmbed = this.infoSkillEmbed(op, type, page, level);
 
                 for (const embed of skillEmbed.embeds) {
                     embedArr.push(embed);
@@ -203,17 +219,17 @@ module.exports = {
                 }
 
                 const skillOne = new ButtonBuilder()
-                    .setCustomId('p1')
+                    .setCustomId(`info_skill_nonexist1`)
                     .setLabel('Skill 1')
                     .setStyle(ButtonStyle.Secondary)
                     .setDisabled(true);
                 const skillTwo = new ButtonBuilder()
-                    .setCustomId('p2')
+                    .setCustomId(`info_skill_nonexist2`)
                     .setLabel('Skill 2')
                     .setStyle(ButtonStyle.Secondary)
                     .setDisabled(true);
                 const skillThree = new ButtonBuilder()
-                    .setCustomId('p3')
+                    .setCustomId(`info_skill_nonexist3`)
                     .setLabel('Skill 3')
                     .setStyle(ButtonStyle.Secondary)
                     .setDisabled(true);
@@ -224,8 +240,11 @@ module.exports = {
 
                 for (let i = 0; i < skills.length; i++) {
                     skillArr[i].setStyle(ButtonStyle.Primary);
-                    if (i != currentPage) {
+                    if (i != page) {
+                        skillArr[i].setCustomId(`infoඞ${op.id}ඞ${type}ඞ${i}ඞ${level}ඞskill`)
                         skillArr[i].setDisabled(false);
+                    } else {
+                        skillArr[i].setCustomId(`info_skill_current`);
                     }
                 }
 
@@ -238,8 +257,8 @@ module.exports = {
                 if (modules === null) break;
 
                 const moduleDict: { [key: string]: Module } = fetch.modules();
-                const module = moduleDict[modules[currentPage + 1]];
-                const moduleEmbed = this.moduleEmbed(module, currentLevel, op);
+                const module = moduleDict[modules[page + 1]];
+                const moduleEmbed = this.infoModuleEmbed(op, type, page, level);
 
                 for (const embed of moduleEmbed.embeds) {
                     embedArr.push(embed);
@@ -252,12 +271,12 @@ module.exports = {
                 }
 
                 const moduleOne = new ButtonBuilder()
-                    .setCustomId('p1')
+                    .setCustomId(`info_module_nonexist1`)
                     .setLabel('Module 1')
                     .setStyle(ButtonStyle.Secondary)
                     .setDisabled(true);
                 const moduleTwo = new ButtonBuilder()
-                    .setCustomId('p2')
+                    .setCustomId(`info_module_nonexist1`)
                     .setLabel('Module 2')
                     .setStyle(ButtonStyle.Secondary)
                     .setDisabled(true);
@@ -268,8 +287,11 @@ module.exports = {
 
                 for (let i = 0; i < modules.length - 1; i++) {
                     moduleArr[i].setStyle(ButtonStyle.Primary);
-                    if (i != currentPage) {
+                    if (i != page) {
+                        moduleArr[i].setCustomId(`infoඞ${op.id}ඞ${type}ඞ${i}ඞ${level}ඞmodule`)
                         moduleArr[i].setDisabled(false);
+                    } else {
+                        moduleArr[i].setCustomId(`info_module_current`);
                     }
                 }
 
@@ -277,7 +299,7 @@ module.exports = {
             case 3:
                 artButton.setDisabled(true);
 
-                const skinEmbed = this.skinEmbed(op, currentPage);
+                const skinEmbed = this.infoSkinEmbed(op, type, page, level);
 
                 for (const embed of skinEmbed.embeds) {
                     embedArr.push(embed);
@@ -304,9 +326,6 @@ module.exports = {
                     for (const file of baseEmbed.files) {
                         fileArr.push(file);
                     }
-                    for (const componentRow of baseEmbed.components) {
-                        componentRows.push(componentRow);
-                    }
                 }
 
                 break;
@@ -317,7 +336,141 @@ module.exports = {
 
         return { embeds: embedArr, files: fileArr, components: componentRows };
     },
-    moduleEmbed(module: Module, level: number, op: Operator) {
+    infoSkillEmbed(op: Operator, type: number, page: number, level: number) {
+        const skill = skillDict[op.data.skills[page].skillId];
+        const skillLevel = skill.levels[level];
+
+        const avatarPath = path.join(__dirname, '../../', operatorAvatarPath, `${op.id}.png`);
+        const imageFilename = skill.iconId === null ? skill.skillId : skill.iconId;
+        const imagePath = path.join(__dirname, '../../', skillImagePath, `skill_icon_${imageFilename}.png`)
+        const avatar = new AttachmentBuilder(avatarPath);
+        const image = new AttachmentBuilder(imagePath);
+
+        const authorField = this.authorField(op);
+        const name = `${skillLevel.name} - ${skillLevels[level]}`;
+        const spCost = skillLevel.spData.spCost;
+        const initSp = skillLevel.spData.initSp;
+        const skillDuration = skillLevel.duration;
+        const spType = spTypes[skillLevel.spData.spType];
+        const skillType = skillTypes[skillLevel.skillType];
+
+        const description = utils.formatText(skillLevel.description, skillLevel.blackboard);
+
+        let embedDescription = `**${spType} - ${skillType}**\n***Cost:* ${spCost} SP - *Initial:* ${initSp} SP`;
+        if (skillDuration > 0) {
+            embedDescription += ` - *Duration:* ${skillDuration} sec`;
+        }
+        embedDescription += `**\n${description} `;
+
+        const embed = new EmbedBuilder()
+            .setColor(0xebca60)
+            .setAuthor(authorField)
+            .setTitle(name)
+            .setThumbnail(`attachment://skill_icon_${utils.cleanFilename(imageFilename)}.png`)
+            .setDescription(embedDescription);
+
+        if (skillLevel.rangeId != null) {
+            const rangeField = this.rangeField(skillLevel.rangeId);
+            embed.addFields(rangeField);
+        }
+
+        const lOne = new ButtonBuilder()
+            .setCustomId(`infoඞ${op.id}ඞ${type}ඞ${page}ඞ0ඞskill`)
+            .setLabel('Lv1')
+            .setStyle(ButtonStyle.Secondary);
+        const lTwo = new ButtonBuilder()
+            .setCustomId(`infoඞ${op.id}ඞ${type}ඞ${page}ඞ1ඞskill`)
+            .setLabel('Lv2')
+            .setStyle(ButtonStyle.Secondary);
+        const lThree = new ButtonBuilder()
+            .setCustomId(`infoඞ${op.id}ඞ${type}ඞ${page}ඞ2ඞskill`)
+            .setLabel('Lv3')
+            .setStyle(ButtonStyle.Secondary);
+        const lFour = new ButtonBuilder()
+            .setCustomId(`infoඞ${op.id}ඞ${type}ඞ${page}ඞ3ඞskill`)
+            .setLabel('Lv4')
+            .setStyle(ButtonStyle.Secondary);
+        const lFive = new ButtonBuilder()
+            .setCustomId(`infoඞ${op.id}ඞ${type}ඞ${page}ඞ4ඞskill`)
+            .setLabel('Lv5')
+            .setStyle(ButtonStyle.Secondary);
+        const lSix = new ButtonBuilder()
+            .setCustomId(`infoඞ${op.id}ඞ${type}ඞ${page}ඞ5ඞskill`)
+            .setLabel('Lv6')
+            .setStyle(ButtonStyle.Secondary);
+        const lSeven = new ButtonBuilder()
+            .setCustomId(`infoඞ${op.id}ඞ${type}ඞ${page}ඞ6ඞskill`)
+            .setLabel('Lv7')
+            .setStyle(ButtonStyle.Secondary);
+        const mOne = new ButtonBuilder()
+            .setCustomId(`infoඞ${op.id}ඞ${type}ඞ${page}ඞ7ඞskill`)
+            .setLabel('M1')
+            .setStyle(ButtonStyle.Danger);
+        const mTwo = new ButtonBuilder()
+            .setCustomId(`infoඞ${op.id}ඞ${type}ඞ${page}ඞ8ඞskill`)
+            .setLabel('M2')
+            .setStyle(ButtonStyle.Danger);
+        const mThree = new ButtonBuilder()
+            .setCustomId(`infoඞ${op.id}ඞ${type}ඞ${page}ඞ9ඞskill`)
+            .setLabel('M3')
+            .setStyle(ButtonStyle.Danger);
+
+        if (skill.levels.length === 7) {
+            mOne.setDisabled(true);
+            mTwo.setDisabled(true);
+            mThree.setDisabled(true);
+        }
+
+        switch (level) {
+            case 0:
+                lOne.setCustomId(`info_skill_currentlevel`);
+                lOne.setDisabled(true);
+                break;
+            case 1:
+                lTwo.setCustomId(`info_skill_currentlevel`);
+                lTwo.setDisabled(true);
+                break;
+            case 2:
+                lThree.setCustomId(`info_skill_currentlevel`);
+                lThree.setDisabled(true);
+                break;
+            case 3:
+                lFour.setCustomId(`info_skill_currentlevel`);
+                lFour.setDisabled(true);
+                break;
+            case 4:
+                lFive.setCustomId(`info_skill_currentlevel`);
+                lFive.setDisabled(true);
+                break;
+            case 5:
+                lSix.setCustomId(`info_skill_currentlevel`);
+                lSix.setDisabled(true);
+                break;
+            case 6:
+                lSeven.setCustomId(`info_skill_currentlevel`);
+                lSeven.setDisabled(true);
+                break;
+            case 7:
+                mOne.setCustomId(`info_skill_currentlevel`);
+                mOne.setDisabled(true);
+                break;
+            case 8:
+                mTwo.setCustomId(`info_skill_currentlevel`);
+                mTwo.setDisabled(true);
+                break;
+            case 9:
+                mThree.setCustomId(`info_skill_currentlevel`);
+                mThree.setDisabled(true);
+                break;
+        }
+
+        const rowOne = new ActionRowBuilder().addComponents(lOne, lTwo, lThree, lFour, lFive);
+        const rowTwo = new ActionRowBuilder().addComponents(lSix, lSeven, mOne, mTwo, mThree);
+
+        return { embeds: [embed], files: [image, avatar], components: [rowOne, rowTwo] };
+    },
+    infoModuleEmbed(op: Operator, type: number, page: number, level: number) {
+        const module = moduleDict[op.modules[page + 1]];
         const moduleInfo = module.info;
         const moduleId = moduleInfo.uniEquipId;
         const moduleLevel = module.data.phases[level];
@@ -374,15 +527,193 @@ module.exports = {
         embed.addFields({ name: `Stats`, value: statDescription });
 
         const lOne = new ButtonBuilder()
-            .setCustomId('l1')
+            .setCustomId(`infoඞ${op.id}ඞ${type}ඞ${page}ඞ0ඞmodule`)
             .setLabel('Lv1')
             .setStyle(ButtonStyle.Secondary);
         const lTwo = new ButtonBuilder()
-            .setCustomId('l2')
+            .setCustomId(`infoඞ${op.id}ඞ${type}ඞ${page}ඞ1ඞmodule`)
             .setLabel('Lv2')
             .setStyle(ButtonStyle.Secondary);
         const lThree = new ButtonBuilder()
-            .setCustomId('l3')
+            .setCustomId(`infoඞ${op.id}ඞ${type}ඞ${page}ඞ2ඞmodule`)
+            .setLabel('Lv3')
+            .setStyle(ButtonStyle.Secondary);
+
+        switch (level) {
+            case 0:
+                lOne.setCustomId(`info_module_currentlevel`);
+                lOne.setDisabled(true);
+                break;
+            case 1:
+                lOne.setCustomId(`info_module_currentlevel`);
+                lTwo.setDisabled(true);
+                break;
+            case 2:
+                lOne.setCustomId(`info_module_currentlevel`);
+                lThree.setDisabled(true);
+                break;
+        }
+
+        const rowOne = new ActionRowBuilder().addComponents(lOne, lTwo, lThree);
+
+        return { embeds: [embed], files: [image, avatar], components: [rowOne] };
+    },
+    infoSkinEmbed(op: Operator, type: number, page: number, level: number) {
+        const skins = skinDict[op.id];
+        const skin = skins[page];
+        const skinsNum = skins.length;
+
+        const displaySkin = skin.displaySkin;
+        const portraitId = skin.portraitId;
+        const skinGroupId = displaySkin.skinGroupId;
+
+        const avatarPath = path.join(__dirname, '../../', operatorAvatarPath, `${op.id}.png`);
+        const imagePath = path.join(__dirname, '../../', operatorImagePath, `${portraitId}.png`);
+        const avatar = new AttachmentBuilder(avatarPath);
+        const image = new AttachmentBuilder(imagePath);
+
+        const authorField = this.authorField(op);
+        const skinName = displaySkin.skinName;
+        const skinGroupName = displaySkin.skinGroupName;
+        const name = skinName === null ? skinGroupName : `${skinGroupName} - ${skinName}`;
+
+        const embed = new EmbedBuilder()
+            .setColor(0xebca60)
+            .setAuthor(authorField)
+            .setTitle(`${name}`)
+            .addFields({ name: `Artist`, value: displaySkin.drawerName })
+            .setImage(`attachment://${utils.cleanFilename(portraitId)}.png`);
+
+        let thumbnail;
+        switch (skinGroupId) {
+            case 'ILLUST_0': {
+                const thumbnailPath = path.join(__dirname, '../../', eliteImagePath, '0.png');
+                thumbnail = new AttachmentBuilder(thumbnailPath);
+                embed.setThumbnail(`attachment://0.png`);
+                break;
+            }
+            case 'ILLUST_1': {
+                const thumbnailPath = path.join(__dirname, '../../', eliteImagePath, '1.png');
+                thumbnail = new AttachmentBuilder(thumbnailPath);
+                embed.setThumbnail(`attachment://1.png`);
+                break;
+            }
+            case 'ILLUST_2': {
+                const thumbnailPath = path.join(__dirname, '../../', eliteImagePath, '2.png');
+                thumbnail = new AttachmentBuilder(thumbnailPath);
+                embed.setThumbnail(`attachment://2.png`);
+                break;
+            }
+            case 'ILLUST_3': {
+                const thumbnailPath = path.join(__dirname, '../../', eliteImagePath, '3.png');
+                thumbnail = new AttachmentBuilder(thumbnailPath);
+                embed.setThumbnail(`attachment://3.png`);
+                break;
+            }
+            default: {
+                const split = skinGroupId.split('#');
+                const newSkinGroupId = `${split[0]}#${split[1]}`;
+
+                const thumbnailPath = path.join(__dirname, '../../', skinGroupPath, `${newSkinGroupId}.png`);
+                thumbnail = new AttachmentBuilder(thumbnailPath);
+                embed.setThumbnail(`attachment://${newSkinGroupId.split(/[#\+]/).join('')}.png`);
+                break;
+            }
+        }
+
+        const defaultSkinArr = new ActionRowBuilder();
+        const skinArr = new ActionRowBuilder();
+        const components = [];
+
+        for (let i = 0; i < skinsNum; i++) {
+            const skinGroup = skins[i].displaySkin.skinGroupName;
+
+            const skinButton = new ButtonBuilder()
+                .setCustomId(`infoඞ${op.id}ඞ${type}ඞ${i}ඞ${level}ඞskin`)
+                .setLabel(skinGroup)
+                .setStyle(ButtonStyle.Primary);
+            if (i === page) {
+                skinButton.setCustomId(`info_skin_currentpage`);
+                skinButton.setDisabled(true);
+            }
+
+            if (skinGroup === 'Default Outfit') {
+                defaultSkinArr.addComponents(skinButton);
+                components[0] = defaultSkinArr;
+            } else {
+                skinArr.addComponents(skinButton);
+                components[1] = skinArr;
+            }
+        }
+
+        return { embeds: [embed], files: [image, avatar, thumbnail], components: components };
+    },
+    moduleEmbed(module: Module, op: Operator, level: number) {
+        const moduleInfo = module.info;
+        const moduleId = moduleInfo.uniEquipId;
+        const moduleLevel = module.data.phases[level];
+
+        const avatarPath = path.join(__dirname, '../../', operatorAvatarPath, `${op.id}.png`);
+        const imagePath = path.join(__dirname, '../../', moduleImagePath, `${moduleId}.png`);
+        const avatar = new AttachmentBuilder(avatarPath);
+        const image = new AttachmentBuilder(imagePath);
+
+        const authorField = this.authorField(op);
+        const name = `${moduleInfo.typeIcon.toUpperCase()} ${moduleInfo.uniEquipName} - Lv${level + 1}`;
+        let traitDescription = '', talentName = '', talentDescription = '';
+
+        for (const part of moduleLevel.parts) {
+            if (part.overrideTraitDataBundle.candidates != null) {
+                const candidates = part.overrideTraitDataBundle.candidates;
+                const candidate = candidates[candidates.length - 1];
+
+                if (candidate.additionalDescription != null) {
+                    traitDescription += `${utils.formatText(candidate.additionalDescription, candidate.blackboard)}\n`;
+                }
+                if (candidate.overrideDescripton != null) {
+                    traitDescription += `${utils.formatText(candidate.overrideDescripton, candidate.blackboard)}\n`;
+                }
+            }
+            if (part.addOrOverrideTalentDataBundle.candidates != null) {
+                const candidates = part.addOrOverrideTalentDataBundle.candidates;
+                const candidate = candidates[candidates.length - 1];
+
+                if (candidate.name != null) {
+                    talentName = candidate.name;
+                }
+                if (candidate.upgradeDescription != null) {
+                    talentDescription += `${utils.formatText(candidate.upgradeDescription, candidate.blackboard)}\n`;
+                }
+            }
+        }
+
+        const embed = new EmbedBuilder()
+            .setColor(0xebca60)
+            .setAuthor(authorField)
+            .setTitle(name)
+            .setThumbnail(`attachment://${moduleId}.png`)
+            .setDescription(traitDescription);
+
+        if (talentName != '' && talentDescription != '') {
+            embed.addFields({ name: `*Talent:* ${talentName}`, value: talentDescription });
+        }
+
+        let statDescription = '';
+        for (const attribute of moduleLevel.attributeBlackboard) {
+            statDescription += `${attribute.key.toUpperCase()} +${attribute.value}\n`;
+        }
+        embed.addFields({ name: `Stats`, value: statDescription });
+
+        const lOne = new ButtonBuilder()
+            .setCustomId(`moduleඞ${module.info.uniEquipId}ඞ${op.id}ඞ0`)
+            .setLabel('Lv1')
+            .setStyle(ButtonStyle.Secondary);
+        const lTwo = new ButtonBuilder()
+            .setCustomId(`moduleඞ${module.info.uniEquipId}ඞ${op.id}ඞ1`)
+            .setLabel('Lv2')
+            .setStyle(ButtonStyle.Secondary);
+        const lThree = new ButtonBuilder()
+            .setCustomId(`moduleඞ${module.info.uniEquipId}ඞ${op.id}ඞ2`)
             .setLabel('Lv3')
             .setStyle(ButtonStyle.Secondary);
 
@@ -614,7 +945,7 @@ module.exports = {
         }
         return { name: 'Range', value: rangeString };
     },
-    skillEmbed(skill: Skill, level: number, op: Operator) {
+    skillEmbed(skill: Skill, op: Operator, level: number) {
         const skillLevel = skill.levels[level];
 
         const avatarPath = path.join(__dirname, '../../', operatorAvatarPath, `${op.id}.png`);
@@ -651,48 +982,47 @@ module.exports = {
             embed.addFields(rangeField);
         }
 
-        const skillOpId = `${skill.skillId}ඞ${op.id}`;
-
         const lOne = new ButtonBuilder()
-            .setCustomId(`skillඞl1ඞ${skillOpId}`)
+            .setCustomId(`skillඞ${skill.skillId}ඞ${op.id}ඞ0`)
             .setLabel('Lv1')
             .setStyle(ButtonStyle.Secondary);
         const lTwo = new ButtonBuilder()
-            .setCustomId(`skillඞl2ඞ${skillOpId}`)
+            .setCustomId(`skillඞ${skill.skillId}ඞ${op.id}ඞ1`)
             .setLabel('Lv2')
             .setStyle(ButtonStyle.Secondary);
         const lThree = new ButtonBuilder()
-            .setCustomId(`skillඞl3ඞ${skillOpId}`)
+            .setCustomId(`skillඞ${skill.skillId}ඞ${op.id}ඞ2`)
             .setLabel('Lv3')
             .setStyle(ButtonStyle.Secondary);
         const lFour = new ButtonBuilder()
-            .setCustomId(`skillඞl4ඞ${skillOpId}`)
+            .setCustomId(`skillඞ${skill.skillId}ඞ${op.id}ඞ3`)
             .setLabel('Lv4')
             .setStyle(ButtonStyle.Secondary);
         const lFive = new ButtonBuilder()
-            .setCustomId(`skillඞl5ඞ${skillOpId}`)
+            .setCustomId(`skillඞ${skill.skillId}ඞ${op.id}ඞ4`)
             .setLabel('Lv5')
             .setStyle(ButtonStyle.Secondary);
         const lSix = new ButtonBuilder()
-            .setCustomId(`skillඞl6ඞ${skillOpId}`)
+            .setCustomId(`skillඞ${skill.skillId}ඞ${op.id}ඞ5`)
             .setLabel('Lv6')
             .setStyle(ButtonStyle.Secondary);
         const lSeven = new ButtonBuilder()
-            .setCustomId(`skillඞl7ඞ${skillOpId}`)
+            .setCustomId(`skillඞ${skill.skillId}ඞ${op.id}ඞ6`)
             .setLabel('Lv7')
             .setStyle(ButtonStyle.Secondary);
         const mOne = new ButtonBuilder()
-            .setCustomId(`skillඞm1ඞ${skillOpId}`)
+            .setCustomId(`skillඞ${skill.skillId}ඞ${op.id}ඞ7`)
             .setLabel('M1')
             .setStyle(ButtonStyle.Danger);
         const mTwo = new ButtonBuilder()
-            .setCustomId(`skillඞm2ඞ${skillOpId}`)
+            .setCustomId(`skillඞ${skill.skillId}ඞ${op.id}ඞ8`)
             .setLabel('M2')
             .setStyle(ButtonStyle.Danger);
         const mThree = new ButtonBuilder()
-            .setCustomId(`skillඞm3ඞ${skillOpId}`)
+            .setCustomId(`skillඞ${skill.skillId}ඞ${op.id}ඞ9`)
             .setLabel('M3')
             .setStyle(ButtonStyle.Danger);
+
 
         if (skill.levels.length === 7) {
             mOne.setDisabled(true);
@@ -811,7 +1141,7 @@ module.exports = {
             const skinGroup = skins[i].displaySkin.skinGroupName;
 
             const skillButton = new ButtonBuilder()
-                .setCustomId(`p${i + 1}`)
+                .setCustomId(`skinඞ${op.id}ඞ${i}`)
                 .setLabel(skinGroup)
                 .setStyle(ButtonStyle.Primary);
             if (i === page) {
@@ -1006,7 +1336,7 @@ module.exports = {
     },
     stageSelectEmbed(stageArr: Stage[] | RogueStage[]) {
         const stageSelector = new StringSelectMenuBuilder()
-            .setCustomId('stage')
+            .setCustomId(`stageඞ${stageArr[0].excel.code.toLowerCase()}`)
             .setPlaceholder('Select a stage!');
 
         for (let i = 0; i < stageArr.length; i++) {

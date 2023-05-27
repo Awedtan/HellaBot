@@ -6,7 +6,7 @@ const archetypeDict: { [key: string]: string } = {};
 const baseDict: { [key: string]: Base } = {};
 const enemyDict: { [key: string]: Enemy } = {};
 const moduleDict: { [key: string]: Module } = {};
-export const operatorDict: { [key: string]: Operator } = {};
+const operatorDict: { [key: string]: Operator } = {};
 const paradoxDict: { [key: string]: Paradox } = {};
 const rangeDict: { [key: string]: Range } = {};
 const rogue1StageDict: { [key: string]: RogueStage[] } = {};
@@ -124,52 +124,6 @@ module.exports = {
         return toughRogue2StageDict;
     },
     toughStages() {
-        return toughStageDict;
-    },
-
-    fetchArchetypes() {
-        return archetypeDict;
-    },
-    fetchBases() {
-        return baseDict;
-    },
-    fetchEnemies() {
-        return enemyDict;
-    },
-    fetchModules() {
-        return moduleDict;
-    },
-    fetchOperators() {
-        return operatorDict;
-    },
-    fetchParadoxes() {
-        return paradoxDict;
-    },
-    fetchRanges() {
-        return rangeDict;
-    },
-    fetchRogue1Stages() {
-        return rogue1StageDict;
-    },
-    fetchRogue2Stages() {
-        return rogue2StageDict;
-    },
-    fetchSkills() {
-        return skillDict;
-    },
-    fetchSkins() {
-        return skinDict;
-    },
-    fetchStages() {
-        return stageDict;
-    },
-    fetchToughRogue1Stages() {
-        return toughRogue1StageDict;
-    },
-    fetchToughRogue2Stages() {
-        return toughRogue2StageDict;
-    },
-    fetchToughStages() {
         return toughStageDict;
     }
 }

@@ -1,5 +1,5 @@
 const { SlashCommandBuilder } = require('discord.js');
-const { fetchStages, fetchToughStages } = require('../utils/fetch');
+const fetch = require('../utils/fetch');
 const create = require('../utils/create');
 
 import { Stage } from '../types';
@@ -25,7 +25,7 @@ module.exports = {
         const stageCode = interaction.options.getString('code').toLowerCase();
         const stageMode = interaction.options.getString('difficulty');
 
-        const stageDict: { [key: string]: Stage[] } = stageMode === 'challenge' ? fetchToughStages() : fetchStages();
+        const stageDict: { [key: string]: Stage[] } = stageMode === 'challenge' ? fetch.toughStages() : fetch.stages();
         const stageArr = stageDict[stageCode];
 
         if (!stageDict.hasOwnProperty(stageCode) || stageArr.length === 0)
@@ -40,21 +40,7 @@ module.exports = {
             await interaction.reply(stageEmbed);
         } else {
             const stageSelectEmbed = create.stageSelectEmbed(stageArr);
-            let response = await interaction.reply(stageSelectEmbed);
-
-            while (true) {
-                try {
-                    const confirm = await response.awaitMessageComponent({ time: 300000 });
-                    const value = parseInt(confirm.values[0]);
-                    const stage = stageArr[value];
-                    const stageEmbed = await create.stageEmbed(stage);
-                    response = await confirm.update(stageEmbed);
-                } catch (e) {
-                    console.error(e);
-                    await response.edit({ components: [] });
-                    break;
-                }
-            }
+            await interaction.reply(stageSelectEmbed);
         }
     }
 }
