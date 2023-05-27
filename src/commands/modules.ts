@@ -67,7 +67,7 @@ async function replyModuleEmbed(interaction, module: Module, operator: Operator)
             moduleEmbed = create.moduleEmbed(module, level, operator);
             response = await response.edit(moduleEmbed);
         } catch (e) {
-            console.log(e);
+            console.error(e);
             await response.edit({ embeds: moduleEmbed.embeds, files: moduleEmbed.files, components: [] });
             break;
         }
@@ -93,7 +93,7 @@ async function sendModuleEmbed(channel, module: Module, operator: Operator) {
             moduleEmbed = create.moduleEmbed(module, level, operator);
             response = await response.edit(moduleEmbed);
         } catch (e) {
-            console.log(e);
+            console.error(e);
             await response.edit({ embeds: moduleEmbed.embeds, files: moduleEmbed.files, components: [] });
             break;
         }

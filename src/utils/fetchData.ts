@@ -241,7 +241,7 @@ function initParadoxes() {
 
             paradoxDict[opId] = paradox;
         } catch (e) {
-            console.log(e);
+            console.error(e);
         }
     }
 }
@@ -284,7 +284,7 @@ function initRogueStages() {
                 rogue1StageDict[name].push(stage);
             }
         } catch (e) {
-            console.log(e);
+            console.error(e);
         }
     }
 
@@ -314,7 +314,7 @@ function initRogueStages() {
                 rogue2StageDict[name].push(stage);
             }
         } catch (e) {
-            console.log(e);
+            console.error(e);
         }
     }
 }
@@ -398,7 +398,7 @@ function initStages() {
                 stageDict[code].push(stage);
             }
         } catch (e) {
-            console.log(e);
+            console.error(e);
         }
     }
 }

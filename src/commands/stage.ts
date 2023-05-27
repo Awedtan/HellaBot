@@ -50,7 +50,7 @@ module.exports = {
                     const stageEmbed = await create.stageEmbed(stage);
                     response = await confirm.update(stageEmbed);
                 } catch (e) {
-                    console.log(e);
+                    console.error(e);
                     await response.edit({ components: [] });
                     break;
                 }

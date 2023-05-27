@@ -57,7 +57,7 @@ async function replyInfoEmbed(interaction, operator: Operator) {
             operatorEmbed = create.infoEmbed(operator, type, page, level);
             response = await response.edit(operatorEmbed);
         } catch (e) {
-            console.log(e);
+            console.error(e);
             await response.edit({ embeds: operatorEmbed.embeds, files: operatorEmbed.files, components: [] });
             break;
         }

@@ -48,7 +48,7 @@ async function replySkillEmbed(interaction, skillName: string) {
             }
             response = await response.edit(createSkillEmbed(skillName, level));
         } catch (e) {
-            console.log(e);
+            console.error(e);
             await response.edit({ embeds: skillEmbed.embeds, files: skillEmbed.files, components: [] });
             break;
         }
@@ -71,7 +71,7 @@ async function sendSkillEmbed(channel, skillName: string) {
             }
             response = await response.edit(createSkillEmbed(skillName, level));
         } catch (e) {
-            console.log(e);
+            console.error(e);
             await response.edit({ embeds: skillEmbed.embeds, files: skillEmbed.files, components: [] });
             break;
         }

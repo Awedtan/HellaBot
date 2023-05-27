@@ -651,44 +651,46 @@ module.exports = {
             embed.addFields(rangeField);
         }
 
+        const skillOpId = `${skill.skillId}$${op.id}`;
+
         const lOne = new ButtonBuilder()
-            .setCustomId('l1')
+            .setCustomId(`skill$l1$${skillOpId}`)
             .setLabel('Lv1')
             .setStyle(ButtonStyle.Secondary);
         const lTwo = new ButtonBuilder()
-            .setCustomId('l2')
+            .setCustomId(`skill$l2$${skillOpId}`)
             .setLabel('Lv2')
             .setStyle(ButtonStyle.Secondary);
         const lThree = new ButtonBuilder()
-            .setCustomId('l3')
+            .setCustomId(`skill$l3$${skillOpId}`)
             .setLabel('Lv3')
             .setStyle(ButtonStyle.Secondary);
         const lFour = new ButtonBuilder()
-            .setCustomId('l4')
+            .setCustomId(`skill$l4$${skillOpId}`)
             .setLabel('Lv4')
             .setStyle(ButtonStyle.Secondary);
         const lFive = new ButtonBuilder()
-            .setCustomId('l5')
+            .setCustomId(`skill$l5$${skillOpId}`)
             .setLabel('Lv5')
             .setStyle(ButtonStyle.Secondary);
         const lSix = new ButtonBuilder()
-            .setCustomId('l6')
+            .setCustomId(`skill$l6$${skillOpId}`)
             .setLabel('Lv6')
             .setStyle(ButtonStyle.Secondary);
         const lSeven = new ButtonBuilder()
-            .setCustomId('l7')
+            .setCustomId(`skill$l7$${skillOpId}`)
             .setLabel('Lv7')
             .setStyle(ButtonStyle.Secondary);
         const mOne = new ButtonBuilder()
-            .setCustomId('m1')
+            .setCustomId(`skill$m1$${skillOpId}`)
             .setLabel('M1')
             .setStyle(ButtonStyle.Danger);
         const mTwo = new ButtonBuilder()
-            .setCustomId('m2')
+            .setCustomId(`skill$m2_${skillOpId}`)
             .setLabel('M2')
             .setStyle(ButtonStyle.Danger);
         const mThree = new ButtonBuilder()
-            .setCustomId('m3')
+            .setCustomId(`skill$m3$${skillOpId}`)
             .setLabel('M3')
             .setStyle(ButtonStyle.Danger);
 

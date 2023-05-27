@@ -34,23 +34,23 @@ module.exports = {
         if (op.data.skills.length === 0)
             return await interaction.reply('That operator doesn\'t have any skills!');
 
-        if (index != null && index > op.data.skills.length - 1)
-            index = null;
+        if (index != -1 && index > op.data.skills.length - 1)
+            index = -1;
 
         let first = true;
 
         for (let i = 0; i < op.data.skills.length; i++) {
-            if (index != null && index != i) continue;
+            if (index != -1 && index != i) continue;
 
             const opSkill = op.data.skills[i];
             const skill = skillDict[opSkill.skillId];
 
             if (first) {
-                replySkillEmbed(interaction, skill, op);
+                await replySkillEmbed(interaction, skill, op);
                 first = false;
             }
             else {
-                sendSkillEmbed(interaction.channel, skill, op);
+                await sendSkillEmbed(interaction, skill, op);
             }
             await wait(200);
         }
@@ -62,49 +62,49 @@ async function replySkillEmbed(interaction, skill: Skill, operator: Operator) {
     let skillEmbed = create.skillEmbed(skill, level, operator);
     let response = await interaction.reply(skillEmbed);
 
-    while (true) {
-        try {
-            const confirm = await response.awaitMessageComponent({ time: 300000 });
+    // while (true) {
+    //     try {
+    //         const confirm = await response.awaitMessageComponent({ time: 300000 });
 
-            level = levelId[confirm.customId];
-            try {
-                await confirm.update({ content: '' });
-            } catch (e) {
-                continue;
-            }
+    //         level = levelId[confirm.customId];
+    //         try {
+    //             await confirm.update({ content: '' });
+    //         } catch (e) {
+    //             continue;
+    //         }
 
-            skillEmbed = create.skillEmbed(skill, level, operator);
-            response = await response.edit(skillEmbed);
-        } catch (e) {
-            console.log(e);
-            await response.edit({ embeds: skillEmbed.embeds, files: skillEmbed.files, components: [] });
-            break;
-        }
-    }
+    //         skillEmbed = create.skillEmbed(skill, level, operator);
+    //         response = await response.edit(skillEmbed);
+    //     } catch (e) {
+    //         console.error(e);
+    //         await response.edit({ embeds: skillEmbed.embeds, files: skillEmbed.files, components: [] });
+    //         break;
+    //     }
+    // }
 }
 
-async function sendSkillEmbed(channel, skill: Skill, operator: Operator) {
+async function sendSkillEmbed(interaction, skill: Skill, operator: Operator) {
     let level = 0;
     let skillEmbed = create.skillEmbed(skill, level, operator);
-    let response = await channel.send(skillEmbed);
+    let response = await interaction.followUp(skillEmbed);
 
-    while (true) {
-        try {
-            const confirm = await response.awaitMessageComponent({ time: 300000 });
+    // while (true) {
+    //     try {
+    //         const confirm = await response.awaitMessageComponent({ time: 300000 });
 
-            try {
-                await confirm.update({ content: '' });
-            } catch (e) {
-                continue;
-            }
+    //         try {
+    //             await confirm.update({ content: '' });
+    //         } catch (e) {
+    //             continue;
+    //         }
 
-            level = levelId[confirm.customId];
-            skillEmbed = create.skillEmbed(skill, level, operator);
-            response = await response.edit(skillEmbed);
-        } catch (e) {
-            console.log(e);
-            await response.edit({ embeds: skillEmbed.embeds, files: skillEmbed.files, components: [] });
-            break;
-        }
-    }
+    //         level = levelId[confirm.customId];
+    //         skillEmbed = create.skillEmbed(skill, level, operator);
+    //         response = await response.edit(skillEmbed);
+    //     } catch (e) {
+    //         console.error(e);
+    //         await response.edit({ embeds: skillEmbed.embeds, files: skillEmbed.files, components: [] });
+    //         break;
+    //     }
+    // }
 }

@@ -51,7 +51,7 @@ async function replySkinEmbed(interaction, operator: Operator) {
             skinEmbed = create.skinEmbed(operator, page);
             response = await response.edit(skinEmbed);
         } catch (e) {
-            console.log(e);
+            console.error(e);
             await response.edit({ embeds: skinEmbed.embeds, files: skinEmbed.files, components: [] });
             break;
         }
