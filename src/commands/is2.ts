@@ -12,7 +12,7 @@ module.exports = {
             option.setName('type')
                 .setDescription('type')
                 .addChoices(
-                    { name: 'Stage', value: 'stage' },
+                    { name: 'stage', value: 'stage' },
                 )
                 .setRequired(true)
         )
