@@ -15,23 +15,34 @@ module.exports = {
             option.setName('name')
                 .setDescription('name')
                 .setRequired(true)
+        )
+        .addIntegerOption(option =>
+            option.setName('index')
+                .setDescription('index')
+                .addChoices({ name: '1', value: 1 }, { name: '2', value: 2 }, { name: '3', value: 3 })
         ),
     async execute(interaction) {
         const operatorDict: { [key: string]: Operator } = fetchOperators();
         const skillDict: { [key: string]: Skill } = fetchSkills();
         const name = interaction.options.getString('name').toLowerCase();
+        let index = interaction.options.getInteger('index') - 1;
+        const op = operatorDict[name];
 
         if (!operatorDict.hasOwnProperty(name))
             return await interaction.reply('That operator doesn\'t exist!');
 
-        const op = operatorDict[name];
-
         if (op.data.skills.length === 0)
             return await interaction.reply('That operator doesn\'t have any skills!');
 
+        if (index != null && index > op.data.skills.length - 1)
+            index = null;
+
         let first = true;
 
-        for (const opSkill of op.data.skills) {
+        for (let i = 0; i < op.data.skills.length; i++) {
+            if (index != null && index != i) continue;
+
+            const opSkill = op.data.skills[i];
             const skill = skillDict[opSkill.skillId];
 
             if (first) {
