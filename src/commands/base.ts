@@ -23,6 +23,9 @@ module.exports = {
 
         const op = operatorDict[name];
 
+        if (op.bases.length === 0)
+            return await interaction.reply('That operator doesn\'t have any base skills!');
+
         let first = true;
 
         for (const baseInfo of op.bases) {

@@ -1,72 +1,12 @@
 const { baseImagePath, eliteImagePath, enemyImagePath, moduleImagePath, operatorAvatarPath, operatorImagePath, stageImagePath, skillImagePath, skinGroupPath } = require('../../paths.json');
 const { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder } = require('discord.js');
-const fetch = require('../utils/fetch');
-const utils = require('../utils/utils');
 const fs = require('fs');
 const path = require('path');
+const fetch = require('../utils/fetch');
+const utils = require('../utils/utils');
+const { eliteLevels, professions, qualifications, skillLevels, skillTypes, spTypes, tagValues, tileDict } = require('../utils/contants');
 
 import { Base, BaseInfo, Enemy, Module, Paradox, Operator, Range, RogueStage, Skill, Skin, Stage } from "../types";
-
-const eliteLevels = ['E0', 'E1', 'E2', 'E3'];
-const professions: { [key: string]: string } = {
-    PIONEER: 'Vanguard',
-    WARRIOR: 'Guard',
-    TANK: 'Defender',
-    SNIPER: 'Sniper',
-    CASTER: 'Caster',
-    MEDIC: 'Medic',
-    SUPPORT: 'Supporter',
-    SPECIAL: 'Specialist'
-};
-const skillLevels = ['Lv1', 'Lv2', 'Lv3', 'Lv4', 'Lv5', 'Lv6', 'Lv7', 'M1', 'M2', 'M3'];
-const skillTypes = ['Passive', 'Manual Trigger', 'Auto Trigger'];
-const spTypes = [undefined, 'Per Second', 'Offensive', undefined, 'Defensive', undefined, undefined, undefined, 'Passive'];
-const tileDict = {
-    tile_bigforce: { emoji: '💪', name: 'Specialist Tactical Point' },
-    tile_corrosion: { emoji: '💔', name: 'Corrosive Ground' },
-    tile_deepwater: { emoji: '🔷', name: 'Deep Water Zone' },
-    tile_defup: { emoji: '🛡️', name: 'Defensive Rune' },
-    tile_end: { emoji: '🟦', name: 'Protection Objective' },
-    tile_fence: { emoji: '🟨', name: 'Fence' },
-    tile_fence_bound: { emoji: '🟨', name: 'Fence' },
-    tile_floor: { emoji: '❎', name: 'Non-deployable Area' },
-    tile_flystart: { emoji: '🔴', name: 'Aerial Unit Incursion Point' },
-    tile_forbidden: { emoji: '⬛', name: 'No Entry Zone' },
-    tile_gazebo: { emoji: '🔫', name: 'Anti-Air Rune' },
-    tile_grass: { emoji: '🌱', name: 'Bush' },
-    tile_healing: { emoji: '💟', name: 'Medical Rune' },
-    tile_hole: { emoji: '🔳', name: 'Hole' },
-    tile_infection: { emoji: '☢️', name: 'Active Originium' },
-    tile_rcm_crate: { emoji: '✅', name: 'Recommended Roadblock Point' },
-    tile_rcm_operator: { emoji: '✅', name: 'Recommended Deployment Point' },
-    tile_road: { emoji: '🟩', name: 'Flat Ground' },
-    tile_shallowwater: { emoji: '💧', name: 'Shallow Water Zone' },
-    tile_start: { emoji: '🟥', name: 'Incursion Point' },
-    tile_telin: { emoji: '🔻', name: 'Tunnel Entry' },
-    tile_telout: { emoji: '🔺', name: 'Tunnel Exit' },
-    tile_volcano: { emoji: '🔥', name: 'Heat Pump Passage' },
-    tile_volspread: { emoji: '🌋', name: 'Lava Crack' },
-    tile_wall: { emoji: '⬜', name: 'High Ground' },
-    tile_defbreak: { emoji: '💔', name: 'Corrosive Ground' },
-    tile_smog: { emoji: '☁️', name: 'Exhaust Grille' },
-    tile_yinyang_road: { emoji: '☯️', name: 'Mark of Hui and Ming (Road)' },
-    tile_yinyang_wall: { emoji: '☯️', name: 'Mark of Hui and Ming (Wall)' },
-    tile_yinyang_switch: { emoji: '☯️', name: 'Mark of Dusk and Dawn' },
-    tile_poison: { emoji: '☠️', name: 'Gas Spray' },
-    tile_deepsea: { emoji: '🔷', name: 'Deep Water Zone' },
-    tile_icestr: { emoji: '🧊', name: 'Icy Surface' },
-    tile_icetur_lb: { emoji: '🧊', name: 'Icy Corner' },
-    tile_icetur_lt: { emoji: '🧊', name: 'Icy Corner' },
-    tile_icetur_rb: { emoji: '🧊', name: 'Icy Corner' },
-    tile_icetur_rt: { emoji: '🧊', name: 'Icy Corner' },
-    tile_magic_circle: { emoji: '✨', name: 'Activated "Resonator"' },
-    tile_magic_circle_h: { emoji: '✨', name: 'Activated "Resonator"' },
-    tile_aircraft: { emoji: '🛫', name: 'Aircraft' },
-    tile_creep: { emoji: '🟩', name: 'Flat Ground (Nethersea Brand)' },
-    tile_creepf: { emoji: '🟫', name: 'Non-deployable Area (Nethersea Brand)' },
-    tile_empty: { emoji: '🔳', name: 'Empty' },
-    tile_volcano_emp: { emoji: '🔥', name: 'Heat Pump Passage' },
-};
 
 const archetypeDict: { [key: string]: string } = fetch.archetypes();
 const baseDict: { [key: string]: Base } = fetch.bases();
@@ -192,6 +132,10 @@ module.exports = {
         if (op.modules.length == 0) {
             modulesButton.setStyle(ButtonStyle.Secondary);
             modulesButton.setDisabled(true);
+        }
+        if (op.bases.length == 0) {
+            baseButton.setStyle(ButtonStyle.Secondary);
+            baseButton.setDisabled(true);
         }
 
         switch (type) {
@@ -576,13 +520,17 @@ module.exports = {
         const skinName = displaySkin.skinName;
         const skinGroupName = displaySkin.skinGroupName;
         const name = skinName === null ? skinGroupName : `${skinGroupName} - ${skinName}`;
+        const artistName = displaySkin.drawerName;
 
         const embed = new EmbedBuilder()
             .setColor(0xebca60)
             .setAuthor(authorField)
             .setTitle(`${name}`)
-            .addFields({ name: `Artist`, value: displaySkin.drawerName })
             .setImage(`attachment://${utils.cleanFilename(portraitId)}.png`);
+
+        if (artistName != null && artistName != '') {
+            embed.addFields({ name: `Artist`, value: artistName });
+        }
 
         let thumbnail;
         switch (skinGroupId) {
@@ -767,9 +715,11 @@ module.exports = {
             .setDescription(embedDescription)
             .addFields(rangeField);
 
-        for (const talent of opData.talents) {
-            const candidate = talent.candidates[talent.candidates.length - 1];
-            embed.addFields({ name: `*Talent:* ${candidate.name}`, value: utils.formatText(candidate.description, []) });
+        if (opData.talents != null) {
+            for (const talent of opData.talents) {
+                const candidate = talent.candidates[talent.candidates.length - 1];
+                embed.addFields({ name: `*Talent:* ${candidate.name}`, value: utils.formatText(candidate.description, []) });
+            }
         }
 
         let potentialString = '';
@@ -788,7 +738,9 @@ module.exports = {
                 trustString += `${trustKey.toUpperCase()} +${trustValue}\n`;
             }
         }
-        embed.addFields({ name: 'Trust Bonus', value: trustString, inline: true });
+        if (trustString != '') {
+            embed.addFields({ name: 'Trust Bonus', value: trustString, inline: true });
+        }
 
         const maxStats = opMax.attributesKeyFrames[1].data;
         const hp = maxStats.maxHp.toString();
@@ -945,6 +897,191 @@ module.exports = {
         }
         return { name: 'Range', value: rangeString };
     },
+    recruitEmbed(qual: string, value: number, tag: string, select: boolean) {
+        if (tag != '') {
+            if (select) {
+                value *= tagValues[tag];
+            } else {
+                value /= tagValues[tag];
+            }
+        }
+
+        const buttonConstId = `recruitඞ${qual}ඞ${value}`;
+
+        const meleeButton = new ButtonBuilder()
+            .setCustomId(`${buttonConstId}ඞmeleeඞselect`)
+            .setLabel('Melee')
+            .setStyle(ButtonStyle.Secondary);
+        const rangedButton = new ButtonBuilder()
+            .setCustomId(`${buttonConstId}ඞrangedඞselect`)
+            .setLabel('Ranged')
+            .setStyle(ButtonStyle.Secondary);
+        const guardButton = new ButtonBuilder()
+            .setCustomId(`${buttonConstId}ඞguardඞselect`)
+            .setLabel('Guard')
+            .setStyle(ButtonStyle.Secondary);
+        const medicButton = new ButtonBuilder()
+            .setCustomId(`${buttonConstId}ඞmedicඞselect`)
+            .setLabel('Medic')
+            .setStyle(ButtonStyle.Secondary);
+        const vanguardButton = new ButtonBuilder()
+            .setCustomId(`${buttonConstId}ඞvanguardඞselect`)
+            .setLabel('Vanguard')
+            .setStyle(ButtonStyle.Secondary);
+        const casterButton = new ButtonBuilder()
+            .setCustomId(`${buttonConstId}ඞcasterඞselect`)
+            .setLabel('Caster')
+            .setStyle(ButtonStyle.Secondary);
+        const sniperButton = new ButtonBuilder()
+            .setCustomId(`${buttonConstId}ඞsniperඞselect`)
+            .setLabel('Sniper')
+            .setStyle(ButtonStyle.Secondary);
+        const defenderButton = new ButtonBuilder()
+            .setCustomId(`${buttonConstId}ඞdefenderඞselect`)
+            .setLabel('Defender')
+            .setStyle(ButtonStyle.Secondary);
+        const supporterButton = new ButtonBuilder()
+            .setCustomId(`${buttonConstId}ඞsupporterඞselect`)
+            .setLabel('Supporter')
+            .setStyle(ButtonStyle.Secondary);
+        const specialistButton = new ButtonBuilder()
+            .setCustomId(`${buttonConstId}ඞspecialistඞselect`)
+            .setLabel('Specialist')
+            .setStyle(ButtonStyle.Secondary);
+        const healingButton = new ButtonBuilder()
+            .setCustomId(`${buttonConstId}ඞhealingඞselect`)
+            .setLabel('Healing')
+            .setStyle(ButtonStyle.Secondary);
+        const supportButton = new ButtonBuilder()
+            .setCustomId(`${buttonConstId}ඞsupportඞselect`)
+            .setLabel('Support')
+            .setStyle(ButtonStyle.Secondary);
+        const dpsButton = new ButtonBuilder()
+            .setCustomId(`${buttonConstId}ඞdpsඞselect`)
+            .setLabel('DPS')
+            .setStyle(ButtonStyle.Secondary);
+        const aoeButton = new ButtonBuilder()
+            .setCustomId(`${buttonConstId}ඞaoeඞselect`)
+            .setLabel('AOE')
+            .setStyle(ButtonStyle.Secondary);
+        const slowButton = new ButtonBuilder()
+            .setCustomId(`${buttonConstId}ඞslowඞselect`)
+            .setLabel('Slow')
+            .setStyle(ButtonStyle.Secondary);
+        const survivalButton = new ButtonBuilder()
+            .setCustomId(`${buttonConstId}ඞsurvivalඞselect`)
+            .setLabel('Survival')
+            .setStyle(ButtonStyle.Secondary);
+        const defenseButton = new ButtonBuilder()
+            .setCustomId(`${buttonConstId}ඞdefenseඞselect`)
+            .setLabel('Defense')
+            .setStyle(ButtonStyle.Secondary);
+        const debuffButton = new ButtonBuilder()
+            .setCustomId(`${buttonConstId}ඞdebuffඞselect`)
+            .setLabel('Debuff')
+            .setStyle(ButtonStyle.Secondary);
+        const shiftButton = new ButtonBuilder()
+            .setCustomId(`${buttonConstId}ඞshiftඞselect`)
+            .setLabel('Shift')
+            .setStyle(ButtonStyle.Secondary);
+        const crowdControlButton = new ButtonBuilder()
+            .setCustomId(`${buttonConstId}ඞcrowd-controlඞselect`)
+            .setLabel('Crowd Control')
+            .setStyle(ButtonStyle.Secondary);
+        const nukerButton = new ButtonBuilder()
+            .setCustomId(`${buttonConstId}ඞnukerඞselect`)
+            .setLabel('Nuker')
+            .setStyle(ButtonStyle.Secondary);
+        const summonButton = new ButtonBuilder()
+            .setCustomId(`${buttonConstId}ඞsummonඞselect`)
+            .setLabel('Summon')
+            .setStyle(ButtonStyle.Secondary);
+        const fastRedeployButton = new ButtonBuilder()
+            .setCustomId(`${buttonConstId}ඞfast-redeployඞselect`)
+            .setLabel('Fast-Redeploy')
+            .setStyle(ButtonStyle.Secondary);
+        const dpRecoveryButton = new ButtonBuilder()
+            .setCustomId(`${buttonConstId}ඞdp-recoveryඞselect`)
+            .setLabel('DP-Recovery')
+            .setStyle(ButtonStyle.Secondary);
+        const robotButton = new ButtonBuilder()
+            .setCustomId(`${buttonConstId}ඞrobotඞselect`)
+            .setLabel('Robot')
+            .setStyle(ButtonStyle.Secondary);
+
+        const components = [];
+        components.push(new ActionRowBuilder().addComponents(meleeButton, rangedButton, guardButton, medicButton, vanguardButton));
+        components.push(new ActionRowBuilder().addComponents(casterButton, sniperButton, defenderButton, supporterButton, specialistButton));
+        components.push(new ActionRowBuilder().addComponents(healingButton, supportButton, dpsButton, aoeButton, slowButton));
+        components.push(new ActionRowBuilder().addComponents(survivalButton, defenseButton, debuffButton, shiftButton, crowdControlButton));
+        components.push(new ActionRowBuilder().addComponents(nukerButton, summonButton, fastRedeployButton, dpRecoveryButton, robotButton));
+
+        const selectedButtons = [];
+
+        for (const actionRow of components) {
+            for (const button of actionRow.components) {
+                const buttonTag = button.data.custom_id.split('ඞ')[3];
+                const buttonValue = tagValues[buttonTag];
+
+                if (value % buttonValue != 0) continue;
+
+                selectedButtons.push(button);
+            }
+        }
+
+        for (const button of selectedButtons) {
+            button.setCustomId(button.data.custom_id.replace('select', 'deselect'));
+            button.setStyle(ButtonStyle.Primary);
+        }
+
+        if (selectedButtons.length >= 5) {
+            for (const actionRow of components) {
+                for (const button of actionRow.components) {
+                    if (selectedButtons.includes(button)) continue;
+
+                    button.setDisabled(true);
+                }
+            }
+        }
+
+        const embed = new EmbedBuilder()
+            .setColor(0xebca60)
+            .setTitle('Recruitment Calculator');
+
+        const { recruitPool } = require('../utils/contants');
+        const opArr: Operator[] = [];
+
+        if (selectedButtons.length >= 1) {
+            for (const opId of Object.values(recruitPool)) {
+                const op = opDict[String(opId)];
+                if (op.recruitId % value != 0) continue;
+                if (qual != null && qual != 'null' && op.data.rarity != qualifications[qual]) continue;
+
+                opArr.push(op);
+            }
+        }
+
+        opArr.sort(function (a, b) { return b.data.rarity - a.data.rarity });
+
+        let opCount = 0;
+
+        for (const op of opArr) {
+            let rarity = '';
+            for (let i = 0; i <= op.data.rarity; i++) {
+                rarity += '★';
+            }
+            if (opCount <= 23) {
+                embed.addFields({ name: op.data.name, value: rarity, inline: true });
+            }
+            opCount++;
+        }
+
+        if (opCount >= 25) {
+            embed.addFields({ name: '\u200B', value: `${opCount - 24} more...`, inline: true });
+        }
+
+        return { embeds: [embed], components: components };
+    },
     skillEmbed(skill: Skill, op: Operator, level: number) {
         const skillLevel = skill.levels[level];
 
@@ -1088,13 +1225,17 @@ module.exports = {
         const skinName = displaySkin.skinName;
         const skinGroupName = displaySkin.skinGroupName;
         const name = skinName === null ? skinGroupName : `${skinGroupName} - ${skinName}`;
+        const artistName = displaySkin.drawerName;
 
         const embed = new EmbedBuilder()
             .setColor(0xebca60)
             .setAuthor(authorField)
             .setTitle(`${name}`)
-            .addFields({ name: `Artist`, value: displaySkin.drawerName })
             .setImage(`attachment://${utils.cleanFilename(portraitId)}.png`);
+
+        if (artistName != null && artistName != '') {
+            embed.addFields({ name: `Artist`, value: artistName });
+        }
 
         let thumbnail;
         switch (skinGroupId) {

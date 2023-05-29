@@ -1,4 +1,5 @@
 const { dataPath } = require('../../paths.json');
+const { professions, tagValues } = require('../utils/contants');
 
 import { Base, BaseInfo, Enemy, Module, Operator, Paradox, ParadoxInfo, Range, RogueStage, RogueStageInfo, Skill, Skin, Stage, StageData, StageInfo } from "../types";
 
@@ -17,47 +18,6 @@ const stageDict: { [key: string]: Stage[] } = {};
 const toughStageDict: { [key: string]: Stage[] } = {};
 const toughRogue1StageDict: { [key: string]: RogueStage[] } = {};
 const toughRogue2StageDict: { [key: string]: RogueStage[] } = {};
-
-const tagValues: { [key: string]: number } = { // prime number method for shits and giggles
-    starter: 2,
-    'senior operator': 3,
-    'top operator': 5,
-    melee: 7,
-    ranged: 11,
-    guard: 13,
-    medic: 17,
-    vanguard: 19,
-    caster: 23,
-    sniper: 29,
-    defender: 31,
-    supporter: 37,
-    specialist: 41,
-    healing: 43,
-    support: 47,
-    dps: 53,
-    aoe: 59,
-    slow: 61,
-    survival: 67,
-    defense: 71,
-    debuff: 73,
-    shift: 79,
-    'crowd control': 83,
-    nuker: 89,
-    summon: 97,
-    'fast-redeploy': 101,
-    'dp-recovery': 103,
-    robot: 107
-};
-const professions: { [key: string]: string } = {
-    PIONEER: 'Vanguard',
-    WARRIOR: 'Guard',
-    TANK: 'Defender',
-    SNIPER: 'Sniper',
-    CASTER: 'Caster',
-    MEDIC: 'Medic',
-    SUPPORT: 'Supporter',
-    SPECIAL: 'Specialist'
-};
 
 type SubProf = {
     subProfessionId: string;
@@ -208,13 +168,16 @@ function initOperators() {
         }
 
         const positionId = tagValues[opData.position.toLowerCase()];
+        const classId = tagValues[professions[opData.profession].toLowerCase()];
         let tagId = 1;
         for (const tag of opData.tagList) {
             tagId *= tagValues[tag.toLowerCase()];
         }
-        const classId = tagValues[professions[opData.profession].toLowerCase()];
+        if (opData.itemDesc != null && opData.itemDesc.includes('robot')) {
+            tagId *= tagValues['robot']
+        }
 
-        const recruitId = positionId * tagId * classId;
+        const recruitId = positionId * classId * tagId;
 
         operatorDict[opId] = { id: opId, recruitId: recruitId, modules: opModules, bases: opBases, data: opData };
 

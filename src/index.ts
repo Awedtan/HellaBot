@@ -44,7 +44,7 @@ client.on(Events.InteractionCreate, async interaction => {
 
 // Start of command interaction handling
 
-import { Base, BaseInfo, Enemy, Module, Paradox, Operator, Range, RogueStage, Skill, Skin, Stage } from "./types";
+import { Base, BaseInfo, Enemy, Module, Operator, Paradox, ParadoxInfo, Range, RogueStage, RogueStageInfo, Skill, Skin, Stage, StageData, StageInfo } from "./types";
 
 const archetypeDict: { [key: string]: string } = fetch.archetypes();
 const baseDict: { [key: string]: Base } = fetch.bases();
@@ -65,7 +65,7 @@ const toughIs3Dict: { [key: string]: RogueStage[] } = fetch.toughRogue2Stages();
 client.on(Events.InteractionCreate, async interaction => {
     if (!interaction.isButton() && !interaction.isStringSelectMenu()) return;
 
-    const idArr = interaction.customId.split('ඞ');
+    const idArr: string[] = interaction.customId.split('ඞ');
 
     switch (idArr[0]) {
         case ('info'): {
@@ -86,6 +86,17 @@ client.on(Events.InteractionCreate, async interaction => {
 
             const moduleEmbed = create.moduleEmbed(module, op, level);
             await interaction.update(moduleEmbed);
+
+            break;
+        }
+        case ('recruit'): {
+            const qual = idArr[1];
+            const value = parseInt(idArr[2]);
+            const tag = idArr[3];
+            const select = idArr[4] === 'select';
+
+            const recruitEmbed = create.recruitEmbed(qual, value, tag, select);
+            await interaction.update(recruitEmbed);
 
             break;
         }

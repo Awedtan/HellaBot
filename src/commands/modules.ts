@@ -4,8 +4,6 @@ const create = require('../utils/create');
 
 import { Module, Operator } from "../types";
 
-const levelId: { [key: string]: number } = { l1: 0, l2: 1, l3: 2 };
-
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('modules')
