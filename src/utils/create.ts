@@ -6,10 +6,11 @@ const fetch = require('../utils/fetch');
 const utils = require('../utils/utils');
 const { eliteLevels, professions, qualifications, skillLevels, skillTypes, spTypes, tagValues, tileDict } = require('../utils/contants');
 
-import { Base, BaseInfo, Enemy, Module, Paradox, Operator, Range, RogueStage, Skill, Skin, Stage } from "../types";
+import { Base, BaseInfo, Definition, Enemy, Module, Paradox, Operator, Range, RogueStage, Skill, Skin, Stage } from "../types";
 
 const archetypeDict: { [key: string]: string } = fetch.archetypes();
 const baseDict: { [key: string]: Base } = fetch.bases();
+const defineDict: { [key: string]: Definition } = fetch.definitions();
 const enemyDict: { [key: string]: Enemy } = fetch.enemies();
 const moduleDict: { [key: string]: Module } = fetch.modules();
 const opDict: { [key: string]: Operator } = fetch.operators();
@@ -51,6 +52,51 @@ module.exports = {
 
         return { embeds: [embed], files: [image, avatar] };
 
+    },
+    defineEmbed(definition: Definition) {
+        const embed = new EmbedBuilder()
+            .setColor(0xebca60)
+            .setTitle(definition.termName)
+            .setDescription(utils.formatText(definition.description));
+
+        return { embeds: [embed] };
+    },
+    defineListEmbed() {
+        let baDescription = '', ccDescription = '', groupDescription = '';
+        for (const term of Object.values(defineDict)) {
+            const termId = term.termId;
+            const termName = term.termName;
+            const termArr = termId.split('.');
+
+            switch (termArr[0]) {
+                case 'ba':
+                    baDescription += `${termName}\n`;
+                    break;
+                case 'cc':
+                    switch (termArr[1]) {
+                        case ('g'):
+                        case ('tag'):
+                        case ('gvial'):
+                            groupDescription += `${termName}\n`;
+                            break;
+                        default:
+                            ccDescription += `${termName}\n`;
+                            break;
+                    }
+                    break;
+            }
+        }
+
+        const embed = new EmbedBuilder()
+            .setColor(0xebca60)
+            .setTitle('List of In-Game Terms and Groups')
+            .addFields(
+                { name: 'Status Effects', value: baDescription, inline: true },
+                { name: 'Base Effects', value: ccDescription, inline: true },
+                { name: 'Base Groups', value: groupDescription, inline: true }
+            );
+
+        return { embeds: [embed] };
     },
     enemyEmbed(enemy: Enemy) {
         const enemyInfo = enemy.excel;
