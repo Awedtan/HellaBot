@@ -1,7 +1,7 @@
 const { dataPath } = require('../../paths.json');
 const { professions, tagValues } = require('../utils/contants');
 
-import { Base, BaseInfo, Enemy, Module, Operator, Paradox, ParadoxInfo, Range, RogueStage, RogueStageInfo, Skill, Skin, Stage, StageData, StageInfo } from "../types";
+import { Base, BaseInfo, Definition, Enemy, Module, Operator, Paradox, ParadoxInfo, Range, RogueStage, RogueStageInfo, Skill, Skin, Stage, StageData, StageInfo } from "../types";
 
 const archetypeDict: { [key: string]: string } = {};
 const baseDict: { [key: string]: Base } = {};
@@ -15,6 +15,7 @@ const rogue2StageDict: { [key: string]: RogueStage[] } = {};
 const skillDict: { [key: string]: Skill } = {};
 const skinDict: { [key: string]: Skin[] } = {};
 const stageDict: { [key: string]: Stage[] } = {};
+const definitionDict: { [key: string]: Definition } = {};
 const toughStageDict: { [key: string]: Stage[] } = {};
 const toughRogue1StageDict: { [key: string]: RogueStage[] } = {};
 const toughRogue2StageDict: { [key: string]: RogueStage[] } = {};
@@ -29,6 +30,7 @@ module.exports = {
     initializeAll() {
         initArchetypes();
         initBases();
+        initDefinitions();
         initEnemies();
         initModules();
         initParadoxes();
@@ -46,6 +48,9 @@ module.exports = {
     },
     bases() {
         return baseDict;
+    },
+    definitions() {
+        return definitionDict;
     },
     enemies() {
         return enemyDict;
@@ -103,6 +108,15 @@ function initBases() {
 
     for (const buff of Object.values(buffs)) {
         baseDict[buff.buffId] = buff;
+    }
+}
+
+function initDefinitions() {
+    const gamedataConsts = require(`${dataPath}/excel/gamedata_const.json`);
+    const termDescriptionDict: { [key: string]: Definition } = gamedataConsts.termDescriptionDict;
+
+    for (const definition of Object.values(termDescriptionDict)) {
+        definitionDict[definition.termName.toLowerCase()] = definition;
     }
 }
 
@@ -174,7 +188,7 @@ function initOperators() {
             tagId *= tagValues[tag.toLowerCase()];
         }
         if (opData.itemDesc != null && opData.itemDesc.includes('robot')) {
-            tagId *= tagValues['robot']
+            tagId *= tagValues['robot'];
         }
 
         const recruitId = positionId * classId * tagId;
@@ -237,7 +251,8 @@ function initRogueStages() {
                 const stage: RogueStage = { excel: excel, levels: levels };
 
                 toughRogue1StageDict[name].push(stage);
-            } else if (excel.difficulty === 'NORMAL') {
+            }
+            else if (excel.difficulty === 'NORMAL') {
                 if (!rogue1StageDict.hasOwnProperty(name)) {
                     rogue1StageDict[name] = [];
                 }
@@ -267,7 +282,8 @@ function initRogueStages() {
                 const stage: RogueStage = { excel: excel, levels: levels };
 
                 toughRogue2StageDict[name].push(stage);
-            } else if (excel.difficulty === 'NORMAL') {
+            }
+            else if (excel.difficulty === 'NORMAL') {
                 if (!rogue2StageDict.hasOwnProperty(name)) {
                     rogue2StageDict[name] = [];
                 }
@@ -351,7 +367,8 @@ function initStages() {
                 const stage: Stage = { excel: excel, levels: levels };
 
                 toughStageDict[code].push(stage);
-            } else if (excel.difficulty === 'NORMAL') {
+            }
+            else if (excel.difficulty === 'NORMAL') {
                 if (!stageDict.hasOwnProperty(code)) {
                     stageDict[code] = [];
                 }

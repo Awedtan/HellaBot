@@ -50,7 +50,8 @@ module.exports = {
 
                     const stageEmbed = await create.rogueStageEmbed(stage);
                     await interaction.reply(stageEmbed);
-                } else {
+                }
+                else {
                     const stageSelectEmbed = create.stageSelectEmbed(stageArr);
                     let response = await interaction.reply(stageSelectEmbed);
 

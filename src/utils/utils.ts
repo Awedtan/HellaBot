@@ -7,7 +7,7 @@ module.exports = {
     },
     formatText(text: string, blackboard: Blackboard[]) {
         if (text === null) return '';
-        if (blackboard === null) blackboard = [];
+        if (blackboard === null || blackboard === undefined) blackboard = [];
 
         text = text.trim();
         const skillKeys: { [key: string]: number | string } = {};

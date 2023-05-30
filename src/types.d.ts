@@ -50,6 +50,12 @@ type BaseInfo = {
     cond: OperatorUnlockCond
 };
 
+type Definition = {
+    termId: string;
+    termName: string;
+    description: string;
+};
+
 type Enemy = {
     excel: {
         enemyId: string;

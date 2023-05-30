@@ -187,7 +187,8 @@ module.exports = {
                     if (i != page) {
                         skillArr[i].setCustomId(`infoඞ${op.id}ඞ${type}ඞ${i}ඞ${level}ඞskill`)
                         skillArr[i].setDisabled(false);
-                    } else {
+                    }
+                    else {
                         skillArr[i].setCustomId(`info_skill_current`);
                     }
                 }
@@ -234,7 +235,8 @@ module.exports = {
                     if (i != page) {
                         moduleArr[i].setCustomId(`infoඞ${op.id}ඞ${type}ඞ${i}ඞ${level}ඞmodule`)
                         moduleArr[i].setDisabled(false);
-                    } else {
+                    }
+                    else {
                         moduleArr[i].setCustomId(`info_module_current`);
                     }
                 }
@@ -588,7 +590,8 @@ module.exports = {
             if (skinGroup === 'Default Outfit') {
                 defaultSkinArr.addComponents(skinButton);
                 components[0] = defaultSkinArr;
-            } else {
+            }
+            else {
                 skinArr.addComponents(skinButton);
                 components[1] = skinArr;
             }
@@ -901,7 +904,8 @@ module.exports = {
         if (tag != '') {
             if (select) {
                 value *= tagValues[tag];
-            } else {
+            }
+            else {
                 value /= tagValues[tag];
             }
         }
@@ -1292,7 +1296,8 @@ module.exports = {
             if (skinGroup === 'Default Outfit') {
                 defaultSkinArr.addComponents(skillButton);
                 components[0] = defaultSkinArr;
-            } else {
+            }
+            else {
                 skinArr.addComponents(skillButton);
                 components[1] = skinArr;
             }

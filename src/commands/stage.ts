@@ -38,7 +38,8 @@ module.exports = {
 
             const stageEmbed = await create.stageEmbed(stage);
             await interaction.reply(stageEmbed);
-        } else {
+        }
+        else {
             const stageSelectEmbed = create.stageSelectEmbed(stageArr);
             await interaction.reply(stageSelectEmbed);
         }
