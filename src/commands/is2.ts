@@ -7,10 +7,10 @@ import { RogueStage } from '../types';
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('is2')
-        .setDescription('tbd')
+        .setDescription('Show information on Phantom & Crimson Solitare (IS2)')
         .addStringOption(option =>
             option.setName('type')
-                .setDescription('type')
+                .setDescription('Info type')
                 .addChoices(
                     { name: 'stage', value: 'stage' },
                 )
@@ -18,15 +18,15 @@ module.exports = {
         )
         .addStringOption(option =>
             option.setName('name')
-                .setDescription('name')
+                .setDescription('Name')
                 .setRequired(true)
         )
         .addStringOption(option =>
             option.setName('difficulty')
-                .setDescription('difficulty')
+                .setDescription('Stage difficulty')
                 .addChoices(
                     { name: 'normal', value: 'normal' },
-                    { name: 'challenge', value: 'challenge' }
+                    { name: 'emergency', value: 'emergency' }
                 )
         ),
     async execute(interaction) {
@@ -37,7 +37,7 @@ module.exports = {
                 const stageCode = interaction.options.getString('name').toLowerCase();
                 const stageMode = interaction.options.getString('difficulty');
 
-                const stageDict: { [key: string]: RogueStage[] } = stageMode === 'challenge' ? fetch.toughRogue1Stages() : fetch.rogue1Stages();
+                const stageDict: { [key: string]: RogueStage[] } = stageMode === 'emergency' ? fetch.toughRogue1Stages() : fetch.rogue1Stages();
                 const stageArr = stageDict[stageCode];
 
                 if (!stageDict.hasOwnProperty(stageCode) || stageArr.length === 0)

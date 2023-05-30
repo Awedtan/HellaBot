@@ -1357,7 +1357,7 @@ module.exports = {
         const stageInfo = stage.excel;
         const stageData = stage.levels;
 
-        const title = stageInfo.difficulty === 'NORMAL' ? `${stageInfo.code} - ${stageInfo.name}` : `Challenge ${stageInfo.code} - ${stageInfo.name}`;
+        const title = stageInfo.difficulty === 'NORMAL' ? `${stageInfo.code} - ${stageInfo.name}` : `Emergency ${stageInfo.code} - ${stageInfo.name}`;
         const description = stageInfo.difficulty === 'NORMAL' ? utils.formatText(stageInfo.description, []) : utils.formatText(`${stageInfo.description}\n${stageInfo.eliteDesc}`, []);
 
         const stageEnemies = stageData.enemyDbRefs;

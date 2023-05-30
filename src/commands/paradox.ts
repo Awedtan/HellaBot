@@ -7,10 +7,10 @@ import { Operator, Paradox } from '../types';
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('paradox')
-        .setDescription('tbd')
+        .setDescription('Show an operator\'s Paradox Simulation stage')
         .addStringOption(option =>
             option.setName('name')
-                .setDescription('name')
+                .setDescription('Operator name')
                 .setRequired(true)
         ),
     async execute(interaction) {

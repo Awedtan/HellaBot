@@ -5,8 +5,7 @@ const { token } = require('../config.json');
 const create = require('./utils/create');
 const fetch = require('./utils/fetch');
 
-fetch.initializeAll();
-
+// Load command files
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 client.commands = new Collection();
 const commandsPath = path.join(__dirname, 'commands');
@@ -21,12 +20,17 @@ for (const file of commandFiles) {
         console.log(`[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`);
     }
 }
+
+// Pull data from ArknightsGameData repo
+fetch.initializeAll();
+
 client.login(token);
 
 client.once(Events.ClientReady, c => {
     console.log(`Ready! Logged in as ${c.user.tag}`);
 });
 
+// Initial slash command interaction handling
 client.on(Events.InteractionCreate, async interaction => {
     if (!interaction.isChatInputCommand()) return;
     const command = interaction.client.commands.get(interaction.commandName);
@@ -132,5 +136,3 @@ client.on(Events.InteractionCreate, async interaction => {
         }
     }
 });
-
-export { };

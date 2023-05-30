@@ -7,10 +7,10 @@ import { Operator, Skin } from "../types";
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('skins')
-        .setDescription('tbd')
+        .setDescription('Show an operator\'s skins')
         .addStringOption(option =>
             option.setName('name')
-                .setDescription('name')
+                .setDescription('Operator name')
                 .setRequired(true)
         ),
     async execute(interaction) {

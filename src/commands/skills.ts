@@ -7,15 +7,15 @@ import { Operator, Skill } from '../types';
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('skills')
-        .setDescription('tbd')
+        .setDescription('Show an operator\'s skills')
         .addStringOption(option =>
             option.setName('name')
-                .setDescription('name')
+                .setDescription('Operator name')
                 .setRequired(true)
         )
         .addIntegerOption(option =>
             option.setName('index')
-                .setDescription('index')
+                .setDescription('Skill #')
                 .addChoices({ name: '1', value: 1 }, { name: '2', value: 2 }, { name: '3', value: 3 })
         ),
     async execute(interaction) {

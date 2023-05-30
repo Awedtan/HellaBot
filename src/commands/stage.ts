@@ -7,15 +7,15 @@ import { Stage } from '../types';
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('stage')
-        .setDescription('tbd')
+        .setDescription('Show information on a stage')
         .addStringOption(option =>
             option.setName('code')
-                .setDescription('code')
+                .setDescription('Stage code')
                 .setRequired(true)
         )
         .addStringOption(option =>
             option.setName('difficulty')
-                .setDescription('difficulty')
+                .setDescription('Stage Difficulty')
                 .addChoices(
                     { name: 'normal', value: 'normal' },
                     { name: 'challenge', value: 'challenge' }

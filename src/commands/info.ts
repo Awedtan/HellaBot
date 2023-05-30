@@ -7,10 +7,10 @@ import { Operator } from '../types';
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('info')
-        .setDescription('tbd')
+        .setDescription('Show an operator\'s information and attributes')
         .addStringOption(option =>
             option.setName('name')
-                .setDescription('name')
+                .setDescription('Operator name')
                 .setRequired(true)
         ),
     async execute(interaction) {

@@ -6,10 +6,10 @@ import { } from "../types";
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('recruit')
-        .setDescription('tbd')
+        .setDescription('Find recruitable operators using selected tags')
         .addStringOption(option =>
             option.setName('qualification')
-                .setDescription('qualification')
+                .setDescription('Qualification tag')
                 .addChoices(
                     { name: 'starter', value: 'starter' },
                     { name: 'senior', value: 'senior' },

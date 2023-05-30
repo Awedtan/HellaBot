@@ -7,10 +7,10 @@ import { Definition } from "../types";
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('define')
-        .setDescription('tbd')
+        .setDescription('Show the definition for in-game terms (use \'list\' to display all in-game terms)')
         .addStringOption(option =>
             option.setName('term')
-                .setDescription('term')
+                .setDescription('Term')
                 .setRequired(true)
         ),
     async execute(interaction) {

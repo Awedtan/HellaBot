@@ -2,15 +2,15 @@ const { SlashCommandBuilder } = require('discord.js');
 const fetch = require('../utils/fetch');
 const create = require('../utils/create');
 
-import { Base, BaseInfo, Operator } from "../types";
+import { Base, Operator } from "../types";
 
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('base')
-        .setDescription('tbd')
+        .setDescription('Show an operator\'s base skills')
         .addStringOption(option =>
             option.setName('name')
-                .setDescription('name')
+                .setDescription('Operator name')
                 .setRequired(true)
         ),
     async execute(interaction) {

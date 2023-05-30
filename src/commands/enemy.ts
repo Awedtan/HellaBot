@@ -7,10 +7,10 @@ import { Enemy } from '../types';
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('enemy')
-        .setDescription('tbd')
+        .setDescription('Show an enemy\'s information and abilities')
         .addStringOption(option =>
             option.setName('name')
-                .setDescription('name')
+                .setDescription('Enemy name')
                 .setRequired(true)
         ),
     async execute(interaction) {
