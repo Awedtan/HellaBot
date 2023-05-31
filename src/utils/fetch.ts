@@ -1,7 +1,7 @@
 const { dataPath } = require('../../paths.json');
 const { professions, tagValues } = require('../utils/contants');
 
-import { Base, BaseInfo, Definition, Enemy, Module, Operator, Paradox, ParadoxInfo, Range, RogueStage, RogueStageInfo, Skill, Skin, Stage, StageData, StageInfo } from "../types";
+import { Base, BaseInfo, Definition, Enemy, Module, Operator, Paradox, ParadoxInfo, Range, RogueTheme, RogueRelic, RogueStage, RogueStageInfo, RogueVariation, Skill, Skin, Stage, StageData, StageInfo } from "../types";
 
 const archetypeDict: { [key: string]: string } = {};
 const baseDict: { [key: string]: Base } = {};
@@ -10,21 +10,18 @@ const moduleDict: { [key: string]: Module } = {};
 const operatorDict: { [key: string]: Operator } = {};
 const paradoxDict: { [key: string]: Paradox } = {};
 const rangeDict: { [key: string]: Range } = {};
-const rogue1StageDict: { [key: string]: RogueStage[] } = {};
-const rogue2StageDict: { [key: string]: RogueStage[] } = {};
 const skillDict: { [key: string]: Skill } = {};
 const skinDict: { [key: string]: Skin[] } = {};
 const stageDict: { [key: string]: Stage[] } = {};
 const definitionDict: { [key: string]: Definition } = {};
 const toughStageDict: { [key: string]: Stage[] } = {};
-const toughRogue1StageDict: { [key: string]: RogueStage[] } = {};
-const toughRogue2StageDict: { [key: string]: RogueStage[] } = {};
+const rogueThemeArr: RogueTheme[] = [];
 
 type SubProf = {
     subProfessionId: string;
     subProfessionName: string;
     subProfessionCatagory: number;
-}
+};
 
 module.exports = {
     initializeAll() {
@@ -35,9 +32,9 @@ module.exports = {
         initModules();
         initParadoxes();
         initRanges();
+        initRogueThemes();
         initSkills();
         initSkins();
-        initRogueStages();
         initStages();
 
         initOperators();
@@ -67,11 +64,8 @@ module.exports = {
     ranges() {
         return rangeDict;
     },
-    rogue1Stages() {
-        return rogue1StageDict;
-    },
-    rogue2Stages() {
-        return rogue2StageDict;
+    rogueThemes() {
+        return rogueThemeArr;
     },
     skills() {
         return skillDict;
@@ -81,12 +75,6 @@ module.exports = {
     },
     stages() {
         return stageDict;
-    },
-    toughRogue1Stages() {
-        return toughRogue1StageDict;
-    },
-    toughRogue2Stages() {
-        return toughRogue2StageDict;
     },
     toughStages() {
         return toughStageDict;
@@ -232,70 +220,54 @@ function initRanges() {
     }
 }
 
-function initRogueStages() {
+function initRogueThemes() {
     const rogueTable: { [key: string]: any } = require(`${dataPath}/excel/roguelike_topic_table.json`);
     const rogueDetails: { [key: string]: any } = rogueTable.details;
 
-    const rogue1Stages: { [key: string]: RogueStageInfo } = rogueDetails.rogue_1.stages;
-    for (const excel of Object.values(rogue1Stages)) {
-        try {
+    for (let i = 0; i < Object.keys(rogueDetails).length; i++) {
+        const rogueTopics: { [key: string]: any } = rogueTable.topics;
+
+        const name = Object.values(rogueTopics)[i].name;
+
+        const rogueTheme = Object.values(rogueDetails)[i];
+        const rogueStages: { [key: string]: RogueStageInfo } = rogueTheme.stages;
+        const stageDict: { [key: string]: RogueStage } = {};
+        const toughStageDict: { [key: string]: RogueStage } = {};
+
+        for (const excel of Object.values(rogueStages)) {
             const levelId = excel.levelId.toLowerCase();
             const name = excel.name.toLowerCase();
 
             if (excel.difficulty === 'FOUR_STAR') {
-                if (!toughRogue1StageDict.hasOwnProperty(name)) {
-                    toughRogue1StageDict[name] = [];
-                }
-
                 const levels: StageData = require(`${dataPath}/levels/${levelId}.json`);
                 const stage: RogueStage = { excel: excel, levels: levels };
 
-                toughRogue1StageDict[name].push(stage);
+                toughStageDict[name] = stage;
             }
             else if (excel.difficulty === 'NORMAL') {
-                if (!rogue1StageDict.hasOwnProperty(name)) {
-                    rogue1StageDict[name] = [];
-                }
-
                 const levels = require(`${dataPath}/levels/${levelId}.json`);
                 const stage: RogueStage = { excel: excel, levels: levels };
 
-                rogue1StageDict[name].push(stage);
+                stageDict[name] = stage;
             }
-        } catch (e) {
-            console.error(e);
         }
-    }
 
-    const rogue2Stages: { [key: string]: RogueStageInfo } = rogueDetails.rogue_2.stages;
-    for (const excel of Object.values(rogue2Stages)) {
-        try {
-            const levelId = excel.levelId.toLowerCase();
-            const name = excel.name.toLowerCase();
+        const rogueRelics: { [key: string]: RogueRelic } = rogueTheme.items;
+        const relicDict: { [key: string]: RogueRelic } = {};
 
-            if (excel.difficulty === 'FOUR_STAR') {
-                if (!toughRogue2StageDict.hasOwnProperty(name)) {
-                    toughRogue2StageDict[name] = [];
-                }
-
-                const levels: StageData = require(`${dataPath}/levels/${levelId}.json`);
-                const stage: RogueStage = { excel: excel, levels: levels };
-
-                toughRogue2StageDict[name].push(stage);
-            }
-            else if (excel.difficulty === 'NORMAL') {
-                if (!rogue2StageDict.hasOwnProperty(name)) {
-                    rogue2StageDict[name] = [];
-                }
-
-                const levels = require(`${dataPath}/levels/${levelId}.json`);
-                const stage: RogueStage = { excel: excel, levels: levels };
-
-                rogue2StageDict[name].push(stage);
-            }
-        } catch (e) {
-            console.error(e);
+        for (const relic of Object.values(rogueRelics)) {
+            if (relic.type === 'BAND' || relic.type == 'CAPSULE') continue;
+            relicDict[relic.name.toLowerCase()] = relic;
         }
+
+        const rogueVariations: { [key: string]: RogueVariation } = rogueTheme.variationData;
+        const variationDict: { [key: string]: RogueVariation } = {};
+
+        for (const variation of Object.values(rogueVariations)) {
+            variationDict[variation.outerName.toLowerCase()] = variation;
+        }
+
+        rogueThemeArr[i] = { name: name, stageDict: stageDict, toughStageDict: toughStageDict, relicDict: relicDict, variationDict: variationDict };
     }
 }
 

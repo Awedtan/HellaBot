@@ -1,4 +1,4 @@
-const { baseImagePath, eliteImagePath, enemyImagePath, moduleImagePath, operatorAvatarPath, operatorImagePath, stageImagePath, skillImagePath, skinGroupPath } = require('../../paths.json');
+const { baseImagePath, eliteImagePath, enemyImagePath, moduleImagePath, operatorAvatarPath, operatorImagePath, rogueItemImagePath, stageImagePath, skillImagePath, skinGroupPath } = require('../../paths.json');
 const { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder } = require('discord.js');
 const fs = require('fs');
 const path = require('path');
@@ -6,24 +6,13 @@ const fetch = require('../utils/fetch');
 const utils = require('../utils/utils');
 const { eliteLevels, professions, qualifications, skillLevels, skillTypes, spTypes, tagValues, tileDict } = require('../utils/contants');
 
-import { Base, BaseInfo, Definition, Enemy, Module, Paradox, Operator, Range, RogueStage, Skill, Skin, Stage } from "../types";
+import { Base, BaseInfo, Definition, Enemy, Module, Paradox, Operator, Range, RogueRelic, RogueStage, RogueTheme, RogueVariation, Skill, Skin, Stage } from "../types";
 
-const archetypeDict: { [key: string]: string } = fetch.archetypes();
-const baseDict: { [key: string]: Base } = fetch.bases();
 const defineDict: { [key: string]: Definition } = fetch.definitions();
-const enemyDict: { [key: string]: Enemy } = fetch.enemies();
 const moduleDict: { [key: string]: Module } = fetch.modules();
 const opDict: { [key: string]: Operator } = fetch.operators();
-const paradoxDict: { [key: string]: Paradox } = fetch.paradoxes();
-const rangeDict: { [key: string]: Range } = fetch.ranges();
-const is2Dict: { [key: string]: RogueStage[] } = fetch.rogue1Stages();
-const is3Dict: { [key: string]: RogueStage[] } = fetch.rogue2Stages();
 const skillDict: { [key: string]: Skill } = fetch.skills();
 const skinDict: { [key: string]: Skin[] } = fetch.skins();
-const stageDict: { [key: string]: Stage[] } = fetch.stages();
-const toughStageDict: { [key: string]: Stage[] } = fetch.toughStages();
-const toughIs2Dict: { [key: string]: RogueStage[] } = fetch.toughRogue1Stages();
-const toughIs3Dict: { [key: string]: RogueStage[] } = fetch.toughRogue2Stages();
 
 module.exports = {
     authorField(op: Operator) {
@@ -1351,6 +1340,80 @@ module.exports = {
 
         return { embeds: [embed], files: [image, avatar, thumbnail], components: components };
     },
+    async rogueRelicEmbed(relic: RogueRelic) {
+        const name = relic.name;
+        const description = relic.description === null ? relic.usage : `${relic.description}\n\n${relic.usage}`;
+        const embedDescription = `***Cost:* ${relic.value}▲**\n${description}`;
+
+        try {
+            const imagePath = path.join(__dirname, '../../', rogueItemImagePath, `${relic.iconId}.png`);
+            await fs.promises.access(imagePath);
+            const image = new AttachmentBuilder(imagePath);
+
+            const embed = new EmbedBuilder()
+                .setColor(0xebca60)
+                .setTitle(name)
+                .setThumbnail(`attachment://${utils.cleanFilename(relic.iconId)}.png`)
+                .setDescription(embedDescription);
+
+            return { embeds: [embed], files: [image] };
+        } catch (e) {
+            const embed = new EmbedBuilder()
+                .setColor(0xebca60)
+                .setTitle(name)
+                .setDescription(embedDescription);
+
+            return { embeds: [embed] };
+        }
+    },
+    rogueRelicListEmbed(theme: number, index: number) {
+        const rogueDict: RogueTheme = fetch.rogueThemes()[theme];
+        const descriptionLengthLimit = 560;
+
+        let descriptionArr = [], i = 0;
+        for (const relic of Object.values(rogueDict.relicDict)) {
+            if (descriptionArr[i] === undefined) {
+                descriptionArr[i] = { string: '', length: 0 };
+            }
+            if (descriptionArr[i].length + relic.name.length > descriptionLengthLimit) {
+                i++;
+                descriptionArr[i] = { string: '', length: 0 };
+            }
+
+            descriptionArr[i].string += `${relic.name}\n`
+            descriptionArr[i].length += relic.name.length + 2;
+        }
+
+        const embed = new EmbedBuilder()
+            .setColor(0xebca60)
+            .setTitle(`List of ${rogueDict.name} Relics`);
+
+        for (let i = index * 3; i < index * 3 + 3 && i < descriptionArr.length; i++) {
+            embed.addFields({ name: '\u200B', value: descriptionArr[i].string, inline: true });
+        }
+
+        const prevButton = new ButtonBuilder()
+            .setCustomId(`rogueඞrelicඞ${theme}ඞ${index - 1}`)
+            .setLabel('Previous')
+            .setStyle(ButtonStyle.Primary);
+        const nextButton = new ButtonBuilder()
+            .setCustomId(`rogueඞrelicඞ${theme}ඞ${index + 1}`)
+            .setLabel('Next')
+            .setStyle(ButtonStyle.Primary);
+
+        if (index === 0) {
+            prevButton.setDisabled(true);
+            prevButton.setStyle(ButtonStyle.Secondary);
+        }
+        if (index * 3 + 3 >= descriptionArr.length) {
+            nextButton.setDisabled(true);
+            nextButton.setStyle(ButtonStyle.Secondary);
+        }
+
+        const componentRow = new ActionRowBuilder().addComponents(prevButton, nextButton);
+
+        return { embeds: [embed], components: [componentRow] };
+    },
     async rogueStageEmbed(stage: RogueStage) {
         const enemyDict: { [key: string]: Enemy } = fetch.enemies();
 
@@ -1426,6 +1489,30 @@ module.exports = {
 
             return { embeds: [embed], files: [] };
         }
+    },
+    rogueVariationEmbed(variation: RogueVariation) {
+        const name = variation.outerName;
+        const description = `${variation.desc}\n\n${variation.functionDesc}`;
+
+        const embed = new EmbedBuilder()
+            .setColor(0xebca60)
+            .setTitle(name)
+            .setDescription(description);
+
+        return { embeds: [embed] };
+    },
+    rogueVariationListEmbed(rogueDict: RogueTheme) {
+        let description = '';
+        for (const variation of Object.values(rogueDict.variationDict)) {
+            description += `${variation.innerName}\n`;
+        }
+
+        const embed = new EmbedBuilder()
+            .setColor(0xebca60)
+            .setTitle(`List of ${rogueDict.name} Floor Variations`)
+            .setDescription(description);
+
+        return { embeds: [embed] };
     },
     async stageEmbed(stage: Stage) {
         const enemyDict: { [key: string]: Enemy } = fetch.enemies();

@@ -428,9 +428,44 @@ type Range = {
     }[];
 };
 
+type RogueTheme = {
+    name: string;
+    stageDict: { [key: string]: RogueStage };
+    toughStageDict: { [key: string]: RogueStage };
+    relicDict: { [key: string]: RogueRelic };
+    variationDict: { [key: string]: RogueVariation };
+};
+
+type RogueRelic = {
+    id: string;
+    name: string;
+    description: string;
+    usage: string;
+    obtainApproach: string;
+    iconId: string;
+    type: string;
+    subType: string;
+    rarity: string;
+    value: number;
+    sortId: number;
+    canSacrifice: boolean;
+    unlockCondDesc: string;
+};
+
 type RogueStage = {
     excel: RogueStageInfo;
     levels: StageData;
+};
+
+type RogueVariation = {
+    id: string;
+    type: string;
+    outerName: string;
+    innerName: string;
+    functionDesc: string;
+    desc: string;
+    iconId: string;
+    sound: string;
 };
 
 type RogueStageInfo = {

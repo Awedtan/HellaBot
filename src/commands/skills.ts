@@ -16,7 +16,8 @@ module.exports = {
         .addIntegerOption(option =>
             option.setName('index')
                 .setDescription('Skill #')
-                .addChoices({ name: '1', value: 1 }, { name: '2', value: 2 }, { name: '3', value: 3 })
+                .setMinValue(1)
+                .setMaxValue(3)
         ),
     async execute(interaction) {
         const operatorDict: { [key: string]: Operator } = fetch.operators();
