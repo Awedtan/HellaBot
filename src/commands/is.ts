@@ -49,12 +49,11 @@ module.exports = {
                 const stageMode = interaction.options.getString('difficulty');
 
                 const stageDict = stageMode === 'emergency' ? rogueDict.toughStageDict : rogueDict.stageDict;
-                const stageArr = stageDict[name];
+                const stage = stageDict[name];
 
                 if (!stageDict.hasOwnProperty(name))
                     return await interaction.reply('That stage doesn\'t exist!');
 
-                const stage = stageArr[0];
                 if (stage.excel === undefined || stage.levels === undefined)
                     return await interaction.reply('That stage data doesn\'t exist!');
 
