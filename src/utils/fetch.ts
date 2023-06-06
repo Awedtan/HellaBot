@@ -182,12 +182,8 @@ function initOperators() {
         const recruitId = positionId * classId * tagId;
 
         operatorDict[opId] = { id: opId, recruitId: recruitId, modules: opModules, bases: opBases, data: opData };
-
-        if (operatorDict.hasOwnProperty(opName)) continue;
-
         operatorDict[opName] = operatorDict[opId];
         operatorDict[opName.split('\'').join('')] = operatorDict[opId];
-
     }
 
     operatorDict['mlynar'] = operatorDict['młynar'];
