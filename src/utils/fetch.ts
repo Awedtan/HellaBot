@@ -39,7 +39,6 @@ module.exports = {
 
         initOperators();
     },
-
     archetypes() {
         return archetypeDict;
     },
@@ -129,6 +128,7 @@ function initEnemies() {
             const enemyId = excel.enemyId.toLowerCase();
             enemyDict[enemyId] = { excel: excel, levels: levels };
             enemyDict[excel.name.toLowerCase()] = enemyDict[enemyId];
+            enemyDict[excel.name.split('\'').join('').toLowerCase()] = enemyDict[enemyId];
             enemyDict[excel.enemyIndex.toLowerCase()] = enemyDict[enemyId];
         }
     }
@@ -272,22 +272,7 @@ function initSkills() {
 
     for (const skill of Object.values(skillTable)) {
         const skillId = skill.skillId.toLowerCase();
-        const skillName = skill.levels[0].name.toLowerCase();
-
         skillDict[skillId] = skill;
-
-        if (skillDict.hasOwnProperty(skillName)) continue;
-
-        skillDict[skillName] = skillDict[skillId];
-
-        let newName = ''
-        const skillRegex = /[^a-z|0-9|'|\s]/;
-        for (const split of skillName.split(skillRegex)) {
-            newName += split.trim() + ' ';
-        }
-        newName = newName.split('\'').join('').trim();
-
-        skillDict[newName] = skillDict[skillId];
     }
 }
 
