@@ -2,13 +2,13 @@
  
 ## todo:
 
+add enemy levels
+
 add stage drops
 
 add skill, elite, module costs
 
 add material sanity costs, stage efficiencies
-
-add recruit tag command
 
 add help command and command descriptions
 
@@ -17,6 +17,10 @@ count enemies in a stage
 maintain bot
 
 ## maybe:
+
+improve recruit command
+
+find originium dust event stage previews
 
 find where cc stage info is stored
 
