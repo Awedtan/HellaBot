@@ -6,7 +6,7 @@ const fetch = require('../utils/fetch');
 const utils = require('../utils/utils');
 const { eliteLevels, professions, qualifications, skillLevels, skillTypes, spTypes, tagValues, tileDict } = require('../utils/contants');
 
-import { Base, BaseInfo, Definition, Enemy, Module, Paradox, Operator, Range, RogueRelic, RogueStage, RogueTheme, RogueVariation, Skill, Skin, Stage } from "../types";
+import { Base, BaseInfo, Definition, Enemy, Item, Module, Paradox, Operator, Range, RogueRelic, RogueStage, RogueTheme, RogueVariation, Skill, Skin, Stage } from "../types";
 
 const defineDict: { [key: string]: Definition } = fetch.definitions();
 const moduleDict: { [key: string]: Module } = fetch.modules();
@@ -1516,6 +1516,7 @@ module.exports = {
     },
     async stageEmbed(stage: Stage) {
         const enemyDict: { [key: string]: Enemy } = fetch.enemies();
+        const itemDict: { [key: string]: Item } = fetch.items();
 
         const stageInfo = stage.excel;
         const stageData = stage.levels;
@@ -1529,6 +1530,35 @@ module.exports = {
             .setColor(0xebca60)
             .setTitle(title)
             .setDescription(description);
+
+        const stageDropInfo = stageInfo.stageDropInfo;
+        let regularString = '', specialString = '';
+
+        for (const item of stageDropInfo.displayDetailRewards) {
+            if (item.dropType === 1 || item.dropType === 8) continue;
+
+            // 1: character/furniture
+            // 2: regular drop
+            // 3: special drop
+            // 4: extra drop
+            // 8: yellow rock
+
+            switch (item.dropType) {
+                case 2:
+                    regularString += `${itemDict[item.id].name}\n`;
+                    break;
+                case 3:
+                    specialString += `${itemDict[item.id].name}\n`;
+                    break;
+            }
+        }
+
+        if (regularString != '') {
+            embed.addFields({ name: 'Regular Drops', value: regularString });
+        }
+        if (specialString != '') {
+            embed.addFields({ name: 'Special Drops', value: specialString });
+        }
 
         const stageEnemies = stageData.enemyDbRefs;
         let enemyString = '', eliteString = '', bossString = '';

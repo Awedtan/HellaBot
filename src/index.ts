@@ -54,7 +54,6 @@ import { Module, Operator, RogueTheme, Skill, Stage } from "./types";
 
 const moduleDict: { [key: string]: Module } = fetch.modules();
 const opDict: { [key: string]: Operator } = fetch.operators();
-const rogueArr: RogueTheme = fetch.rogueThemes();
 const skillDict: { [key: string]: Skill } = fetch.skills();
 const stageDict: { [key: string]: Stage[] } = fetch.stages();
 

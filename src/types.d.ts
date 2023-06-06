@@ -221,6 +221,29 @@ type EnemySpData = {
     increment: number;
 };
 
+type Item = {
+    itemId: string;
+    name: string;
+    description: string;
+    rarity: number;
+    iconId: string;
+    overrideBkg: null;
+    stackIconId: string;
+    sortId: number;
+    usage: string;
+    obtainApproach: string;
+    classifyType: string;
+    itemType: string;
+    stageDropList: {
+        stageId: string;
+        occPer: string;
+    }[];
+    buildingProductList: {
+        roomType: string;
+        formulaId: string;
+    }[];
+};
+
 type LevelUpCost = {
     id: string;
     count: number;

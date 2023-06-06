@@ -1,11 +1,12 @@
 const { dataPath } = require('../../paths.json');
 const { professions, tagValues } = require('../utils/contants');
 
-import { Base, BaseInfo, Definition, Enemy, Module, Operator, Paradox, ParadoxInfo, Range, RogueTheme, RogueRelic, RogueStage, RogueStageInfo, RogueVariation, Skill, Skin, Stage, StageData, StageInfo } from "../types";
+import { Base, BaseInfo, Definition, Enemy, Item, Module, Operator, Paradox, ParadoxInfo, Range, RogueTheme, RogueRelic, RogueStage, RogueStageInfo, RogueVariation, Skill, Skin, Stage, StageData, StageInfo } from "../types";
 
 const archetypeDict: { [key: string]: string } = {};
 const baseDict: { [key: string]: Base } = {};
 const enemyDict: { [key: string]: Enemy } = {};
+const itemDict: { [key: string]: Item } = {};
 const moduleDict: { [key: string]: Module } = {};
 const operatorDict: { [key: string]: Operator } = {};
 const paradoxDict: { [key: string]: Paradox } = {};
@@ -29,6 +30,7 @@ module.exports = {
         initBases();
         initDefinitions();
         initEnemies();
+        initItems();
         initModules();
         initParadoxes();
         initRanges();
@@ -50,6 +52,9 @@ module.exports = {
     },
     enemies() {
         return enemyDict;
+    },
+    items() {
+        return itemDict;
     },
     modules() {
         return moduleDict;
@@ -131,6 +136,15 @@ function initEnemies() {
             enemyDict[excel.name.split('\'').join('').toLowerCase()] = enemyDict[enemyId];
             enemyDict[excel.enemyIndex.toLowerCase()] = enemyDict[enemyId];
         }
+    }
+}
+
+function initItems() {
+    const itemTable: { [key: string]: any } = require(`${dataPath}/excel/item_table.json`);
+    const items: { [key: string]: Item } = itemTable.items;
+
+    for (const item of Object.values(items)) {
+        itemDict[item.itemId] = item;
     }
 }
 
