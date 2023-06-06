@@ -1,10 +1,10 @@
-const { baseImagePath, eliteImagePath, enemyImagePath, moduleImagePath, operatorAvatarPath, operatorImagePath, rogueItemImagePath, stageImagePath, skillImagePath, skinGroupPath } = require('../../paths.json');
+const { baseImagePath, eliteImagePath, enemyImagePath, itemImagePath, moduleImagePath, operatorAvatarPath, operatorImagePath, rogueItemImagePath, stageImagePath, skillImagePath, skinGroupPath } = require('../../paths.json');
 const { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder } = require('discord.js');
 const fs = require('fs');
 const path = require('path');
 const fetch = require('../utils/fetch');
 const utils = require('../utils/utils');
-const { eliteLevels, professions, qualifications, skillLevels, skillTypes, spTypes, tagValues, tileDict } = require('../utils/contants');
+const { eliteLevels, itemDropRarities, professions, qualifications, skillLevels, skillTypes, spTypes, tagValues, tileDict } = require('../utils/contants');
 
 import { Base, BaseInfo, Definition, Enemy, Item, Module, Paradox, Operator, Range, RogueRelic, RogueStage, RogueTheme, RogueVariation, Skill, Skin, Stage } from "../types";
 
@@ -130,6 +130,44 @@ module.exports = {
             );
 
         return { embeds: [embed], files: [image] };
+    },
+    async itemEmbed(item: Item) {
+        const stageDict: { [key: string]: Stage[] } = fetch.stages()
+
+        const name = item.name;
+        const description = item.description === null ? item.usage : `${item.description}\n\n${item.usage}`;
+
+        const embed = new EmbedBuilder()
+            .setColor(0xebca60)
+            .setTitle(name)
+            .setDescription(description);
+
+        let stageString = '';
+        fetch.stages()
+
+        for (const stageDrop of item.stageDropList) {
+            const stageId = stageDrop.stageId;
+            if (stageId.includes('tough') || stageId.includes('act')) continue;
+
+            const stage = stageDict[stageId][0];
+            stageString += `${stage.excel.code} - ${itemDropRarities[stageDrop.occPer]}\n`;
+        }
+
+        if (stageString != '') {
+            embed.addFields({ name: 'Drop Stages', value: stageString });
+        }
+
+        try {
+            const imagePath = path.join(__dirname, '../../', itemImagePath, `${item.iconId}.png`);
+            await fs.promises.access(imagePath);
+            const image = new AttachmentBuilder(imagePath);
+
+            embed.setThumbnail(`attachment://${utils.cleanFilename(item.iconId)}.png`);
+
+            return { embeds: [embed], files: [image] };
+        } catch (e) {
+            return { embeds: [embed] };
+        }
     },
     infoEmbed(op: Operator, type: number, page: number, level: number) {
         const embedArr = [], fileArr = [], componentRows = [];
@@ -1345,24 +1383,20 @@ module.exports = {
         const description = relic.description === null ? relic.usage : `${relic.description}\n\n${relic.usage}`;
         const embedDescription = `***Cost:* ${relic.value}▲**\n${description}`;
 
+        const embed = new EmbedBuilder()
+            .setColor(0xebca60)
+            .setTitle(name)
+            .setDescription(embedDescription);
+
         try {
             const imagePath = path.join(__dirname, '../../', rogueItemImagePath, `${relic.iconId}.png`);
             await fs.promises.access(imagePath);
             const image = new AttachmentBuilder(imagePath);
 
-            const embed = new EmbedBuilder()
-                .setColor(0xebca60)
-                .setTitle(name)
-                .setThumbnail(`attachment://${utils.cleanFilename(relic.iconId)}.png`)
-                .setDescription(embedDescription);
+            embed.setThumbnail(`attachment://${utils.cleanFilename(relic.iconId)}.png`);
 
             return { embeds: [embed], files: [image] };
         } catch (e) {
-            const embed = new EmbedBuilder()
-                .setColor(0xebca60)
-                .setTitle(name)
-                .setDescription(embedDescription);
-
             return { embeds: [embed] };
         }
     },

@@ -5,6 +5,13 @@
         "E2",
         "E3"
     ],
+    "itemDropRarities": {
+        "SOMETIMES": "Very Rare",
+        "OFTEN": "Rare",
+        "USUAL": "Uncommon",
+        "ALMOST": "Common",
+        "ALWAYS": "Guaranteed"
+    },
     "professions": {
         "PIONEER": "Vanguard",
         "WARRIOR": "Guard",

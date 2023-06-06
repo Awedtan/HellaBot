@@ -145,6 +145,7 @@ function initItems() {
 
     for (const item of Object.values(items)) {
         itemDict[item.itemId] = item;
+        itemDict[item.name.toLowerCase()] = itemDict[item.itemId];
     }
 }
 
@@ -343,6 +344,7 @@ function initStages() {
                 const levels = require(`${dataPath}/levels/${levelId}.json`);
                 const stage: Stage = { excel: excel, levels: levels };
 
+                stageDict[excel.stageId] = [stage];
                 stageDict[code].push(stage);
             }
         } catch (e) {

@@ -4,6 +4,7 @@
     "baseImagePath": "Arknight-Images/ui/infrastructure/skill",
     "eliteImagePath": "Arknight-Images/ui/elite",
     "enemyImagePath": "Arknight-Images/enemy",
+    "itemImagePath": "Arknight-Images/items",
     "moduleImagePath": "Arknight-Images/equip/icon",
     "operatorImagePath": "Arknight-Images/characters",
     "operatorAvatarPath": "Arknight-Images/avatars",
