@@ -147,7 +147,7 @@ module.exports = {
 
         for (const stageDrop of item.stageDropList) {
             const stageId = stageDrop.stageId;
-            if (stageId.includes('tough') || stageId.includes('act')) continue;
+            if (!stageId.includes('main') && !stageId.includes('sub')) continue;
 
             const stage = stageDict[stageId][0];
             stageString += `${stage.excel.code} - ${itemDropRarities[stageDrop.occPer]}\n`;
