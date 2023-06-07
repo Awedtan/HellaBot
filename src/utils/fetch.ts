@@ -146,6 +146,7 @@ function initItems() {
     for (const item of Object.values(items)) {
         itemDict[item.itemId] = item;
         itemDict[item.name.toLowerCase()] = itemDict[item.itemId];
+        itemDict[item.name.toLowerCase().split('\'').join('')] = itemDict[item.itemId];
     }
 }
 
@@ -269,6 +270,7 @@ function initRogueThemes() {
         for (const relic of Object.values(rogueRelics)) {
             if (relic.type === 'BAND' || relic.type == 'CAPSULE') continue;
             relicDict[relic.name.toLowerCase()] = relic;
+            relicDict[relic.name.toLowerCase().split('\'').join('')] = relicDict[relic.name.toLowerCase()];
         }
 
         const rogueVariations: { [key: string]: RogueVariation } = rogueTheme.variationData;
@@ -294,15 +296,14 @@ function initSkills() {
 function initSkins() {
     const skinTable: { [key: string]: any } = require(`${dataPath}/excel/skin_table.json`);
     const charSkins: { [key: string]: Skin } = skinTable.charSkins;
-    {
-        for (const skin of Object.values(charSkins)) {
-            const opId = skin.charId;
 
-            if (!skinDict.hasOwnProperty(opId)) {
-                skinDict[opId] = [];
-            }
-            skinDict[opId].push(skin);
+    for (const skin of Object.values(charSkins)) {
+        const opId = skin.charId;
+
+        if (!skinDict.hasOwnProperty(opId)) {
+            skinDict[opId] = [];
         }
+        skinDict[opId].push(skin);
     }
 }
 
