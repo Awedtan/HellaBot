@@ -2,33 +2,38 @@ const { SlashCommandBuilder } = require('discord.js');
 const fetch = require('../utils/fetch');
 const create = require('../utils/create');
 
-import { Operator, Paradox } from '../types';
+import { Item, Operator } from "../types";
 
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName('paradox')
-        .setDescription('Show an operator\'s Paradox Simulation stage')
+        .setName('cost')
+        .setDescription('Show an operator\'s elite, skill, mastery, and module level costs')
         .addStringOption(option =>
             option.setName('name')
                 .setDescription('Operator name')
                 .setRequired(true)
+        )
+        .addStringOption(option =>
+            option.setName('type')
+                .setDescription('Cost type')
+                .addChoices(
+                    { name: 'elite', value: 'elite' },
+                    { name: 'skill', value: 'skill' },
+                    { name: 'mastery', value: 'mastery' },
+                    { name: 'module', value: 'module' }
+                )
         ),
     async execute(interaction) {
         const operatorDict: { [key: string]: Operator } = fetch.operators();
-        const paradoxDict: { [key: string]: Paradox } = fetch.paradoxes();
         const name = interaction.options.getString('name').toLowerCase();
+        const type = interaction.options.getString('type');
 
         if (!operatorDict.hasOwnProperty(name))
             return await interaction.reply('That operator doesn\'t exist!');
 
         const op = operatorDict[name];
-
-        if (!paradoxDict.hasOwnProperty(op.id))
-            return await interaction.reply('That operator doesn\'t have a paradox simulation!');
-
-        const paradox = paradoxDict[op.id];
-        const paradoxEmbed = await create.paradoxEmbed(paradox);
         
-        await interaction.reply(paradoxEmbed);
+        const costEmbed = create.costEmbed(op, type);
+        await interaction.reply(costEmbed);
     }
 }

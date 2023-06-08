@@ -4,11 +4,7 @@
 
 add enemy levels
 
-add stage drops
-
-add skill, elite, module costs
-
-add material sanity costs, stage efficiencies
+add item crafting recipes
 
 add help command and command descriptions
 
@@ -17,6 +13,8 @@ count enemies in a stage
 maintain bot
 
 ## maybe:
+
+add material sanity costs, stage efficiencies
 
 improve recruit command
 

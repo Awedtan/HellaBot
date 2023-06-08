@@ -16,12 +16,12 @@ module.exports = {
     async execute(interaction) {
         const operatorDict: { [key: string]: Operator } = fetch.operators();
         const skinDict: { [key: string]: Skin[] } = fetch.skins();
-        const operatorName = interaction.options.getString('name').toLowerCase();
+        const name = interaction.options.getString('name').toLowerCase();
 
-        if (!operatorDict.hasOwnProperty(operatorName))
+        if (!operatorDict.hasOwnProperty(name))
             return await interaction.reply('That operator doesn\'t exist!');
 
-        const op = operatorDict[operatorName];
+        const op = operatorDict[name];
 
         if (!skinDict.hasOwnProperty(op.id))
             return await interaction.reply('That operator doesn\'t have any skins!');

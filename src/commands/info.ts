@@ -15,12 +15,12 @@ module.exports = {
         ),
     async execute(interaction) {
         const operatorDict: { [key: string]: Operator } = fetch.operators();
-        const operatorName = interaction.options.getString('name').toLowerCase();
+        const name = interaction.options.getString('name').toLowerCase();
 
-        if (!operatorDict.hasOwnProperty(operatorName))
+        if (!operatorDict.hasOwnProperty(name))
             return await interaction.reply('That operator doesn\'t exist!');
 
-        const operator = operatorDict[operatorName];
+        const operator = operatorDict[name];
         const operatorEmbed = create.infoEmbed(operator, 0, 0, 0);
         await interaction.reply(operatorEmbed);
     }

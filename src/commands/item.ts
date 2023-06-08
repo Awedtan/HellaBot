@@ -15,12 +15,12 @@ module.exports = {
         ),
     async execute(interaction) {
         const itemDict: { [key: string]: Item } = fetch.items();
-        const itemName = interaction.options.getString('name').toLowerCase();
+        const name = interaction.options.getString('name').toLowerCase();
 
-        if (!itemDict.hasOwnProperty(itemName))
+        if (!itemDict.hasOwnProperty(name))
             return await interaction.reply('That item doesn\'t exist!');
 
-        const item = itemDict[itemName];
+        const item = itemDict[name];
         const itemEmbed = await create.itemEmbed(item);
         await interaction.reply(itemEmbed);
     }

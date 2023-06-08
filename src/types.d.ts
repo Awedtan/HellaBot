@@ -402,7 +402,10 @@ type Operator = {
             equivalentCost: null;
         }[];
         favorKeyFrames: AttributesKeyFrame[];
-        allSkillLvlup: LevelUpCostCond[];
+        allSkillLvlup: {
+            unlockCond: OperatorUnlockCond;
+            lvlUpCost: LevelUpCost[];
+        }[];
     };
 };
 

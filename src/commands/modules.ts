@@ -16,12 +16,12 @@ module.exports = {
     async execute(interaction) {
         const operatorDict: { [key: string]: Operator } = fetch.operators();
         const moduleDict: { [key: string]: Module } = fetch.modules();
-        const operatorName = interaction.options.getString('name').toLowerCase();
+        const name = interaction.options.getString('name').toLowerCase();
 
-        if (!operatorDict.hasOwnProperty(operatorName))
+        if (!operatorDict.hasOwnProperty(name))
             return await interaction.reply('That operator doesn\'t exist!');
 
-        const op = operatorDict[operatorName];
+        const op = operatorDict[name];
 
         if (op.modules.length === 0)
             return await interaction.reply('That operator doesn\'t have any modules!');
@@ -29,7 +29,7 @@ module.exports = {
         let first = true;
 
         for (const moduleId of op.modules) {
-            if (moduleId.indexOf('uniequip_001') === 0) continue;
+            if (moduleId.includes('uniequip_001')) continue;
 
             const module = moduleDict[moduleId];
 

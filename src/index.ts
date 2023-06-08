@@ -63,6 +63,15 @@ client.on(Events.InteractionCreate, async interaction => {
     const idArr: string[] = interaction.customId.split('ඞ');
 
     switch (idArr[0]) {
+        case 'cost': {
+            const op = opDict[idArr[1]];
+            const type = idArr[2];
+
+            const costEmbed = create.costEmbed(op, type);
+            await interaction.update(costEmbed);
+
+            break;
+        }
         case 'info': {
             const op = opDict[idArr[1]];
             const type = parseInt(idArr[2]);

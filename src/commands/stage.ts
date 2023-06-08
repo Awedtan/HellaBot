@@ -22,13 +22,13 @@ module.exports = {
                 )
         ),
     async execute(interaction) {
-        const stageCode = interaction.options.getString('code').toLowerCase();
-        const stageMode = interaction.options.getString('difficulty');
+        const code = interaction.options.getString('code').toLowerCase();
+        const difficulty = interaction.options.getString('difficulty');
 
-        const stageDict: { [key: string]: Stage[] } = stageMode === 'challenge' ? fetch.toughStages() : fetch.stages();
-        const stageArr = stageDict[stageCode];
+        const stageDict: { [key: string]: Stage[] } = difficulty === 'challenge' ? fetch.toughStages() : fetch.stages();
+        const stageArr = stageDict[code];
 
-        if (!stageDict.hasOwnProperty(stageCode) || stageArr.length === 0)
+        if (!stageDict.hasOwnProperty(code) || stageArr.length === 0)
             return await interaction.reply('That stage doesn\'t exist!');
 
         if (stageArr.length == 1) {

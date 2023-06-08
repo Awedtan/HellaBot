@@ -9,6 +9,7 @@ const { eliteLevels, itemDropRarities, professions, qualifications, skillLevels,
 import { Base, BaseInfo, Definition, Enemy, Item, Module, Paradox, Operator, Range, RogueRelic, RogueStage, RogueTheme, RogueVariation, Skill, Skin, Stage } from "../types";
 
 const defineDict: { [key: string]: Definition } = fetch.definitions();
+const itemDict: { [key: string]: Item } = fetch.items();
 const moduleDict: { [key: string]: Module } = fetch.modules();
 const opDict: { [key: string]: Operator } = fetch.operators();
 const skillDict: { [key: string]: Skill } = fetch.skills();
@@ -40,7 +41,137 @@ module.exports = {
             .setDescription(description);
 
         return { embeds: [embed], files: [image, avatar] };
+    },
+    costEmbed(op: Operator, type: string) {
+        const avatarPath = path.join(__dirname, '../../', operatorAvatarPath, `${op.id}.png`);
+        const avatar = new AttachmentBuilder(avatarPath);
 
+        const authorField = this.authorField(op);
+
+        const embed = new EmbedBuilder()
+            .setColor(0xebca60)
+            .setAuthor(authorField)
+
+        const eliteButton = new ButtonBuilder()
+            .setCustomId(`costඞ${op.id}ඞelite`)
+            .setLabel('Promotions')
+            .setStyle(ButtonStyle.Success);
+        const skillButton = new ButtonBuilder()
+            .setCustomId(`costඞ${op.id}ඞskill`)
+            .setLabel('Skills')
+            .setStyle(ButtonStyle.Success);
+        const masteryButton = new ButtonBuilder()
+            .setCustomId(`costඞ${op.id}ඞmastery`)
+            .setLabel('Masteries')
+            .setStyle(ButtonStyle.Success);
+        const moduleButton = new ButtonBuilder()
+            .setCustomId(`costඞ${op.id}ඞmodule`)
+            .setLabel('Modules')
+            .setStyle(ButtonStyle.Success);
+
+        const buttonRow = new ActionRowBuilder().addComponents(eliteButton, skillButton, masteryButton, moduleButton);
+
+        switch (type) {
+            default:
+            case 'elite': {
+                eliteButton.setDisabled(true);
+                eliteButton.setStyle(ButtonStyle.Secondary);
+
+                embed.setTitle('Elite Upgrade Costs');
+
+                for (let i = 0; i < op.data.phases.length; i++) {
+                    const phase = op.data.phases[i];
+
+                    if (phase.evolveCost === null) continue;
+
+                    let phaseDescription = '';
+                    for (const cost of phase.evolveCost) {
+                        const item = itemDict[cost.id];
+                        phaseDescription += `${item.name} **x${cost.count}**\n`;
+                    }
+
+                    if (phaseDescription === '') continue;
+
+                    embed.addFields({ name: `Elite ${i}`, value: phaseDescription, inline: true });
+                }
+
+                return { embeds: [embed], files: [avatar], components: [buttonRow] };
+            }
+            case 'skill': {
+                skillButton.setDisabled(true);
+                skillButton.setStyle(ButtonStyle.Secondary);
+
+                embed.setTitle('Skill Upgrade Costs');
+
+                for (let i = 0; i < op.data.allSkillLvlup.length; i++) {
+
+                    let skillDescription = '';
+                    for (const cost of op.data.allSkillLvlup[i].lvlUpCost) {
+                        const item = itemDict[cost.id];
+                        skillDescription += `${item.name} **x${cost.count}**\n`;
+                    }
+
+                    if (skillDescription === '') continue;
+
+                    embed.addFields({ name: `Level ${i + 2}`, value: skillDescription, inline: true });
+                }
+
+                return { embeds: [embed], files: [avatar], components: [buttonRow] };
+            }
+            case 'mastery': {
+                masteryButton.setDisabled(true);
+                masteryButton.setStyle(ButtonStyle.Secondary);
+
+                embed.setTitle('Skill Mastery Costs');
+
+                for (let i = 0; i < op.data.skills.length; i++) {
+                    const opSkill = op.data.skills[i];
+                    const skill = skillDict[opSkill.skillId];
+
+                    embed.addFields({ name: '\u200B', value: `**Skill ${i + 1} - ${skill.levels[0].name}**` });
+
+                    for (let i = 0; i < opSkill.levelUpCostCond.length; i++) {
+
+                        let masteryDescription = '';
+                        for (const cost of opSkill.levelUpCostCond[i].levelUpCost) {
+                            const item = itemDict[cost.id];
+                            masteryDescription += `${item.name} **x${cost.count}**\n`;
+                        }
+
+                        embed.addFields({ name: `Mastery ${i + 1}`, value: masteryDescription, inline: true });
+                    }
+                }
+
+                return { embeds: [embed], files: [avatar], components: [buttonRow] };
+            }
+            case 'module': {
+                moduleButton.setDisabled(true);
+                moduleButton.setStyle(ButtonStyle.Secondary);
+
+                embed.setTitle('Module Upgrade Costs');
+
+                for (const moduleId of op.modules) {
+                    if (moduleId.includes('uniequip_001')) continue;
+
+                    const module = moduleDict[moduleId];
+
+                    embed.addFields({ name: '\u200B', value: `**${module.info.typeIcon.toUpperCase()} - ${module.info.uniEquipName}**` });
+
+                    for (const key of Object.keys(module.info.itemCost)) {
+
+                        let moduleDescription = '';
+                        for (const cost of module.info.itemCost[key]) {
+                            const item = itemDict[cost.id];
+                            moduleDescription += `${item.name} **x${cost.count}**\n`;
+                        }
+
+                        embed.addFields({ name: `Level ${key}`, value: moduleDescription, inline: true });
+                    }
+                }
+
+                return { embeds: [embed], files: [avatar], components: [buttonRow] };
+            }
+        }
     },
     defineEmbed(definition: Definition) {
         const embed = new EmbedBuilder()
@@ -1535,15 +1666,15 @@ module.exports = {
 
         return { embeds: [embed] };
     },
-    rogueVariationListEmbed(rogueDict: RogueTheme) {
+    rogueVariationListEmbed(theme: RogueTheme) {
         let description = '';
-        for (const variation of Object.values(rogueDict.variationDict)) {
+        for (const variation of Object.values(theme.variationDict)) {
             description += `${variation.innerName}\n`;
         }
 
         const embed = new EmbedBuilder()
             .setColor(0xebca60)
-            .setTitle(`List of ${rogueDict.name} Floor Variations`)
+            .setTitle(`List of ${theme.name} Floor Variations`)
             .setDescription(description);
 
         return { embeds: [embed] };

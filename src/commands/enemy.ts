@@ -15,12 +15,12 @@ module.exports = {
         ),
     async execute(interaction) {
         const enemyDict: { [key: string]: Enemy } = fetch.enemies();
-        const enemyName = interaction.options.getString('name').toLowerCase();
+        const name = interaction.options.getString('name').toLowerCase();
 
-        if (!enemyDict.hasOwnProperty(enemyName))
+        if (!enemyDict.hasOwnProperty(name))
             return await interaction.reply('That enemy doesn\'t exist!');
 
-        const enemy = enemyDict[enemyName];
+        const enemy = enemyDict[name];
         const enemyEmbed = create.enemyEmbed(enemy);
         await interaction.reply(enemyEmbed);
     }
