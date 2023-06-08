@@ -24,7 +24,7 @@ module.exports = {
             const defineDict: { [key: string]: Definition } = fetch.definitions();
 
             if (!defineDict.hasOwnProperty(term))
-                return await interaction.reply('That term doesn\'t exist!');
+                return await interaction.reply({ content: 'That term doesn\'t exist!', ephemeral: true });
 
             const definition = defineDict[term];
             const defineEmbed = create.defineEmbed(definition);

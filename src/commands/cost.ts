@@ -29,10 +29,13 @@ module.exports = {
         const type = interaction.options.getString('type');
 
         if (!operatorDict.hasOwnProperty(name))
-            return await interaction.reply('That operator doesn\'t exist!');
+            return await interaction.reply({ content: 'That operator doesn\'t exist!', ephemeral: true });
 
         const op = operatorDict[name];
-        
+
+        if (op.data.rarity <= 1)
+            return await interaction.reply({ content: 'That operator has no upgrades!', ephemeral: true });
+
         const costEmbed = create.costEmbed(op, type);
         await interaction.reply(costEmbed);
     }

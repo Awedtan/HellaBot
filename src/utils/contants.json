@@ -5,6 +5,25 @@
         "E2",
         "E3"
     ],
+    "eliteLmdCost": [
+        null,
+        null,
+        [
+            10000
+        ],
+        [
+            15000,
+            60000
+        ],
+        [
+            20000,
+            120000
+        ],
+        [
+            30000,
+            180000
+        ]
+    ],
     "itemDropRarities": {
         "SOMETIMES": "Very Rare",
         "OFTEN": "Rare",

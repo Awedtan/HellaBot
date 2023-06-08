@@ -26,12 +26,12 @@ module.exports = {
         let index = interaction.options.getInteger('index') - 1;
 
         if (!operatorDict.hasOwnProperty(name))
-            return await interaction.reply('That operator doesn\'t exist!');
+            return await interaction.reply({ content: 'That operator doesn\'t exist!', ephemeral: true });
 
         const op = operatorDict[name];
 
         if (op.data.skills.length === 0)
-            return await interaction.reply('That operator doesn\'t have any skills!');
+            return await interaction.reply({ content: 'That operator doesn\'t have any skills!', ephemeral: true });
 
         if (index != -1 && index > op.data.skills.length - 1)
             index = -1;

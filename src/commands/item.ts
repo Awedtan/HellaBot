@@ -18,7 +18,7 @@ module.exports = {
         const name = interaction.options.getString('name').toLowerCase();
 
         if (!itemDict.hasOwnProperty(name))
-            return await interaction.reply('That item doesn\'t exist!');
+            return await interaction.reply({ content: 'That item doesn\'t exist!', ephemeral: true });
 
         const item = itemDict[name];
         const itemEmbed = await create.itemEmbed(item);

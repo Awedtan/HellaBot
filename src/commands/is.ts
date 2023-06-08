@@ -52,10 +52,10 @@ module.exports = {
                 const stage = stageDict[name];
 
                 if (!stageDict.hasOwnProperty(name))
-                    return await interaction.reply('That stage doesn\'t exist!');
+                    return await interaction.reply({ content: 'That stage doesn\'t exist!', ephemeral: true });
 
                 if (stage.excel === undefined || stage.levels === undefined)
-                    return await interaction.reply('That stage data doesn\'t exist!');
+                    return await interaction.reply({ content: 'That stage data doesn\'t exist!', ephemeral: true });
 
                 const stageEmbed = await create.rogueStageEmbed(stage);
                 await interaction.reply(stageEmbed);
@@ -71,7 +71,7 @@ module.exports = {
                     const relicDict = rogueDict.relicDict;
 
                     if (!relicDict.hasOwnProperty(name))
-                        return await interaction.reply('That relic doesn\'t exist!');
+                        return await interaction.reply({ content: 'That relic doesn\'t exist!', ephemeral: true });
 
                     const relic = relicDict[name];
                     const relicEmbed = await create.rogueRelicEmbed(relic);
@@ -88,7 +88,7 @@ module.exports = {
                     const variationDict = rogueDict.variationDict;
 
                     if (!variationDict.hasOwnProperty(name))
-                        return await interaction.reply('That variation doesn\'t exist!');
+                        return await interaction.reply({ content: 'That variation doesn\'t exist!', ephemeral: true });
 
                     const variation = variationDict[name];
                     const variationEmbed = create.rogueVariationEmbed(variation);

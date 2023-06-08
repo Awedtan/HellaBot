@@ -18,7 +18,7 @@ module.exports = {
         const name = interaction.options.getString('name').toLowerCase();
 
         if (!enemyDict.hasOwnProperty(name))
-            return await interaction.reply('That enemy doesn\'t exist!');
+            return await interaction.reply({ content: 'That enemy doesn\'t exist!', ephemeral: true });
 
         const enemy = enemyDict[name];
         const enemyEmbed = create.enemyEmbed(enemy);

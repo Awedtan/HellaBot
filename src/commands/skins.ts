@@ -19,12 +19,12 @@ module.exports = {
         const name = interaction.options.getString('name').toLowerCase();
 
         if (!operatorDict.hasOwnProperty(name))
-            return await interaction.reply('That operator doesn\'t exist!');
+            return await interaction.reply({ content: 'That operator doesn\'t exist!', ephemeral: true });
 
         const op = operatorDict[name];
 
         if (!skinDict.hasOwnProperty(op.id))
-            return await interaction.reply('That operator doesn\'t have any skins!');
+            return await interaction.reply({ content: 'That operator doesn\'t have any skins!', ephemeral: true });
 
         const skinEmbed = create.skinEmbed(op, 0);
         await interaction.reply(skinEmbed);

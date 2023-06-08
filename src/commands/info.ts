@@ -18,7 +18,7 @@ module.exports = {
         const name = interaction.options.getString('name').toLowerCase();
 
         if (!operatorDict.hasOwnProperty(name))
-            return await interaction.reply('That operator doesn\'t exist!');
+            return await interaction.reply({ content: 'That operator doesn\'t exist!', ephemeral: true });
 
         const operator = operatorDict[name];
         const operatorEmbed = create.infoEmbed(operator, 0, 0, 0);

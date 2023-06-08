@@ -1,10 +1,10 @@
-const { baseImagePath, eliteImagePath, enemyImagePath, itemImagePath, moduleImagePath, operatorAvatarPath, operatorImagePath, rogueItemImagePath, stageImagePath, skillImagePath, skinGroupPath } = require('../../paths.json');
+const { baseImagePath, eliteImagePath, enemyImagePath, itemImagePath, moduleImagePath, operatorAvatarPath, operatorImagePath, rankImagePath, rogueItemImagePath, stageImagePath, skillImagePath, skinGroupPath } = require('../../paths.json');
 const { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder } = require('discord.js');
 const fs = require('fs');
 const path = require('path');
 const fetch = require('../utils/fetch');
 const utils = require('../utils/utils');
-const { eliteLevels, itemDropRarities, professions, qualifications, skillLevels, skillTypes, spTypes, tagValues, tileDict } = require('../utils/contants');
+const { eliteLevels, eliteLmdCost, itemDropRarities, professions, qualifications, skillLevels, skillTypes, spTypes, tagValues, tileDict } = require('../utils/contants');
 
 import { Base, BaseInfo, Definition, Enemy, Item, Module, Paradox, Operator, Range, RogueRelic, RogueStage, RogueTheme, RogueVariation, Skill, Skin, Stage } from "../types";
 
@@ -69,6 +69,19 @@ module.exports = {
             .setLabel('Modules')
             .setStyle(ButtonStyle.Success);
 
+        if (op.data.skills.length == 0) {
+            skillButton.setStyle(ButtonStyle.Secondary);
+            skillButton.setDisabled(true);
+        }
+        if (op.data.rarity <= 2) {
+            masteryButton.setStyle(ButtonStyle.Secondary);
+            masteryButton.setDisabled(true);
+        }
+        if (op.modules.length == 0) {
+            moduleButton.setStyle(ButtonStyle.Secondary);
+            moduleButton.setDisabled(true);
+        }
+
         const buttonRow = new ActionRowBuilder().addComponents(eliteButton, skillButton, masteryButton, moduleButton);
 
         switch (type) {
@@ -77,6 +90,10 @@ module.exports = {
                 eliteButton.setDisabled(true);
                 eliteButton.setStyle(ButtonStyle.Secondary);
 
+                const imagePath = path.join(__dirname, '../../', eliteImagePath, `3.png`);
+                const image = new AttachmentBuilder(imagePath);
+
+                embed.setThumbnail(`attachment://3.png`);
                 embed.setTitle('Elite Upgrade Costs');
 
                 for (let i = 0; i < op.data.phases.length; i++) {
@@ -90,17 +107,21 @@ module.exports = {
                         phaseDescription += `${item.name} **x${cost.count}**\n`;
                     }
 
-                    if (phaseDescription === '') continue;
+                    phaseDescription += `LMD **x${eliteLmdCost[op.data.rarity][i - 1]}**\n`;
 
                     embed.addFields({ name: `Elite ${i}`, value: phaseDescription, inline: true });
                 }
 
-                return { embeds: [embed], files: [avatar], components: [buttonRow] };
+                return { embeds: [embed], files: [avatar, image], components: [buttonRow] };
             }
             case 'skill': {
                 skillButton.setDisabled(true);
                 skillButton.setStyle(ButtonStyle.Secondary);
 
+                const imagePath = path.join(__dirname, '../../', itemImagePath, `MTL_SKILL3.png`);
+                const image = new AttachmentBuilder(imagePath);
+
+                embed.setThumbnail(`attachment://MTL_SKILL3.png`);
                 embed.setTitle('Skill Upgrade Costs');
 
                 for (let i = 0; i < op.data.allSkillLvlup.length; i++) {
@@ -116,12 +137,16 @@ module.exports = {
                     embed.addFields({ name: `Level ${i + 2}`, value: skillDescription, inline: true });
                 }
 
-                return { embeds: [embed], files: [avatar], components: [buttonRow] };
+                return { embeds: [embed], files: [avatar, image], components: [buttonRow] };
             }
             case 'mastery': {
                 masteryButton.setDisabled(true);
                 masteryButton.setStyle(ButtonStyle.Secondary);
 
+                const imagePath = path.join(__dirname, '../../', rankImagePath, `m-3.png`);
+                const image = new AttachmentBuilder(imagePath);
+
+                embed.setThumbnail(`attachment://m-3.png`);
                 embed.setTitle('Skill Mastery Costs');
 
                 for (let i = 0; i < op.data.skills.length; i++) {
@@ -142,12 +167,16 @@ module.exports = {
                     }
                 }
 
-                return { embeds: [embed], files: [avatar], components: [buttonRow] };
+                return { embeds: [embed], files: [avatar, image], components: [buttonRow] };
             }
             case 'module': {
                 moduleButton.setDisabled(true);
                 moduleButton.setStyle(ButtonStyle.Secondary);
 
+                const imagePath = path.join(__dirname, '../../', itemImagePath, `mod_unlock_token.png`);
+                const image = new AttachmentBuilder(imagePath);
+
+                embed.setThumbnail(`attachment://mod_unlock_token.png`);
                 embed.setTitle('Module Upgrade Costs');
 
                 for (const moduleId of op.modules) {
@@ -169,7 +198,7 @@ module.exports = {
                     }
                 }
 
-                return { embeds: [embed], files: [avatar], components: [buttonRow] };
+                return { embeds: [embed], files: [avatar, image], components: [buttonRow] };
             }
         }
     },

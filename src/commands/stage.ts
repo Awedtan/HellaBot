@@ -29,12 +29,12 @@ module.exports = {
         const stageArr = stageDict[code];
 
         if (!stageDict.hasOwnProperty(code) || stageArr.length === 0)
-            return await interaction.reply('That stage doesn\'t exist!');
+            return await interaction.reply({ content: 'That stage doesn\'t exist!', ephemeral: true });
 
         if (stageArr.length == 1) {
             const stage = stageArr[0];
             if (stage.excel === undefined || stage.levels === undefined)
-                return await interaction.reply('That stage data doesn\'t exist!');
+                return await interaction.reply({ content: 'That stage data doesn\'t exist!', ephemeral: true });
 
             const stageEmbed = await create.stageEmbed(stage);
             await interaction.reply(stageEmbed);
