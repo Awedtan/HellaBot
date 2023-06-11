@@ -28,7 +28,7 @@ client.login(token);
 
 client.once(Events.ClientReady, c => {
     console.log(`Ready! Logged in as ${c.user.tag}`);
-    c.user.setActivity('CC12', { type: ActivityType.Competing });
+    c.user.setActivity('CC#13', { type: ActivityType.Competing });
 });
 
 // Initial slash command interaction handling

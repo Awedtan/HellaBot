@@ -88,7 +88,6 @@ module.exports = {
             default:
             case 'elite': {
                 eliteButton.setDisabled(true);
-                eliteButton.setStyle(ButtonStyle.Secondary);
 
                 const imagePath = path.join(__dirname, '../../', eliteImagePath, `3.png`);
                 const image = new AttachmentBuilder(imagePath);
@@ -110,7 +109,6 @@ module.exports = {
             }
             case 'skill': {
                 skillButton.setDisabled(true);
-                skillButton.setStyle(ButtonStyle.Secondary);
 
                 const imagePath = path.join(__dirname, '../../', itemImagePath, `MTL_SKILL3.png`);
                 const image = new AttachmentBuilder(imagePath);
@@ -130,7 +128,6 @@ module.exports = {
             }
             case 'mastery': {
                 masteryButton.setDisabled(true);
-                masteryButton.setStyle(ButtonStyle.Secondary);
 
                 const imagePath = path.join(__dirname, '../../', rankImagePath, `m-3.png`);
                 const image = new AttachmentBuilder(imagePath);
@@ -154,7 +151,6 @@ module.exports = {
             }
             case 'module': {
                 moduleButton.setDisabled(true);
-                moduleButton.setStyle(ButtonStyle.Secondary);
 
                 const imagePath = path.join(__dirname, '../../', itemImagePath, `mod_unlock_token.png`);
                 const image = new AttachmentBuilder(imagePath);
