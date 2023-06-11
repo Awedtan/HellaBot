@@ -28,6 +28,7 @@ client.login(token);
 
 client.once(Events.ClientReady, c => {
     console.log(`Ready! Logged in as ${c.user.tag}`);
+    c.user.setActivity('https://github.com/Awedtan/HellaBot');
 });
 
 // Initial slash command interaction handling

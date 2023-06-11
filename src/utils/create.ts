@@ -6,7 +6,7 @@ const fetch = require('../utils/fetch');
 const utils = require('../utils/utils');
 const { eliteLevels, eliteLmdCost, itemDropRarities, professions, qualifications, skillLevels, skillTypes, spTypes, tagValues, tileDict } = require('../utils/contants');
 
-import { Base, BaseInfo, Definition, Enemy, Item, LevelUpCost, Module, Paradox, Operator, Range, RogueRelic, RogueStage, RogueTheme, RogueVariation, Skill, Skin, Stage, ManufactFormula, WorkshopFormula } from "../types";
+import { Base, BaseInfo, Definition, Enemy, Item, LevelUpCost, Module, Paradox, Operator, Range, RogueRelic, RogueStage, RogueTheme, RogueVariation, Skill, Skin, Stage } from "../types";
 
 const defineDict: { [key: string]: Definition } = fetch.definitions();
 const itemDict: { [key: string]: Item } = fetch.items();
