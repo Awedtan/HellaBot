@@ -884,7 +884,12 @@ module.exports = {
 
         let statDescription = '';
         for (const attribute of moduleLevel.attributeBlackboard) {
-            statDescription += `${attribute.key.toUpperCase()} +${attribute.value}\n`;
+            if (attribute.value > 0) {
+                statDescription += `${attribute.key.toUpperCase()} +${attribute.value}\n`;
+            }
+            else {
+                statDescription += `${attribute.key.toUpperCase()} ${attribute.value}\n`;
+            }
         }
         embed.addFields({ name: `Stats`, value: statDescription });
 
