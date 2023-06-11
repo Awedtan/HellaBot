@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const { Client, Collection, Events, GatewayIntentBits } = require('discord.js');
+const { ActivityType, Client, Collection, Events, GatewayIntentBits } = require('discord.js');
 const { token } = require('../config.json');
 const create = require('./utils/create');
 const fetch = require('./utils/fetch');
@@ -28,7 +28,7 @@ client.login(token);
 
 client.once(Events.ClientReady, c => {
     console.log(`Ready! Logged in as ${c.user.tag}`);
-    c.user.setActivity('https://github.com/Awedtan/HellaBot');
+    c.user.setActivity('CC12', { type: ActivityType.Competing });
 });
 
 // Initial slash command interaction handling
