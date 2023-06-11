@@ -4,8 +4,6 @@
 
 add enemy levels
 
-add item crafting recipes
-
 add help command and command descriptions
 
 count enemies in a stage

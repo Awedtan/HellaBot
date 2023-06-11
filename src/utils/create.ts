@@ -6,7 +6,7 @@ const fetch = require('../utils/fetch');
 const utils = require('../utils/utils');
 const { eliteLevels, eliteLmdCost, itemDropRarities, professions, qualifications, skillLevels, skillTypes, spTypes, tagValues, tileDict } = require('../utils/contants');
 
-import { Base, BaseInfo, Definition, Enemy, Item, Module, Paradox, Operator, Range, RogueRelic, RogueStage, RogueTheme, RogueVariation, Skill, Skin, Stage } from "../types";
+import { Base, BaseInfo, Definition, Enemy, Item, LevelUpCost, Module, Paradox, Operator, Range, RogueRelic, RogueStage, RogueTheme, RogueVariation, Skill, Skin, Stage, ManufactFormula, WorkshopFormula } from "../types";
 
 const defineDict: { [key: string]: Definition } = fetch.definitions();
 const itemDict: { [key: string]: Item } = fetch.items();
@@ -101,14 +101,8 @@ module.exports = {
 
                     if (phase.evolveCost === null) continue;
 
-                    let phaseDescription = '';
-                    for (const cost of phase.evolveCost) {
-                        const item = itemDict[cost.id];
-                        phaseDescription += `${item.name} **x${cost.count}**\n`;
-                    }
-
+                    let phaseDescription = this.costString(phase.evolveCost);
                     phaseDescription += `LMD **x${eliteLmdCost[op.data.rarity][i - 1]}**\n`;
-
                     embed.addFields({ name: `Elite ${i}`, value: phaseDescription, inline: true });
                 }
 
@@ -125,12 +119,7 @@ module.exports = {
                 embed.setTitle('Skill Upgrade Costs');
 
                 for (let i = 0; i < op.data.allSkillLvlup.length; i++) {
-
-                    let skillDescription = '';
-                    for (const cost of op.data.allSkillLvlup[i].lvlUpCost) {
-                        const item = itemDict[cost.id];
-                        skillDescription += `${item.name} **x${cost.count}**\n`;
-                    }
+                    const skillDescription = this.costString(op.data.allSkillLvlup[i].lvlUpCost);
 
                     if (skillDescription === '') continue;
 
@@ -156,13 +145,7 @@ module.exports = {
                     embed.addFields({ name: '\u200B', value: `**Skill ${i + 1} - ${skill.levels[0].name}**` });
 
                     for (let i = 0; i < opSkill.levelUpCostCond.length; i++) {
-
-                        let masteryDescription = '';
-                        for (const cost of opSkill.levelUpCostCond[i].levelUpCost) {
-                            const item = itemDict[cost.id];
-                            masteryDescription += `${item.name} **x${cost.count}**\n`;
-                        }
-
+                        const masteryDescription = this.costString(opSkill.levelUpCostCond[i].levelUpCost);
                         embed.addFields({ name: `Mastery ${i + 1}`, value: masteryDescription, inline: true });
                     }
                 }
@@ -187,13 +170,7 @@ module.exports = {
                     embed.addFields({ name: '\u200B', value: `**${module.info.typeIcon.toUpperCase()} - ${module.info.uniEquipName}**` });
 
                     for (const key of Object.keys(module.info.itemCost)) {
-
-                        let moduleDescription = '';
-                        for (const cost of module.info.itemCost[key]) {
-                            const item = itemDict[cost.id];
-                            moduleDescription += `${item.name} **x${cost.count}**\n`;
-                        }
-
+                        const moduleDescription = this.costString(module.info.itemCost[key]);
                         embed.addFields({ name: `Level ${key}`, value: moduleDescription, inline: true });
                     }
                 }
@@ -201,6 +178,15 @@ module.exports = {
                 return { embeds: [embed], files: [avatar, image], components: [buttonRow] };
             }
         }
+    },
+    costString(costs: LevelUpCost[]) {
+        let description = '';
+        for (const cost of costs) {
+            const item = itemDict[cost.id];
+            description += `${item.data.name} **x${cost.count}**\n`;
+        }
+
+        return description;
     },
     defineEmbed(definition: Definition) {
         const embed = new EmbedBuilder()
@@ -292,10 +278,11 @@ module.exports = {
         return { embeds: [embed], files: [image] };
     },
     async itemEmbed(item: Item) {
-        const stageDict: { [key: string]: Stage[] } = fetch.stages()
+        const stageDict: { [key: string]: Stage[] } = fetch.stages();
 
-        const name = item.name;
-        const description = item.description === null ? item.usage : `${item.description}\n\n${item.usage}`;
+        const itemData = item.data;
+        const name = itemData.name;
+        const description = itemData.description === null ? itemData.usage : `${itemData.description}\n\n${itemData.usage}`;
 
         const embed = new EmbedBuilder()
             .setColor(0xebca60)
@@ -303,26 +290,28 @@ module.exports = {
             .setDescription(description);
 
         let stageString = '';
-        fetch.stages()
-
-        for (const stageDrop of item.stageDropList) {
+        for (const stageDrop of itemData.stageDropList) {
             const stageId = stageDrop.stageId;
             if (!stageId.includes('main') && !stageId.includes('sub')) continue;
 
             const stage = stageDict[stageId][0];
             stageString += `${stage.excel.code} - ${itemDropRarities[stageDrop.occPer]}\n`;
         }
-
         if (stageString != '') {
-            embed.addFields({ name: 'Drop Stages', value: stageString });
+            embed.addFields({ name: 'Drop Stages', value: stageString, inline: true });
+        }
+
+        if (item.formula != null) {
+            const formulaString = this.costString(item.formula.costs);
+            embed.addFields({ name: 'Workshop Formula', value: formulaString, inline: true });
         }
 
         try {
-            const imagePath = path.join(__dirname, '../../', itemImagePath, `${item.iconId}.png`);
+            const imagePath = path.join(__dirname, '../../', itemImagePath, `${itemData.iconId}.png`);
             await fs.promises.access(imagePath);
             const image = new AttachmentBuilder(imagePath);
 
-            embed.setThumbnail(`attachment://${utils.cleanFilename(item.iconId)}.png`);
+            embed.setThumbnail(`attachment://${utils.cleanFilename(itemData.iconId)}.png`);
 
             return { embeds: [embed], files: [image] };
         } catch (e) {
@@ -1744,10 +1733,10 @@ module.exports = {
 
             switch (item.dropType) {
                 case 2:
-                    regularString += `${itemDict[item.id].name}\n`;
+                    regularString += `${itemDict[item.id].data.name}\n`;
                     break;
                 case 3:
-                    specialString += `${itemDict[item.id].name}\n`;
+                    specialString += `${itemDict[item.id].data.name}\n`;
                     break;
             }
         }

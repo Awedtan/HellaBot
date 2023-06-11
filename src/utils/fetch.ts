@@ -1,22 +1,22 @@
 const { dataPath } = require('../../paths.json');
 const { professions, tagValues } = require('../utils/contants');
 
-import { Base, BaseInfo, Definition, Enemy, Item, Module, Operator, Paradox, ParadoxInfo, Range, RogueTheme, RogueRelic, RogueStage, RogueStageInfo, RogueVariation, Skill, Skin, Stage, StageData, StageInfo } from "../types";
+import { Base, BaseInfo, Definition, Enemy, Item, ManufactFormula, Module, Operator, Paradox, ParadoxInfo, Range, RogueTheme, RogueRelic, RogueStage, RogueStageInfo, RogueVariation, Skill, Skin, Stage, StageData, StageInfo, WorkshopFormula } from "../types";
 
 const archetypeDict: { [key: string]: string } = {};
 const baseDict: { [key: string]: Base } = {};
+const definitionDict: { [key: string]: Definition } = {};
 const enemyDict: { [key: string]: Enemy } = {};
 const itemDict: { [key: string]: Item } = {};
 const moduleDict: { [key: string]: Module } = {};
 const operatorDict: { [key: string]: Operator } = {};
 const paradoxDict: { [key: string]: Paradox } = {};
 const rangeDict: { [key: string]: Range } = {};
+const rogueThemeArr: RogueTheme[] = [];
 const skillDict: { [key: string]: Skill } = {};
 const skinDict: { [key: string]: Skin[] } = {};
 const stageDict: { [key: string]: Stage[] } = {};
-const definitionDict: { [key: string]: Definition } = {};
 const toughStageDict: { [key: string]: Stage[] } = {};
-const rogueThemeArr: RogueTheme[] = [];
 
 type SubProf = {
     subProfessionId: string;
@@ -141,12 +141,25 @@ function initEnemies() {
 
 function initItems() {
     const itemTable: { [key: string]: any } = require(`${dataPath}/excel/item_table.json`);
-    const items: { [key: string]: Item } = itemTable.items;
+    const buildingData: { [key: string]: any } = require(`${dataPath}/excel/building_data.json`);
+    const items: { [key: string]: Item['data'] } = itemTable.items;
+    const manufactFormulas: { [key: string]: ManufactFormula } = buildingData.manufactFormulas;
+    const workshopFormulas: { [key: string]: WorkshopFormula } = buildingData.workshopFormulas;
 
-    for (const item of Object.values(items)) {
-        itemDict[item.itemId] = item;
-        itemDict[item.name.toLowerCase()] = itemDict[item.itemId];
-        itemDict[item.name.toLowerCase().split('\'').join('')] = itemDict[item.itemId];
+    for (const data of Object.values(items)) {
+        let formula: ManufactFormula | WorkshopFormula = null;
+        if (data.buildingProductList.length > 0) {
+            if (data.buildingProductList[0].roomType === 'MANUFACTURE') {
+                formula = manufactFormulas[data.buildingProductList[0].formulaId];
+            }
+            else if (data.buildingProductList[0].roomType === 'WORKSHOP') {
+                formula = workshopFormulas[data.buildingProductList[0].formulaId];
+            }
+        }
+
+        itemDict[data.itemId] = { data: data, formula: formula };
+        itemDict[data.name.toLowerCase()] = itemDict[data.itemId];
+        itemDict[data.name.toLowerCase().split('\'').join('')] = itemDict[data.itemId];
     }
 }
 

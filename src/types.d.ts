@@ -221,27 +221,78 @@ type EnemySpData = {
     increment: number;
 };
 
-type Item = {
+type ManufactFormula = {
+    formulaId: string;
     itemId: string;
-    name: string;
-    description: string;
-    rarity: number;
-    iconId: string;
-    overrideBkg: null;
-    stackIconId: string;
+    count: number;
+    weight: number;
+    costPoint: number;
+    formulaType: string;
+    buffType: string;
+    costs: LevelUpCost[];
+    requireRooms: {
+        roomId: string;
+        roomLevel: number;
+        roomCount: number;
+    }[];
+    requireStages: {
+        stageId: string,
+        rank: number
+    }[];
+};
+
+type WorkshopFormula = {
     sortId: number;
-    usage: string;
-    obtainApproach: string;
-    classifyType: string;
-    itemType: string;
-    stageDropList: {
-        stageId: string;
-        occPer: string;
+    formulaId: string;
+    rarity: number;
+    itemId: string;
+    count: number;
+    goldCost: number;
+    apCost: number;
+    formulaType: string;
+    buffType: string;
+    extraOutcomeRate: number;
+    extraOutcomeGroup: {
+        weight: number;
+        itemId: string;
+        itemCount: number;
     }[];
-    buildingProductList: {
-        roomType: string;
-        formulaId: string;
+    costs: LevelUpCost[];
+    requireRooms: {
+        roomId: string;
+        roomLevel: number;
+        roomCount: number;
     }[];
+    requireStages: {
+        stageId: string,
+        rank: number
+    }[];
+};
+
+type Item = {
+    data: {
+        itemId: string;
+        name: string;
+        description: string;
+        rarity: number;
+        iconId: string;
+        overrideBkg: null;
+        stackIconId: string;
+        sortId: number;
+        usage: string;
+        obtainApproach: string;
+        classifyType: string;
+        itemType: string;
+        stageDropList: {
+            stageId: string;
+            occPer: string;
+        }[];
+        buildingProductList: {
+            roomType: string;
+            formulaId: string;
+        }[];
+    };
+    formula: ManufactFormula | WorkshopFormula;
 };
 
 type LevelUpCost = {
