@@ -1826,7 +1826,7 @@ module.exports = {
                     for (let i = 0; i < map.length; i++) {
                         for (let j = 0; j < map[0].length; j++) {
                             const tileKey = tiles[map[i][j]].tileKey;
-                            const tile = tileDict[tileKey];
+                            const tile = tileDict.hasOwnProperty(tileKey) ? tileDict[tileKey] : tileDict['unknown'];
                             mapString += tile.emoji;
 
                             if (legendString.includes(tile.name)) continue;

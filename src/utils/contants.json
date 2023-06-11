@@ -222,6 +222,10 @@
         "top operator": 107
     },
     "tileDict": {
+        "unknown": {
+            "emoji": "❓",
+            "name": "Unknown Tile"
+        },
         "tile_bigforce": {
             "emoji": "💪",
             "name": "Specialist Tactical Point"
