@@ -2,6 +2,8 @@
  
 ## todo:
 
+rewrite stage embed
+
 add enemy levels
 
 add help command and command descriptions

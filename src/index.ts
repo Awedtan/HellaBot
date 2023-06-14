@@ -57,6 +57,7 @@ const moduleDict: { [key: string]: Module } = fetch.modules();
 const opDict: { [key: string]: Operator } = fetch.operators();
 const skillDict: { [key: string]: Skill } = fetch.skills();
 const stageDict: { [key: string]: Stage[] } = fetch.stages();
+const toughStageDict: { [key: string]: Stage[] } = fetch.toughStages();
 
 client.on(Events.InteractionCreate, async interaction => {
     if (!interaction.isButton() && !interaction.isStringSelectMenu()) return;
@@ -84,21 +85,6 @@ client.on(Events.InteractionCreate, async interaction => {
 
             break;
         }
-        case 'rogue': {
-            switch (idArr[1]) {
-                case 'relic': {
-                    const theme = parseInt(idArr[2]);
-                    const index = parseInt(idArr[3]);
-
-                    const relicListEmbed = create.rogueRelicListEmbed(theme, index);
-                    await interaction.update(relicListEmbed);
-
-                    break;
-                }
-            }
-
-            break;
-        }
         case 'module': {
             const module = moduleDict[idArr[1]];
             const op = opDict[idArr[2]];
@@ -117,6 +103,21 @@ client.on(Events.InteractionCreate, async interaction => {
 
             const recruitEmbed = create.recruitEmbed(qual, value, tag, select);
             await interaction.update(recruitEmbed);
+
+            break;
+        }
+        case 'rogue': {
+            switch (idArr[1]) {
+                case 'relic': {
+                    const theme = parseInt(idArr[2]);
+                    const index = parseInt(idArr[3]);
+
+                    const relicListEmbed = create.rogueRelicListEmbed(theme, index);
+                    await interaction.update(relicListEmbed);
+
+                    break;
+                }
+            }
 
             break;
         }
@@ -140,10 +141,20 @@ client.on(Events.InteractionCreate, async interaction => {
             break;
         }
         case 'stage': {
+            const stages = idArr[3] === 'true' ? toughStageDict[idArr[1]] : stageDict[idArr[1]];
+            const stage = stages[parseInt(idArr[2])];
+            const page = parseInt(idArr[4]);
+
+            const stageEmbed = await create.stageEmbed(stage, page);
+            await interaction.update(stageEmbed);
+
+            break;
+        }
+        case 'stageselect': {
             const stages = stageDict[idArr[1]];
             const stage = stages[interaction.values[0]];
 
-            const stageEmbed = await create.stageEmbed(stage);
+            const stageEmbed = await create.stageEmbed(stage, 0);
             await interaction.update(stageEmbed);
 
             break;

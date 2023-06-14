@@ -1698,14 +1698,14 @@ module.exports = {
 
         return { embeds: [embed] };
     },
-    async stageEmbed(stage: Stage) {
+    async stageEmbed(stage: Stage, page: number) {
         const enemyDict: { [key: string]: Enemy } = fetch.enemies();
         const itemDict: { [key: string]: Item } = fetch.items();
 
         const stageInfo = stage.excel;
         const stageData = stage.levels;
         const stageId = stageInfo.stageId;
-        const isChallenge = stageInfo.diffGroup === 'TOUGH' || stageInfo.difficulty === 'CHALLENGE'
+        const isChallenge = stageInfo.diffGroup === 'TOUGH' || stageInfo.difficulty === 'FOUR_STAR'
 
         const title = isChallenge ? `Challenge ${stageInfo.code} - ${stageInfo.name}` : `${stageInfo.code} - ${stageInfo.name}`;
         const description = utils.formatText(stageInfo.description, []);
@@ -1774,62 +1774,108 @@ module.exports = {
             embed.addFields({ name: 'Leaders', value: bossString, inline: false });
         }
 
-        try {
-            const imagePath = path.join(__dirname, '../../', stageImagePath, `${stageId}.png`);
-            await fs.promises.access(imagePath);
-            const image = new AttachmentBuilder(imagePath);
+        const stageIndex = isChallenge ? fetch.toughStages()[stage.excel.code.toLowerCase()].indexOf(stage) : fetch.stages()[stage.excel.code.toLowerCase()].indexOf(stage);
 
-            embed.setImage(`attachment://${stageId}.png`)
+        const imageButton = new ButtonBuilder()
+            .setCustomId(`stageඞ${stage.excel.code.toLowerCase()}ඞ${stageIndex}ඞ${isChallenge}ඞ0`)
+            .setLabel('Preview')
+            .setStyle(ButtonStyle.Primary);
+        const diagramButton = new ButtonBuilder()
+            .setCustomId(`stageඞ${stage.excel.code.toLowerCase()}ඞ${stageIndex}ඞ${isChallenge}ඞ1`)
+            .setLabel('Diagram')
+            .setStyle(ButtonStyle.Primary);
 
-            return { embeds: [embed], files: [image] };
-        } catch (e) {
+        switch (page) {
+            case 0:
+                imageButton.setDisabled(true);
+                break;
+            case 1:
+                diagramButton.setDisabled(true);
+                break;
+        }
+
+        const rowOne = new ActionRowBuilder().addComponents(imageButton, diagramButton);
+
+        if (page === 0) {
             try {
-                const mainId = stageId.replace('tough', 'main');
-                const imagePath = path.join(__dirname, '../../', stageImagePath, `${mainId}.png`);
+                const imagePath = path.join(__dirname, '../../', stageImagePath, `${stageId}.png`);
                 await fs.promises.access(imagePath);
                 const image = new AttachmentBuilder(imagePath);
 
-                embed.setImage(`attachment://${mainId}.png`)
+                embed.setImage(`attachment://${stageId}.png`)
 
-                return { embeds: [embed], files: [image] };
+                return { embeds: [embed], files: [image], components: [rowOne] };
             } catch (e) {
                 try {
-                    const newId = stageId.substring(0, stageId.length - 3);
-                    const imagePath = path.join(__dirname, '../../', stageImagePath, `${newId}.png`);
+                    const mainId = stageId.replace('tough', 'main');
+                    const imagePath = path.join(__dirname, '../../', stageImagePath, `${mainId}.png`);
                     await fs.promises.access(imagePath);
                     const image = new AttachmentBuilder(imagePath);
 
-                    embed.setImage(`attachment://${newId}.png`)
+                    embed.setImage(`attachment://${mainId}.png`)
 
-                    return { embeds: [embed], files: [image] };
+                    return { embeds: [embed], files: [image], components: [rowOne] };
                 } catch (e) {
-                    const mapData = stageData.mapData;
-                    const map = mapData.map;
-                    const tiles = mapData.tiles;
-                    let mapString = '', legendString = '';
+                    try {
+                        const newId = stageId.substring(0, stageId.length - 3);
+                        const imagePath = path.join(__dirname, '../../', stageImagePath, `${newId}.png`);
+                        await fs.promises.access(imagePath);
+                        const image = new AttachmentBuilder(imagePath);
 
-                    for (let i = 0; i < map.length; i++) {
-                        for (let j = 0; j < map[0].length; j++) {
-                            const tileKey = tiles[map[i][j]].tileKey;
-                            const tile = tileDict.hasOwnProperty(tileKey) ? tileDict[tileKey] : tileDict['unknown'];
-                            mapString += tile.emoji;
+                        embed.setImage(`attachment://${newId}.png`)
 
-                            if (legendString.includes(tile.name)) continue;
+                        return { embeds: [embed], files: [image], components: [rowOne] };
+                    } catch (e) {
+                        const mapData = stageData.mapData;
+                        const map = mapData.map;
+                        const tiles = mapData.tiles;
+                        let mapString = '', legendString = '';
 
-                            legendString += `${tile.emoji} - ${tile.name}\n`;
+                        for (let i = 0; i < map.length; i++) {
+                            for (let j = 0; j < map[0].length; j++) {
+                                const tileKey = tiles[map[i][j]].tileKey;
+                                const tile = tileDict.hasOwnProperty(tileKey) ? tileDict[tileKey] : tileDict['unknown'];
+                                mapString += tile.emoji;
+
+                                if (legendString.includes(tile.name)) continue;
+
+                                legendString += `${tile.emoji} - ${tile.name}\n`;
+                            }
+                            mapString += '\n';
                         }
-                        mapString += '\n';
-                    }
-                    embed.addFields({ name: 'Map', value: mapString }, { name: 'Legend', value: legendString });
+                        embed.addFields({ name: 'Map', value: mapString }, { name: 'Legend', value: legendString });
 
-                    return { embeds: [embed], files: [] };
+                        return { embeds: [embed] };
+                    }
                 }
             }
+        }
+        else {
+            const mapData = stageData.mapData;
+            const map = mapData.map;
+            const tiles = mapData.tiles;
+            let mapString = '', legendString = '';
+
+            for (let i = 0; i < map.length; i++) {
+                for (let j = 0; j < map[0].length; j++) {
+                    const tileKey = tiles[map[i][j]].tileKey;
+                    const tile = tileDict.hasOwnProperty(tileKey) ? tileDict[tileKey] : tileDict['unknown'];
+                    mapString += tile.emoji;
+
+                    if (legendString.includes(tile.name)) continue;
+
+                    legendString += `${tile.emoji} - ${tile.name}\n`;
+                }
+                mapString += '\n';
+            }
+            embed.addFields({ name: 'Map', value: mapString }, { name: 'Legend', value: legendString });
+
+            return { embeds: [embed], files: [], components: [rowOne] };
         }
     },
     stageSelectEmbed(stageArr: Stage[] | RogueStage[]) {
         const stageSelector = new StringSelectMenuBuilder()
-            .setCustomId(`stageඞ${stageArr[0].excel.code.toLowerCase()}`)
+            .setCustomId(`stageselectඞ${stageArr[0].excel.code.toLowerCase()}`)
             .setPlaceholder('Select a stage!');
 
         for (let i = 0; i < stageArr.length; i++) {

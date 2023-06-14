@@ -36,7 +36,7 @@ module.exports = {
             if (stage.excel === undefined || stage.levels === undefined)
                 return await interaction.reply({ content: 'That stage data doesn\'t exist!', ephemeral: true });
 
-            const stageEmbed = await create.stageEmbed(stage);
+            const stageEmbed = await create.stageEmbed(stage, 0);
             await interaction.reply(stageEmbed);
         }
         else {
