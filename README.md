@@ -2,9 +2,13 @@
  
 ## todo:
 
+make generic file-existence checker and stage diagram generator functions
+
+add diagram to paradox, roguelike stages
+
 rewrite stage embed
 
-add enemy levels
+add item list
 
 add help command and command descriptions
 
@@ -12,7 +16,9 @@ count enemies in a stage
 
 maintain bot
 
-## maybe:
+## maybe/unlikely:
+
+add enemy levels
 
 add material sanity costs, stage efficiencies
 
@@ -33,5 +39,3 @@ krooster stuff
 gamepress stuff
 
 add story and operator lore
-
-fix the button bug

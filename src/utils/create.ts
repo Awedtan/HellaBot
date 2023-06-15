@@ -6,13 +6,19 @@ const fetch = require('../utils/fetch');
 const utils = require('../utils/utils');
 const { eliteLevels, eliteLmdCost, itemDropRarities, professions, qualifications, skillLevels, skillTypes, spTypes, tagValues, tileDict } = require('../utils/contants');
 
-import { Base, BaseInfo, Definition, Enemy, Item, LevelUpCost, Module, Paradox, Operator, Range, RogueRelic, RogueStage, RogueTheme, RogueVariation, Skill, Skin, Stage } from "../types";
+import { Base, BaseInfo, Definition, Enemy, Item, LevelUpCost, Module, Paradox, Operator, Range, RogueRelic, RogueStage, RogueTheme, RogueVariation, Skill, Skin, Stage, StageData } from "../types";
 
+const embedColour = 0xebca60;
+const archetypeDict: { [key: string]: string } = fetch.archetypes();
+const baseDict: { [key: string]: Base } = fetch.bases();
 const defineDict: { [key: string]: Definition } = fetch.definitions();
+const enemyDict: { [key: string]: Enemy } = fetch.enemies();
 const itemDict: { [key: string]: Item } = fetch.items();
 const moduleDict: { [key: string]: Module } = fetch.modules();
-const opDict: { [key: string]: Operator } = fetch.operators();
+const operatorDict: { [key: string]: Operator } = fetch.operators();
+const rangeDict: { [key: string]: Range } = fetch.ranges();
 const skillDict: { [key: string]: Skill } = fetch.skills();
+const stageDict: { [key: string]: Stage[] } = fetch.stages();
 const skinDict: { [key: string]: Skin[] } = fetch.skins();
 
 module.exports = {
@@ -22,25 +28,23 @@ module.exports = {
         return authorField;
     },
     baseEmbed(base: Base, baseInfo: BaseInfo, op: Operator) {
-        const baseCond = baseInfo.cond;
-
         const avatarPath = path.join(__dirname, '../../', operatorAvatarPath, `${op.id}.png`);
-        const imagePath = path.join(__dirname, '../../', baseImagePath, `${base.skillIcon}.png`);
         const avatar = new AttachmentBuilder(avatarPath);
-        const image = new AttachmentBuilder(imagePath);
+        const thumbnailPath = path.join(__dirname, '../../', baseImagePath, `${base.skillIcon}.png`);
+        const thumbnail = new AttachmentBuilder(thumbnailPath);
 
-        const name = `${base.buffName} - ${eliteLevels[baseCond.phase]} Lv${baseCond.level}`;
         const authorField = this.authorField(op);
+        const title = `${base.buffName} - ${eliteLevels[baseInfo.cond.phase]} Lv${baseInfo.cond.level}`;
         const description = utils.formatText(base.description, []);
 
         const embed = new EmbedBuilder()
-            .setColor(0xebca60)
+            .setColor(embedColour)
             .setAuthor(authorField)
-            .setTitle(name)
+            .setTitle(title)
             .setThumbnail(`attachment://${utils.cleanFilename(base.skillIcon)}.png`)
             .setDescription(description);
 
-        return { embeds: [embed], files: [image, avatar] };
+        return { embeds: [embed], files: [avatar, thumbnail] };
     },
     costEmbed(op: Operator, type: string) {
         const avatarPath = path.join(__dirname, '../../', operatorAvatarPath, `${op.id}.png`);
@@ -49,7 +53,7 @@ module.exports = {
         const authorField = this.authorField(op);
 
         const embed = new EmbedBuilder()
-            .setColor(0xebca60)
+            .setColor(embedColour)
             .setAuthor(authorField)
 
         const eliteButton = new ButtonBuilder()
@@ -68,6 +72,7 @@ module.exports = {
             .setCustomId(`costඞ${op.id}ඞmodule`)
             .setLabel('Modules')
             .setStyle(ButtonStyle.Success);
+        const buttonRow = new ActionRowBuilder().addComponents(eliteButton, skillButton, masteryButton, moduleButton);
 
         if (op.data.skills.length == 0) {
             skillButton.setStyle(ButtonStyle.Secondary);
@@ -82,58 +87,54 @@ module.exports = {
             moduleButton.setDisabled(true);
         }
 
-        const buttonRow = new ActionRowBuilder().addComponents(eliteButton, skillButton, masteryButton, moduleButton);
+        let thumbnail;
 
         switch (type) {
             default:
             case 'elite': {
                 eliteButton.setDisabled(true);
 
-                const imagePath = path.join(__dirname, '../../', eliteImagePath, `3.png`);
-                const image = new AttachmentBuilder(imagePath);
+                const thumbnailPath = path.join(__dirname, '../../', itemImagePath, `sprite_exp_card_t4.png`);
+                thumbnail = new AttachmentBuilder(thumbnailPath);
 
-                embed.setThumbnail(`attachment://3.png`);
-                embed.setTitle('Elite Upgrade Costs');
+                embed.setThumbnail(`attachment://sprite_exp_card_t4.png`)
+                    .setTitle('Elite Upgrade Costs');
 
                 for (let i = 0; i < op.data.phases.length; i++) {
                     const phase = op.data.phases[i];
-
                     if (phase.evolveCost === null) continue;
 
                     let phaseDescription = this.costString(phase.evolveCost);
                     phaseDescription += `LMD **x${eliteLmdCost[op.data.rarity][i - 1]}**\n`;
                     embed.addFields({ name: `Elite ${i}`, value: phaseDescription, inline: true });
                 }
-
-                return { embeds: [embed], files: [avatar, image], components: [buttonRow] };
+                break;
             }
             case 'skill': {
                 skillButton.setDisabled(true);
 
-                const imagePath = path.join(__dirname, '../../', itemImagePath, `MTL_SKILL3.png`);
-                const image = new AttachmentBuilder(imagePath);
+                const thumbnailPath = path.join(__dirname, '../../', itemImagePath, `MTL_SKILL2.png`);
+                thumbnail = new AttachmentBuilder(thumbnailPath);
 
-                embed.setThumbnail(`attachment://MTL_SKILL3.png`);
-                embed.setTitle('Skill Upgrade Costs');
+                embed.setThumbnail(`attachment://MTL_SKILL2.png`)
+                    .setTitle('Skill Upgrade Costs');
 
                 for (let i = 0; i < op.data.allSkillLvlup.length; i++) {
                     const skillDescription = this.costString(op.data.allSkillLvlup[i].lvlUpCost);
-
                     if (skillDescription === '') continue;
 
                     embed.addFields({ name: `Level ${i + 2}`, value: skillDescription, inline: true });
                 }
-
-                return { embeds: [embed], files: [avatar, image], components: [buttonRow] };
+                break;
             }
             case 'mastery': {
                 masteryButton.setDisabled(true);
 
-                const imagePath = path.join(__dirname, '../../', rankImagePath, `m-3.png`);
-                const image = new AttachmentBuilder(imagePath);
+                const thumbnailPath = path.join(__dirname, '../../', itemImagePath, `MTL_SKILL3.png`);
+                thumbnail = new AttachmentBuilder(thumbnailPath);
 
-                embed.setThumbnail(`attachment://m-3.png`);
-                embed.setTitle('Skill Mastery Costs');
+                embed.setThumbnail(`attachment://MTL_SKILL3.png`)
+                    .setTitle('Skill Mastery Costs');
 
                 for (let i = 0; i < op.data.skills.length; i++) {
                     const opSkill = op.data.skills[i];
@@ -146,21 +147,19 @@ module.exports = {
                         embed.addFields({ name: `Mastery ${i + 1}`, value: masteryDescription, inline: true });
                     }
                 }
-
-                return { embeds: [embed], files: [avatar, image], components: [buttonRow] };
+                break;
             }
             case 'module': {
                 moduleButton.setDisabled(true);
 
-                const imagePath = path.join(__dirname, '../../', itemImagePath, `mod_unlock_token.png`);
-                const image = new AttachmentBuilder(imagePath);
+                const thumbnailPath = path.join(__dirname, '../../', itemImagePath, `mod_unlock_token.png`);
+                thumbnail = new AttachmentBuilder(thumbnailPath);
 
-                embed.setThumbnail(`attachment://mod_unlock_token.png`);
-                embed.setTitle('Module Upgrade Costs');
+                embed.setThumbnail(`attachment://mod_unlock_token.png`)
+                    .setTitle('Module Upgrade Costs');
 
                 for (const moduleId of op.modules) {
                     if (moduleId.includes('uniequip_001')) continue;
-
                     const module = moduleDict[moduleId];
 
                     embed.addFields({ name: '\u200B', value: `**${module.info.typeIcon.toUpperCase()} - ${module.info.uniEquipName}**` });
@@ -170,10 +169,11 @@ module.exports = {
                         embed.addFields({ name: `Level ${key}`, value: moduleDescription, inline: true });
                     }
                 }
-
-                return { embeds: [embed], files: [avatar, image], components: [buttonRow] };
+                break;
             }
         }
+
+        return { embeds: [embed], files: [avatar, thumbnail], components: [buttonRow] };
     },
     costString(costs: LevelUpCost[]) {
         let description = '';
@@ -181,27 +181,25 @@ module.exports = {
             const item = itemDict[cost.id];
             description += `${item.data.name} **x${cost.count}**\n`;
         }
-
         return description;
     },
     defineEmbed(definition: Definition) {
         const embed = new EmbedBuilder()
-            .setColor(0xebca60)
+            .setColor(embedColour)
             .setTitle(definition.termName)
             .setDescription(utils.formatText(definition.description));
 
         return { embeds: [embed] };
     },
     defineListEmbed() {
-        let baDescription = '', ccDescription = '', groupDescription = '';
+        let statusDescription = '', effectDescription = '', groupDescription = '';
         for (const term of Object.values(defineDict)) {
-            const termId = term.termId;
             const termName = term.termName;
-            const termArr = termId.split('.');
+            const termArr = term.termId.split('.');
 
             switch (termArr[0]) {
                 case 'ba':
-                    baDescription += `${termName}\n`;
+                    statusDescription += `${termName}\n`;
                     break;
                 case 'cc':
                     switch (termArr[1]) {
@@ -211,7 +209,7 @@ module.exports = {
                             groupDescription += `${termName}\n`;
                             break;
                         default:
-                            ccDescription += `${termName}\n`;
+                            effectDescription += `${termName}\n`;
                             break;
                     }
                     break;
@@ -219,11 +217,11 @@ module.exports = {
         }
 
         const embed = new EmbedBuilder()
-            .setColor(0xebca60)
+            .setColor(embedColour)
             .setTitle('List of In-Game Terms and Groups')
             .addFields(
-                { name: 'Status Effects', value: baDescription, inline: true },
-                { name: 'Base Effects', value: ccDescription, inline: true },
+                { name: 'Status Effects', value: statusDescription, inline: true },
+                { name: 'Base Effects', value: effectDescription, inline: true },
                 { name: 'Base Groups', value: groupDescription, inline: true }
             );
 
@@ -233,8 +231,8 @@ module.exports = {
         const enemyInfo = enemy.excel;
         const enemyData = enemy.levels.Value[0].enemyData;
 
-        const imagePath = path.join(__dirname, '../../', enemyImagePath, `${enemyInfo.enemyId}.png`);
-        const image = new AttachmentBuilder(imagePath);
+        const thumbnailPath = path.join(__dirname, '../../', enemyImagePath, `${enemyInfo.enemyId}.png`);
+        const thumbnail = new AttachmentBuilder(thumbnailPath);
 
         const title = `${enemyInfo.enemyIndex} - ${enemyInfo.name}`;
         const description = `${utils.formatText(enemyInfo.description, [])}\n\n${utils.formatText(enemyInfo.ability, [])}`;
@@ -243,17 +241,16 @@ module.exports = {
         const atk = enemyData.attributes.atk.m_value.toString();
         const def = enemyData.attributes.def.m_value.toString();
         const res = enemyData.attributes.magicResistance.m_value.toString();
-        const weight = enemyData.attributes.massLevel.m_value.toString();
+        const weight = enemyData.attributes.massLevel.m_defined ? enemyData.attributes.massLevel.m_value.toString() : '1';
         const life = enemyData.lifePointReduce.m_defined ? enemyData.lifePointReduce.m_value.toString() : '1';
-
-        const silenceImmune = enemyData.attributes.silenceImmune.m_defined ? enemyData.attributes.silenceImmune.m_value : false;
-        const stunImmune = enemyData.attributes.stunImmune.m_defined ? enemyData.attributes.stunImmune.m_value : false;
-        const sleepImmune = enemyData.attributes.sleepImmune.m_defined ? enemyData.attributes.sleepImmune.m_value : false;
-        const frozenImmune = enemyData.attributes.frozenImmune.m_defined ? enemyData.attributes.frozenImmune.m_value : false;
-        const levitateImmune = enemyData.attributes.levitateImmune.m_defined ? enemyData.attributes.levitateImmune.m_value : false;
+        const silence = enemyData.attributes.silenceImmune.m_defined ? enemyData.attributes.silenceImmune.m_value : false;
+        const stun = enemyData.attributes.stunImmune.m_defined ? enemyData.attributes.stunImmune.m_value : false;
+        const sleep = enemyData.attributes.sleepImmune.m_defined ? enemyData.attributes.sleepImmune.m_value : false;
+        const frozen = enemyData.attributes.frozenImmune.m_defined ? enemyData.attributes.frozenImmune.m_value : false;
+        const levitate = enemyData.attributes.levitateImmune.m_defined ? enemyData.attributes.levitateImmune.m_value : false;
 
         const embed = new EmbedBuilder()
-            .setColor(0xebca60)
+            .setColor(embedColour)
             .setTitle(title)
             .setThumbnail(`attachment://${enemyInfo.enemyId}.png`)
             .setDescription(description)
@@ -264,29 +261,57 @@ module.exports = {
                 { name: '✨ RES', value: res, inline: true },
                 { name: '⚖️ Weight', value: weight, inline: true },
                 { name: '💔 Life Points', value: life, inline: true },
-                { name: 'Silence', value: silenceImmune ? '❌' : '✅', inline: true },
-                { name: 'Stun', value: stunImmune ? '❌' : '✅', inline: true },
-                { name: 'Sleep', value: sleepImmune ? '❌' : '✅', inline: true },
-                { name: 'Freeze', value: frozenImmune ? '❌' : '✅', inline: true },
-                { name: 'Levitate', value: levitateImmune ? '❌' : '✅', inline: true }
+                { name: 'Silence', value: silence ? '❌' : '✅', inline: true },
+                { name: 'Stun', value: stun ? '❌' : '✅', inline: true },
+                { name: 'Sleep', value: sleep ? '❌' : '✅', inline: true },
+                { name: 'Freeze', value: frozen ? '❌' : '✅', inline: true },
+                { name: 'Levitate', value: levitate ? '❌' : '✅', inline: true }
             );
 
-        return { embeds: [embed], files: [image] };
+        return { embeds: [embed], files: [thumbnail] };
+    },
+    enemyFields(enemyDbRefs: StageData['enemyDbRefs']) {
+        let enemyString = '', eliteString = '', bossString = '';
+        for (const enemy of enemyDbRefs) {
+            if (enemyDict.hasOwnProperty(enemy.id)) {
+                const enemyInfo = enemyDict[enemy.id].excel;
+                switch (enemyInfo.enemyLevel) {
+                    case ('NORMAL'):
+                        enemyString += `${enemyInfo.enemyIndex} - ${enemyInfo.name}\n`;
+                        break;
+                    case ('ELITE'):
+                        eliteString += `${enemyInfo.enemyIndex} - ${enemyInfo.name}\n`;
+                        break;
+                    case ('BOSS'):
+                        bossString += `*${enemyInfo.enemyIndex} - ${enemyInfo.name}*\n`;
+                        break;
+                }
+            }
+        }
+
+        const fieldArr = [];
+        if (enemyString != '') {
+            fieldArr.push({ name: 'Enemies', value: enemyString, inline: true });
+        }
+        if (eliteString != '') {
+            fieldArr.push({ name: 'Elites', value: eliteString, inline: true });
+        }
+        if (bossString != '') {
+            fieldArr.push({ name: 'Leaders', value: bossString });
+        }
+
+        return fieldArr;
     },
     async itemEmbed(item: Item) {
-        const stageDict: { [key: string]: Stage[] } = fetch.stages();
-
-        const itemData = item.data;
-        const name = itemData.name;
-        const description = itemData.description === null ? itemData.usage : `${itemData.description}\n\n${itemData.usage}`;
+        const description = item.data.description != null ? `${item.data.usage}\n\n${item.data.description}` : item.data.usage;
 
         const embed = new EmbedBuilder()
-            .setColor(0xebca60)
-            .setTitle(name)
+            .setColor(embedColour)
+            .setTitle(item.data.name)
             .setDescription(description);
 
         let stageString = '';
-        for (const stageDrop of itemData.stageDropList) {
+        for (const stageDrop of item.data.stageDropList) {
             const stageId = stageDrop.stageId;
             if (!stageId.includes('main') && !stageId.includes('sub')) continue;
 
@@ -303,11 +328,11 @@ module.exports = {
         }
 
         try {
-            const imagePath = path.join(__dirname, '../../', itemImagePath, `${itemData.iconId}.png`);
+            const imagePath = path.join(__dirname, '../../', itemImagePath, `${item.data.iconId}.png`);
             await fs.promises.access(imagePath);
             const image = new AttachmentBuilder(imagePath);
 
-            embed.setThumbnail(`attachment://${utils.cleanFilename(itemData.iconId)}.png`);
+            embed.setThumbnail(`attachment://${utils.cleanFilename(item.data.iconId)}.png`);
 
             return { embeds: [embed], files: [image] };
         } catch (e) {
@@ -315,10 +340,9 @@ module.exports = {
         }
     },
     infoEmbed(op: Operator, type: number, page: number, level: number) {
-        const embedArr = [], fileArr = [], componentRows = [];
+        const embedArr = [], fileArr = [], rowArr = [];
 
         const operatorEmbed = this.operatorEmbed(op);
-
         for (const embed of operatorEmbed.embeds) {
             embedArr.push(embed);
         }
@@ -326,11 +350,11 @@ module.exports = {
             fileArr.push(file);
         }
 
-        const skillsButton = new ButtonBuilder()
+        const skillButton = new ButtonBuilder()
             .setCustomId(`infoඞ${op.id}ඞ1ඞ0ඞ0`)
             .setLabel('Skills')
             .setStyle(ButtonStyle.Success);
-        const modulesButton = new ButtonBuilder()
+        const moduleButton = new ButtonBuilder()
             .setCustomId(`infoඞ${op.id}ඞ2ඞ0ඞ0`)
             .setLabel('Modules')
             .setStyle(ButtonStyle.Success);
@@ -342,14 +366,15 @@ module.exports = {
             .setCustomId(`infoඞ${op.id}ඞ4ඞ0ඞ0`)
             .setLabel('Base Skills')
             .setStyle(ButtonStyle.Success);
+        const typeRow = new ActionRowBuilder().addComponents(skillButton, moduleButton, artButton, baseButton);
 
         if (op.data.skills.length == 0) {
-            skillsButton.setStyle(ButtonStyle.Secondary);
-            skillsButton.setDisabled(true);
+            skillButton.setStyle(ButtonStyle.Secondary);
+            skillButton.setDisabled(true);
         }
         if (op.modules.length == 0) {
-            modulesButton.setStyle(ButtonStyle.Secondary);
-            modulesButton.setDisabled(true);
+            moduleButton.setStyle(ButtonStyle.Secondary);
+            moduleButton.setDisabled(true);
         }
         if (op.bases.length == 0) {
             baseButton.setStyle(ButtonStyle.Secondary);
@@ -360,16 +385,9 @@ module.exports = {
             case 0:
                 break;
             case 1:
-                skillsButton.setDisabled(true);
+                skillButton.setDisabled(true);
 
-                const skills = op.data.skills;
-
-                if (skills.length === 0) break;
-
-                const skillDict: { [key: string]: Skill } = fetch.skills();
-                const skill = skillDict[skills[page].skillId];
                 const skillEmbed = this.infoSkillEmbed(op, type, page, level);
-
                 for (const embed of skillEmbed.embeds) {
                     embedArr.push(embed);
                 }
@@ -377,30 +395,29 @@ module.exports = {
                     fileArr.push(file);
                 }
                 for (const componentRow of skillEmbed.components) {
-                    componentRows.push(componentRow);
+                    rowArr.push(componentRow);
                 }
 
                 const skillOne = new ButtonBuilder()
-                    .setCustomId(`info_skill_nonexist1`)
+                    .setCustomId(`info_skill1_nonexist`)
                     .setLabel('Skill 1')
                     .setStyle(ButtonStyle.Secondary)
                     .setDisabled(true);
                 const skillTwo = new ButtonBuilder()
-                    .setCustomId(`info_skill_nonexist2`)
+                    .setCustomId(`info_skill2_nonexist`)
                     .setLabel('Skill 2')
                     .setStyle(ButtonStyle.Secondary)
                     .setDisabled(true);
                 const skillThree = new ButtonBuilder()
-                    .setCustomId(`info_skill_nonexist3`)
+                    .setCustomId(`info_skill3_nonexist`)
                     .setLabel('Skill 3')
                     .setStyle(ButtonStyle.Secondary)
                     .setDisabled(true);
-
                 const skillRow = new ActionRowBuilder().addComponents(skillOne, skillTwo, skillThree);
-                componentRows.push(skillRow);
-                const skillArr = [skillOne, skillTwo, skillThree];
+                rowArr.push(skillRow);
 
-                for (let i = 0; i < skills.length; i++) {
+                const skillArr = [skillOne, skillTwo, skillThree];
+                for (let i = 0; i < op.data.skills.length; i++) {
                     skillArr[i].setStyle(ButtonStyle.Primary);
                     if (i != page) {
                         skillArr[i].setCustomId(`infoඞ${op.id}ඞ${type}ඞ${i}ඞ${level}ඞskill`)
@@ -410,19 +427,11 @@ module.exports = {
                         skillArr[i].setCustomId(`info_skill_current`);
                     }
                 }
-
                 break;
             case 2:
-                modulesButton.setDisabled(true);
+                moduleButton.setDisabled(true);
 
-                const modules = op.modules;
-
-                if (modules === null) break;
-
-                const moduleDict: { [key: string]: Module } = fetch.modules();
-                const module = moduleDict[modules[page + 1]];
                 const moduleEmbed = this.infoModuleEmbed(op, type, page, level);
-
                 for (const embed of moduleEmbed.embeds) {
                     embedArr.push(embed);
                 }
@@ -430,25 +439,24 @@ module.exports = {
                     fileArr.push(file);
                 }
                 for (const componentRow of moduleEmbed.components) {
-                    componentRows.push(componentRow);
+                    rowArr.push(componentRow);
                 }
 
                 const moduleOne = new ButtonBuilder()
-                    .setCustomId(`info_module_nonexist1`)
+                    .setCustomId(`info_module1_nonexist`)
                     .setLabel('Module 1')
                     .setStyle(ButtonStyle.Secondary)
                     .setDisabled(true);
                 const moduleTwo = new ButtonBuilder()
-                    .setCustomId(`info_module_nonexist1`)
+                    .setCustomId(`info_module2_nonexist`)
                     .setLabel('Module 2')
                     .setStyle(ButtonStyle.Secondary)
                     .setDisabled(true);
-
                 const moduleRow = new ActionRowBuilder().addComponents(moduleOne, moduleTwo);
-                componentRows.push(moduleRow);
-                const moduleArr = [moduleOne, moduleTwo];
+                rowArr.push(moduleRow);
 
-                for (let i = 0; i < modules.length - 1; i++) {
+                const moduleArr = [moduleOne, moduleTwo];
+                for (let i = 0; i < op.modules.length - 1; i++) {
                     moduleArr[i].setStyle(ButtonStyle.Primary);
                     if (i != page) {
                         moduleArr[i].setCustomId(`infoඞ${op.id}ඞ${type}ඞ${i}ඞ${level}ඞmodule`)
@@ -458,13 +466,11 @@ module.exports = {
                         moduleArr[i].setCustomId(`info_module_current`);
                     }
                 }
-
                 break;
             case 3:
                 artButton.setDisabled(true);
 
                 const skinEmbed = this.infoSkinEmbed(op, type, page, level);
-
                 for (const embed of skinEmbed.embeds) {
                     embedArr.push(embed);
                 }
@@ -472,18 +478,15 @@ module.exports = {
                     fileArr.push(file);
                 }
                 for (const componentRow of skinEmbed.components) {
-                    componentRows.push(componentRow);
+                    rowArr.push(componentRow);
                 }
-
                 break;
             case 4:
                 baseButton.setDisabled(true);
 
                 for (const baseInfo of op.bases) {
-                    const baseDict = fetch.bases();
                     const base = baseDict[baseInfo.buffId];
                     const baseEmbed = this.baseEmbed(base, baseInfo, op);
-
                     for (const embed of baseEmbed.embeds) {
                         embedArr.push(embed);
                     }
@@ -491,47 +494,44 @@ module.exports = {
                         fileArr.push(file);
                     }
                 }
-
                 break;
         }
 
-        const pageRow = new ActionRowBuilder().addComponents(skillsButton, modulesButton, artButton, baseButton);
-        componentRows.push(pageRow);
+        rowArr.push(typeRow);
 
-        return { embeds: embedArr, files: fileArr, components: componentRows };
+        return { embeds: embedArr, files: fileArr, components: rowArr };
     },
     infoSkillEmbed(op: Operator, type: number, page: number, level: number) {
         const skill = skillDict[op.data.skills[page].skillId];
         const skillLevel = skill.levels[level];
 
         const avatarPath = path.join(__dirname, '../../', operatorAvatarPath, `${op.id}.png`);
-        const imageFilename = skill.iconId === null ? skill.skillId : skill.iconId;
-        const imagePath = path.join(__dirname, '../../', skillImagePath, `skill_icon_${imageFilename}.png`)
         const avatar = new AttachmentBuilder(avatarPath);
-        const image = new AttachmentBuilder(imagePath);
+        const thumbnailFilename = skill.iconId === null ? skill.skillId : skill.iconId;
+        const thumbnailPath = path.join(__dirname, '../../', skillImagePath, `skill_icon_${thumbnailFilename}.png`)
+        const thumbnail = new AttachmentBuilder(thumbnailPath);
 
         const authorField = this.authorField(op);
-        const name = `${skillLevel.name} - ${skillLevels[level]}`;
+        const title = `${skillLevel.name} - ${skillLevels[level]}`;
+
         const spCost = skillLevel.spData.spCost;
         const initSp = skillLevel.spData.initSp;
         const skillDuration = skillLevel.duration;
         const spType = spTypes[skillLevel.spData.spType];
         const skillType = skillTypes[skillLevel.skillType];
 
-        const description = utils.formatText(skillLevel.description, skillLevel.blackboard);
-
-        let embedDescription = `**${spType} - ${skillType}**\n***Cost:* ${spCost} SP - *Initial:* ${initSp} SP`;
+        let description = `**${spType} - ${skillType}**\n***Cost:* ${spCost} SP - *Initial:* ${initSp} SP`;
         if (skillDuration > 0) {
-            embedDescription += ` - *Duration:* ${skillDuration} sec`;
+            description += ` - *Duration:* ${skillDuration} sec`;
         }
-        embedDescription += `**\n${description} `;
+        description += `**\n${utils.formatText(skillLevel.description, skillLevel.blackboard)} `;
 
         const embed = new EmbedBuilder()
-            .setColor(0xebca60)
+            .setColor(embedColour)
             .setAuthor(authorField)
-            .setTitle(name)
-            .setThumbnail(`attachment://skill_icon_${utils.cleanFilename(imageFilename)}.png`)
-            .setDescription(embedDescription);
+            .setTitle(title)
+            .setThumbnail(`attachment://skill_icon_${utils.cleanFilename(thumbnailFilename)}.png`)
+            .setDescription(description);
 
         if (skillLevel.rangeId != null) {
             const rangeField = this.rangeField(skillLevel.rangeId);
@@ -578,6 +578,8 @@ module.exports = {
             .setCustomId(`infoඞ${op.id}ඞ${type}ඞ${page}ඞ9ඞskill`)
             .setLabel('M3')
             .setStyle(ButtonStyle.Danger);
+        const rowOne = new ActionRowBuilder().addComponents(lOne, lTwo, lThree, lFour, lFive);
+        const rowTwo = new ActionRowBuilder().addComponents(lSix, lSeven, mOne, mTwo, mThree);
 
         if (skill.levels.length === 7) {
             mOne.setDisabled(true);
@@ -628,36 +630,31 @@ module.exports = {
                 break;
         }
 
-        const rowOne = new ActionRowBuilder().addComponents(lOne, lTwo, lThree, lFour, lFive);
-        const rowTwo = new ActionRowBuilder().addComponents(lSix, lSeven, mOne, mTwo, mThree);
-
-        return { embeds: [embed], files: [image, avatar], components: [rowOne, rowTwo] };
+        return { embeds: [embed], files: [avatar, thumbnail], components: [rowOne, rowTwo] };
     },
     infoModuleEmbed(op: Operator, type: number, page: number, level: number) {
         const module = moduleDict[op.modules[page + 1]];
-        const moduleInfo = module.info;
-        const moduleId = moduleInfo.uniEquipId;
         const moduleLevel = module.data.phases[level];
 
         const avatarPath = path.join(__dirname, '../../', operatorAvatarPath, `${op.id}.png`);
-        const imagePath = path.join(__dirname, '../../', moduleImagePath, `${moduleId}.png`);
         const avatar = new AttachmentBuilder(avatarPath);
-        const image = new AttachmentBuilder(imagePath);
+        const thumbnailPath = path.join(__dirname, '../../', moduleImagePath, `${module.info.uniEquipId}.png`);
+        const thumbnail = new AttachmentBuilder(thumbnailPath);
 
         const authorField = this.authorField(op);
-        const name = `${moduleInfo.typeIcon.toUpperCase()} ${moduleInfo.uniEquipName} - Lv${level + 1}`;
-        let traitDescription = '', talentName = '', talentDescription = '';
+        const title = `${module.info.typeIcon.toUpperCase()} ${module.info.uniEquipName} - Lv${level + 1}`;
 
+        let description = '', talentName = '', talentDescription = '';
         for (const part of moduleLevel.parts) {
             if (part.overrideTraitDataBundle.candidates != null) {
                 const candidates = part.overrideTraitDataBundle.candidates;
                 const candidate = candidates[candidates.length - 1];
 
                 if (candidate.additionalDescription != null) {
-                    traitDescription += `${utils.formatText(candidate.additionalDescription, candidate.blackboard)}\n`;
+                    description += `${utils.formatText(candidate.additionalDescription, candidate.blackboard)}\n`;
                 }
                 if (candidate.overrideDescripton != null) {
-                    traitDescription += `${utils.formatText(candidate.overrideDescripton, candidate.blackboard)}\n`;
+                    description += `${utils.formatText(candidate.overrideDescripton, candidate.blackboard)}\n`;
                 }
             }
             if (part.addOrOverrideTalentDataBundle.candidates != null) {
@@ -674,11 +671,11 @@ module.exports = {
         }
 
         const embed = new EmbedBuilder()
-            .setColor(0xebca60)
+            .setColor(embedColour)
             .setAuthor(authorField)
-            .setTitle(name)
-            .setThumbnail(`attachment://${moduleId}.png`)
-            .setDescription(traitDescription);
+            .setTitle(title)
+            .setThumbnail(`attachment://${module.info.uniEquipId}.png`)
+            .setDescription(description);
 
         if (talentName != '' && talentDescription != '') {
             embed.addFields({ name: `*Talent:* ${talentName}`, value: talentDescription });
@@ -686,7 +683,12 @@ module.exports = {
 
         let statDescription = '';
         for (const attribute of moduleLevel.attributeBlackboard) {
-            statDescription += `${attribute.key.toUpperCase()} +${attribute.value}\n`;
+            if (attribute.value > 0) {
+                statDescription += `${attribute.key.toUpperCase()} +${attribute.value}\n`;
+            }
+            else {
+                statDescription += `${attribute.key.toUpperCase()} ${attribute.value}\n`;
+            }
         }
         embed.addFields({ name: `Stats`, value: statDescription });
 
@@ -702,6 +704,7 @@ module.exports = {
             .setCustomId(`infoඞ${op.id}ඞ${type}ඞ${page}ඞ2ඞmodule`)
             .setLabel('Lv3')
             .setStyle(ButtonStyle.Secondary);
+        const rowOne = new ActionRowBuilder().addComponents(lOne, lTwo, lThree);
 
         switch (level) {
             case 0:
@@ -718,22 +721,16 @@ module.exports = {
                 break;
         }
 
-        const rowOne = new ActionRowBuilder().addComponents(lOne, lTwo, lThree);
-
-        return { embeds: [embed], files: [image, avatar], components: [rowOne] };
+        return { embeds: [embed], files: [avatar, thumbnail], components: [rowOne] };
     },
     infoSkinEmbed(op: Operator, type: number, page: number, level: number) {
         const skins = skinDict[op.id];
         const skin = skins[page];
-        const skinsNum = skins.length;
-
         const displaySkin = skin.displaySkin;
-        const portraitId = skin.portraitId;
-        const skinGroupId = displaySkin.skinGroupId;
 
         const avatarPath = path.join(__dirname, '../../', operatorAvatarPath, `${op.id}.png`);
-        const imagePath = path.join(__dirname, '../../', operatorImagePath, `${portraitId}.png`);
         const avatar = new AttachmentBuilder(avatarPath);
+        const imagePath = path.join(__dirname, '../../', operatorImagePath, `${skin.portraitId}.png`);
         const image = new AttachmentBuilder(imagePath);
 
         const authorField = this.authorField(op);
@@ -743,17 +740,17 @@ module.exports = {
         const artistName = displaySkin.drawerName;
 
         const embed = new EmbedBuilder()
-            .setColor(0xebca60)
+            .setColor(embedColour)
             .setAuthor(authorField)
             .setTitle(`${name}`)
-            .setImage(`attachment://${utils.cleanFilename(portraitId)}.png`);
+            .setImage(`attachment://${utils.cleanFilename(skin.portraitId)}.png`);
 
         if (artistName != null && artistName != '') {
             embed.addFields({ name: `Artist`, value: artistName });
         }
 
         let thumbnail;
-        switch (skinGroupId) {
+        switch (displaySkin.skinGroupId) {
             case 'ILLUST_0': {
                 const thumbnailPath = path.join(__dirname, '../../', eliteImagePath, '0.png');
                 thumbnail = new AttachmentBuilder(thumbnailPath);
@@ -779,9 +776,8 @@ module.exports = {
                 break;
             }
             default: {
-                const split = skinGroupId.split('#');
+                const split = displaySkin.skinGroupId.split('#');
                 const newSkinGroupId = `${split[0]}#${split[1]}`;
-
                 const thumbnailPath = path.join(__dirname, '../../', skinGroupPath, `${newSkinGroupId}.png`);
                 thumbnail = new AttachmentBuilder(thumbnailPath);
                 embed.setThumbnail(`attachment://${newSkinGroupId.split(/[#\+]/).join('')}.png`);
@@ -793,17 +789,13 @@ module.exports = {
         const skinArr = new ActionRowBuilder();
         const components = [];
 
-        for (let i = 0; i < skinsNum; i++) {
+        for (let i = 0; i < skins.length; i++) {
             const skinGroup = skins[i].displaySkin.skinGroupName;
 
             const skinButton = new ButtonBuilder()
                 .setCustomId(`infoඞ${op.id}ඞ${type}ඞ${i}ඞ${level}ඞskin`)
                 .setLabel(skinGroup)
                 .setStyle(ButtonStyle.Primary);
-            if (i === page) {
-                skinButton.setCustomId(`info_skin_currentpage`);
-                skinButton.setDisabled(true);
-            }
 
             if (skinGroup === 'Default Outfit') {
                 defaultSkinArr.addComponents(skinButton);
@@ -813,34 +805,37 @@ module.exports = {
                 skinArr.addComponents(skinButton);
                 components[1] = skinArr;
             }
+
+            if (i === page) {
+                skinButton.setDisabled(true);
+                skinButton.setCustomId(`info_skin_currentpage`);
+            }
         }
 
         return { embeds: [embed], files: [image, avatar, thumbnail], components: components };
     },
     moduleEmbed(module: Module, op: Operator, level: number) {
-        const moduleInfo = module.info;
-        const moduleId = moduleInfo.uniEquipId;
         const moduleLevel = module.data.phases[level];
 
         const avatarPath = path.join(__dirname, '../../', operatorAvatarPath, `${op.id}.png`);
-        const imagePath = path.join(__dirname, '../../', moduleImagePath, `${moduleId}.png`);
         const avatar = new AttachmentBuilder(avatarPath);
-        const image = new AttachmentBuilder(imagePath);
+        const thumbnailPath = path.join(__dirname, '../../', moduleImagePath, `${module.info.uniEquipId}.png`);
+        const thumbnail = new AttachmentBuilder(thumbnailPath);
 
         const authorField = this.authorField(op);
-        const name = `${moduleInfo.typeIcon.toUpperCase()} ${moduleInfo.uniEquipName} - Lv${level + 1}`;
-        let traitDescription = '', talentName = '', talentDescription = '';
+        const title = `${module.info.typeIcon.toUpperCase()} ${module.info.uniEquipName} - Lv${level + 1}`;
 
+        let description = '', talentName = '', talentDescription = '';
         for (const part of moduleLevel.parts) {
             if (part.overrideTraitDataBundle.candidates != null) {
                 const candidates = part.overrideTraitDataBundle.candidates;
                 const candidate = candidates[candidates.length - 1];
 
                 if (candidate.additionalDescription != null) {
-                    traitDescription += `${utils.formatText(candidate.additionalDescription, candidate.blackboard)}\n`;
+                    description += `${utils.formatText(candidate.additionalDescription, candidate.blackboard)}\n`;
                 }
                 if (candidate.overrideDescripton != null) {
-                    traitDescription += `${utils.formatText(candidate.overrideDescripton, candidate.blackboard)}\n`;
+                    description += `${utils.formatText(candidate.overrideDescripton, candidate.blackboard)}\n`;
                 }
             }
             if (part.addOrOverrideTalentDataBundle.candidates != null) {
@@ -857,11 +852,11 @@ module.exports = {
         }
 
         const embed = new EmbedBuilder()
-            .setColor(0xebca60)
+            .setColor(embedColour)
             .setAuthor(authorField)
-            .setTitle(name)
-            .setThumbnail(`attachment://${moduleId}.png`)
-            .setDescription(traitDescription);
+            .setTitle(title)
+            .setThumbnail(`attachment://${module.info.uniEquipId}.png`)
+            .setDescription(description);
 
         if (talentName != '' && talentDescription != '') {
             embed.addFields({ name: `*Talent:* ${talentName}`, value: talentDescription });
@@ -890,6 +885,7 @@ module.exports = {
             .setCustomId(`moduleඞ${module.info.uniEquipId}ඞ${op.id}ඞ2`)
             .setLabel('Lv3')
             .setStyle(ButtonStyle.Secondary);
+        const rowOne = new ActionRowBuilder().addComponents(lOne, lTwo, lThree);
 
         switch (level) {
             case 0:
@@ -903,53 +899,46 @@ module.exports = {
                 break;
         }
 
-        const rowOne = new ActionRowBuilder().addComponents(lOne, lTwo, lThree);
-
-        return { embeds: [embed], files: [image, avatar], components: [rowOne] };
+        return { embeds: [embed], files: [thumbnail, avatar], components: [rowOne] };
     },
     operatorEmbed(op: Operator) {
-        const archetypeDict: { [key: string]: string } = fetch.archetypes();
+        const opMax = op.data.phases[op.data.phases.length - 1];
 
-        const opData = op.data;
-        const opId = op.id;
-        const opMax = opData.phases[opData.phases.length - 1];
+        const thumbnailPath = path.join(__dirname, '../../', operatorAvatarPath, `${op.id}.png`);
+        const thumbnail = new AttachmentBuilder(thumbnailPath);
 
-        const avatarPath = path.join(__dirname, '../../', operatorAvatarPath, `${op.id}.png`);
-        const avatar = new AttachmentBuilder(avatarPath);
-
-        let name = `${opData.name} - `;
-        for (let i = 0; i <= opData.rarity; i++) {
-            name += '★';
+        const authorField = this.authorField(op);
+        let title = `${op.data.name} - `;
+        for (let i = 0; i <= op.data.rarity; i++) {
+            title += '★';
         }
 
-        let description = utils.formatText(opData.description, []);
-        if (opData.trait != null) {
-            const candidate = opData.trait.candidates[opData.trait.candidates.length - 1];
+        let description = utils.formatText(op.data.description, []);
+        if (op.data.trait != null) {
+            const candidate = op.data.trait.candidates[op.data.trait.candidates.length - 1];
             if (candidate.overrideDescripton != null) {
                 description = utils.formatText(candidate.overrideDescripton, candidate.blackboard);
             }
         }
-
-        const embedDescription = `**${professions[opData.profession]} - ${archetypeDict[opData.subProfessionId]}**\n${description}`;
+        const descriptionField = { name: `${professions[op.data.profession]} - ${archetypeDict[op.data.subProfessionId]}`, value: description };
         const rangeField = this.rangeField(opMax.rangeId);
 
         const embed = new EmbedBuilder()
-            .setColor(0xebca60)
-            .setTitle(name)
-            .setThumbnail(`attachment://${opId}.png`)
-            .setURL(this.authorField(op).url)
-            .setDescription(embedDescription)
-            .addFields(rangeField);
+            .setColor(embedColour)
+            .setTitle(title)
+            .setURL(authorField.url)
+            .setThumbnail(`attachment://${op.id}.png`)
+            .addFields(descriptionField, rangeField);
 
-        if (opData.talents != null) {
-            for (const talent of opData.talents) {
+        if (op.data.talents != null) {
+            for (const talent of op.data.talents) {
                 const candidate = talent.candidates[talent.candidates.length - 1];
                 embed.addFields({ name: `*Talent:* ${candidate.name}`, value: utils.formatText(candidate.description, []) });
             }
         }
 
         let potentialString = '';
-        for (const potential of opData.potentialRanks) {
+        for (const potential of op.data.potentialRanks) {
             potentialString += `${potential.description}\n`;
         }
         if (potentialString != '') {
@@ -957,7 +946,7 @@ module.exports = {
         }
 
         let trustString = '';
-        const trustBonus: { [key: string]: number | boolean } = opData.favorKeyFrames[1].data;
+        const trustBonus: { [key: string]: number | boolean } = op.data.favorKeyFrames[1].data;
         for (const trustKey of Object.keys(trustBonus)) {
             const trustValue = trustBonus[trustKey];
             if (trustValue != 0 && trustValue != 0.0 && trustValue != false) {
@@ -990,75 +979,44 @@ module.exports = {
             { name: '⏱️ Attack Interval', value: atkInterval, inline: true },
         );
 
-        return { embeds: [embed], files: [avatar] };
+        return { embeds: [embed], files: [thumbnail] };
     },
     async paradoxEmbed(paradox: Paradox) {
-        const enemyDict: { [key: string]: Enemy } = fetch.enemies();
-        const operatorDict: { [key: string]: Operator } = fetch.operators();
-
         const stageInfo = paradox.excel;
         const stageData = paradox.levels;
-        const stageId = stageInfo.stageId;
-
         const op = operatorDict[stageInfo.charId];
 
-        const avatarPath = path.join(__dirname, '../../', operatorAvatarPath, `${op.id}.png`);
-        const avatar = new AttachmentBuilder(avatarPath);
+        const thumbnailPath = path.join(__dirname, '../../', operatorAvatarPath, `${op.id}.png`);
+        const thumbnail = new AttachmentBuilder(thumbnailPath);
 
         const authorField = this.authorField(op);
         const title = `Paradox Simulation - ${stageInfo.name}`;
         const description = utils.formatText(stageInfo.description, []);
 
         const embed = new EmbedBuilder()
-            .setColor(0xebca60)
+            .setColor(embedColour)
             .setAuthor(authorField)
             .setTitle(title)
             .setDescription(description);
 
-        const stageEnemies = stageData.enemyDbRefs;
-        let enemyString = '', eliteString = '', bossString = '';
-
-        for (const enemy of stageEnemies) {
-            if (enemyDict.hasOwnProperty(enemy.id)) {
-                const enemyInfo = enemyDict[enemy.id].excel;
-                switch (enemyInfo.enemyLevel) {
-                    case ('NORMAL'):
-                        enemyString += `${enemyInfo.enemyIndex} - ${enemyInfo.name}\n`;
-                        break;
-                    case ('ELITE'):
-                        eliteString += `${enemyInfo.enemyIndex} - ${enemyInfo.name}\n`;
-                        break;
-                    case ('BOSS'):
-                        bossString += `${enemyInfo.enemyIndex} - ${enemyInfo.name}\n`;
-                        break;
-                }
-            }
-        }
-
-        if (enemyString != '') {
-            embed.addFields({ name: 'Enemies', value: enemyString, inline: true });
-        }
-        if (eliteString != '') {
-            embed.addFields({ name: 'Elites', value: eliteString, inline: true });
-        }
-        if (bossString != '') {
-            embed.addFields({ name: 'Leaders', value: bossString, inline: false });
+        const enemyFields = this.enemyFields(stageData.enemyDbRefs);
+        for (const field of enemyFields) {
+            embed.addFields(field);
         }
 
         try {
-            const imagePath = path.join(__dirname, '../../', stageImagePath, `${stageId}.png`);
+            const imagePath = path.join(__dirname, '../../', stageImagePath, `${stageInfo.stageId}.png`);
             await fs.promises.access(imagePath);
             const image = new AttachmentBuilder(imagePath);
 
-            embed.setImage(`attachment://${stageId}.png`)
+            embed.setImage(`attachment://${stageInfo.stageId}.png`)
 
-            return { embeds: [embed], files: [image, avatar] };
+            return { embeds: [embed], files: [thumbnail, image] };
         } catch (e) {
-            const mapData = stageData.mapData;
-            const map = mapData.map;
-            const tiles = mapData.tiles;
-            let mapString = '', legendString = '';
+            const map = stageData.mapData.map;
+            const tiles = stageData.mapData.tiles;
 
+            let mapString = '', legendString = '';
             for (let i = 0; i < map.length; i++) {
                 for (let j = 0; j < map[0].length; j++) {
                     const tileKey = tiles[map[i][j]].tileKey;
@@ -1071,18 +1029,17 @@ module.exports = {
                 }
                 mapString += '\n';
             }
+
             embed.addFields({ name: 'Map', value: mapString }, { name: 'Legend', value: legendString });
 
-            return { embeds: [embed], files: [avatar] };
+            return { embeds: [embed], files: [thumbnail] };
         }
     },
     rangeField(rangeId: string) {
-        const rangeDict: { [key: string]: Range } = fetch.ranges();
         const range = rangeDict[rangeId];
-        const rangeGrid = range.grids;
 
         let left = 0, right = 0, top = 0, bottom = 0;
-        for (const square of rangeGrid) {
+        for (const square of range.grids) {
             if (square.col < left)
                 left = square.col
             else if (square.col > right)
@@ -1099,7 +1056,7 @@ module.exports = {
         for (let i = 0; i < arrCols; i++) {
             rangeArr[i] = new Array(arrRows);
         }
-        for (const square of rangeGrid) {
+        for (const square of range.grids) {
             rangeArr[square.col - left][-square.row - bottom] = 1;
         }
         rangeArr[-left][-bottom] = 2;
@@ -1272,7 +1229,7 @@ module.exports = {
         }
 
         const embed = new EmbedBuilder()
-            .setColor(0xebca60)
+            .setColor(embedColour)
             .setTitle('Recruitment Calculator');
 
         const { recruitPool } = require('../utils/contants');
@@ -1280,7 +1237,7 @@ module.exports = {
 
         if (selectedButtons.length >= 1) {
             for (const opId of Object.values(recruitPool)) {
-                const op = opDict[String(opId)];
+                const op = operatorDict[String(opId)];
                 if (op.recruitId % value != 0) continue;
                 if (qual != null && qual != 'null' && op.data.rarity != qualifications[qual]) continue;
 
@@ -1313,33 +1270,32 @@ module.exports = {
         const skillLevel = skill.levels[level];
 
         const avatarPath = path.join(__dirname, '../../', operatorAvatarPath, `${op.id}.png`);
-        const imageFilename = skill.iconId === null ? skill.skillId : skill.iconId;
-        const imagePath = path.join(__dirname, '../../', skillImagePath, `skill_icon_${imageFilename}.png`)
         const avatar = new AttachmentBuilder(avatarPath);
-        const image = new AttachmentBuilder(imagePath);
+        const thumbnailFilename = skill.iconId === null ? skill.skillId : skill.iconId;
+        const thumbnailPath = path.join(__dirname, '../../', skillImagePath, `skill_icon_${thumbnailFilename}.png`)
+        const thumbnail = new AttachmentBuilder(thumbnailPath);
 
         const authorField = this.authorField(op);
-        const name = `${skillLevel.name} - ${skillLevels[level]}`;
+        const title = `${skillLevel.name} - ${skillLevels[level]}`;
+
         const spCost = skillLevel.spData.spCost;
         const initSp = skillLevel.spData.initSp;
         const skillDuration = skillLevel.duration;
         const spType = spTypes[skillLevel.spData.spType];
         const skillType = skillTypes[skillLevel.skillType];
 
-        const description = utils.formatText(skillLevel.description, skillLevel.blackboard);
-
-        let embedDescription = `**${spType} - ${skillType}**\n***Cost:* ${spCost} SP - *Initial:* ${initSp} SP`;
+        let description = `**${spType} - ${skillType}**\n***Cost:* ${spCost} SP - *Initial:* ${initSp} SP`;
         if (skillDuration > 0) {
-            embedDescription += ` - *Duration:* ${skillDuration} sec`;
+            description += ` - *Duration:* ${skillDuration} sec`;
         }
-        embedDescription += `**\n${description} `;
+        description += `**\n${utils.formatText(skillLevel.description, skillLevel.blackboard)} `;
 
         const embed = new EmbedBuilder()
-            .setColor(0xebca60)
+            .setColor(embedColour)
             .setAuthor(authorField)
-            .setTitle(name)
-            .setThumbnail(`attachment://skill_icon_${utils.cleanFilename(imageFilename)}.png`)
-            .setDescription(embedDescription);
+            .setTitle(title)
+            .setThumbnail(`attachment://skill_icon_${utils.cleanFilename(thumbnailFilename)}.png`)
+            .setDescription(description);
 
         if (skillLevel.rangeId != null) {
             const rangeField = this.rangeField(skillLevel.rangeId);
@@ -1386,7 +1342,8 @@ module.exports = {
             .setCustomId(`skillඞ${skill.skillId}ඞ${op.id}ඞ9`)
             .setLabel('M3')
             .setStyle(ButtonStyle.Danger);
-
+        const rowOne = new ActionRowBuilder().addComponents(lOne, lTwo, lThree, lFour, lFive);
+        const rowTwo = new ActionRowBuilder().addComponents(lSix, lSeven, mOne, mTwo, mThree);
 
         if (skill.levels.length === 7) {
             mOne.setDisabled(true);
@@ -1427,25 +1384,16 @@ module.exports = {
                 break;
         }
 
-        const rowOne = new ActionRowBuilder().addComponents(lOne, lTwo, lThree, lFour, lFive);
-        const rowTwo = new ActionRowBuilder().addComponents(lSix, lSeven, mOne, mTwo, mThree);
-
-        return { embeds: [embed], files: [image, avatar], components: [rowOne, rowTwo] };
+        return { embeds: [embed], files: [avatar, thumbnail], components: [rowOne, rowTwo] };
     },
     skinEmbed(op: Operator, page: number) {
-        const skinDict: { [key: string]: Skin[] } = fetch.skins();
-
         const skins = skinDict[op.id];
         const skin = skins[page];
-        const skinsNum = skins.length;
-
         const displaySkin = skin.displaySkin;
-        const portraitId = skin.portraitId;
-        const skinGroupId = displaySkin.skinGroupId;
 
         const avatarPath = path.join(__dirname, '../../', operatorAvatarPath, `${op.id}.png`);
-        const imagePath = path.join(__dirname, '../../', operatorImagePath, `${portraitId}.png`);
         const avatar = new AttachmentBuilder(avatarPath);
+        const imagePath = path.join(__dirname, '../../', operatorImagePath, `${skin.portraitId}.png`);
         const image = new AttachmentBuilder(imagePath);
 
         const authorField = this.authorField(op);
@@ -1455,17 +1403,17 @@ module.exports = {
         const artistName = displaySkin.drawerName;
 
         const embed = new EmbedBuilder()
-            .setColor(0xebca60)
+            .setColor(embedColour)
             .setAuthor(authorField)
             .setTitle(`${name}`)
-            .setImage(`attachment://${utils.cleanFilename(portraitId)}.png`);
+            .setImage(`attachment://${utils.cleanFilename(skin.portraitId)}.png`);
 
         if (artistName != null && artistName != '') {
             embed.addFields({ name: `Artist`, value: artistName });
         }
 
         let thumbnail;
-        switch (skinGroupId) {
+        switch (displaySkin.skinGroupId) {
             case 'ILLUST_0': {
                 const thumbnailPath = path.join(__dirname, '../../', eliteImagePath, '0.png');
                 thumbnail = new AttachmentBuilder(thumbnailPath);
@@ -1491,9 +1439,8 @@ module.exports = {
                 break;
             }
             default: {
-                const split = skinGroupId.split('#');
+                const split = displaySkin.skinGroupId.split('#');
                 const newSkinGroupId = `${split[0]}#${split[1]}`;
-
                 const thumbnailPath = path.join(__dirname, '../../', skinGroupPath, `${newSkinGroupId}.png`);
                 thumbnail = new AttachmentBuilder(thumbnailPath);
                 embed.setThumbnail(`attachment://${newSkinGroupId.split(/[#\+]/).join('')}.png`);
@@ -1505,16 +1452,13 @@ module.exports = {
         const skinArr = new ActionRowBuilder();
         const components = [];
 
-        for (let i = 0; i < skinsNum; i++) {
+        for (let i = 0; i < skins.length; i++) {
             const skinGroup = skins[i].displaySkin.skinGroupName;
 
             const skillButton = new ButtonBuilder()
                 .setCustomId(`skinඞ${op.id}ඞ${i}`)
                 .setLabel(skinGroup)
                 .setStyle(ButtonStyle.Primary);
-            if (i === page) {
-                skillButton.setDisabled(true);
-            }
 
             if (skinGroup === 'Default Outfit') {
                 defaultSkinArr.addComponents(skillButton);
@@ -1524,19 +1468,21 @@ module.exports = {
                 skinArr.addComponents(skillButton);
                 components[1] = skinArr;
             }
+
+            if (i === page) {
+                skillButton.setDisabled(true);
+            }
         }
 
-        return { embeds: [embed], files: [image, avatar, thumbnail], components: components };
+        return { embeds: [embed], files: [avatar, thumbnail, image], components: components };
     },
     async rogueRelicEmbed(relic: RogueRelic) {
-        const name = relic.name;
-        const description = relic.description === null ? relic.usage : `${relic.description}\n\n${relic.usage}`;
-        const embedDescription = `***Cost:* ${relic.value}▲**\n${description}`;
+        const description = `***Cost:* ${relic.value}▲**\n${relic.description != null ? `${relic.usage}\n\n${relic.description}` : relic.usage}`;
 
         const embed = new EmbedBuilder()
-            .setColor(0xebca60)
-            .setTitle(name)
-            .setDescription(embedDescription);
+            .setColor(embedColour)
+            .setTitle(relic.name)
+            .setDescription(description);
 
         try {
             const imagePath = path.join(__dirname, '../../', rogueItemImagePath, `${relic.iconId}.png`);
@@ -1551,11 +1497,11 @@ module.exports = {
         }
     },
     rogueRelicListEmbed(theme: number, index: number) {
-        const rogueDict: RogueTheme = fetch.rogueThemes()[theme];
+        const rogueTheme: RogueTheme = fetch.rogueThemes()[theme];
         const descriptionLengthLimit = 560;
 
         let descriptionArr = [], i = 0;
-        for (const relic of Object.values(rogueDict.relicDict)) {
+        for (const relic of Object.values(rogueTheme.relicDict)) {
             if (descriptionArr[i] === undefined) {
                 descriptionArr[i] = { string: '', length: 0 };
             }
@@ -1569,8 +1515,8 @@ module.exports = {
         }
 
         const embed = new EmbedBuilder()
-            .setColor(0xebca60)
-            .setTitle(`List of ${rogueDict.name} Relics`);
+            .setColor(embedColour)
+            .setTitle(`List of ${rogueTheme.name} Relics`);
 
         for (let i = index * 3; i < index * 3 + 3 && i < descriptionArr.length; i++) {
             embed.addFields({ name: '\u200B', value: descriptionArr[i].string, inline: true });
@@ -1584,6 +1530,7 @@ module.exports = {
             .setCustomId(`rogueඞrelicඞ${theme}ඞ${index + 1}`)
             .setLabel('Next')
             .setStyle(ButtonStyle.Primary);
+        const componentRow = new ActionRowBuilder().addComponents(prevButton, nextButton);
 
         if (index === 0) {
             prevButton.setDisabled(true);
@@ -1594,53 +1541,23 @@ module.exports = {
             nextButton.setStyle(ButtonStyle.Secondary);
         }
 
-        const componentRow = new ActionRowBuilder().addComponents(prevButton, nextButton);
-
         return { embeds: [embed], components: [componentRow] };
     },
     async rogueStageEmbed(stage: RogueStage) {
-        const enemyDict: { [key: string]: Enemy } = fetch.enemies();
-
         const stageInfo = stage.excel;
         const stageData = stage.levels;
 
         const title = stageInfo.difficulty === 'NORMAL' ? `${stageInfo.code} - ${stageInfo.name}` : `Emergency ${stageInfo.code} - ${stageInfo.name}`;
         const description = stageInfo.difficulty === 'NORMAL' ? utils.formatText(stageInfo.description, []) : utils.formatText(`${stageInfo.description}\n${stageInfo.eliteDesc}`, []);
 
-        const stageEnemies = stageData.enemyDbRefs;
-        let enemyString = '', eliteString = '', bossString = '';
-
-        for (const enemy of stageEnemies) {
-            if (enemyDict.hasOwnProperty(enemy.id)) {
-                const enemyInfo = enemyDict[enemy.id].excel;
-                switch (enemyInfo.enemyLevel) {
-                    case ('NORMAL'):
-                        enemyString += `${enemyInfo.enemyIndex} - ${enemyInfo.name}\n`;
-                        break;
-                    case ('ELITE'):
-                        eliteString += `${enemyInfo.enemyIndex} - ${enemyInfo.name}\n`;
-                        break;
-                    case ('BOSS'):
-                        bossString += `${enemyInfo.enemyIndex} - ${enemyInfo.name}\n`;
-                        break;
-                }
-            }
-        }
-
         const embed = new EmbedBuilder()
-            .setColor(0xebca60)
+            .setColor(embedColour)
             .setTitle(title)
-            .setDescription(description)
-            .setImage(`attachment://${stageInfo.id}.png`);
+            .setDescription(description);
 
-        if (enemyString != '') {
-            embed.addFields({ name: 'Enemies', value: enemyString, inline: true });
-        }
-        if (eliteString != '') {
-            embed.addFields({ name: 'Elites', value: eliteString, inline: true });
-        }
-        if (bossString != '') {
-            embed.addFields({ name: 'Leaders', value: bossString, inline: false });
+        const enemyFields = this.enemyFields(stageData.enemyDbRefs);
+        for (const field of enemyFields) {
+            embed.addFields(field);
         }
 
         try {
@@ -1648,14 +1565,14 @@ module.exports = {
             await fs.promises.access(imagePath);
             const image = new AttachmentBuilder(imagePath);
 
+            embed.setImage(`attachment://${stageInfo.id}.png`);
+
             return { embeds: [embed], files: [image] };
         } catch (e) {
-            const mapData = stageData.mapData;
-            const map = mapData.map;
-            const tiles = mapData.tiles;
+            const map = stageData.mapData.map;
+            const tiles = stageData.mapData.tiles;
 
             let mapString = '', legendString = '';
-
             for (let i = 0; i < map.length; i++) {
                 for (let j = 0; j < map[0].length; j++) {
                     const tileKey = tiles[map[i][j]].tileKey;
@@ -1671,16 +1588,15 @@ module.exports = {
 
             embed.addFields({ name: 'Map', value: mapString }, { name: 'Legend', value: legendString });
 
-            return { embeds: [embed], files: [] };
+            return { embeds: [embed] };
         }
     },
     rogueVariationEmbed(variation: RogueVariation) {
-        const name = variation.outerName;
         const description = `${variation.desc}\n\n${variation.functionDesc}`;
 
         const embed = new EmbedBuilder()
-            .setColor(0xebca60)
-            .setTitle(name)
+            .setColor(embedColour)
+            .setTitle(variation.outerName)
             .setDescription(description);
 
         return { embeds: [embed] };
@@ -1692,26 +1608,22 @@ module.exports = {
         }
 
         const embed = new EmbedBuilder()
-            .setColor(0xebca60)
+            .setColor(embedColour)
             .setTitle(`List of ${theme.name} Floor Variations`)
             .setDescription(description);
 
         return { embeds: [embed] };
     },
     async stageEmbed(stage: Stage, page: number) {
-        const enemyDict: { [key: string]: Enemy } = fetch.enemies();
-        const itemDict: { [key: string]: Item } = fetch.items();
-
         const stageInfo = stage.excel;
         const stageData = stage.levels;
-        const stageId = stageInfo.stageId;
         const isChallenge = stageInfo.diffGroup === 'TOUGH' || stageInfo.difficulty === 'FOUR_STAR'
 
         const title = isChallenge ? `Challenge ${stageInfo.code} - ${stageInfo.name}` : `${stageInfo.code} - ${stageInfo.name}`;
         const description = utils.formatText(stageInfo.description, []);
 
         const embed = new EmbedBuilder()
-            .setColor(0xebca60)
+            .setColor(embedColour)
             .setTitle(title)
             .setDescription(description);
 
@@ -1744,34 +1656,9 @@ module.exports = {
             embed.addFields({ name: 'Special Drops', value: specialString });
         }
 
-        const stageEnemies = stageData.enemyDbRefs;
-        let enemyString = '', eliteString = '', bossString = '';
-
-        for (const enemy of stageEnemies) {
-            if (enemyDict.hasOwnProperty(enemy.id)) {
-                const enemyInfo = enemyDict[enemy.id].excel;
-                switch (enemyInfo.enemyLevel) {
-                    case ('NORMAL'):
-                        enemyString += `${enemyInfo.enemyIndex} - ${enemyInfo.name}\n`;
-                        break;
-                    case ('ELITE'):
-                        eliteString += `${enemyInfo.enemyIndex} - ${enemyInfo.name}\n`;
-                        break;
-                    case ('BOSS'):
-                        bossString += `${enemyInfo.enemyIndex} - ${enemyInfo.name}\n`;
-                        break;
-                }
-            }
-        }
-
-        if (enemyString != '') {
-            embed.addFields({ name: 'Enemies', value: enemyString, inline: true });
-        }
-        if (eliteString != '') {
-            embed.addFields({ name: 'Elites', value: eliteString, inline: true });
-        }
-        if (bossString != '') {
-            embed.addFields({ name: 'Leaders', value: bossString, inline: false });
+        const enemyFields = this.enemyFields(stageData.enemyDbRefs);
+        for (const field of enemyFields) {
+            embed.addFields(field);
         }
 
         const stageIndex = isChallenge ? fetch.toughStages()[stage.excel.code.toLowerCase()].indexOf(stage) : fetch.stages()[stage.excel.code.toLowerCase()].indexOf(stage);
@@ -1798,16 +1685,16 @@ module.exports = {
 
         if (page === 0) {
             try {
-                const imagePath = path.join(__dirname, '../../', stageImagePath, `${stageId}.png`);
+                const imagePath = path.join(__dirname, '../../', stageImagePath, `${stageInfo.stageId}.png`);
                 await fs.promises.access(imagePath);
                 const image = new AttachmentBuilder(imagePath);
 
-                embed.setImage(`attachment://${stageId}.png`)
+                embed.setImage(`attachment://${stageInfo.stageId}.png`)
 
                 return { embeds: [embed], files: [image], components: [rowOne] };
             } catch (e) {
                 try {
-                    const mainId = stageId.replace('tough', 'main');
+                    const mainId = stageInfo.stageId.replace('tough', 'main');
                     const imagePath = path.join(__dirname, '../../', stageImagePath, `${mainId}.png`);
                     await fs.promises.access(imagePath);
                     const image = new AttachmentBuilder(imagePath);
@@ -1817,7 +1704,7 @@ module.exports = {
                     return { embeds: [embed], files: [image], components: [rowOne] };
                 } catch (e) {
                     try {
-                        const newId = stageId.substring(0, stageId.length - 3);
+                        const newId = stageInfo.stageId.substring(0, stageInfo.stageId.length - 3);
                         const imagePath = path.join(__dirname, '../../', stageImagePath, `${newId}.png`);
                         await fs.promises.access(imagePath);
                         const image = new AttachmentBuilder(imagePath);
@@ -1877,20 +1764,17 @@ module.exports = {
         const stageSelector = new StringSelectMenuBuilder()
             .setCustomId(`stageselectඞ${stageArr[0].excel.code.toLowerCase()}`)
             .setPlaceholder('Select a stage!');
+        const componentRow = new ActionRowBuilder().addComponents(stageSelector);
 
         for (let i = 0; i < stageArr.length; i++) {
             const stage = stageArr[i];
-            const stageInfo = stage.excel;
-
-            const name = `${stageInfo.code} - ${stageInfo.name}`;
+            const name = `${stage.excel.code} - ${stage.excel.name}`;
 
             stageSelector.addOptions(new StringSelectMenuOptionBuilder()
                 .setLabel(name)
                 .setValue(`${i}`)
             );
         }
-
-        const componentRow = new ActionRowBuilder().addComponents(stageSelector);
 
         return { content: 'Multiple stages with that code were found, please select a stage below:', components: [componentRow] };
     }

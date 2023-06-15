@@ -17,10 +17,10 @@ module.exports = {
             option.setName('type')
                 .setDescription('Cost type')
                 .addChoices(
-                    { name: 'elite', value: 'elite' },
-                    { name: 'skill', value: 'skill' },
-                    { name: 'mastery', value: 'mastery' },
-                    { name: 'module', value: 'module' }
+                    { name: 'promotions', value: 'elite' },
+                    { name: 'skills', value: 'skill' },
+                    { name: 'masteries', value: 'mastery' },
+                    { name: 'modules', value: 'module' }
                 )
         ),
     async execute(interaction) {
