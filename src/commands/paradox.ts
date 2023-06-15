@@ -27,7 +27,7 @@ module.exports = {
             return await interaction.reply({ content: 'That operator doesn\'t have a paradox simulation!', ephemeral: true });
 
         const paradox = paradoxDict[op.id];
-        const paradoxEmbed = await create.paradoxEmbed(paradox);
+        const paradoxEmbed = await create.paradoxEmbed(paradox, 0);
 
         await interaction.reply(paradoxEmbed);
     }

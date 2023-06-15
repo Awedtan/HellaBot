@@ -51,10 +51,12 @@ client.on(Events.InteractionCreate, async interaction => {
 
 // Start of command interaction handling
 
-import { Module, Operator, RogueTheme, Skill, Stage } from "./types";
+import { Module, Paradox, Operator, RogueTheme, Skill, Stage } from "./types";
 
 const moduleDict: { [key: string]: Module } = fetch.modules();
 const opDict: { [key: string]: Operator } = fetch.operators();
+const paradoxDict: { [key: string]: Paradox } = fetch.paradoxes();
+const rogueThemeArr: RogueTheme[] = fetch.rogueThemes();
 const skillDict: { [key: string]: Skill } = fetch.skills();
 const stageDict: { [key: string]: Stage[] } = fetch.stages();
 const toughStageDict: { [key: string]: Stage[] } = fetch.toughStages();
@@ -95,6 +97,15 @@ client.on(Events.InteractionCreate, async interaction => {
 
             break;
         }
+        case 'paradox': {
+            const paradox = paradoxDict[opDict[idArr[1]].id];
+            const page = parseInt(idArr[2]);
+
+            const paradoxEmbed = await create.paradoxEmbed(paradox, page);
+            await interaction.update(paradoxEmbed);
+
+            break;
+        }
         case 'recruit': {
             const qual = idArr[1];
             const value = parseInt(idArr[2]);
@@ -114,6 +125,18 @@ client.on(Events.InteractionCreate, async interaction => {
 
                     const relicListEmbed = create.rogueRelicListEmbed(theme, index);
                     await interaction.update(relicListEmbed);
+
+                    break;
+                }
+                case 'stage': {
+                    const theme = parseInt(idArr[2]);
+                    const rogueTheme = rogueThemeArr[theme];
+                    const stages = idArr[4] === 'true' ? rogueTheme.toughStageDict : rogueTheme.stageDict;
+                    const stage = stages[idArr[3]];
+                    const page = parseInt(idArr[5]);
+
+                    const stageEmbed = await create.rogueStageEmbed(theme, stage, page);
+                    await interaction.update(stageEmbed);
 
                     break;
                 }
