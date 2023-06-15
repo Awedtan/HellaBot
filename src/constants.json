@@ -1,0 +1,422 @@
+{
+    "paths": {
+        "dataPath": "../ArknightsGameData/en_US/gamedata",
+        "baseImagePath": "../Arknight-Images/ui/infrastructure/skill",
+        "eliteImagePath": "../Arknight-Images/ui/elite",
+        "enemyImagePath": "../Arknight-Images/enemy",
+        "itemImagePath": "../Arknight-Images/items",
+        "moduleImagePath": "../Arknight-Images/equip/icon",
+        "operatorImagePath": "../Arknight-Images/characters",
+        "operatorAvatarPath": "../Arknight-Images/avatars",
+        "rogueItemImagePath": "../images/rogueitems",
+        "skillImagePath": "../Arknight-Images/skills",
+        "skinGroupPath": "../images/skingroups",
+        "stageImagePath": "../images/stages"
+    },
+    "dicts": {
+        "eliteLevels": [
+            "E0",
+            "E1",
+            "E2",
+            "E3"
+        ],
+        "eliteLmdCost": [
+            null,
+            null,
+            [
+                10000
+            ],
+            [
+                15000,
+                60000
+            ],
+            [
+                20000,
+                120000
+            ],
+            [
+                30000,
+                180000
+            ]
+        ],
+        "itemDropRarities": {
+            "SOMETIMES": "Very Rare",
+            "OFTEN": "Rare",
+            "USUAL": "Uncommon",
+            "ALMOST": "Common",
+            "ALWAYS": "Guaranteed"
+        },
+        "professions": {
+            "PIONEER": "Vanguard",
+            "WARRIOR": "Guard",
+            "TANK": "Defender",
+            "SNIPER": "Sniper",
+            "CASTER": "Caster",
+            "MEDIC": "Medic",
+            "SUPPORT": "Supporter",
+            "SPECIAL": "Specialist"
+        },
+        "qualifications": {
+            "starter": 0,
+            "senior": 4,
+            "top": 5
+        },
+        "recruitPool": [
+            "char_285_medic2",
+            "char_286_cast3",
+            "char_376_therex",
+            "char_4000_jnight",
+            "char_502_nblade",
+            "char_500_noirc",
+            "char_503_rang",
+            "char_501_durin",
+            "char_009_12fce",
+            "char_123_fang",
+            "char_240_wyvern",
+            "char_192_falco",
+            "char_208_melan",
+            "char_281_popka",
+            "char_122_beagle",
+            "char_284_spot",
+            "char_124_kroos",
+            "char_211_adnach",
+            "char_121_lava",
+            "char_120_hibisc",
+            "char_212_ansel",
+            "char_210_stward",
+            "char_278_orchid",
+            "char_282_catap",
+            "char_283_midn",
+            "char_117_myrrh",
+            "char_181_flower",
+            "char_141_nights",
+            "char_109_fmout",
+            "char_118_yuki",
+            "char_126_shotst",
+            "char_235_jesica",
+            "char_183_skgoat",
+            "char_253_greyy",
+            "char_298_susuro",
+            "char_190_clour",
+            "char_133_mm",
+            "char_302_glaze",
+            "char_385_finlpp",
+            "char_149_scave",
+            "char_290_vigna",
+            "char_237_gravel",
+            "char_236_rope",
+            "char_277_sqrrel",
+            "char_130_doberm",
+            "char_127_estell",
+            "char_137_brownb",
+            "char_185_frncat",
+            "char_193_frostl",
+            "char_289_gyuki",
+            "char_150_snakek",
+            "char_196_sunbr",
+            "char_199_yak",
+            "char_151_myrtle",
+            "char_337_utage",
+            "char_301_cutter",
+            "char_128_plosis",
+            "char_108_silent",
+            "char_171_bldsk",
+            "char_164_nightm",
+            "char_145_prove",
+            "char_129_bluep",
+            "char_158_milu",
+            "char_219_meteo",
+            "char_204_platnm",
+            "char_204_platnm",
+            "char_195_glassb",
+            "char_242_otter",
+            "char_326_glacus",
+            "char_279_excu",
+            "char_367_swllow",
+            "char_306_leizi",
+            "char_379_sesa",
+            "char_254_vodfox",
+            "char_102_texas",
+            "char_115_headbr",
+            "char_144_red",
+            "char_215_mantic",
+            "char_173_slchan",
+            "char_241_panda",
+            "char_143_ghost",
+            "char_155_tiger",
+            "char_148_nearl",
+            "char_107_liskam",
+            "char_107_liskam",
+            "char_201_moeshd",
+            "char_201_moeshd",
+            "char_274_astesi",
+            "char_243_waaifu",
+            "char_261_sddrag",
+            "char_356_broca",
+            "char_226_hmau",
+            "char_010_chen",
+            "char_112_siege",
+            "char_147_shining",
+            "char_179_cgbird",
+            "char_134_ifrit",
+            "char_103_angel",
+            "char_172_svrash",
+            "char_136_hsguma",
+            "char_202_demkni",
+            "char_263_skadi",
+            "char_340_shwaz",
+            "char_188_helage",
+            "char_248_mgllan",
+            "char_213_mostma",
+            "char_017_huang",
+            "char_225_haak",
+            "char_2013_cerber",
+            "char_222_bpipe",
+            "char_250_phatom",
+            "char_401_elysm",
+            "char_343_tknogi",
+            "char_378_asbest",
+            "char_400_weedy"
+        ],
+        "skillLevels": [
+            "Lv1",
+            "Lv2",
+            "Lv3",
+            "Lv4",
+            "Lv5",
+            "Lv6",
+            "Lv7",
+            "M1",
+            "M2",
+            "M3"
+        ],
+        "skillTypes": [
+            "Passive",
+            "Manual Trigger",
+            "Auto Trigger"
+        ],
+        "spTypes": [
+            null,
+            "Per Second",
+            "Offensive",
+            null,
+            "Defensive",
+            null,
+            null,
+            null,
+            "Passive"
+        ],
+        "tagValues": {
+            "melee": 2,
+            "ranged": 3,
+            "guard": 5,
+            "medic": 7,
+            "vanguard": 11,
+            "caster": 13,
+            "sniper": 17,
+            "defender": 19,
+            "supporter": 23,
+            "specialist": 29,
+            "healing": 31,
+            "support": 37,
+            "dps": 41,
+            "aoe": 43,
+            "slow": 47,
+            "survival": 53,
+            "defense": 59,
+            "debuff": 61,
+            "shift": 67,
+            "crowd-control": 71,
+            "nuker": 73,
+            "summon": 79,
+            "fast-redeploy": 83,
+            "dp-recovery": 89,
+            "robot": 97,
+            "starter": 101,
+            "senior operator": 103,
+            "top operator": 107
+        },
+        "tileDict": {
+            "unknown": {
+                "emoji": "❓",
+                "name": "Unknown Tile"
+            },
+            "tile_bigforce": {
+                "emoji": "💪",
+                "name": "Specialist Tactical Point"
+            },
+            "tile_corrosion": {
+                "emoji": "💔",
+                "name": "Corrosive Ground"
+            },
+            "tile_deepwater": {
+                "emoji": "🔷",
+                "name": "Deep Water Zone"
+            },
+            "tile_defup": {
+                "emoji": "🛡️",
+                "name": "Defensive Rune"
+            },
+            "tile_end": {
+                "emoji": "🟦",
+                "name": "Protection Objective"
+            },
+            "tile_fence": {
+                "emoji": "🟨",
+                "name": "Fence"
+            },
+            "tile_fence_bound": {
+                "emoji": "🟨",
+                "name": "Fence"
+            },
+            "tile_floor": {
+                "emoji": "❎",
+                "name": "Non-deployable Area"
+            },
+            "tile_flystart": {
+                "emoji": "🔴",
+                "name": "Aerial Unit Incursion Point"
+            },
+            "tile_forbidden": {
+                "emoji": "⬛",
+                "name": "No Entry Zone"
+            },
+            "tile_gazebo": {
+                "emoji": "🔫",
+                "name": "Anti-Air Rune"
+            },
+            "tile_grass": {
+                "emoji": "🌱",
+                "name": "Bush"
+            },
+            "tile_healing": {
+                "emoji": "💟",
+                "name": "Medical Rune"
+            },
+            "tile_hole": {
+                "emoji": "🔳",
+                "name": "Hole"
+            },
+            "tile_infection": {
+                "emoji": "☢️",
+                "name": "Active Originium"
+            },
+            "tile_rcm_crate": {
+                "emoji": "✅",
+                "name": "Recommended Roadblock Point"
+            },
+            "tile_rcm_operator": {
+                "emoji": "✅",
+                "name": "Recommended Deployment Point"
+            },
+            "tile_road": {
+                "emoji": "🟩",
+                "name": "Flat Ground"
+            },
+            "tile_shallowwater": {
+                "emoji": "💧",
+                "name": "Shallow Water Zone"
+            },
+            "tile_start": {
+                "emoji": "🟥",
+                "name": "Incursion Point"
+            },
+            "tile_telin": {
+                "emoji": "🔻",
+                "name": "Tunnel Entry"
+            },
+            "tile_telout": {
+                "emoji": "🔺",
+                "name": "Tunnel Exit"
+            },
+            "tile_volcano": {
+                "emoji": "🔥",
+                "name": "Heat Pump Passage"
+            },
+            "tile_volspread": {
+                "emoji": "🌋",
+                "name": "Lava Crack"
+            },
+            "tile_wall": {
+                "emoji": "⬜",
+                "name": "High Ground"
+            },
+            "tile_defbreak": {
+                "emoji": "💔",
+                "name": "Corrosive Ground"
+            },
+            "tile_smog": {
+                "emoji": "☁️",
+                "name": "Exhaust Grille"
+            },
+            "tile_yinyang_road": {
+                "emoji": "☯️",
+                "name": "Mark of Hui and Ming (Road)"
+            },
+            "tile_yinyang_wall": {
+                "emoji": "☯️",
+                "name": "Mark of Hui and Ming (Wall)"
+            },
+            "tile_yinyang_switch": {
+                "emoji": "☯️",
+                "name": "Mark of Dusk and Dawn"
+            },
+            "tile_poison": {
+                "emoji": "☠️",
+                "name": "Gas Spray"
+            },
+            "tile_deepsea": {
+                "emoji": "🔷",
+                "name": "Deep Water Zone"
+            },
+            "tile_icestr": {
+                "emoji": "🧊",
+                "name": "Icy Surface"
+            },
+            "tile_icetur_lb": {
+                "emoji": "🧊",
+                "name": "Icy Corner"
+            },
+            "tile_icetur_lt": {
+                "emoji": "🧊",
+                "name": "Icy Corner"
+            },
+            "tile_icetur_rb": {
+                "emoji": "🧊",
+                "name": "Icy Corner"
+            },
+            "tile_icetur_rt": {
+                "emoji": "🧊",
+                "name": "Icy Corner"
+            },
+            "tile_magic_circle": {
+                "emoji": "✨",
+                "name": "Activated \"Resonator\""
+            },
+            "tile_magic_circle_h": {
+                "emoji": "✨",
+                "name": "Activated \"Resonator\""
+            },
+            "tile_aircraft": {
+                "emoji": "🛫",
+                "name": "Aircraft"
+            },
+            "tile_creep": {
+                "emoji": "🟩",
+                "name": "Flat Ground (Nethersea Brand)"
+            },
+            "tile_creepf": {
+                "emoji": "🟫",
+                "name": "Non-deployable Area (Nethersea Brand)"
+            },
+            "tile_empty": {
+                "emoji": "🔳",
+                "name": "Empty"
+            },
+            "tile_volcano_emp": {
+                "emoji": "🔥",
+                "name": "Heat Pump Passage"
+            }
+        }
+    }
+}

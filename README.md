@@ -8,6 +8,8 @@ rewrite stage embed
 
 add item list
 
+add costs to info embed
+
 add help command and command descriptions
 
 count enemies in a stage

@@ -158,7 +158,7 @@ client.on(Events.InteractionCreate, async interaction => {
             const page = parseInt(idArr[2]);
             const skinEmbed = create.skinEmbed(op, page);
 
-            await interaction.editReply(skinEmbed);
+            await interaction.update(skinEmbed);
             break;
         }
         case 'stage': {
