@@ -12,5 +12,5 @@
     "rogueItemImagePath": "images/rogueitems",
     "skillImagePath": "Arknight-Images/skills",
     "skinGroupPath": "images/skingroups",
-    "stageImagePath": "images/stages"
+    "stageImagePath": "ArknightsGameResource/map"
 }

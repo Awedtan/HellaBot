@@ -3,5 +3,6 @@ node_modules
 config.json
 Arknight-Images
 ArknightsGameData
+ArknightsGameResource
 hellabot.sh
 update.sh
