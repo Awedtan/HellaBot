@@ -1,6 +1,6 @@
 const { skillImagePath } = require('../../paths.json');
 const { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, SlashCommandBuilder } = require('discord.js');
-const { fetchSkills } = require('../utils/fetch');
+const { fetchSkills } = require('../fetch');
 const { createRangeEmbedField, formatText } = require('../utils/utils');
 
 import { Skill } from '../types';

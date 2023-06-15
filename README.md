@@ -4,8 +4,6 @@
 
 make generic file-existence checker and stage diagram generator functions
 
-add diagram to paradox, roguelike stages
-
 rewrite stage embed
 
 add item list

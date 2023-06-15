@@ -1,6 +1,6 @@
 const { SlashCommandBuilder } = require('discord.js');
-const fetch = require('../utils/fetch');
-const create = require('../utils/create');
+const fetch = require('../fetch');
+const create = require('../create');
 
 import { Item, Operator } from "../types";
 

@@ -1,7 +1,7 @@
-const { dataPath } = require('../../paths.json');
-const { professions, tagValues } = require('../utils/contants');
+const { dataPath } = require('../paths.json');
+const { professions, tagValues } = require('./contants');
 
-import { Base, BaseInfo, Definition, Enemy, Item, ManufactFormula, Module, Operator, Paradox, ParadoxInfo, Range, RogueTheme, RogueRelic, RogueStage, RogueStageInfo, RogueVariation, Skill, Skin, Stage, StageData, StageInfo, WorkshopFormula } from "../types";
+import { Base, BaseInfo, Definition, Enemy, Item, ManufactFormula, Module, Operator, Paradox, ParadoxInfo, Range, RogueTheme, RogueRelic, RogueStage, RogueStageInfo, RogueVariation, Skill, Skin, Stage, StageData, StageInfo, WorkshopFormula } from "./types";
 
 const archetypeDict: { [key: string]: string } = {};
 const baseDict: { [key: string]: Base } = {};
@@ -17,12 +17,6 @@ const skillDict: { [key: string]: Skill } = {};
 const skinDict: { [key: string]: Skin[] } = {};
 const stageDict: { [key: string]: Stage[] } = {};
 const toughStageDict: { [key: string]: Stage[] } = {};
-
-type SubProf = {
-    subProfessionId: string;
-    subProfessionName: string;
-    subProfessionCatagory: number;
-};
 
 module.exports = {
     initializeAll() {
@@ -86,6 +80,12 @@ module.exports = {
 }
 
 function initArchetypes() {
+    type SubProf = {
+        subProfessionId: string;
+        subProfessionName: string;
+        subProfessionCatagory: number;
+    };
+
     const moduleTable: { [key: string]: any } = require(`${dataPath}/excel/uniequip_table.json`);
     const subProfDict: { [key: string]: SubProf } = moduleTable.subProfDict;
 

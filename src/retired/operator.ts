@@ -1,6 +1,6 @@
 const { operatorAvatarPath } = require('../../paths.json');
 const { AttachmentBuilder, EmbedBuilder, SlashCommandBuilder } = require('discord.js');
-const { fetchOperators, fetchArchetypes } = require('../utils/fetch');
+const { fetchOperators, fetchArchetypes } = require('../fetch');
 const { createRangeEmbedField, formatText } = require('../utils/utils');
 
 import { Operator } from '../types';

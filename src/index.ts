@@ -2,8 +2,8 @@ const fs = require('fs');
 const path = require('path');
 const { ActivityType, Client, Collection, Events, GatewayIntentBits } = require('discord.js');
 const { token } = require('../config.json');
-const create = require('./utils/create');
-const fetch = require('./utils/fetch');
+const create = require('./create');
+const fetch = require('./fetch');
 
 // Load command files
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
@@ -50,7 +50,6 @@ client.on(Events.InteractionCreate, async interaction => {
 });
 
 // Start of command interaction handling
-
 import { Module, Paradox, Operator, RogueTheme, Skill, Stage } from "./types";
 
 const moduleDict: { [key: string]: Module } = fetch.modules();
@@ -157,29 +156,29 @@ client.on(Events.InteractionCreate, async interaction => {
         case 'skin': {
             const op = opDict[idArr[1]];
             const page = parseInt(idArr[2]);
-
             const skinEmbed = create.skinEmbed(op, page);
-            await interaction.update(skinEmbed);
 
+            await interaction.editReply(skinEmbed);
             break;
         }
         case 'stage': {
-            const stages = idArr[3] === 'true' ? toughStageDict[idArr[1]] : stageDict[idArr[1]];
-            const stage = stages[parseInt(idArr[2])];
-            const page = parseInt(idArr[4]);
+            if (idArr[1] === 'select') {
+                const stages = stageDict[idArr[2]];
+                const stage = stages[interaction.values[0]];
 
-            const stageEmbed = await create.stageEmbed(stage, page);
-            await interaction.update(stageEmbed);
+                const stageEmbed = await create.stageEmbed(stage, 0);
+                await interaction.update(stageEmbed);
 
-            break;
-        }
-        case 'stageselect': {
-            const stages = stageDict[idArr[1]];
-            const stage = stages[interaction.values[0]];
+                break;
+            }
+            else {
+                const stages = idArr[3] === 'true' ? toughStageDict[idArr[1]] : stageDict[idArr[1]];
+                const stage = stages[parseInt(idArr[2])];
+                const page = parseInt(idArr[4]);
 
-            const stageEmbed = await create.stageEmbed(stage, 0);
-            await interaction.update(stageEmbed);
-
+                const stageEmbed = await create.stageEmbed(stage, page);
+                await interaction.update(stageEmbed);
+            }
             break;
         }
     }

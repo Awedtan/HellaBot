@@ -1,5 +1,5 @@
 const { SlashCommandBuilder } = require('discord.js');
-const create = require('../utils/create');
+const create = require('../create');
 
 import { } from "../types";
 
