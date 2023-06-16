@@ -178,6 +178,8 @@ function initOperators() {
     const buildingData: { [key: string]: any } = require(`${paths.dataPath}/excel/building_data.json`);
     const operatorTable: { [key: string]: Operator['data'] } = require(`${paths.dataPath}/excel/character_table.json`);
     const moduleTable: { [key: string]: any } = require(`${paths.dataPath}/excel/uniequip_table.json`);
+    const patchTable: { [key: string]: any } = require(`${paths.dataPath}/excel/char_patch_table.json`);
+    const patchChars: { [key: string]: Operator['data'] } = patchTable.patchChars;
 
     const chars: { [key: string]: any } = buildingData.chars;
     const charEquip: { [key: string]: string[] } = moduleTable.charEquip;
@@ -185,6 +187,41 @@ function initOperators() {
     for (const opId of Object.keys(operatorTable)) {
         const opData = operatorTable[opId];
         const opName = opData.name.toLowerCase();
+        const opModules = charEquip.hasOwnProperty(opId) ? charEquip[opId] : [];
+        const opBases: BaseInfo[] = [];
+
+        if (opData.tagList === null) continue;
+
+        if (chars.hasOwnProperty(opId)) {
+            for (const buff of chars[opId].buffChar) {
+                for (const baseData of buff.buffData) {
+                    opBases.push(baseData);
+                }
+            }
+        }
+
+        const positionId = dicts.tagValues[opData.position.toLowerCase()];
+        const classId = dicts.tagValues[dicts.professions[opData.profession].toLowerCase()];
+        let tagId = 1;
+        for (const tag of opData.tagList) {
+            tagId *= dicts.tagValues[tag.toLowerCase()];
+        }
+        if (opData.itemDesc != null && opData.itemDesc.includes('robot')) {
+            tagId *= dicts.tagValues['robot'];
+        }
+
+        const recruitId = positionId * classId * tagId;
+
+        operatorDict[opId] = { id: opId, recruitId: recruitId, modules: opModules, bases: opBases, data: opData };
+        operatorDict[opName] = operatorDict[opId];
+        operatorDict[opName.split('\'').join('')] = operatorDict[opId];
+    }
+
+    for (const opId of Object.keys(patchChars)) {
+        if (opId != 'char_1001_amiya2') continue;
+
+        const opData = patchChars[opId];
+        const opName = 'amiya guard';
         const opModules = charEquip.hasOwnProperty(opId) ? charEquip[opId] : [];
         const opBases: BaseInfo[] = [];
 

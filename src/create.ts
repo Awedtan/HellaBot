@@ -409,6 +409,10 @@ module.exports = {
             moduleButton.setStyle(ButtonStyle.Secondary);
             moduleButton.setDisabled(true);
         }
+        if (!skinDict.hasOwnProperty(op.id)) {
+            artButton.setStyle(ButtonStyle.Secondary);
+            artButton.setDisabled(true);
+        }
         if (op.bases.length == 0) {
             baseButton.setStyle(ButtonStyle.Secondary);
             baseButton.setDisabled(true);
