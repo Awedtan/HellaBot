@@ -1,5 +1,5 @@
 const { paths } = require('./constants');
-const { dicts } = require('./constants');
+const { consts } = require('./constants');
 
 import { Base, BaseInfo, Definition, Enemy, Item, ManufactFormula, Module, Operator, Paradox, ParadoxInfo, Range, RogueTheme, RogueRelic, RogueStage, RogueStageInfo, RogueVariation, Skill, Skin, Stage, StageData, StageInfo, WorkshopFormula } from "./types";
 
@@ -86,7 +86,7 @@ function initArchetypes() {
         subProfessionCatagory: number;
     };
 
-    const moduleTable: { [key: string]: any } = require(`${paths.dataPath}/excel/uniequip_table.json`);
+    const moduleTable: { [key: string]: any } = require(`${paths.data}/excel/uniequip_table.json`);
     const subProfDict: { [key: string]: SubProf } = moduleTable.subProfDict;
 
     for (const subProf of Object.values(subProfDict)) {
@@ -95,7 +95,7 @@ function initArchetypes() {
 }
 
 function initBases() {
-    const buildingData: { [key: string]: any } = require(`${paths.dataPath}/excel/building_data.json`);
+    const buildingData: { [key: string]: any } = require(`${paths.data}/excel/building_data.json`);
     const buffs: { [key: string]: Base } = buildingData.buffs;
 
     for (const buff of Object.values(buffs)) {
@@ -104,7 +104,7 @@ function initBases() {
 }
 
 function initDefinitions() {
-    const gamedataConsts = require(`${paths.dataPath}/excel/gamedata_const.json`);
+    const gamedataConsts = require(`${paths.data}/excel/gamedata_const.json`);
     const termDescriptionDict: { [key: string]: Definition } = gamedataConsts.termDescriptionDict;
 
     for (const definition of Object.values(termDescriptionDict)) {
@@ -122,8 +122,8 @@ function initEnemies() {
     // Unique enemy key is enemyId (enemy_1007_slime)
     // Additional keys are name (Originium Slug) and enemyIndex (B1)
 
-    const enemyHandbook: { [key: string]: Enemy['excel'] } = require(`${paths.dataPath}/excel/enemy_handbook_table.json`);
-    const enemyDatabase: { [key: string]: Enemy['levels'][] } = require(`${paths.dataPath}/levels/enemydata/enemy_database.json`);
+    const enemyHandbook: { [key: string]: Enemy['excel'] } = require(`${paths.data}/excel/enemy_handbook_table.json`);
+    const enemyDatabase: { [key: string]: Enemy['levels'][] } = require(`${paths.data}/levels/enemydata/enemy_database.json`);
     const enemies = enemyDatabase.enemies;
 
     for (const excel of Object.values(enemyHandbook)) {
@@ -140,8 +140,8 @@ function initEnemies() {
 }
 
 function initItems() {
-    const itemTable: { [key: string]: any } = require(`${paths.dataPath}/excel/item_table.json`);
-    const buildingData: { [key: string]: any } = require(`${paths.dataPath}/excel/building_data.json`);
+    const itemTable: { [key: string]: any } = require(`${paths.data}/excel/item_table.json`);
+    const buildingData: { [key: string]: any } = require(`${paths.data}/excel/building_data.json`);
     const items: { [key: string]: Item['data'] } = itemTable.items;
     const manufactFormulas: { [key: string]: ManufactFormula } = buildingData.manufactFormulas;
     const workshopFormulas: { [key: string]: WorkshopFormula } = buildingData.workshopFormulas;
@@ -164,9 +164,9 @@ function initItems() {
 }
 
 function initModules() {
-    const moduleTable: { [key: string]: any } = require(`${paths.dataPath}/excel/uniequip_table.json`);
+    const moduleTable: { [key: string]: any } = require(`${paths.data}/excel/uniequip_table.json`);
     const equipDict: { [key: string]: Module['info'] } = moduleTable.equipDict;
-    const battleDict: { [key: string]: Module['data'] } = require(`${paths.dataPath}/excel/battle_equip_table.json`);
+    const battleDict: { [key: string]: Module['data'] } = require(`${paths.data}/excel/battle_equip_table.json`);
 
     for (const module of Object.values(equipDict)) {
         const moduleId = module.uniEquipId.toLowerCase()
@@ -175,10 +175,10 @@ function initModules() {
 }
 
 function initOperators() {
-    const buildingData: { [key: string]: any } = require(`${paths.dataPath}/excel/building_data.json`);
-    const operatorTable: { [key: string]: Operator['data'] } = require(`${paths.dataPath}/excel/character_table.json`);
-    const moduleTable: { [key: string]: any } = require(`${paths.dataPath}/excel/uniequip_table.json`);
-    const patchTable: { [key: string]: any } = require(`${paths.dataPath}/excel/char_patch_table.json`);
+    const buildingData: { [key: string]: any } = require(`${paths.data}/excel/building_data.json`);
+    const operatorTable: { [key: string]: Operator['data'] } = require(`${paths.data}/excel/character_table.json`);
+    const moduleTable: { [key: string]: any } = require(`${paths.data}/excel/uniequip_table.json`);
+    const patchTable: { [key: string]: any } = require(`${paths.data}/excel/char_patch_table.json`);
     const patchChars: { [key: string]: Operator['data'] } = patchTable.patchChars;
 
     const chars: { [key: string]: any } = buildingData.chars;
@@ -200,14 +200,14 @@ function initOperators() {
             }
         }
 
-        const positionId = dicts.tagValues[opData.position.toLowerCase()];
-        const classId = dicts.tagValues[dicts.professions[opData.profession].toLowerCase()];
+        const positionId = consts.tagValues[opData.position.toLowerCase()];
+        const classId = consts.tagValues[consts.professions[opData.profession].toLowerCase()];
         let tagId = 1;
         for (const tag of opData.tagList) {
-            tagId *= dicts.tagValues[tag.toLowerCase()];
+            tagId *= consts.tagValues[tag.toLowerCase()];
         }
         if (opData.itemDesc != null && opData.itemDesc.includes('robot')) {
-            tagId *= dicts.tagValues['robot'];
+            tagId *= consts.tagValues['robot'];
         }
 
         const recruitId = positionId * classId * tagId;
@@ -221,7 +221,6 @@ function initOperators() {
         if (opId != 'char_1001_amiya2') continue;
 
         const opData = patchChars[opId];
-        const opName = 'amiya guard';
         const opModules = charEquip.hasOwnProperty(opId) ? charEquip[opId] : [];
         const opBases: BaseInfo[] = [];
 
@@ -235,21 +234,21 @@ function initOperators() {
             }
         }
 
-        const positionId = dicts.tagValues[opData.position.toLowerCase()];
-        const classId = dicts.tagValues[dicts.professions[opData.profession].toLowerCase()];
+        const positionId = consts.tagValues[opData.position.toLowerCase()];
+        const classId = consts.tagValues[consts.professions[opData.profession].toLowerCase()];
         let tagId = 1;
         for (const tag of opData.tagList) {
-            tagId *= dicts.tagValues[tag.toLowerCase()];
+            tagId *= consts.tagValues[tag.toLowerCase()];
         }
         if (opData.itemDesc != null && opData.itemDesc.includes('robot')) {
-            tagId *= dicts.tagValues['robot'];
+            tagId *= consts.tagValues['robot'];
         }
 
         const recruitId = positionId * classId * tagId;
 
         operatorDict[opId] = { id: opId, recruitId: recruitId, modules: opModules, bases: opBases, data: opData };
-        operatorDict[opName] = operatorDict[opId];
-        operatorDict[opName.split('\'').join('')] = operatorDict[opId];
+        operatorDict['amiya guard'] = operatorDict[opId];
+        operatorDict['guard amiya'] = operatorDict[opId];
     }
 
     operatorDict['mlynar'] = operatorDict['młynar'];
@@ -257,14 +256,14 @@ function initOperators() {
 }
 
 function initParadoxes() {
-    const handbookTable: { [key: string]: any } = require(`${paths.dataPath}/excel/handbook_info_table.json`);
+    const handbookTable: { [key: string]: any } = require(`${paths.data}/excel/handbook_info_table.json`);
     const stages: { [key: string]: ParadoxInfo } = handbookTable.handbookStageData;
 
     for (const excel of Object.values(stages)) {
         try {
             const opId = excel.charId;
             const levelId = excel.levelId.toLowerCase();
-            const levels: StageData = require(`${paths.dataPath}/levels/${levelId}.json`);
+            const levels: StageData = require(`${paths.data}/levels/${levelId}.json`);
             const paradox = { excel: excel, levels: levels };
 
             paradoxDict[opId] = paradox;
@@ -275,7 +274,7 @@ function initParadoxes() {
 }
 
 function initRanges() {
-    const rangeTable: { [key: string]: Range } = require(`${paths.dataPath}/excel/range_table.json`);
+    const rangeTable: { [key: string]: Range } = require(`${paths.data}/excel/range_table.json`);
 
     for (const range of Object.values(rangeTable)) {
         rangeDict[range.id.toLowerCase()] = range;
@@ -283,7 +282,7 @@ function initRanges() {
 }
 
 function initRogueThemes() {
-    const rogueTable: { [key: string]: any } = require(`${paths.dataPath}/excel/roguelike_topic_table.json`);
+    const rogueTable: { [key: string]: any } = require(`${paths.data}/excel/roguelike_topic_table.json`);
     const rogueDetails: { [key: string]: any } = rogueTable.details;
 
     for (let i = 0; i < Object.keys(rogueDetails).length; i++) {
@@ -301,13 +300,13 @@ function initRogueThemes() {
             const name = excel.name.toLowerCase();
 
             if (excel.difficulty === 'FOUR_STAR') {
-                const levels: StageData = require(`${paths.dataPath}/levels/${levelId}.json`);
+                const levels: StageData = require(`${paths.data}/levels/${levelId}.json`);
                 const stage: RogueStage = { excel: excel, levels: levels };
 
                 toughStageDict[name] = stage;
             }
             else if (excel.difficulty === 'NORMAL') {
-                const levels = require(`${paths.dataPath}/levels/${levelId}.json`);
+                const levels = require(`${paths.data}/levels/${levelId}.json`);
                 const stage: RogueStage = { excel: excel, levels: levels };
 
                 stageDict[name] = stage;
@@ -335,7 +334,7 @@ function initRogueThemes() {
 }
 
 function initSkills() {
-    const skillTable: { [key: string]: Skill } = require(`${paths.dataPath}/excel/skill_table.json`);
+    const skillTable: { [key: string]: Skill } = require(`${paths.data}/excel/skill_table.json`);
 
     for (const skill of Object.values(skillTable)) {
         const skillId = skill.skillId.toLowerCase();
@@ -344,7 +343,7 @@ function initSkills() {
 }
 
 function initSkins() {
-    const skinTable: { [key: string]: any } = require(`${paths.dataPath}/excel/skin_table.json`);
+    const skinTable: { [key: string]: any } = require(`${paths.data}/excel/skin_table.json`);
     const charSkins: { [key: string]: Skin } = skinTable.charSkins;
 
     for (const skin of Object.values(charSkins)) {
@@ -358,7 +357,7 @@ function initSkins() {
 }
 
 function initStages() {
-    const stageTable: { [key: string]: any } = require(`${paths.dataPath}/excel/stage_table.json`);
+    const stageTable: { [key: string]: any } = require(`${paths.data}/excel/stage_table.json`);
     const stages: { [key: string]: StageInfo } = stageTable.stages;
 
     for (const excel of Object.values(stages)) {
@@ -382,7 +381,7 @@ function initStages() {
                     toughStageDict[code] = [];
                 }
 
-                const levels: StageData = require(`${paths.dataPath}/levels/${levelId}.json`);
+                const levels: StageData = require(`${paths.data}/levels/${levelId}.json`);
                 const stage: Stage = { excel: excel, levels: levels };
 
                 toughStageDict[code].push(stage);
@@ -392,7 +391,7 @@ function initStages() {
                     stageDict[code] = [];
                 }
 
-                const levels = require(`${paths.dataPath}/levels/${levelId}.json`);
+                const levels = require(`${paths.data}/levels/${levelId}.json`);
                 const stage: Stage = { excel: excel, levels: levels };
 
                 stageDict[excel.stageId] = [stage];

@@ -1,19 +1,19 @@
 {
     "paths": {
-        "dataPath": "../ArknightsGameData/en_US/gamedata",
-        "baseImagePath": "../Arknight-Images/ui/infrastructure/skill",
-        "eliteImagePath": "../Arknight-Images/ui/elite",
-        "enemyImagePath": "../Arknight-Images/enemy",
-        "itemImagePath": "../Arknight-Images/items",
-        "moduleImagePath": "../Arknight-Images/equip/icon",
-        "operatorImagePath": "../Arknight-Images/characters",
-        "operatorAvatarPath": "../Arknight-Images/avatars",
-        "rogueItemImagePath": "../images/rogueitems",
-        "skillImagePath": "../Arknight-Images/skills",
-        "skinGroupPath": "../images/skingroups",
-        "stageImagePath": "../images/stages"
+        "data": "../ArknightsGameData/en_US/gamedata",
+        "baseSkillImage": "../Arknight-Images/ui/infrastructure/skill",
+        "eliteImage": "../Arknight-Images/ui/elite",
+        "enemyImage": "../Arknight-Images/enemy",
+        "itemImage": "../Arknight-Images/items",
+        "moduleImage": "../Arknight-Images/equip/icon",
+        "operatorImage": "../Arknight-Images/characters",
+        "operatorAvatar": "../Arknight-Images/avatars",
+        "rogueItemImage": "../images/rogueitems",
+        "skillImage": "../Arknight-Images/skills",
+        "skinGroupImage": "../images/skingroups",
+        "stageImage": "../images/stages"
     },
-    "dicts": {
+    "consts": {
         "eliteLevels": [
             "E0",
             "E1",
