@@ -22,7 +22,7 @@ const skinDict: { [key: string]: Skin[] } = fetch.skins();
 
 const cleanFilename = (text: string) => text.split(/[#\+]|&|\[|\]/).join('');
 const fileExists = async (path: string) => !!(await fs.promises.stat(path).catch(e => false));
-const formatText = (text: string, blackboard: Blackboard[]) => {
+function formatText(text: string, blackboard: Blackboard[]) {
     if (text === null || text === undefined) return '';
     if (blackboard === null || blackboard === undefined) blackboard = [];
 
@@ -53,6 +53,25 @@ const formatText = (text: string, blackboard: Blackboard[]) => {
 
     return text;
 };
+function stageDiagramFields(stageData: StageData) {
+    const map = stageData.mapData.map;
+    const tiles = stageData.mapData.tiles;
+    let mapString = '', legendString = '';
+
+    for (let i = 0; i < map.length; i++) {
+        for (let j = 0; j < map[0].length; j++) {
+            const tileKey = tiles[map[i][j]].tileKey;
+            const tile = consts.tileDict.hasOwnProperty(tileKey) ? consts.tileDict[tileKey] : consts.tileDict['unknown'];
+            mapString += tile.emoji;
+
+            if (legendString.includes(tile.name)) continue;
+
+            legendString += `${tile.emoji} - ${tile.name}\n`;
+        }
+        mapString += '\n';
+    }
+    return [{ name: 'Map', value: mapString }, { name: 'Legend', value: legendString }];
+}
 
 module.exports = {
     authorField(op: Operator) {
@@ -1036,47 +1055,15 @@ module.exports = {
                 return { embeds: [embed], files: [thumbnail, image], components: [buttonRow] };
             }
             else {
-                const map = stageData.mapData.map;
-                const tiles = stageData.mapData.tiles;
-
-                let mapString = '', legendString = '';
-                for (let i = 0; i < map.length; i++) {
-                    for (let j = 0; j < map[0].length; j++) {
-                        const tileKey = tiles[map[i][j]].tileKey;
-                        const tile = consts.tileDict[tileKey];
-                        mapString += tile.emoji;
-
-                        if (legendString.includes(tile.name)) continue;
-
-                        legendString += `${tile.emoji} - ${tile.name}\n`;
-                    }
-                    mapString += '\n';
-                }
-
-                embed.addFields({ name: 'Map', value: mapString }, { name: 'Legend', value: legendString });
+                const diagramFields = stageDiagramFields(stageData);
+                embed.addFields(diagramFields);
 
                 return { embeds: [embed], files: [thumbnail] };
             }
         }
         else {
-            const map = stageData.mapData.map;
-            const tiles = stageData.mapData.tiles;
-
-            let mapString = '', legendString = '';
-            for (let i = 0; i < map.length; i++) {
-                for (let j = 0; j < map[0].length; j++) {
-                    const tileKey = tiles[map[i][j]].tileKey;
-                    const tile = consts.tileDict[tileKey];
-                    mapString += tile.emoji;
-
-                    if (legendString.includes(tile.name)) continue;
-
-                    legendString += `${tile.emoji} - ${tile.name}\n`;
-                }
-                mapString += '\n';
-            }
-
-            embed.addFields({ name: 'Map', value: mapString }, { name: 'Legend', value: legendString });
+            const diagramFields = stageDiagramFields(stageData);
+            embed.addFields(diagramFields);
 
             return { embeds: [embed], files: [thumbnail], components: [buttonRow] };
         }
@@ -1424,47 +1411,15 @@ module.exports = {
                 return { embeds: [embed], files: [image], components: [buttonRow] };
             }
             else {
-                const map = stageData.mapData.map;
-                const tiles = stageData.mapData.tiles;
-
-                let mapString = '', legendString = '';
-                for (let i = 0; i < map.length; i++) {
-                    for (let j = 0; j < map[0].length; j++) {
-                        const tileKey = tiles[map[i][j]].tileKey;
-                        const tile = consts.tileDict[tileKey];
-                        mapString += tile.emoji;
-
-                        if (legendString.includes(tile.name)) continue;
-
-                        legendString += `${tile.emoji} - ${tile.name}\n`;
-                    }
-                    mapString += '\n';
-                }
-
-                embed.addFields({ name: 'Map', value: mapString }, { name: 'Legend', value: legendString });
+                const diagramFields = stageDiagramFields(stageData);
+                embed.addFields(diagramFields);
 
                 return { embeds: [embed] };
             }
         }
         else {
-            const map = stageData.mapData.map;
-            const tiles = stageData.mapData.tiles;
-
-            let mapString = '', legendString = '';
-            for (let i = 0; i < map.length; i++) {
-                for (let j = 0; j < map[0].length; j++) {
-                    const tileKey = tiles[map[i][j]].tileKey;
-                    const tile = consts.tileDict[tileKey];
-                    mapString += tile.emoji;
-
-                    if (legendString.includes(tile.name)) continue;
-
-                    legendString += `${tile.emoji} - ${tile.name}\n`;
-                }
-                mapString += '\n';
-            }
-
-            embed.addFields({ name: 'Map', value: mapString }, { name: 'Legend', value: legendString });
+            const diagramFields = stageDiagramFields(stageData);
+            embed.addFields(diagramFields);
 
             return { embeds: [embed], files: [], components: [buttonRow] };
         }
@@ -1794,47 +1749,15 @@ module.exports = {
                 return { embeds: [embed], files: [image], components: [buttonRow] };
             }
             else {
-                const mapData = stageData.mapData;
-                const map = mapData.map;
-                const tiles = mapData.tiles;
-                let mapString = '', legendString = '';
-
-                for (let i = 0; i < map.length; i++) {
-                    for (let j = 0; j < map[0].length; j++) {
-                        const tileKey = tiles[map[i][j]].tileKey;
-                        const tile = consts.tileDict.hasOwnProperty(tileKey) ? consts.tileDict[tileKey] : consts.tileDict['unknown'];
-                        mapString += tile.emoji;
-
-                        if (legendString.includes(tile.name)) continue;
-
-                        legendString += `${tile.emoji} - ${tile.name}\n`;
-                    }
-                    mapString += '\n';
-                }
-                embed.addFields({ name: 'Map', value: mapString }, { name: 'Legend', value: legendString });
+                const diagramFields = stageDiagramFields(stageData);
+                embed.addFields(diagramFields);
 
                 return { embeds: [embed] };
             }
         }
         else {
-            const mapData = stageData.mapData;
-            const map = mapData.map;
-            const tiles = mapData.tiles;
-            let mapString = '', legendString = '';
-
-            for (let i = 0; i < map.length; i++) {
-                for (let j = 0; j < map[0].length; j++) {
-                    const tileKey = tiles[map[i][j]].tileKey;
-                    const tile = consts.tileDict.hasOwnProperty(tileKey) ? consts.tileDict[tileKey] : consts.tileDict['unknown'];
-                    mapString += tile.emoji;
-
-                    if (legendString.includes(tile.name)) continue;
-
-                    legendString += `${tile.emoji} - ${tile.name}\n`;
-                }
-                mapString += '\n';
-            }
-            embed.addFields({ name: 'Map', value: mapString }, { name: 'Legend', value: legendString });
+            const diagramFields = stageDiagramFields(stageData);
+            embed.addFields(diagramFields);
 
             return { embeds: [embed], files: [], components: [buttonRow] };
         }

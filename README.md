@@ -2,10 +2,6 @@
  
 ## todo:
 
-make generic file-existence checker and stage diagram generator functions
-
-rewrite stage embed
-
 add item list
 
 add costs to info embed
