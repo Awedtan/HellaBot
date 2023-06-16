@@ -33,13 +33,13 @@ module.exports = {
         if (op.data.skills.length === 0)
             return await interaction.reply({ content: 'That operator doesn\'t have any skills!', ephemeral: true });
 
-        if (index != -1 && index > op.data.skills.length - 1)
+        if (index !== -1 && index > op.data.skills.length - 1)
             index = -1;
 
         let first = true;
 
         for (let i = 0; i < op.data.skills.length; i++) {
-            if (index != -1 && index != i) continue;
+            if (index !== -1 && index !== i) continue;
 
             const opSkill = op.data.skills[i];
             const skill = skillDict[opSkill.skillId];

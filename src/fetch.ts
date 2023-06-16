@@ -128,7 +128,7 @@ function initEnemies() {
 
     for (const excel of Object.values(enemyHandbook)) {
         for (const levels of enemies) {
-            if (levels.Key != excel.enemyId) continue;
+            if (levels.Key !== excel.enemyId) continue;
 
             const enemyId = excel.enemyId.toLowerCase();
             enemyDict[enemyId] = { excel: excel, levels: levels };
@@ -206,7 +206,7 @@ function initOperators() {
         for (const tag of opData.tagList) {
             tagId *= consts.tagValues[tag.toLowerCase()];
         }
-        if (opData.itemDesc != null && opData.itemDesc.includes('robot')) {
+        if (opData.itemDesc !== null && opData.itemDesc.includes('robot')) {
             tagId *= consts.tagValues['robot'];
         }
 
@@ -218,7 +218,7 @@ function initOperators() {
     }
 
     for (const opId of Object.keys(patchChars)) {
-        if (opId != 'char_1001_amiya2') continue;
+        if (opId !== 'char_1001_amiya2') continue;
 
         const opData = patchChars[opId];
         const opModules = charEquip.hasOwnProperty(opId) ? charEquip[opId] : [];
@@ -240,7 +240,7 @@ function initOperators() {
         for (const tag of opData.tagList) {
             tagId *= consts.tagValues[tag.toLowerCase()];
         }
-        if (opData.itemDesc != null && opData.itemDesc.includes('robot')) {
+        if (opData.itemDesc !== null && opData.itemDesc.includes('robot')) {
             tagId *= consts.tagValues['robot'];
         }
 

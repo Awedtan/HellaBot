@@ -304,7 +304,7 @@ module.exports = {
         return { embeds: [embed], files: [thumbnail] };
     },
     async itemEmbed(item: Item) {
-        const description = item.data.description != null ? `${item.data.usage}\n\n${item.data.description}` : item.data.usage;
+        const description = item.data.description !== null ? `${item.data.usage}\n\n${item.data.description}` : item.data.usage;
 
         const embed = new EmbedBuilder()
             .setColor(embedColour)
@@ -319,11 +319,11 @@ module.exports = {
             const stage = stageDict[stageId][0];
             stageString += `${stage.excel.code} - ${consts.itemDropRarities[stageDrop.occPer]}\n`;
         }
-        if (stageString != '') {
+        if (stageString !== '') {
             embed.addFields({ name: 'Drop Stages', value: stageString, inline: true });
         }
 
-        if (item.formula != null) {
+        if (item.formula !== null) {
             const formulaString = this.costString(item.formula.costs);
             embed.addFields({ name: 'Workshop Formula', value: formulaString, inline: true });
         }
@@ -423,7 +423,7 @@ module.exports = {
                 const skillArr = [skillOne, skillTwo, skillThree];
                 for (let i = 0; i < op.data.skills.length; i++) {
                     skillArr[i].setStyle(ButtonStyle.Primary);
-                    if (i != page) {
+                    if (i !== page) {
                         skillArr[i].setCustomId(`infoඞ${op.id}ඞ${type}ඞ${i}ඞ${level}ඞskill`)
                         skillArr[i].setDisabled(false);
                     }
@@ -462,7 +462,7 @@ module.exports = {
                 const moduleArr = [moduleOne, moduleTwo];
                 for (let i = 0; i < op.modules.length - 1; i++) {
                     moduleArr[i].setStyle(ButtonStyle.Primary);
-                    if (i != page) {
+                    if (i !== page) {
                         moduleArr[i].setCustomId(`infoඞ${op.id}ඞ${type}ඞ${i}ඞ${level}ඞmodule`)
                         moduleArr[i].setDisabled(false);
                     }
@@ -537,7 +537,7 @@ module.exports = {
             .setThumbnail(`attachment://skill_icon_${cleanFilename(thumbnailFilename)}.png`)
             .setDescription(description);
 
-        if (skillLevel.rangeId != null) {
+        if (skillLevel.rangeId !== null) {
             const rangeField = this.rangeField(skillLevel.rangeId);
             embed.addFields(rangeField);
         }
@@ -650,25 +650,25 @@ module.exports = {
 
         let description = '', talentName = '', talentDescription = '';
         for (const part of moduleLevel.parts) {
-            if (part.overrideTraitDataBundle.candidates != null) {
+            if (part.overrideTraitDataBundle.candidates !== null) {
                 const candidates = part.overrideTraitDataBundle.candidates;
                 const candidate = candidates[candidates.length - 1];
 
-                if (candidate.additionalDescription != null) {
+                if (candidate.additionalDescription !== null) {
                     description += `${formatText(candidate.additionalDescription, candidate.blackboard)}\n`;
                 }
-                if (candidate.overrideDescripton != null) {
+                if (candidate.overrideDescripton !== null) {
                     description += `${formatText(candidate.overrideDescripton, candidate.blackboard)}\n`;
                 }
             }
-            if (part.addOrOverrideTalentDataBundle.candidates != null) {
+            if (part.addOrOverrideTalentDataBundle.candidates !== null) {
                 const candidates = part.addOrOverrideTalentDataBundle.candidates;
                 const candidate = candidates[candidates.length - 1];
 
-                if (candidate.name != null) {
+                if (candidate.name !== null) {
                     talentName = candidate.name;
                 }
-                if (candidate.upgradeDescription != null) {
+                if (candidate.upgradeDescription !== null) {
                     talentDescription += `${formatText(candidate.upgradeDescription, candidate.blackboard)}\n`;
                 }
             }
@@ -681,7 +681,7 @@ module.exports = {
             .setThumbnail(`attachment://${module.info.uniEquipId}.png`)
             .setDescription(description);
 
-        if (talentName != '' && talentDescription != '') {
+        if (talentName !== '' && talentDescription !== '') {
             embed.addFields({ name: `*Talent:* ${talentName}`, value: talentDescription });
         }
 
@@ -749,7 +749,7 @@ module.exports = {
             .setTitle(`${name}`)
             .setImage(`attachment://${cleanFilename(skin.portraitId)}.png`);
 
-        if (artistName != null && artistName != '') {
+        if (artistName !== null && artistName !== '') {
             embed.addFields({ name: `Artist`, value: artistName });
         }
 
@@ -831,25 +831,25 @@ module.exports = {
 
         let description = '', talentName = '', talentDescription = '';
         for (const part of moduleLevel.parts) {
-            if (part.overrideTraitDataBundle.candidates != null) {
+            if (part.overrideTraitDataBundle.candidates !== null) {
                 const candidates = part.overrideTraitDataBundle.candidates;
                 const candidate = candidates[candidates.length - 1];
 
-                if (candidate.additionalDescription != null) {
+                if (candidate.additionalDescription !== null) {
                     description += `${formatText(candidate.additionalDescription, candidate.blackboard)}\n`;
                 }
-                if (candidate.overrideDescripton != null) {
+                if (candidate.overrideDescripton !== null) {
                     description += `${formatText(candidate.overrideDescripton, candidate.blackboard)}\n`;
                 }
             }
-            if (part.addOrOverrideTalentDataBundle.candidates != null) {
+            if (part.addOrOverrideTalentDataBundle.candidates !== null) {
                 const candidates = part.addOrOverrideTalentDataBundle.candidates;
                 const candidate = candidates[candidates.length - 1];
 
-                if (candidate.name != null) {
+                if (candidate.name !== null) {
                     talentName = candidate.name;
                 }
-                if (candidate.upgradeDescription != null) {
+                if (candidate.upgradeDescription !== null) {
                     talentDescription += `${formatText(candidate.upgradeDescription, candidate.blackboard)}\n`;
                 }
             }
@@ -862,7 +862,7 @@ module.exports = {
             .setThumbnail(`attachment://${module.info.uniEquipId}.png`)
             .setDescription(description);
 
-        if (talentName != '' && talentDescription != '') {
+        if (talentName !== '' && talentDescription !== '') {
             embed.addFields({ name: `*Talent:* ${talentName}`, value: talentDescription });
         }
 
@@ -918,9 +918,9 @@ module.exports = {
         }
 
         let description = formatText(op.data.description, []);
-        if (op.data.trait != null) {
+        if (op.data.trait !== null) {
             const candidate = op.data.trait.candidates[op.data.trait.candidates.length - 1];
-            if (candidate.overrideDescripton != null) {
+            if (candidate.overrideDescripton !== null) {
                 description = formatText(candidate.overrideDescripton, candidate.blackboard);
             }
         }
@@ -934,7 +934,7 @@ module.exports = {
             .setThumbnail(`attachment://${op.id}.png`)
             .addFields(descriptionField, rangeField);
 
-        if (op.data.talents != null) {
+        if (op.data.talents !== null) {
             for (const talent of op.data.talents) {
                 const candidate = talent.candidates[talent.candidates.length - 1];
                 embed.addFields({ name: `*Talent:* ${candidate.name}`, value: formatText(candidate.description, []) });
@@ -945,7 +945,7 @@ module.exports = {
         for (const potential of op.data.potentialRanks) {
             potentialString += `${potential.description}\n`;
         }
-        if (potentialString != '') {
+        if (potentialString !== '') {
             embed.addFields({ name: 'Potentials', value: potentialString, inline: true });
         }
 
@@ -953,11 +953,11 @@ module.exports = {
         const trustBonus: { [key: string]: number | boolean } = op.data.favorKeyFrames[1].data;
         for (const trustKey of Object.keys(trustBonus)) {
             const trustValue = trustBonus[trustKey];
-            if (trustValue != 0 && trustValue != 0.0 && trustValue != false) {
+            if (trustValue !== 0 && trustValue !== 0.0 && trustValue !== false) {
                 trustString += `${trustKey.toUpperCase()} +${trustValue}\n`;
             }
         }
-        if (trustString != '') {
+        if (trustString !== '') {
             embed.addFields({ name: 'Trust Bonus', value: trustString, inline: true });
         }
 
@@ -1127,7 +1127,7 @@ module.exports = {
         return { name: 'Range', value: rangeString };
     },
     recruitEmbed(qual: string, value: number, tag: string, select: boolean) {
-        if (tag != '') {
+        if (tag !== '') {
             if (select) {
                 value *= consts.tagValues[tag];
             }
@@ -1253,7 +1253,7 @@ module.exports = {
                 const buttonTag = button.data.custom_id.split('ඞ')[3];
                 const buttonValue = consts.tagValues[buttonTag];
 
-                if (value % buttonValue != 0) continue;
+                if (value % buttonValue !== 0) continue;
 
                 selectedButtons.push(button);
             }
@@ -1283,8 +1283,8 @@ module.exports = {
         if (selectedButtons.length >= 1) {
             for (const opId of Object.values(consts.recruitPool)) {
                 const op = operatorDict[String(opId)];
-                if (op.recruitId % value != 0) continue;
-                if (qual != null && qual != 'null' && op.data.rarity != consts.qualifications[qual]) continue;
+                if (op.recruitId % value !== 0) continue;
+                if (qual !== null && qual !== 'null' && op.data.rarity !== consts.qualifications[qual]) continue;
 
                 opArr.push(op);
             }
@@ -1312,7 +1312,7 @@ module.exports = {
         return { embeds: [embed], components: components };
     },
     async rogueRelicEmbed(relic: RogueRelic) {
-        const description = `***Cost:* ${relic.value}▲**\n${relic.description != null ? `${relic.usage}\n\n${relic.description}` : relic.usage}`;
+        const description = `***Cost:* ${relic.value}▲**\n${relic.description !== null ? `${relic.usage}\n\n${relic.description}` : relic.usage}`;
 
         const embed = new EmbedBuilder()
             .setColor(embedColour)
@@ -1380,7 +1380,7 @@ module.exports = {
     async rogueStageEmbed(theme: number, stage: RogueStage, page: number) {
         const stageInfo = stage.excel;
         const stageData = stage.levels;
-        const isChallenge = stageInfo.difficulty != 'NORMAL';
+        const isChallenge = stageInfo.difficulty !== 'NORMAL';
 
         const title = isChallenge ? `Emergency ${stageInfo.code} - ${stageInfo.name}` : `${stageInfo.code} - ${stageInfo.name}`;
         const description = isChallenge ? formatText(`${stageInfo.description}\n${stageInfo.eliteDesc}`, []) : formatText(stageInfo.description, []);
@@ -1523,7 +1523,7 @@ module.exports = {
             .setThumbnail(`attachment://skill_icon_${cleanFilename(thumbnailFilename)}.png`)
             .setDescription(description);
 
-        if (skillLevel.rangeId != null) {
+        if (skillLevel.rangeId !== null) {
             const rangeField = this.rangeField(skillLevel.rangeId);
             embed.addFields(rangeField);
         }
@@ -1634,7 +1634,7 @@ module.exports = {
             .setTitle(`${name}`)
             .setImage(`attachment://${cleanFilename(skin.portraitId)}.png`);
 
-        if (artistName != null && artistName != '') {
+        if (artistName !== null && artistName !== '') {
             embed.addFields({ name: `Artist`, value: artistName });
         }
 
@@ -1737,10 +1737,10 @@ module.exports = {
             }
         }
 
-        if (regularString != '') {
+        if (regularString !== '') {
             embed.addFields({ name: 'Regular Drops', value: regularString });
         }
-        if (specialString != '') {
+        if (specialString !== '') {
             embed.addFields({ name: 'Special Drops', value: specialString });
         }
 
@@ -1859,13 +1859,13 @@ module.exports = {
         }
 
         const fieldArr = [];
-        if (enemyString != '') {
+        if (enemyString !== '') {
             fieldArr.push({ name: 'Enemies', value: enemyString, inline: true });
         }
-        if (eliteString != '') {
+        if (eliteString !== '') {
             fieldArr.push({ name: 'Elites', value: eliteString, inline: true });
         }
-        if (bossString != '') {
+        if (bossString !== '') {
             fieldArr.push({ name: 'Leaders', value: bossString });
         }
 
