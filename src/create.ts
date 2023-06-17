@@ -287,7 +287,7 @@ module.exports = {
         const thumbnail = new AttachmentBuilder(thumbnailPath);
 
         const title = `${enemyInfo.enemyIndex} - ${enemyInfo.name}`;
-        const description = `${formatText(enemyInfo.description, [])}\n\n${formatText(enemyInfo.ability, [])}`;
+        const description = `${formatText(enemyInfo.ability, [])}\n\n${formatText(enemyInfo.description, [])}`;
 
         const hp = enemyData.attributes.maxHp.m_value.toString();
         const atk = enemyData.attributes.atk.m_value.toString();
