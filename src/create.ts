@@ -31,7 +31,7 @@ function formatText(text: string, blackboard: Blackboard[]) {
     for (const stat of blackboard) {
         const key = stat.key;
         const value = stat.value;
-        if (text.charAt(text.indexOf(key) + key.length) === ':') {
+        if (text.charAt(text.indexOf(key) + key.length) === ':' || text.charAt(text.indexOf(key.toUpperCase()) + key.length) === ':') {
             skillKeys[key] = `${Math.round(value * 100)}%`;
         }
         else {
