@@ -40,7 +40,7 @@ function formatText(text: string, blackboard: Blackboard[]) {
     }
 
     const endTagRegex = /<\/[^<]*>/;
-    const tagRegex = /<.[a-z]{2,5}?\.[^<]+>|<color=[^<]*>|:0%|:0.0|:0.0%|(?<=[^0-9]):0/;
+    const tagRegex = /<.[a-z]{2,5}?\.[^<]+>|<color=[^<]*>|:0%|:0.0%|:0.0|(?<=[^0-9]):0/;
     text = text.split(endTagRegex).join('').split(tagRegex).join('');
 
     const temp = text.split(/-?{-?|}/);
