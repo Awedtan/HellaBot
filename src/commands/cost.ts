@@ -2,7 +2,7 @@ const { SlashCommandBuilder } = require('discord.js');
 const fetch = require('../fetch');
 const create = require('../create');
 
-import { Item, Operator } from "../types";
+import { Operator } from "../types";
 
 module.exports = {
     data: new SlashCommandBuilder()

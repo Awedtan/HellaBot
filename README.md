@@ -2,6 +2,10 @@
  
 ## todo:
 
+use more updated spine viewer
+
+finish spine command
+
 add item list
 
 add costs to info embed
