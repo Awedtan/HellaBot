@@ -36,7 +36,7 @@ module.exports = {
 
         await interaction.deferReply();
 
-        const browser = await puppeteer.launch({ args: ["--no-sandbox", "--disabled-setupid-sandbox"] });
+        const browser = await puppeteer.launch({ headless: "old", args: ["--no-sandbox", "--disabled-setupid-sandbox"] });
         const page = await browser.newPage();
 
         page.on('console', async message => {
