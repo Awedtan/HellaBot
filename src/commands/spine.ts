@@ -36,7 +36,7 @@ module.exports = {
 
         await interaction.deferReply();
 
-        const browser = await puppeteer.launch({ headless: "new" });
+        const browser = await puppeteer.launch({ args: ["--no-sandbox", "--disabled-setupid-sandbox"] });
         const page = await browser.newPage();
 
         page.on('console', async message => {
@@ -66,6 +66,6 @@ module.exports = {
         })
 
         await page.setViewport({ width: 300, height: 300 });
-        await page.goto(path.resolve(__dirname, `spine.html?name=${op.id}&type=${type}`));
+        await page.goto("file://" + path.resolve(__dirname, `spine.html?name=${op.id}&type=${type}`));
     }
 };
