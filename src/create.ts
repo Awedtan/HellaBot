@@ -157,6 +157,23 @@ module.exports = {
             return { embeds: [embed], files: [], components: [buttonRow] };
         }
     },
+    ccSelectEmbed(season: string) {
+        const names: string = gameConsts.ccSeasons[season];
+
+        const ccSelector = new StringSelectMenuBuilder()
+            .setCustomId(`ccඞselect`)
+            .setPlaceholder('Select a stage!');
+        const componentRow = new ActionRowBuilder().addComponents(ccSelector);
+
+        for (const name of names) {
+            ccSelector.addOptions(new StringSelectMenuOptionBuilder()
+                .setLabel(name)
+                .setValue(name.toLowerCase())
+            );
+        }
+
+        return { content: `Please select a stage from CC#${season} below:`, components: [componentRow] };
+    },
     costEmbed(op: Operator, type: string) {
         const avatarPath = path.join(__dirname, paths.operatorAvatar, `${op.id}.png`);
         const avatar = new AttachmentBuilder(avatarPath);

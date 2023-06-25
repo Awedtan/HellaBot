@@ -14,6 +14,134 @@
         "stageImage": "../images/stages"
     },
     "gameConsts": {
+        "ccSeasons": {
+            "beta": [
+                "Area 59 Ruins",
+                "Abandoned High-rise",
+                "Barren Plaza"
+            ],
+            "0": [
+                "Broken Path",
+                "Area 59 Ruins",
+                "Abandoned High-rise",
+                "Barren Plaza",
+                "Desolate Desert",
+                "Frost-Covered Ruins",
+                "New Street",
+                "Transport Hub"
+            ],
+            "1": [
+                "Pyrite Gorge",
+                "Area 59 Ruins",
+                "Broken Path",
+                "Desolate Desert",
+                "East Armory",
+                "Frost-Covered Ruins",
+                "New Street",
+                "Transport Hub"
+            ],
+            "2": [
+                "Deserted Factory",
+                "Broken Path",
+                "Desolate Desert",
+                "East Armory",
+                "Frost-Covered Ruins",
+                "New Street",
+                "Pyrite Gorge",
+                "Transport Hub"
+            ],
+            "3": [
+                "Windwept Highland",
+                "Area 6 Ruins",
+                "Broken Path",
+                "Deserted Factory",
+                "East Armory",
+                "Frost-Covered Ruins",
+                "Pyrite Gorge",
+                "Transport Hub"
+            ],
+            "4": [
+                "Abandoned Mine",
+                "Area 6 Ruins",
+                "Deserted Factory",
+                "East Armory",
+                "Locked-Down Prison",
+                "Pyrite Gorge",
+                "Transport Hub",
+                "Windwept Highland"
+            ],
+            "5": [
+                "Arena 8",
+                "Abandoned Mine",
+                "Area 6 Ruins",
+                "Deserted Factory",
+                "East Armory",
+                "Locked-Down Prison",
+                "Pyrite Gorge",
+                "Windwept Highland"
+            ],
+            "6": [
+                "Howling Desert",
+                "Abandoned Mine",
+                "Abandoned Plot",
+                "Area 6 Ruins",
+                "Arena 8",
+                "Deserted Factory",
+                "Locked-Down Prison",
+                "Pyrite Gorge",
+                "Windwept Highland"
+            ],
+            "7": [
+                "Hui-ch'i Foothills",
+                "Abandoned Mine",
+                "Abandoned Plot",
+                "Arena 8",
+                "Blazing Cavern",
+                "Howling Desert",
+                "Locked-Down Prison",
+                "Windwept Highland"
+            ],
+            "8": [
+                "Grand Knight Territory Bar District",
+                "Abandoned Mine",
+                "Abandoned Plot",
+                "Arena 8",
+                "Blazing Cavern",
+                "Howling Desert",
+                "Hui-ch'i Foothills",
+                "Sandsea Remnants"
+            ],
+            "9": [
+                "Sal Viento Karst",
+                "Abandoned Plot",
+                "Blazing Cavern",
+                "Grand Knight Territory Bar District",
+                "Howling Desert",
+                "Hui-ch'i Foothills",
+                "Sandsea Remnants",
+                "Shangshu Trails"
+            ],
+            "10": [
+                "Londinium Outskirts",
+                "Blazing Cavern",
+                "County Hillock Depot",
+                "Grand Knight Territory Bar District",
+                "Hui-ch'i Foothills",
+                "Sal Viento Karst",
+                "Sandsea Remnants",
+                "Shangshu Trails"
+            ],
+            "11": [
+                "Under-Construction Beachside",
+                "County Hillock Depot",
+                "Grand Knight Territory Bar District",
+                "Hui-ch'i Foothills",
+                "Londinium Outskirts",
+                "Sal Viento Karst",
+                "Sandsea Remnants",
+                "Shangshu Trails"
+            ]
+        },
         "ccStages": [
             {
                 "code": "level_rune_01-01",

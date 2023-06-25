@@ -2,7 +2,7 @@ const { SlashCommandBuilder } = require('discord.js');
 const fetch = require('../fetch');
 const create = require('../create');
 
-import { Stage } from '../types';
+import { CCStage } from '../types';
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -16,10 +16,18 @@ module.exports = {
     async execute(interaction) {
         const name = interaction.options.getString('name').toLowerCase();
 
-        const ccDict = fetch.cc();
+        const ccDict: { [key: string]: CCStage } = fetch.cc();
 
-        if (!ccDict.hasOwnProperty(name))
-            return await interaction.reply({ content: 'That stage doesn\'t exist!', ephemeral: true });
+        if (!ccDict.hasOwnProperty(name)) {
+            const { gameConsts } = require('../constants');
+            const ccSeasons: { [key: string]: string[] } = gameConsts.ccSeasons;
+            if (!ccSeasons.hasOwnProperty(name))
+                return await interaction.reply({ content: 'That stage doesn\'t exist!', ephemeral: true });
+            else {
+                const ccSelectEmbed = await create.ccSelectEmbed(name);
+                return await interaction.reply(ccSelectEmbed);
+            }
+        }
 
         const stage = ccDict[name];
         if (stage.const === undefined || stage.levels === undefined)

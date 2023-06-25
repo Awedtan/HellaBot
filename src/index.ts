@@ -68,13 +68,23 @@ client.on(Events.InteractionCreate, async interaction => {
 
     switch (idArr[0]) {
         case 'cc': {
-            const stage = ccDict[idArr[1]];
-            const page = parseInt(idArr[2]);
+            if (idArr[1] === 'select') {
+                const stage = ccDict[interaction.values[0]];
 
-            const ccEmbed = await create.ccEmbed(stage, page);
-            await interaction.update(ccEmbed);
+                const ccEmbed = await create.ccEmbed(stage, 0);
+                await interaction.update(ccEmbed);
 
-            break;
+                break;
+            }
+            else {
+                const stage = ccDict[idArr[1]];
+                const page = parseInt(idArr[2]);
+
+                const ccEmbed = await create.ccEmbed(stage, page);
+                await interaction.update(ccEmbed);
+
+                break;
+            }
         }
         case 'cost': {
             const op = opDict[idArr[1]];
@@ -188,8 +198,9 @@ client.on(Events.InteractionCreate, async interaction => {
 
                 const stageEmbed = await create.stageEmbed(stage, page);
                 await interaction.update(stageEmbed);
+
+                break;
             }
-            break;
         }
     }
 });
