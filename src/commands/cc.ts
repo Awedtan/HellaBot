@@ -7,10 +7,10 @@ import { CCStage } from '../types';
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('cc')
-        .setDescription('Show information on a CC stage')
+        .setDescription('Show information on a CC stage or season')
         .addStringOption(option =>
             option.setName('name')
-                .setDescription('Stage name')
+                .setDescription('Stage name/season number')
                 .setRequired(true)
         ),
     async execute(interaction) {
