@@ -46,8 +46,18 @@ type Base = {
 };
 
 type BaseInfo = {
-    buffId: string,
-    cond: OperatorUnlockCond
+    buffId: string;
+    cond: OperatorUnlockCond;
+};
+
+type CCStage = {
+    const: {
+        code: string;
+        location: string;
+        name: string;
+        description: string;
+    }
+    levels: StageData;
 };
 
 type Definition = {

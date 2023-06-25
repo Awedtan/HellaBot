@@ -3,9 +3,9 @@ const fs = require('fs');
 const path = require('path');
 const fetch = require('./fetch');
 const { paths } = require('./constants');
-const { consts } = require('./constants');
+const { gameConsts } = require('./constants');
 
-import { Base, BaseInfo, Blackboard, Definition, Enemy, Item, LevelUpCost, Module, Paradox, Operator, Range, RogueRelic, RogueStage, RogueTheme, RogueVariation, Skill, Skin, Stage, StageData } from "./types";
+import { Base, BaseInfo, Blackboard, CCStage, Definition, Enemy, Item, LevelUpCost, Module, Paradox, Operator, Range, RogueRelic, RogueStage, RogueTheme, RogueVariation, Skill, Skin, Stage, StageData } from "./types";
 
 const embedColour = 0xebca60;
 const archetypeDict: { [key: string]: string } = fetch.archetypes();
@@ -61,7 +61,7 @@ function stageDiagramFields(stageData: StageData) {
     for (let i = 0; i < map.length; i++) {
         for (let j = 0; j < map[0].length; j++) {
             const tileKey = tiles[map[i][j]].tileKey;
-            const tile = consts.tileDict.hasOwnProperty(tileKey) ? consts.tileDict[tileKey] : consts.tileDict['unknown'];
+            const tile = gameConsts.tileDict.hasOwnProperty(tileKey) ? gameConsts.tileDict[tileKey] : gameConsts.tileDict['unknown'];
             mapString += tile.emoji;
 
             if (legendString.includes(tile.name)) continue;
@@ -86,7 +86,7 @@ module.exports = {
         const thumbnail = new AttachmentBuilder(thumbnailPath);
 
         const authorField = this.authorField(op);
-        const title = `${base.buffName} - ${consts.eliteLevels[baseInfo.cond.phase]} Lv${baseInfo.cond.level}`;
+        const title = `${base.buffName} - ${gameConsts.eliteLevels[baseInfo.cond.phase]} Lv${baseInfo.cond.level}`;
         const description = formatText(base.description, []);
 
         const embed = new EmbedBuilder()
@@ -97,6 +97,65 @@ module.exports = {
             .setDescription(description);
 
         return { embeds: [embed], files: [avatar, thumbnail] };
+    },
+    async ccEmbed(stage: CCStage, page: number) {
+        const stageInfo = stage.const;
+        const stageData = stage.levels;
+
+        const title = `${stageInfo.location} - ${stageInfo.name}`;
+        const description = formatText(stageInfo.description, []);
+
+        const embed = new EmbedBuilder()
+            .setColor(embedColour)
+            .setTitle(title)
+            .setDescription(description);
+
+        const enemyFields = this.stageEnemyFields(stageData.enemyDbRefs);
+        for (const field of enemyFields) {
+            embed.addFields(field);
+        }
+
+        const imageButton = new ButtonBuilder()
+            .setCustomId(`ccඞ${stage.const.name.toLowerCase()}ඞ0`)
+            .setLabel('Preview')
+            .setStyle(ButtonStyle.Primary);
+        const diagramButton = new ButtonBuilder()
+            .setCustomId(`ccඞ${stage.const.name.toLowerCase()}ඞ1`)
+            .setLabel('Diagram')
+            .setStyle(ButtonStyle.Primary);
+        const buttonRow = new ActionRowBuilder().addComponents(imageButton, diagramButton);
+
+        switch (page) {
+            case 0:
+                imageButton.setDisabled(true);
+                break;
+            case 1:
+                diagramButton.setDisabled(true);
+                break;
+        }
+
+        if (page === 0) {
+            const imagePath = path.join(__dirname, paths.stageImage, `${stageInfo.code}.png`);
+
+            if (await fileExists(imagePath)) {
+                const image = new AttachmentBuilder(imagePath);
+                embed.setImage(`attachment://${stageInfo.code}.png`)
+
+                return { embeds: [embed], files: [image], components: [buttonRow] };
+            }
+            else {
+                const diagramFields = stageDiagramFields(stageData);
+                embed.addFields(diagramFields);
+
+                return { embeds: [embed] };
+            }
+        }
+        else {
+            const diagramFields = stageDiagramFields(stageData);
+            embed.addFields(diagramFields);
+
+            return { embeds: [embed], files: [], components: [buttonRow] };
+        }
     },
     costEmbed(op: Operator, type: string) {
         const avatarPath = path.join(__dirname, paths.operatorAvatar, `${op.id}.png`);
@@ -157,7 +216,7 @@ module.exports = {
                     if (phase.evolveCost === null) continue;
 
                     let phaseDescription = this.costString(phase.evolveCost);
-                    phaseDescription += `LMD **x${consts.eliteLmdCost[op.data.rarity][i - 1]}**\n`;
+                    phaseDescription += `LMD **x${gameConsts.eliteLmdCost[op.data.rarity][i - 1]}**\n`;
                     embed.addFields({ name: `Elite ${i}`, value: phaseDescription, inline: true });
                 }
                 break;
@@ -336,7 +395,7 @@ module.exports = {
             if (!stageId.includes('main') && !stageId.includes('sub')) continue;
 
             const stage = stageDict[stageId][0];
-            stageString += `${stage.excel.code} - ${consts.itemDropRarities[stageDrop.occPer]}\n`;
+            stageString += `${stage.excel.code} - ${gameConsts.itemDropRarities[stageDrop.occPer]}\n`;
         }
         if (stageString !== '') {
             embed.addFields({ name: 'Drop Stages', value: stageString, inline: true });
@@ -535,13 +594,13 @@ module.exports = {
         const thumbnail = new AttachmentBuilder(thumbnailPath);
 
         const authorField = this.authorField(op);
-        const title = `${skillLevel.name} - ${consts.skillLevels[level]}`;
+        const title = `${skillLevel.name} - ${gameConsts.skillLevels[level]}`;
 
         const spCost = skillLevel.spData.spCost;
         const initSp = skillLevel.spData.initSp;
         const skillDuration = skillLevel.duration;
-        const spType = consts.spTypes[skillLevel.spData.spType];
-        const skillType = consts.skillTypes[skillLevel.skillType];
+        const spType = gameConsts.spTypes[skillLevel.spData.spType];
+        const skillType = gameConsts.skillTypes[skillLevel.skillType];
 
         let description = `**${spType} - ${skillType}**\n***Cost:* ${spCost} SP - *Initial:* ${initSp} SP`;
         if (skillDuration > 0) {
@@ -943,7 +1002,7 @@ module.exports = {
                 description = formatText(candidate.overrideDescripton, candidate.blackboard);
             }
         }
-        const descriptionField = { name: `${consts.professions[op.data.profession]} - ${archetypeDict[op.data.subProfessionId]}`, value: description };
+        const descriptionField = { name: `${gameConsts.professions[op.data.profession]} - ${archetypeDict[op.data.subProfessionId]}`, value: description };
         const rangeField = this.rangeField(opMax.rangeId);
 
         const embed = new EmbedBuilder()
@@ -1116,10 +1175,10 @@ module.exports = {
     recruitEmbed(qual: string, value: number, tag: string, select: boolean) {
         if (tag !== '') {
             if (select) {
-                value *= consts.tagValues[tag];
+                value *= gameConsts.tagValues[tag];
             }
             else {
-                value /= consts.tagValues[tag];
+                value /= gameConsts.tagValues[tag];
             }
         }
 
@@ -1238,7 +1297,7 @@ module.exports = {
         for (const actionRow of components) {
             for (const button of actionRow.components) {
                 const buttonTag = button.data.custom_id.split('ඞ')[3];
-                const buttonValue = consts.tagValues[buttonTag];
+                const buttonValue = gameConsts.tagValues[buttonTag];
 
                 if (value % buttonValue !== 0) continue;
 
@@ -1268,10 +1327,10 @@ module.exports = {
         const opArr: Operator[] = [];
 
         if (selectedButtons.length >= 1) {
-            for (const opId of Object.values(consts.recruitPool)) {
+            for (const opId of Object.values(gameConsts.recruitPool)) {
                 const op = operatorDict[String(opId)];
                 if (op.recruitId % value !== 0) continue;
-                if (qual !== null && qual !== 'null' && op.data.rarity !== consts.qualifications[qual]) continue;
+                if (qual !== null && qual !== 'null' && op.data.rarity !== gameConsts.qualifications[qual]) continue;
 
                 opArr.push(op);
             }
@@ -1457,13 +1516,13 @@ module.exports = {
         const thumbnail = new AttachmentBuilder(thumbnailPath);
 
         const authorField = this.authorField(op);
-        const title = `${skillLevel.name} - ${consts.skillLevels[level]}`;
+        const title = `${skillLevel.name} - ${gameConsts.skillLevels[level]}`;
 
         const spCost = skillLevel.spData.spCost;
         const initSp = skillLevel.spData.initSp;
         const skillDuration = skillLevel.duration;
-        const spType = consts.spTypes[skillLevel.spData.spType];
-        const skillType = consts.skillTypes[skillLevel.skillType];
+        const spType = gameConsts.spTypes[skillLevel.spData.spType];
+        const skillType = gameConsts.skillTypes[skillLevel.skillType];
 
         let description = `**${spType} - ${skillType}**\n***Cost:* ${spCost} SP - *Initial:* ${initSp} SP`;
         if (skillDuration > 0) {

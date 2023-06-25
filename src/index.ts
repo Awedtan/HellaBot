@@ -50,8 +50,9 @@ client.on(Events.InteractionCreate, async interaction => {
 });
 
 // Start of command interaction handling
-import { Module, Paradox, Operator, RogueTheme, Skill, Stage } from "./types";
+import { CCStage, Module, Paradox, Operator, RogueTheme, Skill, Stage } from "./types";
 
+const ccDict: { [key: string]: CCStage } = fetch.cc();
 const moduleDict: { [key: string]: Module } = fetch.modules();
 const opDict: { [key: string]: Operator } = fetch.operators();
 const paradoxDict: { [key: string]: Paradox } = fetch.paradoxes();
@@ -66,6 +67,15 @@ client.on(Events.InteractionCreate, async interaction => {
     const idArr: string[] = interaction.customId.split('ඞ');
 
     switch (idArr[0]) {
+        case 'cc': {
+            const stage = ccDict[idArr[1]];
+            const page = parseInt(idArr[2]);
+
+            const ccEmbed = await create.ccEmbed(stage, page);
+            await interaction.update(ccEmbed);
+
+            break;
+        }
         case 'cost': {
             const op = opDict[idArr[1]];
             const type = idArr[2];

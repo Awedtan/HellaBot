@@ -1,10 +1,11 @@
 const { paths } = require('./constants');
-const { consts } = require('./constants');
+const { gameConsts } = require('./constants');
 
-import { Base, BaseInfo, Definition, Enemy, Item, ManufactFormula, Module, Operator, Paradox, ParadoxInfo, Range, RogueTheme, RogueRelic, RogueStage, RogueStageInfo, RogueVariation, Skill, Skin, Stage, StageData, StageInfo, WorkshopFormula } from "./types";
+import { Base, BaseInfo, CCStage, Definition, Enemy, Item, ManufactFormula, Module, Operator, Paradox, ParadoxInfo, Range, RogueTheme, RogueRelic, RogueStage, RogueStageInfo, RogueVariation, Skill, Skin, Stage, StageData, StageInfo, WorkshopFormula } from "./types";
 
 const archetypeDict: { [key: string]: string } = {};
 const baseDict: { [key: string]: Base } = {};
+const ccDict: { [key: string]: CCStage } = {};
 const definitionDict: { [key: string]: Definition } = {};
 const enemyDict: { [key: string]: Enemy } = {};
 const itemDict: { [key: string]: Item } = {};
@@ -22,6 +23,7 @@ module.exports = {
     initializeAll() {
         initArchetypes();
         initBases();
+        initCC();
         initDefinitions();
         initEnemies();
         initItems();
@@ -40,6 +42,9 @@ module.exports = {
     },
     bases() {
         return baseDict;
+    },
+    cc() {
+        return ccDict;
     },
     definitions() {
         return definitionDict;
@@ -103,9 +108,19 @@ function initBases() {
     }
 }
 
+function initCC() {
+    const ccStages: CCStage['const'][] = gameConsts.ccStages;
+
+    for (const stage of ccStages) {
+        const levels: StageData = require(`${paths.data}/levels/obt/rune/${stage.code}.json`);
+        const ccStage: CCStage = { const: stage, levels: levels };
+        ccDict[stage.name.toLowerCase()] = ccStage;
+    }
+}
+
 function initDefinitions() {
-    const gamedataConsts = require(`${paths.data}/excel/gamedata_const.json`);
-    const termDescriptionDict: { [key: string]: Definition } = gamedataConsts.termDescriptionDict;
+    const gamedatagameConsts = require(`${paths.data}/excel/gamedata_const.json`);
+    const termDescriptionDict: { [key: string]: Definition } = gamedatagameConsts.termDescriptionDict;
 
     for (const definition of Object.values(termDescriptionDict)) {
         definitionDict[definition.termName.toLowerCase()] = definition;
@@ -200,14 +215,14 @@ function initOperators() {
             }
         }
 
-        const positionId = consts.tagValues[opData.position.toLowerCase()];
-        const classId = consts.tagValues[consts.professions[opData.profession].toLowerCase()];
+        const positionId = gameConsts.tagValues[opData.position.toLowerCase()];
+        const classId = gameConsts.tagValues[gameConsts.professions[opData.profession].toLowerCase()];
         let tagId = 1;
         for (const tag of opData.tagList) {
-            tagId *= consts.tagValues[tag.toLowerCase()];
+            tagId *= gameConsts.tagValues[tag.toLowerCase()];
         }
         if (opData.itemDesc !== null && opData.itemDesc.includes('robot')) {
-            tagId *= consts.tagValues['robot'];
+            tagId *= gameConsts.tagValues['robot'];
         }
 
         const recruitId = positionId * classId * tagId;
@@ -234,14 +249,14 @@ function initOperators() {
             }
         }
 
-        const positionId = consts.tagValues[opData.position.toLowerCase()];
-        const classId = consts.tagValues[consts.professions[opData.profession].toLowerCase()];
+        const positionId = gameConsts.tagValues[opData.position.toLowerCase()];
+        const classId = gameConsts.tagValues[gameConsts.professions[opData.profession].toLowerCase()];
         let tagId = 1;
         for (const tag of opData.tagList) {
-            tagId *= consts.tagValues[tag.toLowerCase()];
+            tagId *= gameConsts.tagValues[tag.toLowerCase()];
         }
         if (opData.itemDesc !== null && opData.itemDesc.includes('robot')) {
-            tagId *= consts.tagValues['robot'];
+            tagId *= gameConsts.tagValues['robot'];
         }
 
         const recruitId = positionId * classId * tagId;
