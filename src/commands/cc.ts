@@ -15,7 +15,6 @@ module.exports = {
         ),
     async execute(interaction) {
         const name = interaction.options.getString('name').toLowerCase();
-
         const ccDict: { [key: string]: CCStage } = fetch.cc();
 
         if (!ccDict.hasOwnProperty(name)) {
