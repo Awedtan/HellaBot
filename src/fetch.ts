@@ -34,8 +34,7 @@ module.exports = {
         initSkins();
         initStages();
 
-        // Ops depend on skills and other stuff, initialize last
-        initOperators();
+        initOperators(); // Ops depend on skills and other stuff, initialize last
     },
     archetypes() {
         return archetypeDict;
