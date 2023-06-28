@@ -33,7 +33,6 @@ module.exports = {
         initSkills();
         initSkins();
         initStages();
-
         initOperators(); // Ops depend on skills and other stuff, initialize last
     },
     archetypes() {
