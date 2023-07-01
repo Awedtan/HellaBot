@@ -181,6 +181,30 @@ client.on(Events.InteractionCreate, async interaction => {
             await interaction.update(skinEmbed);
             break;
         }
+        case 'spine': {
+            const op = opDict[idArr[1]];
+            const type = interaction.values[0];
+
+            await interaction.deferUpdate();
+            await interaction.editReply({ content: `Generating gif...` })
+
+            const { page, browser } = await create.spinePage(op, type);
+
+            page.on('console', async message => {
+                if (message.text() === 'done') {
+                    await new Promise(r => setTimeout(r, 1000));
+                    await browser.close();
+
+                    const spineEmbed = await create.spineEmbed(op, type);
+                    return await interaction.editReply(spineEmbed);
+                }
+            }).on('pageerror', async ({ message }) => {
+                console.error(message);
+                return await interaction.editReply({ content: 'There was an error while generating the animation!' });
+            });
+
+            break;
+        }
         case 'stage': {
             if (idArr[1] === 'select') {
                 const stages = stageDict[idArr[2]];

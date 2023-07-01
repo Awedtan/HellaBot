@@ -11,6 +11,7 @@
         "rogueItemImage": "../images/rogueitems",
         "skillImage": "../Arknight-Images/skills",
         "skinGroupImage": "../images/skingroups",
+        "spineJson": "../spinejson",
         "stageImage": "../images/stages"
     },
     "gameConsts": {

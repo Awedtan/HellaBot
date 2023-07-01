@@ -1,6 +1,7 @@
 const { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder } = require('discord.js');
 const fs = require('fs');
 const path = require('path');
+const puppeteer = require('puppeteer');
 const fetch = require('./fetch');
 const { paths } = require('./constants');
 const { gameConsts } = require('./constants');
@@ -1732,6 +1733,48 @@ module.exports = {
         }
 
         return { embeds: [embed], files: [avatar, thumbnail, image], components: components };
+    },
+    async spinePage(op: Operator, type: string) {
+        const browser = await puppeteer.launch({ headless: "old", args: ["--no-sandbox", "--disabled-setupid-sandbox"] });
+        const page = await browser.newPage();
+        await page.setViewport({ width: 300, height: 300 });
+        await page.goto("file://" + path.resolve(__dirname, 'spine', `spine.html?name=${op.id}&type=${type}`));
+        const client = await page.target().createCDPSession()
+        await client.send('Page.setDownloadBehavior', {
+            behavior: 'allow',
+            downloadPath: path.resolve(__dirname, 'spine'),
+        })
+
+        return { page, browser };
+    },
+    async spineEmbed(op: Operator, type: string) {
+        const avatarPath = path.join(__dirname, 'spine', 'spine.gif');
+        const avatar = new AttachmentBuilder(avatarPath);
+
+        const jsonPath = path.join(__dirname, paths.spineJson, `${op.id}.json`);
+        const spineJson = require(jsonPath);
+
+        const animArr = Object.keys(spineJson.animations);
+
+        const animSelector = new StringSelectMenuBuilder()
+            .setCustomId(`spineඞ${op.id}`)
+            .setPlaceholder(type);
+        const componentRow = new ActionRowBuilder().addComponents(animSelector);
+
+        for (let i = 0; i < animArr.length; i++) {
+            if (animArr[i] === 'Default') continue;
+
+            animSelector.addOptions(new StringSelectMenuOptionBuilder()
+                .setLabel(animArr[i])
+                .setValue(animArr[i])
+            );
+        }
+
+        const embed = new EmbedBuilder()
+            .setTitle(op.data.name)
+            .setImage(`attachment://spine.gif`);
+
+        return await { content: '', embeds: [embed], files: [avatar], components: [componentRow] };
     },
     async stageEmbed(stage: Stage, page: number) {
         const stageInfo = stage.excel;

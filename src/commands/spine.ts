@@ -1,10 +1,13 @@
-const { SlashCommandBuilder, EmbedBuilder, AttachmentBuilder } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder, AttachmentBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder, ActionRowBuilder } = require('discord.js');
 const path = require('path');
 const puppeteer = require('puppeteer');
 const fetch = require('../fetch');
 const create = require('../create');
+const { paths } = require('../constants');
 
 import { Operator } from "../types";
+const fs = require('fs');
+const fileExists = async (path: string) => !!(await fs.promises.stat(path).catch(e => false));
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -14,58 +17,42 @@ module.exports = {
             option.setName('name')
                 .setDescription('Operator name')
                 .setRequired(true)
-        )
-        .addStringOption(option =>
-            option.setName('type')
-                .setDescription('Animation type')
-                .addChoices(
-                    { name: 'start', value: 'Start' },
-                    { name: 'idle', value: 'Idle' },
-                    { name: 'die', value: 'Die' }
-                )
         ),
     async execute(interaction) {
         const operatorDict: { [key: string]: Operator } = fetch.operators();
         const name = interaction.options.getString('name').toLowerCase();
-        const type = interaction.options.getString('type');
 
         if (!operatorDict.hasOwnProperty(name))
             return await interaction.reply({ content: 'That operator doesn\'t exist!', ephemeral: true });
 
         const op = operatorDict[name];
+        const jsonPath = path.join(__dirname, '..', paths.spineJson, `${op.id}.json`);
+        if (!await fileExists(jsonPath))
+            return await interaction.reply({ content: 'That operator doesn\'t have any spine data yet!', ephemeral: true });
+        const spineJson = require(jsonPath);
+        if (spineJson.skeleton.spine !== '3.5.51')
+            return await interaction.reply({ content: 'That operator\'s spine data is not yet supported!', ephemeral: true });
 
         await interaction.deferReply();
 
-        const browser = await puppeteer.launch({ headless: "old", args: ["--no-sandbox", "--disabled-setupid-sandbox"] });
-        const page = await browser.newPage();
+        const type = Object.keys(spineJson.animations)[0];
+        const { page, browser } = await create.spinePage(op, type);
 
         page.on('console', async message => {
             if (message.text() === 'done') {
                 await new Promise(r => setTimeout(r, 1000));
                 await browser.close();
 
-                const avatarPath = path.join(__dirname, `out.gif`);
-                const avatar = new AttachmentBuilder(avatarPath);
-
-                const embed = new EmbedBuilder()
-                    .setTitle('test')
-                    .setImage(`attachment://out.gif`);
-
-                await interaction.followUp({ embeds: [embed], files: [avatar] });
+                const spineEmbed = await create.spineEmbed(op, type);
+                return await interaction.followUp(spineEmbed);
             }
-        })
-            .on('pageerror', async ({ message }) => {
-                console.error(message);
-                await interaction.editReply({ content: 'There was an error while generating the animation!' });
-            });
+        }).on('pageerror', async ({ message }) => {
+            console.error(message);
+            return await interaction.editReply({ content: 'There was an error while generating the animation!' });
+        });
 
-        const client = await page.target().createCDPSession()
-        await client.send('Page.setDownloadBehavior', {
-            behavior: 'allow',
-            downloadPath: path.resolve(__dirname, './'),
-        })
+        // const spineEmbed = await create.spineEmbed(interaction, op, type);
 
-        await page.setViewport({ width: 300, height: 300 });
-        await page.goto("file://" + path.resolve(__dirname, `spine.html?name=${op.id}&type=${type}`));
+        // await interaction.followUp(spineEmbed);
     }
 };
