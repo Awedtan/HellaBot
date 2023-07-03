@@ -123,20 +123,20 @@ module.exports = {
                 const image = new AttachmentBuilder(imagePath);
                 embed.setImage(`attachment://${stageInfo.code}.png`)
 
-                return { embeds: [embed], files: [image], components: [buttonRow] };
+                return { content: '', embeds: [embed], files: [image], components: [buttonRow] };
             }
             else {
                 const diagramFields = this.stageDiagramFields(stageData);
                 embed.addFields(diagramFields);
 
-                return { embeds: [embed] };
+                return { content: '', embeds: [embed] };
             }
         }
         else {
             const diagramFields = this.stageDiagramFields(stageData);
             embed.addFields(diagramFields);
 
-            return { embeds: [embed], files: [], components: [buttonRow] };
+            return { content: '', embeds: [embed], files: [], components: [buttonRow] };
         }
     },
     ccSelectEmbed(season: string) {
@@ -169,19 +169,19 @@ module.exports = {
         const eliteButton = new ButtonBuilder()
             .setCustomId(`costඞ${op.id}ඞelite`)
             .setLabel('Promotions')
-            .setStyle(ButtonStyle.Success);
+            .setStyle(ButtonStyle.Primary);
         const skillButton = new ButtonBuilder()
             .setCustomId(`costඞ${op.id}ඞskill`)
             .setLabel('Skills')
-            .setStyle(ButtonStyle.Success);
+            .setStyle(ButtonStyle.Primary);
         const masteryButton = new ButtonBuilder()
             .setCustomId(`costඞ${op.id}ඞmastery`)
             .setLabel('Masteries')
-            .setStyle(ButtonStyle.Success);
+            .setStyle(ButtonStyle.Primary);
         const moduleButton = new ButtonBuilder()
             .setCustomId(`costඞ${op.id}ඞmodule`)
             .setLabel('Modules')
-            .setStyle(ButtonStyle.Success);
+            .setStyle(ButtonStyle.Primary);
         const buttonRow = new ActionRowBuilder().addComponents(eliteButton, skillButton, masteryButton, moduleButton);
 
         if (op.data.skills.length == 0) {
@@ -418,7 +418,7 @@ module.exports = {
 
         if (item.formula !== null) {
             const formulaString = this.costString(item.formula.costs);
-            embed.addFields({ name: 'Workshop Formula', value: formulaString, inline: true });
+            embed.addFields({ name: 'Crafting Formula', value: formulaString, inline: true });
         }
 
         const imagePath = path.join(__dirname, paths.itemImage, `${item.data.iconId}.png`);
@@ -1759,6 +1759,7 @@ module.exports = {
         const componentRow = new ActionRowBuilder().addComponents(animSelector);
 
         for (let i = 0; i < animArr.length; i++) {
+            // Default animations are a single frame that lasts forever, they do not work and should not be shown
             if (animArr[i] === 'Default') continue;
 
             animSelector.addOptions(new StringSelectMenuOptionBuilder()
@@ -1850,32 +1851,32 @@ module.exports = {
                 const image = new AttachmentBuilder(imagePath);
                 embed.setImage(`attachment://${stageInfo.stageId}.png`)
 
-                return { embeds: [embed], files: [image], components: [buttonRow] };
+                return { content: '', embeds: [embed], files: [image], components: [buttonRow] };
             }
             else if (await fileExists(toughPath)) {
                 const image = new AttachmentBuilder(toughPath);
                 embed.setImage(`attachment://${stageInfo.stageId}.png`)
 
-                return { embeds: [embed], files: [image], components: [buttonRow] };
+                return { content: '', embeds: [embed], files: [image], components: [buttonRow] };
             }
             else if (await fileExists(newPath)) {
                 const image = new AttachmentBuilder(newPath);
                 embed.setImage(`attachment://${stageInfo.stageId}.png`)
 
-                return { embeds: [embed], files: [image], components: [buttonRow] };
+                return { content: '', embeds: [embed], files: [image], components: [buttonRow] };
             }
             else {
                 const diagramFields = this.stageDiagramFields(stageData);
                 embed.addFields(diagramFields);
 
-                return { embeds: [embed] };
+                return { content: '', embeds: [embed] };
             }
         }
         else {
             const diagramFields = this.stageDiagramFields(stageData);
             embed.addFields(diagramFields);
 
-            return { embeds: [embed], files: [], components: [buttonRow] };
+            return { content: '', embeds: [embed], files: [], components: [buttonRow] };
         }
     },
     stageDiagramFields(stageData: StageData) {
@@ -1911,7 +1912,7 @@ module.exports = {
                             eliteString += `${enemy.excel.enemyIndex} - ${enemy.excel.name} - **Lv${enemyRef.level + 1}**\n`;
                             break;
                         case ('BOSS'):
-                            bossString += `*${enemy.excel.enemyIndex} - ${enemy.excel.name} - **Lv${enemyRef.level + 1}***\n`;
+                            bossString += `*${enemy.excel.enemyIndex} - ${enemy.excel.name}* - **Lv${enemyRef.level + 1}**\n`;
                             break;
                     }
                 }

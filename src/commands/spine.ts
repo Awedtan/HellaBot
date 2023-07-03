@@ -35,7 +35,8 @@ module.exports = {
 
         await interaction.deferReply();
 
-        const type = Object.keys(spineJson.animations)[0];
+        // Default animations are a single frame that lasts forever, they do not work and should not be shown
+        const type = Object.keys(spineJson.animations)[0] === 'Default' ? Object.keys(spineJson.animations)[1] : Object.keys(spineJson.animations)[0];
         const { page, browser } = await create.spinePage(op, type);
 
         page.on('console', async message => {
