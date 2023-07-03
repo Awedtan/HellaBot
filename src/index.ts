@@ -186,7 +186,7 @@ client.on(Events.InteractionCreate, async interaction => {
             const type = interaction.values[0];
 
             await interaction.deferUpdate();
-            await interaction.editReply({ content: `Generating gif...` })
+            await interaction.editReply({ content: `Generating \`${type}\` gif...`, components: [] })
 
             const { page, browser } = await create.spinePage(op, type);
 
