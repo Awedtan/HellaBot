@@ -50,9 +50,5 @@ module.exports = {
             console.error(message);
             return await interaction.editReply({ content: 'There was an error while generating the animation!' });
         });
-
-        // const spineEmbed = await create.spineEmbed(interaction, op, type);
-
-        // await interaction.followUp(spineEmbed);
     }
 };

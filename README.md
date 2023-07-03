@@ -2,40 +2,28 @@
  
 ## todo:
 
-use more updated spine viewer
-
-finish spine command
-
-add item list
+look into using more updated spine viewer
 
 add costs to info embed
 
-add help command and command descriptions
+add help command and better command descriptions
 
 count enemies in a stage
 
 maintain bot
 
-## maybe/unlikely:
-
-add enemy levels
-
-add material sanity costs, stage efficiencies
-
-improve recruit command
-
-find originium dust event stage previews
-
-find where cc stage info is stored
+## maybe/probably not:
 
 gacha banners
 
-past event info
-
 enemy wave and pathing visualizations
 
-krooster stuff
+improve recruit command
 
-gamepress stuff
+add material sanity costs, stage efficiencies
+
+find limited event stage previews
+
+krooster stuff
 
 add story and operator lore

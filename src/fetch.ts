@@ -352,7 +352,7 @@ function initSkins() {
     for (const skin of Object.values(charSkins)) {
         const opId = skin.charId;
         if (!skinDict.hasOwnProperty(opId)) {
-            skinDict[opId] = []; // Create an empty array if its the first skin for that op
+            skinDict[opId] = []; // Create an empty array if it's the first skin for that op
         }
         skinDict[opId].push(skin);
     }

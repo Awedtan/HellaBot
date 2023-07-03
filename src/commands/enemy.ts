@@ -21,7 +21,7 @@ module.exports = {
             return await interaction.reply({ content: 'That enemy doesn\'t exist!', ephemeral: true });
 
         const enemy = enemyDict[name];
-        const enemyEmbed = create.enemyEmbed(enemy);
+        const enemyEmbed = create.enemyEmbed(enemy, 0);
         await interaction.reply(enemyEmbed);
     }
 }

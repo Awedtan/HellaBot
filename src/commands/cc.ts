@@ -21,7 +21,7 @@ module.exports = {
             const { gameConsts } = require('../constants');
             const ccSeasons: { [key: string]: string[] } = gameConsts.ccSeasons;
             if (!ccSeasons.hasOwnProperty(name))
-                return await interaction.reply({ content: 'That stage doesn\'t exist!', ephemeral: true });
+                return await interaction.reply({ content: 'That stage/season doesn\'t exist!', ephemeral: true });
             else {
                 const ccSelectEmbed = await create.ccSelectEmbed(name);
                 return await interaction.reply(ccSelectEmbed);

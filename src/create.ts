@@ -54,25 +54,6 @@ function formatText(text: string, blackboard: Blackboard[]) {
 
     return text;
 };
-function stageDiagramFields(stageData: StageData) {
-    const map = stageData.mapData.map;
-    const tiles = stageData.mapData.tiles;
-    let mapString = '', legendString = '';
-
-    for (let i = 0; i < map.length; i++) {
-        for (let j = 0; j < map[0].length; j++) {
-            const tileKey = tiles[map[i][j]].tileKey;
-            const tile = gameConsts.tileDict.hasOwnProperty(tileKey) ? gameConsts.tileDict[tileKey] : gameConsts.tileDict['unknown'];
-            mapString += tile.emoji;
-
-            if (legendString.includes(tile.name)) continue;
-
-            legendString += `${tile.emoji} - ${tile.name}\n`;
-        }
-        mapString += '\n';
-    }
-    return [{ name: 'Map', value: mapString }, { name: 'Legend', value: legendString }];
-}
 
 module.exports = {
     authorField(op: Operator) {
@@ -145,14 +126,14 @@ module.exports = {
                 return { embeds: [embed], files: [image], components: [buttonRow] };
             }
             else {
-                const diagramFields = stageDiagramFields(stageData);
+                const diagramFields = this.stageDiagramFields(stageData);
                 embed.addFields(diagramFields);
 
                 return { embeds: [embed] };
             }
         }
         else {
-            const diagramFields = stageDiagramFields(stageData);
+            const diagramFields = this.stageDiagramFields(stageData);
             embed.addFields(diagramFields);
 
             return { embeds: [embed], files: [], components: [buttonRow] };
@@ -356,9 +337,9 @@ module.exports = {
 
         return { embeds: [embed] };
     },
-    enemyEmbed(enemy: Enemy) {
+    enemyEmbed(enemy: Enemy, level: number) {
         const enemyInfo = enemy.excel;
-        const enemyData = enemy.levels.Value[0].enemyData;
+        const enemyData = enemy.levels.Value[level].enemyData;
 
         const thumbnailPath = path.join(__dirname, paths.enemyImage, `${enemyInfo.enemyId}.png`);
         const thumbnail = new AttachmentBuilder(thumbnailPath);
@@ -397,7 +378,23 @@ module.exports = {
                 { name: 'Levitate', value: levitate ? '❌' : '✅', inline: true }
             );
 
-        return { embeds: [embed], files: [thumbnail] };
+        const enemyLevels = enemy.levels.Value.length;
+        if (enemyLevels === 1)
+            return { embeds: [embed], files: [thumbnail] };
+
+        const buttonRow = new ActionRowBuilder();
+        for (let i = 0; i < enemyLevels; i++) {
+            buttonRow.addComponents(new ButtonBuilder()
+                .setCustomId(`enemyඞ${enemy.excel.enemyId}ඞ${i}`)
+                .setLabel(`Level ${i + 1}`)
+                .setStyle(ButtonStyle.Primary)
+            )
+            if (i === level) {
+                buttonRow.components[i].setDisabled(true);
+            }
+        }
+
+        return { embeds: [embed], files: [thumbnail], components: [buttonRow] };
     },
     async itemEmbed(item: Item) {
         const description = item.data.description !== null ? `${item.data.usage}\n\n${item.data.description}` : item.data.usage;
@@ -1132,14 +1129,14 @@ module.exports = {
                 return { embeds: [embed], files: [thumbnail, image], components: [buttonRow] };
             }
             else {
-                const diagramFields = stageDiagramFields(stageData);
+                const diagramFields = this.stageDiagramFields(stageData);
                 embed.addFields(diagramFields);
 
                 return { embeds: [embed], files: [thumbnail] };
             }
         }
         else {
-            const diagramFields = stageDiagramFields(stageData);
+            const diagramFields = this.stageDiagramFields(stageData);
             embed.addFields(diagramFields);
 
             return { embeds: [embed], files: [thumbnail], components: [buttonRow] };
@@ -1488,14 +1485,14 @@ module.exports = {
                 return { embeds: [embed], files: [image], components: [buttonRow] };
             }
             else {
-                const diagramFields = stageDiagramFields(stageData);
+                const diagramFields = this.stageDiagramFields(stageData);
                 embed.addFields(diagramFields);
 
                 return { embeds: [embed] };
             }
         }
         else {
-            const diagramFields = stageDiagramFields(stageData);
+            const diagramFields = this.stageDiagramFields(stageData);
             embed.addFields(diagramFields);
 
             return { embeds: [embed], files: [], components: [buttonRow] };
@@ -1868,34 +1865,68 @@ module.exports = {
                 return { embeds: [embed], files: [image], components: [buttonRow] };
             }
             else {
-                const diagramFields = stageDiagramFields(stageData);
+                const diagramFields = this.stageDiagramFields(stageData);
                 embed.addFields(diagramFields);
 
                 return { embeds: [embed] };
             }
         }
         else {
-            const diagramFields = stageDiagramFields(stageData);
+            const diagramFields = this.stageDiagramFields(stageData);
             embed.addFields(diagramFields);
 
             return { embeds: [embed], files: [], components: [buttonRow] };
         }
     },
+    stageDiagramFields(stageData: StageData) {
+        const map = stageData.mapData.map;
+        const tiles = stageData.mapData.tiles;
+        let mapString = '', legendString = '';
+
+        for (let i = 0; i < map.length; i++) {
+            for (let j = 0; j < map[0].length; j++) {
+                const tileKey = tiles[map[i][j]].tileKey;
+                const tile = gameConsts.tileDict.hasOwnProperty(tileKey) ? gameConsts.tileDict[tileKey] : gameConsts.tileDict['unknown'];
+                mapString += tile.emoji;
+
+                if (legendString.includes(tile.name)) continue;
+
+                legendString += `${tile.emoji} - ${tile.name}\n`;
+            }
+            mapString += '\n';
+        }
+        return [{ name: 'Map', value: mapString }, { name: 'Legend', value: legendString }];
+    },
     stageEnemyFields(enemyDbRefs: StageData['enemyDbRefs']) {
         let enemyString = '', eliteString = '', bossString = '';
-        for (const enemy of enemyDbRefs) {
-            if (enemyDict.hasOwnProperty(enemy.id)) {
-                const enemyInfo = enemyDict[enemy.id].excel;
-                switch (enemyInfo.enemyLevel) {
-                    case ('NORMAL'):
-                        enemyString += `${enemyInfo.enemyIndex} - ${enemyInfo.name}\n`;
-                        break;
-                    case ('ELITE'):
-                        eliteString += `${enemyInfo.enemyIndex} - ${enemyInfo.name}\n`;
-                        break;
-                    case ('BOSS'):
-                        bossString += `*${enemyInfo.enemyIndex} - ${enemyInfo.name}*\n`;
-                        break;
+        for (const enemyRef of enemyDbRefs) {
+            if (enemyDict.hasOwnProperty(enemyRef.id)) {
+                const enemy = enemyDict[enemyRef.id];
+                if (enemy.levels.Value.length !== 1) {
+                    switch (enemy.excel.enemyLevel) {
+                        case ('NORMAL'):
+                            enemyString += `${enemy.excel.enemyIndex} - ${enemy.excel.name} - **Lv${enemyRef.level + 1}**\n`;
+                            break;
+                        case ('ELITE'):
+                            eliteString += `${enemy.excel.enemyIndex} - ${enemy.excel.name} - **Lv${enemyRef.level + 1}**\n`;
+                            break;
+                        case ('BOSS'):
+                            bossString += `*${enemy.excel.enemyIndex} - ${enemy.excel.name} - **Lv${enemyRef.level + 1}***\n`;
+                            break;
+                    }
+                }
+                else {
+                    switch (enemy.excel.enemyLevel) {
+                        case ('NORMAL'):
+                            enemyString += `${enemy.excel.enemyIndex} - ${enemy.excel.name}\n`;
+                            break;
+                        case ('ELITE'):
+                            eliteString += `${enemy.excel.enemyIndex} - ${enemy.excel.name}\n`;
+                            break;
+                        case ('BOSS'):
+                            bossString += `*${enemy.excel.enemyIndex} - ${enemy.excel.name}*\n`;
+                            break;
+                    }
                 }
             }
         }
