@@ -459,7 +459,11 @@ module.exports = {
             .setCustomId(`infoඞ${op.id}ඞ4ඞ0ඞ0`)
             .setLabel('Base Skills')
             .setStyle(ButtonStyle.Success);
-        const typeRow = new ActionRowBuilder().addComponents(skillButton, moduleButton, artButton, baseButton);
+        const costButton = new ButtonBuilder()
+            .setCustomId(`infoඞ${op.id}ඞ5ඞ0ඞ0`)
+            .setLabel('Costs')
+            .setStyle(ButtonStyle.Success);
+        const typeRow = new ActionRowBuilder().addComponents(skillButton, moduleButton, artButton, baseButton, costButton);
 
         if (op.data.skills.length == 0) {
             skillButton.setStyle(ButtonStyle.Secondary);
@@ -476,6 +480,10 @@ module.exports = {
         if (op.bases.length == 0) {
             baseButton.setStyle(ButtonStyle.Secondary);
             baseButton.setDisabled(true);
+        }
+        if (op.data.rarity <= 1) {
+            costButton.setStyle(ButtonStyle.Secondary);
+            costButton.setDisabled(true);
         }
 
         switch (type) {
@@ -590,6 +598,20 @@ module.exports = {
                     for (const file of baseEmbed.files) {
                         fileArr.push(file);
                     }
+                }
+                break;
+            case 5:
+                costButton.setDisabled(true);
+
+                const costEmbed = this.infoCostEmbed(op, type, page, level);
+                for (const embed of costEmbed.embeds) {
+                    embedArr.push(embed);
+                }
+                for (const file of costEmbed.files) {
+                    fileArr.push(file);
+                }
+                for (const componentRow of costEmbed.components) {
+                    rowArr.push(componentRow);
                 }
                 break;
         }
@@ -910,6 +932,135 @@ module.exports = {
         }
 
         return { embeds: [embed], files: [image, avatar, thumbnail], components: components };
+    },
+    infoCostEmbed(op: Operator, type: number, page: number, level: number) {
+        const avatarPath = path.join(__dirname, paths.operatorAvatar, `${op.id}.png`);
+        const avatar = new AttachmentBuilder(avatarPath);
+
+        const authorField = this.authorField(op);
+
+        const embed = new EmbedBuilder()
+            .setColor(embedColour)
+            .setAuthor(authorField)
+
+        const eliteButton = new ButtonBuilder()
+            .setCustomId(`infoඞ${op.id}ඞ${type}ඞ0ඞ${level}ඞcost`)
+            .setLabel('Promotions')
+            .setStyle(ButtonStyle.Primary);
+        const skillButton = new ButtonBuilder()
+            .setCustomId(`infoඞ${op.id}ඞ${type}ඞ1ඞ${level}ඞcost`)
+            .setLabel('Skills')
+            .setStyle(ButtonStyle.Primary);
+        const masteryButton = new ButtonBuilder()
+            .setCustomId(`infoඞ${op.id}ඞ${type}ඞ2ඞ${level}ඞcost`)
+            .setLabel('Masteries')
+            .setStyle(ButtonStyle.Primary);
+        const moduleButton = new ButtonBuilder()
+            .setCustomId(`infoඞ${op.id}ඞ${type}ඞ3ඞ${level}ඞcost`)
+            .setLabel('Modules')
+            .setStyle(ButtonStyle.Primary);
+        const buttonRow = new ActionRowBuilder().addComponents(eliteButton, skillButton, masteryButton, moduleButton);
+
+        if (op.data.skills.length == 0) {
+            skillButton.setStyle(ButtonStyle.Secondary);
+            skillButton.setDisabled(true);
+        }
+        if (op.data.rarity <= 2) {
+            masteryButton.setStyle(ButtonStyle.Secondary);
+            masteryButton.setDisabled(true);
+        }
+        if (op.modules.length == 0) {
+            moduleButton.setStyle(ButtonStyle.Secondary);
+            moduleButton.setDisabled(true);
+        }
+
+        let thumbnail;
+
+        switch (page) {
+            default:
+            case 0: {
+                eliteButton.setDisabled(true);
+
+                const thumbnailPath = path.join(__dirname, paths.itemImage, `sprite_exp_card_t4.png`);
+                thumbnail = new AttachmentBuilder(thumbnailPath);
+
+                embed.setThumbnail(`attachment://sprite_exp_card_t4.png`)
+                    .setTitle('Elite Upgrade Costs');
+
+                for (let i = 0; i < op.data.phases.length; i++) {
+                    const phase = op.data.phases[i];
+                    if (phase.evolveCost === null) continue;
+
+                    let phaseDescription = this.costString(phase.evolveCost);
+                    phaseDescription += `LMD **x${gameConsts.eliteLmdCost[op.data.rarity][i - 1]}**\n`;
+                    embed.addFields({ name: `Elite ${i}`, value: phaseDescription, inline: true });
+                }
+                break;
+            }
+            case 1: {
+                skillButton.setDisabled(true);
+
+                const thumbnailPath = path.join(__dirname, paths.itemImage, `MTL_SKILL2.png`);
+                thumbnail = new AttachmentBuilder(thumbnailPath);
+
+                embed.setThumbnail(`attachment://MTL_SKILL2.png`)
+                    .setTitle('Skill Upgrade Costs');
+
+                for (let i = 0; i < op.data.allSkillLvlup.length; i++) {
+                    const skillDescription = this.costString(op.data.allSkillLvlup[i].lvlUpCost);
+                    if (skillDescription === '') continue;
+
+                    embed.addFields({ name: `Level ${i + 2}`, value: skillDescription, inline: true });
+                }
+                break;
+            }
+            case 2: {
+                masteryButton.setDisabled(true);
+
+                const thumbnailPath = path.join(__dirname, paths.itemImage, `MTL_SKILL3.png`);
+                thumbnail = new AttachmentBuilder(thumbnailPath);
+
+                embed.setThumbnail(`attachment://MTL_SKILL3.png`)
+                    .setTitle('Skill Mastery Costs');
+
+                for (let i = 0; i < op.data.skills.length; i++) {
+                    const opSkill = op.data.skills[i];
+                    const skill = skillDict[opSkill.skillId];
+
+                    embed.addFields({ name: '\u200B', value: `**Skill ${i + 1} - ${skill.levels[0].name}**` });
+
+                    for (let i = 0; i < opSkill.levelUpCostCond.length; i++) {
+                        const masteryDescription = this.costString(opSkill.levelUpCostCond[i].levelUpCost);
+                        embed.addFields({ name: `Mastery ${i + 1}`, value: masteryDescription, inline: true });
+                    }
+                }
+                break;
+            }
+            case 3: {
+                moduleButton.setDisabled(true);
+
+                const thumbnailPath = path.join(__dirname, paths.itemImage, `mod_unlock_token.png`);
+                thumbnail = new AttachmentBuilder(thumbnailPath);
+
+                embed.setThumbnail(`attachment://mod_unlock_token.png`)
+                    .setTitle('Module Upgrade Costs');
+
+                for (const moduleId of op.modules) {
+                    if (moduleId.includes('uniequip_001')) continue;
+                    const module = moduleDict[moduleId];
+
+                    embed.addFields({ name: '\u200B', value: `**${module.info.typeIcon.toUpperCase()} - ${module.info.uniEquipName}**` });
+
+                    for (const key of Object.keys(module.info.itemCost)) {
+                        const moduleDescription = this.costString(module.info.itemCost[key]);
+                        embed.addFields({ name: `Level ${key}`, value: moduleDescription, inline: true });
+                    }
+                }
+                break;
+            }
+        }
+
+        return { embeds: [embed], files: [avatar, thumbnail], components: [buttonRow] };
     },
     moduleEmbed(module: Module, op: Operator, level: number) {
         const moduleLevel = module.data.phases[level];

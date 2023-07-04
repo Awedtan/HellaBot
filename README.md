@@ -4,8 +4,6 @@
 
 look into using more updated spine viewer
 
-add costs to info embed
-
 add help command and better command descriptions
 
 count enemies in a stage
