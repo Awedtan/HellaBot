@@ -10,6 +10,10 @@ count enemies in a stage
 
 maintain bot
 
+make a better readme
+
+get rid of local dependencies?
+
 ## maybe/probably not:
 
 gacha banners

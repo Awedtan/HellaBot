@@ -489,7 +489,7 @@ module.exports = {
         switch (type) {
             case 0:
                 break;
-            case 1:
+            case 1: {
                 skillButton.setDisabled(true);
 
                 const skillEmbed = this.infoSkillEmbed(op, type, page, level);
@@ -533,7 +533,8 @@ module.exports = {
                     }
                 }
                 break;
-            case 2:
+            }
+            case 2: {
                 moduleButton.setDisabled(true);
 
                 const moduleEmbed = this.infoModuleEmbed(op, type, page, level);
@@ -572,7 +573,8 @@ module.exports = {
                     }
                 }
                 break;
-            case 3:
+            }
+            case 3: {
                 artButton.setDisabled(true);
 
                 const skinEmbed = this.infoSkinEmbed(op, type, page, level);
@@ -586,7 +588,8 @@ module.exports = {
                     rowArr.push(componentRow);
                 }
                 break;
-            case 4:
+            }
+            case 4: {
                 baseButton.setDisabled(true);
 
                 for (const baseInfo of op.bases) {
@@ -600,7 +603,8 @@ module.exports = {
                     }
                 }
                 break;
-            case 5:
+            }
+            case 5: {
                 costButton.setDisabled(true);
 
                 const costEmbed = this.infoCostEmbed(op, type, page, level);
@@ -614,6 +618,7 @@ module.exports = {
                     rowArr.push(componentRow);
                 }
                 break;
+            }
         }
 
         rowArr.push(typeRow);
