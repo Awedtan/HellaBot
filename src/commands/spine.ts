@@ -1,6 +1,5 @@
-const { SlashCommandBuilder, EmbedBuilder, AttachmentBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder, ActionRowBuilder } = require('discord.js');
+const { SlashCommandBuilder } = require('discord.js');
 const path = require('path');
-const puppeteer = require('puppeteer');
 const fetch = require('../fetch');
 const create = require('../create');
 const { paths } = require('../constants');

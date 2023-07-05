@@ -21,7 +21,7 @@ const skillDict: { [key: string]: Skill } = fetch.skills();
 const stageDict: { [key: string]: Stage[] } = fetch.stages();
 const skinDict: { [key: string]: Skin[] } = fetch.skins();
 
-const cleanFilename = (text: string) => text.split(/[#\+]|&|\[|\]/).join('');
+const cleanFilename = (text: string) => text.split(/%|[#\+]|&|\[|\]/).join('');
 const fileExists = async (path: string) => !!(await fs.promises.stat(path).catch(e => false));
 function formatText(text: string, blackboard: Blackboard[]) {
     if (text === null || text === undefined) return '';
@@ -57,14 +57,18 @@ function formatText(text: string, blackboard: Blackboard[]) {
 
 module.exports = {
     authorField(op: Operator) {
+        // Unholy dumbness
         const urlName = op.data.name.toLowerCase().split(' the ').join('-').split('\'').join('').split(' ').join('-').split('ë').join('e').split('ł').join('l');
         const authorField = { name: op.data.name, iconURL: `attachment://${op.id}.png`, url: `https://gamepress.gg/arknights/operator/${urlName}` };
         return authorField;
     },
     baseEmbed(base: Base, baseInfo: BaseInfo, op: Operator) {
-        const avatarPath = path.join(__dirname, paths.operatorAvatar, `${op.id}.png`);
+        // const avatarPath = path.join(__dirname, paths.operatorAvatar, `${op.id}.png`);
+        const avatarPath = paths.imageUrl + `avatars/${op.id}.png`;
         const avatar = new AttachmentBuilder(avatarPath);
-        const thumbnailPath = path.join(__dirname, paths.baseSkillImage, `${base.skillIcon}.png`);
+        // const thumbnailPath = path.join(__dirname, paths.baseSkillImage, `${base.skillIcon}.png`);
+        const thumbnailPath = paths.imageUrl + `ui/infrastructure/skill/${base.skillIcon}.png`;
+
         const thumbnail = new AttachmentBuilder(thumbnailPath);
 
         const authorField = this.authorField(op);
@@ -157,7 +161,8 @@ module.exports = {
         return { content: `Please select a stage from CC#${season} below:`, components: [componentRow] };
     },
     costEmbed(op: Operator, type: string) {
-        const avatarPath = path.join(__dirname, paths.operatorAvatar, `${op.id}.png`);
+        // const avatarPath = path.join(__dirname, paths.operatorAvatar, `${op.id}.png`);
+        const avatarPath = paths.imageUrl + `avatars/${op.id}.png`;
         const avatar = new AttachmentBuilder(avatarPath);
 
         const authorField = this.authorField(op);
@@ -204,7 +209,8 @@ module.exports = {
             case 'elite': {
                 eliteButton.setDisabled(true);
 
-                const thumbnailPath = path.join(__dirname, paths.itemImage, `sprite_exp_card_t4.png`);
+                // const thumbnailPath = path.join(__dirname, paths.itemImage, `sprite_exp_card_t4.png`);
+                const thumbnailPath = paths.imageUrl + 'items/sprite_exp_card_t4.png';
                 thumbnail = new AttachmentBuilder(thumbnailPath);
 
                 embed.setThumbnail(`attachment://sprite_exp_card_t4.png`)
@@ -223,7 +229,8 @@ module.exports = {
             case 'skill': {
                 skillButton.setDisabled(true);
 
-                const thumbnailPath = path.join(__dirname, paths.itemImage, `MTL_SKILL2.png`);
+                // const thumbnailPath = path.join(__dirname, paths.itemImage, `MTL_SKILL2.png`);
+                const thumbnailPath = paths.imageUrl + 'items/MTL_SKILL2.png';
                 thumbnail = new AttachmentBuilder(thumbnailPath);
 
                 embed.setThumbnail(`attachment://MTL_SKILL2.png`)
@@ -240,7 +247,8 @@ module.exports = {
             case 'mastery': {
                 masteryButton.setDisabled(true);
 
-                const thumbnailPath = path.join(__dirname, paths.itemImage, `MTL_SKILL3.png`);
+                // const thumbnailPath = path.join(__dirname, paths.itemImage, `MTL_SKILL3.png`);
+                const thumbnailPath = paths.imageUrl + 'items/MTL_SKILL3.png';
                 thumbnail = new AttachmentBuilder(thumbnailPath);
 
                 embed.setThumbnail(`attachment://MTL_SKILL3.png`)
@@ -262,7 +270,8 @@ module.exports = {
             case 'module': {
                 moduleButton.setDisabled(true);
 
-                const thumbnailPath = path.join(__dirname, paths.itemImage, `mod_unlock_token.png`);
+                // const thumbnailPath = path.join(__dirname, paths.itemImage, `mod_unlock_token.png`);
+                const thumbnailPath = paths.imageUrl + 'items/mod_unlock_token.png';
                 thumbnail = new AttachmentBuilder(thumbnailPath);
 
                 embed.setThumbnail(`attachment://mod_unlock_token.png`)
@@ -341,7 +350,8 @@ module.exports = {
         const enemyInfo = enemy.excel;
         const enemyData = enemy.levels.Value[level].enemyData;
 
-        const thumbnailPath = path.join(__dirname, paths.enemyImage, `${enemyInfo.enemyId}.png`);
+        // const thumbnailPath = path.join(__dirname, paths.enemyImage, `${enemyInfo.enemyId}.png`);
+        const thumbnailPath = paths.imageUrl + `enemy/${enemyInfo.enemyId}.png`;
         const thumbnail = new AttachmentBuilder(thumbnailPath);
 
         const title = `${enemyInfo.enemyIndex} - ${enemyInfo.name}`;
@@ -421,16 +431,17 @@ module.exports = {
             embed.addFields({ name: 'Crafting Formula', value: formulaString, inline: true });
         }
 
-        const imagePath = path.join(__dirname, paths.itemImage, `${item.data.iconId}.png`);
-        if (await fileExists(imagePath)) {
-            const image = new AttachmentBuilder(imagePath);
-            embed.setThumbnail(`attachment://${cleanFilename(item.data.iconId)}.png`);
+        // const imagePath = path.join(__dirname, paths.itemImage, `${item.data.iconId}.png`);
+        const imagePath = paths.imageUrl + `items/${item.data.iconId}.png`;
+        // if (await fileExists(imagePath)) {
+        const image = new AttachmentBuilder(imagePath);
+        embed.setThumbnail(`attachment://${cleanFilename(item.data.iconId)}.png`);
 
-            return { embeds: [embed], files: [image] };
-        }
-        else {
-            return { embeds: [embed] };
-        }
+        return { embeds: [embed], files: [image] };
+        // }
+        // else {
+        //     return { embeds: [embed] };
+        // }
     },
     infoEmbed(op: Operator, type: number, page: number, level: number) {
         const embedArr = [], fileArr = [], rowArr = [];
@@ -629,10 +640,12 @@ module.exports = {
         const skill = skillDict[op.data.skills[page].skillId];
         const skillLevel = skill.levels[level];
 
-        const avatarPath = path.join(__dirname, paths.operatorAvatar, `${op.id}.png`);
+        // const avatarPath = path.join(__dirname, paths.operatorAvatar, `${op.id}.png`);
+        const avatarPath = paths.imageUrl + `avatars/${op.id}.png`;
         const avatar = new AttachmentBuilder(avatarPath);
         const thumbnailFilename = skill.iconId === null ? skill.skillId : skill.iconId;
-        const thumbnailPath = path.join(__dirname, paths.skillImage, `skill_icon_${thumbnailFilename}.png`)
+        // const thumbnailPath = path.join(__dirname, paths.skillImage, `skill_icon_${thumbnailFilename}.png`);
+        const thumbnailPath = paths.imageUrl + `skills/skill_icon_${thumbnailFilename}.png`;
         const thumbnail = new AttachmentBuilder(thumbnailPath);
 
         const authorField = this.authorField(op);
@@ -760,9 +773,11 @@ module.exports = {
         const module = moduleDict[op.modules[page + 1]];
         const moduleLevel = module.data.phases[level];
 
-        const avatarPath = path.join(__dirname, paths.operatorAvatar, `${op.id}.png`);
+        // const avatarPath = path.join(__dirname, paths.operatorAvatar, `${op.id}.png`);
+        const avatarPath = paths.imageUrl + `avatars/${op.id}.png`;
         const avatar = new AttachmentBuilder(avatarPath);
-        const thumbnailPath = path.join(__dirname, paths.moduleImage, `${module.info.uniEquipId}.png`);
+        // const thumbnailPath = path.join(__dirname, paths.moduleImage, `${module.info.uniEquipId}.png`);
+        const thumbnailPath = paths.imageUrl + `equip/icon/${module.info.uniEquipId}.png`;
         const thumbnail = new AttachmentBuilder(thumbnailPath);
 
         const authorField = this.authorField(op);
@@ -852,9 +867,11 @@ module.exports = {
         const skin = skins[page];
         const displaySkin = skin.displaySkin;
 
-        const avatarPath = path.join(__dirname, paths.operatorAvatar, `${op.id}.png`);
+        // const avatarPath = path.join(__dirname, paths.operatorAvatar, `${op.id}.png`);
+        const avatarPath = paths.imageUrl + `avatars/${op.id}.png`;
         const avatar = new AttachmentBuilder(avatarPath);
-        const imagePath = path.join(__dirname, paths.operatorImage, `${skin.portraitId}.png`);
+        // const imagePath = path.join(__dirname, paths.operatorImage, `${skin.portraitId}.png`);
+        const imagePath = paths.imageUrl + `characters/${encodeURIComponent(skin.portraitId)}.png`;
         const image = new AttachmentBuilder(imagePath);
 
         const authorField = this.authorField(op);
@@ -867,7 +884,7 @@ module.exports = {
             .setColor(embedColour)
             .setAuthor(authorField)
             .setTitle(`${name}`)
-            .setImage(`attachment://${cleanFilename(skin.portraitId)}.png`);
+            .setImage(`attachment://${cleanFilename(encodeURIComponent(skin.portraitId))}.png`);
 
         if (artistName !== null && artistName !== '') {
             embed.addFields({ name: `Artist`, value: artistName });
@@ -876,25 +893,29 @@ module.exports = {
         let thumbnail;
         switch (displaySkin.skinGroupId) {
             case 'ILLUST_0': {
-                const thumbnailPath = path.join(__dirname, paths.eliteImage, '0.png');
+                // const thumbnailPath = path.join(__dirname, paths.eliteImage, '0.png');
+                const thumbnailPath = paths.imageUrl + `ui/elite/0.png`;
                 thumbnail = new AttachmentBuilder(thumbnailPath);
                 embed.setThumbnail(`attachment://0.png`);
                 break;
             }
             case 'ILLUST_1': {
-                const thumbnailPath = path.join(__dirname, paths.eliteImage, '1.png');
+                // const thumbnailPath = path.join(__dirname, paths.eliteImage, '1.png');
+                const thumbnailPath = paths.imageUrl + `ui/elite/1.png`;
                 thumbnail = new AttachmentBuilder(thumbnailPath);
                 embed.setThumbnail(`attachment://1.png`);
                 break;
             }
             case 'ILLUST_2': {
-                const thumbnailPath = path.join(__dirname, paths.eliteImage, '2.png');
+                // const thumbnailPath = path.join(__dirname, paths.eliteImage, '2.png');
+                const thumbnailPath = paths.imageUrl + `ui/elite/2.png`;
                 thumbnail = new AttachmentBuilder(thumbnailPath);
                 embed.setThumbnail(`attachment://2.png`);
                 break;
             }
             case 'ILLUST_3': {
-                const thumbnailPath = path.join(__dirname, paths.eliteImage, '3.png');
+                // const thumbnailPath = path.join(__dirname, paths.eliteImage, '3.png');
+                const thumbnailPath = paths.imageUrl + `ui/elite/3.png`;
                 thumbnail = new AttachmentBuilder(thumbnailPath);
                 embed.setThumbnail(`attachment://3.png`);
                 break;
@@ -939,7 +960,8 @@ module.exports = {
         return { embeds: [embed], files: [image, avatar, thumbnail], components: components };
     },
     infoCostEmbed(op: Operator, type: number, page: number, level: number) {
-        const avatarPath = path.join(__dirname, paths.operatorAvatar, `${op.id}.png`);
+        // const avatarPath = path.join(__dirname, paths.operatorAvatar, `${op.id}.png`);
+        const avatarPath = paths.imageUrl + `avatars/${op.id}.png`;
         const avatar = new AttachmentBuilder(avatarPath);
 
         const authorField = this.authorField(op);
@@ -986,7 +1008,8 @@ module.exports = {
             case 0: {
                 eliteButton.setDisabled(true);
 
-                const thumbnailPath = path.join(__dirname, paths.itemImage, `sprite_exp_card_t4.png`);
+                // const thumbnailPath = path.join(__dirname, paths.itemImage, `sprite_exp_card_t4.png`);
+                const thumbnailPath = paths.imageUrl + `items/sprite_exp_card_t4.png`;
                 thumbnail = new AttachmentBuilder(thumbnailPath);
 
                 embed.setThumbnail(`attachment://sprite_exp_card_t4.png`)
@@ -1005,7 +1028,8 @@ module.exports = {
             case 1: {
                 skillButton.setDisabled(true);
 
-                const thumbnailPath = path.join(__dirname, paths.itemImage, `MTL_SKILL2.png`);
+                // const thumbnailPath = path.join(__dirname, paths.itemImage, `MTL_SKILL2.png`);
+                const thumbnailPath = paths.imageUrl + `items/MTL_SKILL2.png`;
                 thumbnail = new AttachmentBuilder(thumbnailPath);
 
                 embed.setThumbnail(`attachment://MTL_SKILL2.png`)
@@ -1022,7 +1046,8 @@ module.exports = {
             case 2: {
                 masteryButton.setDisabled(true);
 
-                const thumbnailPath = path.join(__dirname, paths.itemImage, `MTL_SKILL3.png`);
+                // const thumbnailPath = path.join(__dirname, paths.itemImage, `MTL_SKILL3.png`);
+                const thumbnailPath = paths.imageUrl + `items/MTL_SKILL3.png`;
                 thumbnail = new AttachmentBuilder(thumbnailPath);
 
                 embed.setThumbnail(`attachment://MTL_SKILL3.png`)
@@ -1044,7 +1069,8 @@ module.exports = {
             case 3: {
                 moduleButton.setDisabled(true);
 
-                const thumbnailPath = path.join(__dirname, paths.itemImage, `mod_unlock_token.png`);
+                // const thumbnailPath = path.join(__dirname, paths.itemImage, `mod_unlock_token.png`);
+                const thumbnailPath = paths.imageUrl + `items/mod_unlock_token.png`;
                 thumbnail = new AttachmentBuilder(thumbnailPath);
 
                 embed.setThumbnail(`attachment://mod_unlock_token.png`)
@@ -1070,9 +1096,11 @@ module.exports = {
     moduleEmbed(module: Module, op: Operator, level: number) {
         const moduleLevel = module.data.phases[level];
 
-        const avatarPath = path.join(__dirname, paths.operatorAvatar, `${op.id}.png`);
+        // const avatarPath = path.join(__dirname, paths.operatorAvatar, `${op.id}.png`);
+        const avatarPath = paths.imageUrl + `avatars/${op.id}.png`;
         const avatar = new AttachmentBuilder(avatarPath);
-        const thumbnailPath = path.join(__dirname, paths.moduleImage, `${module.info.uniEquipId}.png`);
+        // const thumbnailPath = path.join(__dirname, paths.moduleImage, `${module.info.uniEquipId}.png`);
+        const thumbnailPath = paths.imageUrl + `equip/icon/${module.info.uniEquipId}.png`;
         const thumbnail = new AttachmentBuilder(thumbnailPath);
 
         const authorField = this.authorField(op);
@@ -1157,7 +1185,8 @@ module.exports = {
     operatorEmbed(op: Operator) {
         const opMax = op.data.phases[op.data.phases.length - 1];
 
-        const thumbnailPath = path.join(__dirname, paths.operatorAvatar, `${op.id}.png`);
+        // const thumbnailPath = path.join(__dirname, paths.operatorAvatar, `${op.id}.png`);
+        const thumbnailPath = paths.imageUrl + `avatars/${op.id}.png`;
         const thumbnail = new AttachmentBuilder(thumbnailPath);
 
         const authorField = this.authorField(op);
@@ -1239,8 +1268,9 @@ module.exports = {
         const stageData = paradox.levels;
         const op = operatorDict[stageInfo.charId];
 
-        const thumbnailPath = path.join(__dirname, paths.operatorAvatar, `${op.id}.png`);
-        const thumbnail = new AttachmentBuilder(thumbnailPath);
+        // const thumbnailPath = path.join(__dirname, paths.operatorAvatar, `${op.id}.png`);
+        const avatarPath = paths.imageUrl + `avatars/${op.id}.png`;
+        const avatar = new AttachmentBuilder(avatarPath);
 
         const authorField = this.authorField(op);
         const title = `Paradox Simulation - ${stageInfo.name}`;
@@ -1282,20 +1312,20 @@ module.exports = {
                 const image = new AttachmentBuilder(imagePath);
                 embed.setImage(`attachment://${stageInfo.stageId}.png`)
 
-                return { embeds: [embed], files: [thumbnail, image], components: [buttonRow] };
+                return { embeds: [embed], files: [avatar, image], components: [buttonRow] };
             }
             else {
                 const diagramFields = this.stageDiagramFields(stageData);
                 embed.addFields(diagramFields);
 
-                return { embeds: [embed], files: [thumbnail] };
+                return { embeds: [embed], files: [avatar] };
             }
         }
         else {
             const diagramFields = this.stageDiagramFields(stageData);
             embed.addFields(diagramFields);
 
-            return { embeds: [embed], files: [thumbnail], components: [buttonRow] };
+            return { embeds: [embed], files: [avatar], components: [buttonRow] };
         }
     },
     rangeField(rangeId: string) {
@@ -1567,7 +1597,8 @@ module.exports = {
 
         const embed = new EmbedBuilder()
             .setColor(embedColour)
-            .setTitle(`List of ${rogueTheme.name} Relics`);
+            .setTitle(`List of ${rogueTheme.name} Relics`)
+            .setDescription(`**Page ${index + 1}**`);
 
         for (let i = index * 3; i < index * 3 + 3 && i < descriptionArr.length; i++) {
             embed.addFields({ name: '\u200B', value: descriptionArr[i].string, inline: true });
@@ -1680,10 +1711,12 @@ module.exports = {
     skillEmbed(skill: Skill, op: Operator, level: number) {
         const skillLevel = skill.levels[level];
 
-        const avatarPath = path.join(__dirname, paths.operatorAvatar, `${op.id}.png`);
+        // const avatarPath = path.join(__dirname, paths.operatorAvatar, `${op.id}.png`);
+        const avatarPath = paths.imageUrl + `avatars/${op.id}.png`;
         const avatar = new AttachmentBuilder(avatarPath);
         const thumbnailFilename = skill.iconId === null ? skill.skillId : skill.iconId;
-        const thumbnailPath = path.join(__dirname, paths.skillImage, `skill_icon_${thumbnailFilename}.png`)
+        // const thumbnailPath = path.join(__dirname, paths.skillImage, `skill_icon_${thumbnailFilename}.png`)
+        const thumbnailPath = paths.imageUrl + `skills/skill_icon_${thumbnailFilename}.png`;
         const thumbnail = new AttachmentBuilder(thumbnailPath);
 
         const authorField = this.authorField(op);
@@ -1802,9 +1835,11 @@ module.exports = {
         const skin = skins[page];
         const displaySkin = skin.displaySkin;
 
-        const avatarPath = path.join(__dirname, paths.operatorAvatar, `${op.id}.png`);
+        // const avatarPath = path.join(__dirname, paths.operatorAvatar, `${op.id}.png`);
+        const avatarPath = paths.imageUrl + `avatars/${op.id}.png`;
         const avatar = new AttachmentBuilder(avatarPath);
-        const imagePath = path.join(__dirname, paths.operatorImage, `${skin.portraitId}.png`);
+        // const imagePath = path.join(__dirname, paths.operatorImage, `${skin.portraitId}.png`);
+        const imagePath = paths.imageUrl + `characters/${encodeURIComponent(skin.portraitId)}.png`;
         const image = new AttachmentBuilder(imagePath);
 
         const authorField = this.authorField(op);
@@ -1817,7 +1852,7 @@ module.exports = {
             .setColor(embedColour)
             .setAuthor(authorField)
             .setTitle(`${name}`)
-            .setImage(`attachment://${cleanFilename(skin.portraitId)}.png`);
+            .setImage(`attachment://${cleanFilename(encodeURIComponent(skin.portraitId))}.png`);
 
         if (artistName !== null && artistName !== '') {
             embed.addFields({ name: `Artist`, value: artistName });
@@ -1826,25 +1861,29 @@ module.exports = {
         let thumbnail;
         switch (displaySkin.skinGroupId) {
             case 'ILLUST_0': {
-                const thumbnailPath = path.join(__dirname, paths.eliteImage, '0.png');
+                // const thumbnailPath = path.join(__dirname, paths.eliteImage, '0.png');
+                const thumbnailPath = paths.imageUrl + `ui/elite/0.png`;
                 thumbnail = new AttachmentBuilder(thumbnailPath);
                 embed.setThumbnail(`attachment://0.png`);
                 break;
             }
             case 'ILLUST_1': {
-                const thumbnailPath = path.join(__dirname, paths.eliteImage, '1.png');
+                // const thumbnailPath = path.join(__dirname, paths.eliteImage, '1.png');
+                const thumbnailPath = paths.imageUrl + `ui/elite/1.png`;
                 thumbnail = new AttachmentBuilder(thumbnailPath);
                 embed.setThumbnail(`attachment://1.png`);
                 break;
             }
             case 'ILLUST_2': {
-                const thumbnailPath = path.join(__dirname, paths.eliteImage, '2.png');
+                // const thumbnailPath = path.join(__dirname, paths.eliteImage, '2.png');
+                const thumbnailPath = paths.imageUrl + `ui/elite/2.png`;
                 thumbnail = new AttachmentBuilder(thumbnailPath);
                 embed.setThumbnail(`attachment://2.png`);
                 break;
             }
             case 'ILLUST_3': {
-                const thumbnailPath = path.join(__dirname, paths.eliteImage, '3.png');
+                // const thumbnailPath = path.join(__dirname, paths.eliteImage, '3.png');
+                const thumbnailPath = paths.imageUrl + `ui/elite/3.png`;
                 thumbnail = new AttachmentBuilder(thumbnailPath);
                 embed.setThumbnail(`attachment://3.png`);
                 break;
@@ -1901,8 +1940,8 @@ module.exports = {
         return { page, browser };
     },
     async spineEmbed(op: Operator, type: string) {
-        const avatarPath = path.join(__dirname, 'spine', 'spine.gif');
-        const avatar = new AttachmentBuilder(avatarPath);
+        const gifPath = path.join(__dirname, 'spine', 'spine.gif');
+        const gif = new AttachmentBuilder(gifPath);
 
         const jsonPath = path.join(__dirname, paths.spineJson, `${op.id}.json`);
         const spineJson = require(jsonPath);
@@ -1928,7 +1967,7 @@ module.exports = {
             .setTitle(op.data.name)
             .setImage(`attachment://spine.gif`);
 
-        return await { content: '', embeds: [embed], files: [avatar], components: [componentRow] };
+        return await { content: '', embeds: [embed], files: [gif], components: [componentRow] };
     },
     async stageEmbed(stage: Stage, page: number) {
         const stageInfo = stage.excel;

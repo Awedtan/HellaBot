@@ -106,13 +106,15 @@ client.on(Events.InteractionCreate, async interaction => {
             break;
         }
         case 'info': {
+            await interaction.deferUpdate();
+
             const op = opDict[idArr[1]];
             const type = parseInt(idArr[2]);
             const page = parseInt(idArr[3]);
             const level = parseInt(idArr[4]);
 
             const infoEmbed = create.infoEmbed(op, type, page, level);
-            await interaction.update(infoEmbed);
+            await interaction.editReply(infoEmbed);
 
             break;
         }
@@ -184,11 +186,13 @@ client.on(Events.InteractionCreate, async interaction => {
             break;
         }
         case 'skin': {
+            await interaction.deferUpdate();
+
             const op = opDict[idArr[1]];
             const page = parseInt(idArr[2]);
             const skinEmbed = create.skinEmbed(op, page);
 
-            await interaction.update(skinEmbed);
+            await interaction.editReply(skinEmbed);
             break;
         }
         case 'spine': {

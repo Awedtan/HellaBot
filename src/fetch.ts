@@ -325,7 +325,6 @@ function initRogueThemes() {
             if (relic.type === 'BAND' || relic.type == 'CAPSULE') continue; // Bands are squads, capsules are IS2 plays, skip these
             const relicName = relic.name.toLowerCase();
             relicDict[relicName] = relic;
-            relicDict[relicName.split('\'').join('')] = relicDict[relicName];
         }
 
         for (const variation of Object.values(rogueVariations)) {

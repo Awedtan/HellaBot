@@ -1,5 +1,8 @@
 {
     "paths": {
+        "imageUrl": "https://raw.githubusercontent.com/Aceship/Arknight-Images/main/",
+        "dataUrl": "https://raw.githubusercontent.com/Kengxxiao/ArknightsGameData/master/en_US/gamedata/",
+
         "data": "../ArknightsGameData/en_US/gamedata",
         "baseSkillImage": "../Arknight-Images/ui/infrastructure/skill",
         "eliteImage": "../Arknight-Images/ui/elite",
