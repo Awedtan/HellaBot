@@ -2,6 +2,10 @@
  
 ## todo:
 
+move spine jsons online
+
+look into avoiding sending duplicate images
+
 look into using more updated spine viewer
 
 add help command and better command descriptions
@@ -11,8 +15,6 @@ count enemies in a stage
 maintain bot
 
 make a better readme
-
-get rid of local dependencies?
 
 ## maybe/probably not:
 
