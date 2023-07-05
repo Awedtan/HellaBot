@@ -1,6 +1,6 @@
 const { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder } = require('discord.js');
 // const fs = require('fs');
-const https = require('https');
+const nodefetch = require('node-fetch');
 const path = require('path');
 const puppeteer = require('puppeteer');
 const fetch = require('./fetch');
@@ -24,7 +24,7 @@ const skinDict: { [key: string]: Skin[] } = fetch.skins();
 
 const cleanFilename = (text: string) => text.split(/%|[#\+]|&|\[|\]/).join(''); // Remove special characters that discord doesn't like (%, #, etc.)
 // const fileExists = async (path: string) => !!(await fs.promises.stat(path).catch(e => false));
-const urlExists = async (url: string) => await https.get(url, res => res.statusCode === 200);
+const urlExists = async (url: string) => (await nodefetch(url)).status === 200;
 function formatText(text: string, blackboard: Blackboard[]) { // Dumbass string manipulation
     if (text === null || text === undefined) return '';
     if (blackboard === null || blackboard === undefined) blackboard = [];
@@ -135,7 +135,7 @@ module.exports = {
         }
 
         if (page === 0) {
-            const imagePath = paths.myImageUrl + `/stages/${stageInfo.code}.png`;
+            const imagePath = paths.myAssetUrl + `/stages/${stageInfo.code}.png`;
             if (await urlExists(imagePath)) {
                 const image = new AttachmentBuilder(imagePath);
                 embed.setImage(`attachment://${stageInfo.code}.png`)
@@ -919,7 +919,7 @@ module.exports = {
             default: {
                 const split = displaySkin.skinGroupId.split('#');
                 const newSkinGroupId = `${split[0]}#${split[1]}`;
-                const thumbnailPath = paths.myImageUrl + `/skingroups/${encodeURIComponent(newSkinGroupId)}.png`;
+                const thumbnailPath = paths.myAssetUrl + `/skingroups/${encodeURIComponent(newSkinGroupId)}.png`;
                 thumbnail = new AttachmentBuilder(thumbnailPath);
                 embed.setThumbnail(`attachment://${cleanFilename(encodeURIComponent(newSkinGroupId))}.png`);
                 break;
@@ -1294,7 +1294,7 @@ module.exports = {
         }
 
         if (page === 0) {
-            const imagePath = paths.myImageUrl + `/stages/${stageInfo.stageId}.png`;
+            const imagePath = paths.myAssetUrl + `/stages/${stageInfo.stageId}.png`;
             if (await urlExists(imagePath)) {
                 const image = new AttachmentBuilder(imagePath);
                 embed.setImage(`attachment://${stageInfo.stageId}.png`)
@@ -1553,7 +1553,7 @@ module.exports = {
             .setTitle(relic.name)
             .setDescription(description);
 
-        const imagePath = paths.myImageUrl + `/rogueitems/${relic.iconId}.png`;
+        const imagePath = paths.myAssetUrl + `/rogueitems/${relic.iconId}.png`;
         if (await urlExists(imagePath)) {
             const image = new AttachmentBuilder(imagePath);
             embed.setThumbnail(`attachment://${cleanFilename(relic.iconId)}.png`);
@@ -1650,7 +1650,7 @@ module.exports = {
         }
 
         if (page === 0) {
-            const imagePath = paths.myImageUrl + `/stages/${stageInfo.id}.png`;
+            const imagePath = paths.myAssetUrl + `/stages/${stageInfo.id}.png`;
             if (await urlExists(imagePath)) {
                 const image = new AttachmentBuilder(imagePath);
                 embed.setImage(`attachment://${stageInfo.id}.png`);
@@ -1869,7 +1869,7 @@ module.exports = {
             default: {
                 const split = displaySkin.skinGroupId.split('#');
                 const newSkinGroupId = `${split[0]}#${split[1]}`;
-                const thumbnailPath = paths.myImageUrl + `/skingroups/${encodeURIComponent(newSkinGroupId)}.png`;
+                const thumbnailPath = paths.myAssetUrl + `/skingroups/${encodeURIComponent(newSkinGroupId)}.png`;
                 thumbnail = new AttachmentBuilder(thumbnailPath);
                 embed.setThumbnail(`attachment://${cleanFilename(encodeURIComponent(newSkinGroupId))}.png`);
                 break;
@@ -1918,12 +1918,13 @@ module.exports = {
         return { page, browser };
     },
     async spineEmbed(op: Operator, type: string) {
+        const avatarPath = paths.aceshipImageUrl + `/avatars/${op.id}.png`;
+        const avatar = new AttachmentBuilder(avatarPath);
+        const authorField = this.authorField(op);
+
         const gifPath = path.join(__dirname, 'spine', 'spine.gif');
         const gif = new AttachmentBuilder(gifPath);
-
-        const jsonPath = path.join(__dirname, paths.spineJson, `${op.id}.json`);
-        const spineJson = require(jsonPath);
-
+        const spineJson = await (await nodefetch(paths.myAssetUrl + `/spinejson/${op.id}.json`)).json();
         const animArr = Object.keys(spineJson.animations);
 
         const animSelector = new StringSelectMenuBuilder()
@@ -1942,10 +1943,10 @@ module.exports = {
         }
 
         const embed = new EmbedBuilder()
-            .setTitle(op.data.name)
+            .setAuthor(authorField)
             .setImage(`attachment://spine.gif`);
 
-        return await { content: '', embeds: [embed], files: [gif], components: [componentRow] };
+        return { content: '', embeds: [embed], files: [avatar, gif], components: [componentRow] };
     },
     async stageEmbed(stage: Stage, page: number) {
         const stageInfo = stage.excel;
@@ -1965,13 +1966,11 @@ module.exports = {
 
         for (const item of stageDropInfo.displayDetailRewards) {
             if (item.dropType === 1 || item.dropType === 8) continue;
-
             // 1: character/furniture
             // 2: regular drop
             // 3: special drop
             // 4: extra drop
             // 8: yellow rock
-
             switch (item.dropType) {
                 case 2:
                     regularString += `${itemDict[item.id].data.name}\n`;
@@ -2016,9 +2015,9 @@ module.exports = {
         }
 
         if (page === 0) {
-            const imagePath = paths.myImageUrl + `/stages/${stageInfo.stageId}.png`;
-            const toughPath = paths.myImageUrl + `/stages/${stageInfo.stageId.replace('tough', 'main')}.png`;
-            const newPath = paths.myImageUrl + `/stages/${stageInfo.stageId.substring(0, stageInfo.stageId.length - 3)}.png`;
+            const imagePath = paths.myAssetUrl + `/stages/${stageInfo.stageId}.png`;
+            const toughPath = paths.myAssetUrl + `/stages/${stageInfo.stageId.replace('tough', 'main')}.png`;
+            const newPath = paths.myAssetUrl + `/stages/${stageInfo.stageId.substring(0, stageInfo.stageId.length - 3)}.png`;
 
             if (await urlExists(imagePath)) {
                 const image = new AttachmentBuilder(imagePath);

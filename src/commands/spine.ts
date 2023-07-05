@@ -1,12 +1,11 @@
 const { SlashCommandBuilder } = require('discord.js');
-const path = require('path');
+const nodefetch = require('node-fetch');
 const fetch = require('../fetch');
 const create = require('../create');
 const { paths } = require('../constants');
 
 import { Operator } from "../types";
-const fs = require('fs');
-const fileExists = async (path: string) => !!(await fs.promises.stat(path).catch(e => false));
+const urlExists = async (url: string) => (await nodefetch(url)).status === 200;
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -25,10 +24,13 @@ module.exports = {
             return await interaction.reply({ content: 'That operator doesn\'t exist!', ephemeral: true });
 
         const op = operatorDict[name];
-        const jsonPath = path.join(__dirname, '..', paths.spineJson, `${op.id}.json`);
-        if (!await fileExists(jsonPath))
+        const jsonPath = paths.myAssetUrl + `/spinejson/${op.id}.json`;
+
+        if (!await urlExists(jsonPath))
             return await interaction.reply({ content: 'That operator doesn\'t have any spine data yet!', ephemeral: true });
-        const spineJson = require(jsonPath);
+
+        const spineJson = await (await nodefetch(paths.myAssetUrl + `/spinejson/${op.id}.json`)).json();
+
         if (spineJson.skeleton.spine !== '3.5.51')
             return await interaction.reply({ content: 'That operator\'s spine data is not yet supported!', ephemeral: true });
 

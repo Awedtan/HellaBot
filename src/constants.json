@@ -1,9 +1,8 @@
 {
     "paths": {
         "aceshipImageUrl": "https://raw.githubusercontent.com/Aceship/Arknight-Images/main",
-        "myImageUrl": "https://raw.githubusercontent.com/Awedtan/HellaBot-Images/main",
-        "data": "../ArknightsGameData/en_US/gamedata",
-        "spineJson": "../spinejson"
+        "myAssetUrl": "https://raw.githubusercontent.com/Awedtan/HellaBot-Assets/main",
+        "data": "../ArknightsGameData/en_US/gamedata"
     },
     "gameConsts": {
         "ccSeasons": {
