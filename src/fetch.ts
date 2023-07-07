@@ -375,8 +375,6 @@ function initStages() {
 
         // Skip easy levels cause no one cares, basically the same as normal anyways
         if (levelId.includes('easy_sub') || levelId.includes('easy')) continue;
-        // This file is broken for whatever reason, gotta wait for a fix from gamedata repo
-        if (levelId === 'activities/act4d0/level_act4d0_05') continue;
 
         const code = excel.code.toLowerCase();
 
