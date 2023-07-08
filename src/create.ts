@@ -82,7 +82,6 @@ module.exports = {
         const avatarPath = paths.aceshipImageUrl + `/avatars/${op.id}.png`;
         const avatar = new AttachmentBuilder(avatarPath);
         const thumbnailPath = paths.aceshipImageUrl + `/ui/infrastructure/skill/${base.skillIcon}.png`;
-
         const thumbnail = new AttachmentBuilder(thumbnailPath);
 
         const authorField = this.authorField(op);
@@ -110,7 +109,7 @@ module.exports = {
             .setTitle(title)
             .setDescription(description);
 
-        const enemyFields = this.stageEnemyFields(stageData.enemyDbRefs);
+        const enemyFields = this.stageEnemyFields(stageData);
         for (const field of enemyFields) {
             embed.addFields(field);
         }
@@ -1269,7 +1268,7 @@ module.exports = {
             .setTitle(title)
             .setDescription(description);
 
-        const enemyFields = this.stageEnemyFields(stageData.enemyDbRefs);
+        const enemyFields = this.stageEnemyFields(stageData);
         for (const field of enemyFields) {
             embed.addFields(field);
         }
@@ -1625,7 +1624,7 @@ module.exports = {
             .setTitle(title)
             .setDescription(description);
 
-        const enemyFields = this.stageEnemyFields(stageData.enemyDbRefs);
+        const enemyFields = this.stageEnemyFields(stageData);
         for (const field of enemyFields) {
             embed.addFields(field);
         }
@@ -1965,11 +1964,12 @@ module.exports = {
         let regularString = '', specialString = '';
 
         for (const item of stageDropInfo.displayDetailRewards) {
-            if (item.dropType === 1 || item.dropType === 8) continue;
+            if (item.dropType === 1 || item.dropType === 8) continue; // Skip chars and furniture cause idc
             // 1: character/furniture
             // 2: regular drop
             // 3: special drop
             // 4: extra drop
+            // 5-7: not used
             // 8: yellow rock
             switch (item.dropType) {
                 case 2:
@@ -1988,7 +1988,7 @@ module.exports = {
             embed.addFields({ name: 'Special Drops', value: specialString });
         }
 
-        const enemyFields = this.stageEnemyFields(stageData.enemyDbRefs);
+        const enemyFields = this.stageEnemyFields(stageData);
         for (const field of enemyFields) {
             embed.addFields(field);
         }
@@ -2070,36 +2070,51 @@ module.exports = {
         }
         return [{ name: 'Map', value: mapString }, { name: 'Legend', value: legendString }];
     },
-    stageEnemyFields(enemyDbRefs: StageData['enemyDbRefs']) {
+    stageEnemyFields(stageData: StageData) {
+        const waveDict: { [key: string]: number } = {}; // enemyId => enemy quantity
+        for (const wave of stageData.waves) { // Count number of enemies in stage, store results in waveDict
+            for (const fragment of wave.fragments) {
+                for (const action of fragment.actions) {
+                    if (action.actionType !== 0) continue;
+                    // 0: spawn
+                    // 1: skip??
+                    // 2: tutorial/story popup
+                    // 3: not used
+                    // 4: change bgm
+                    // 5: enemy intro popup
+                    // 6: spawn npc/trap
+                    // 7: stage effect (rumble)
+                    // 8: environmental effect (blizzards)
+                    // 9: some sss tutorial thing idk
+                    waveDict[action.key] = waveDict[action.key] === undefined ? action.count : waveDict[action.key] + action.count;
+                }
+            }
+        }
+
         let enemyString = '', eliteString = '', bossString = '';
-        for (const enemyRef of enemyDbRefs) {
+        for (const enemyRef of stageData.enemyDbRefs) {
             if (enemyDict.hasOwnProperty(enemyRef.id)) {
                 const enemy = enemyDict[enemyRef.id];
+
+                let enemyLine = `${enemy.excel.enemyIndex} - ${enemy.excel.name}`;
                 if (enemy.levels.Value.length !== 1) {
-                    switch (enemy.excel.enemyLevel) {
-                        case ('NORMAL'):
-                            enemyString += `${enemy.excel.enemyIndex} - ${enemy.excel.name} - **Lv${enemyRef.level + 1}**\n`;
-                            break;
-                        case ('ELITE'):
-                            eliteString += `${enemy.excel.enemyIndex} - ${enemy.excel.name} - **Lv${enemyRef.level + 1}**\n`;
-                            break;
-                        case ('BOSS'):
-                            bossString += `*${enemy.excel.enemyIndex} - ${enemy.excel.name}* - **Lv${enemyRef.level + 1}**\n`;
-                            break;
-                    }
+                    enemyLine += ` (Lv${enemyRef.level + 1})`; // Add predefine level if enemy has more than one
                 }
-                else {
-                    switch (enemy.excel.enemyLevel) {
-                        case ('NORMAL'):
-                            enemyString += `${enemy.excel.enemyIndex} - ${enemy.excel.name}\n`;
-                            break;
-                        case ('ELITE'):
-                            eliteString += `${enemy.excel.enemyIndex} - ${enemy.excel.name}\n`;
-                            break;
-                        case ('BOSS'):
-                            bossString += `*${enemy.excel.enemyIndex} - ${enemy.excel.name}*\n`;
-                            break;
-                    }
+                if (waveDict.hasOwnProperty(enemy.excel.enemyId)) {
+                    enemyLine += ` **x${waveDict[enemy.excel.enemyId]}**`; // Enemies like IS3 chests and OD rock slugs don't have predefined quantities, exclude these
+                }
+                enemyLine += '\n';
+
+                switch (enemy.excel.enemyLevel) {
+                    case ('NORMAL'):
+                        enemyString += enemyLine;
+                        break;
+                    case ('ELITE'):
+                        eliteString += enemyLine;
+                        break;
+                    case ('BOSS'):
+                        bossString += enemyLine;
+                        break;
                 }
             }
         }
