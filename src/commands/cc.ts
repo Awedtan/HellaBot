@@ -1,8 +1,6 @@
-const { SlashCommandBuilder } = require('discord.js');
-const fetch = require('../data');
+import { SlashCommandBuilder } from 'discord.js';
+import { ccDict } from '../data';
 const create = require('../create');
-
-import { CCStage } from '../types';
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -15,7 +13,6 @@ module.exports = {
         ),
     async execute(interaction) {
         const name = interaction.options.getString('name').toLowerCase();
-        const ccDict: { [key: string]: CCStage } = fetch.cc();
 
         if (!ccDict.hasOwnProperty(name)) {
             const { gameConsts } = require('../constants');

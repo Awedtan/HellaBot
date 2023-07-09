@@ -1,8 +1,6 @@
-const { SlashCommandBuilder } = require('discord.js');
-const fetch = require('../data');
+import { SlashCommandBuilder } from 'discord.js';
+import { operatorDict, skillDict } from '../data';
 const create = require('../create');
-
-import { Operator, Skill } from '../types';
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -20,8 +18,6 @@ module.exports = {
                 .setMaxValue(3)
         ),
     async execute(interaction) {
-        const operatorDict: { [key: string]: Operator } = fetch.operators();
-        const skillDict: { [key: string]: Skill } = fetch.skills();
         const name = interaction.options.getString('name').toLowerCase();
         let index = interaction.options.getInteger('index') - 1;
 

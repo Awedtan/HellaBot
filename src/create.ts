@@ -3,24 +3,12 @@ const { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, EmbedBu
 const nodefetch = require('node-fetch');
 const path = require('path');
 const puppeteer = require('puppeteer');
-const fetch = require('./data');
-const { paths } = require('./constants');
-const { gameConsts } = require('./constants');
+const { paths, gameConsts } = require('./constants');
+import { archetypeDict, baseDict, definitionDict, enemyDict, itemDict, moduleDict, operatorDict, rangeDict, rogueThemeArr, skillDict, stageDict, skinDict, toughStageDict } from './data';
 
 import { Base, BaseInfo, Blackboard, CCStage, Definition, Enemy, Item, LevelUpCost, Module, Paradox, Operator, Range, RogueRelic, RogueStage, RogueTheme, RogueVariation, Skill, Skin, Stage, StageData } from "./types";
 
 const embedColour = 0xebca60;
-const archetypeDict: { [key: string]: string } = fetch.archetypes();
-const baseDict: { [key: string]: Base } = fetch.bases();
-const defineDict: { [key: string]: Definition } = fetch.definitions();
-const enemyDict: { [key: string]: Enemy } = fetch.enemies();
-const itemDict: { [key: string]: Item } = fetch.items();
-const moduleDict: { [key: string]: Module } = fetch.modules();
-const operatorDict: { [key: string]: Operator } = fetch.operators();
-const rangeDict: { [key: string]: Range } = fetch.ranges();
-const skillDict: { [key: string]: Skill } = fetch.skills();
-const stageDict: { [key: string]: Stage[] } = fetch.stages();
-const skinDict: { [key: string]: Skin[] } = fetch.skins();
 
 const cleanFilename = (text: string) => text.split(/%|[#\+]|&|\[|\]/).join(''); // Remove special characters that discord doesn't like (%, #, etc.)
 // const fileExists = async (path: string) => !!(await fs.promises.stat(path).catch(e => false));
@@ -319,7 +307,7 @@ module.exports = {
     },
     defineListEmbed() {
         let statusDescription = '', effectDescription = '', groupDescription = '';
-        for (const term of Object.values(defineDict)) {
+        for (const term of Object.values(definitionDict)) {
             const termName = term.termName;
             const termArr = term.termId.split('.');
 
@@ -1564,7 +1552,7 @@ module.exports = {
         }
     },
     rogueRelicListEmbed(theme: number, index: number) {
-        const rogueTheme: RogueTheme = fetch.rogueThemes()[theme];
+        const rogueTheme = rogueThemeArr[theme];
         const descriptionLengthLimit = 560;
 
         let descriptionArr = [], i = 0;
@@ -1993,7 +1981,7 @@ module.exports = {
             embed.addFields(field);
         }
 
-        const stageIndex = isChallenge ? fetch.toughStages()[stage.excel.code.toLowerCase()].indexOf(stage) : fetch.stages()[stage.excel.code.toLowerCase()].indexOf(stage);
+        const stageIndex = isChallenge ? toughStageDict[stage.excel.code.toLowerCase()].indexOf(stage) : stageDict[stage.excel.code.toLowerCase()].indexOf(stage);
 
         const imageButton = new ButtonBuilder()
             .setCustomId(`stageඞ${stage.excel.code.toLowerCase()}ඞ${stageIndex}ඞ${isChallenge}ඞ0`)

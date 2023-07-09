@@ -1,8 +1,6 @@
-const { SlashCommandBuilder } = require('discord.js');
-const fetch = require('../data');
+import { SlashCommandBuilder } from 'discord.js';
+import { definitionDict } from '../data';
 const create = require('../create');
-
-import { Definition } from "../types";
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -21,12 +19,10 @@ module.exports = {
             await interaction.reply(defineListEmbed);
         }
         else {
-            const defineDict: { [key: string]: Definition } = fetch.definitions();
-
-            if (!defineDict.hasOwnProperty(term))
+            if (!definitionDict.hasOwnProperty(term))
                 return await interaction.reply({ content: 'That term doesn\'t exist!', ephemeral: true });
 
-            const definition = defineDict[term];
+            const definition = definitionDict[term];
             const defineEmbed = create.defineEmbed(definition);
             await interaction.reply(defineEmbed);
         }

@@ -2,8 +2,8 @@ const fs = require('fs');
 const path = require('path');
 const { ActivityType, Client, Collection, Events, GatewayIntentBits } = require('discord.js');
 const { token } = require('../config.json');
+import { initializeData, ccDict, enemyDict, moduleDict, operatorDict, paradoxDict, rogueThemeArr, skillDict, stageDict, toughStageDict } from './data';
 const create = require('./create');
-const fetch = require('./data');
 
 // Load command files
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
@@ -22,10 +22,9 @@ for (const file of commandFiles) {
 }
 
 // Pull data from ArknightsGameData repo
-fetch.initializeAll();
+initializeData();
 
 client.login(token);
-
 client.once(Events.ClientReady, c => {
     console.log(`Ready! Logged in as ${c.user.tag}`);
     c.user.setActivity('CC#13', { type: ActivityType.Competing });
@@ -49,19 +48,7 @@ client.on(Events.InteractionCreate, async interaction => {
     }
 });
 
-// Start of command interaction handling
-import { CCStage, Enemy, Module, Paradox, Operator, RogueTheme, Skill, Stage } from "./types";
-
-const ccDict: { [key: string]: CCStage } = fetch.cc();
-const enemyDict: { [key: string]: Enemy } = fetch.enemies();
-const moduleDict: { [key: string]: Module } = fetch.modules();
-const opDict: { [key: string]: Operator } = fetch.operators();
-const paradoxDict: { [key: string]: Paradox } = fetch.paradoxes();
-const rogueThemeArr: RogueTheme[] = fetch.rogueThemes();
-const skillDict: { [key: string]: Skill } = fetch.skills();
-const stageDict: { [key: string]: Stage[] } = fetch.stages();
-const toughStageDict: { [key: string]: Stage[] } = fetch.toughStages();
-
+// Autocomplete interaction handling
 client.on(Events.InteractionCreate, async interaction => {
     if (!interaction.isAutocomplete()) return;
 
@@ -73,6 +60,7 @@ client.on(Events.InteractionCreate, async interaction => {
     }
 });
 
+// Button and select menu interaction handling
 client.on(Events.InteractionCreate, async interaction => {
     if (!interaction.isButton() && !interaction.isStringSelectMenu()) return;
 
@@ -99,7 +87,7 @@ client.on(Events.InteractionCreate, async interaction => {
             }
         }
         case 'cost': {
-            const op = opDict[idArr[1]];
+            const op = operatorDict[idArr[1]];
             const type = idArr[2];
 
             const costEmbed = create.costEmbed(op, type);
@@ -119,7 +107,7 @@ client.on(Events.InteractionCreate, async interaction => {
         case 'info': {
             await interaction.deferUpdate();
 
-            const op = opDict[idArr[1]];
+            const op = operatorDict[idArr[1]];
             const type = parseInt(idArr[2]);
             const page = parseInt(idArr[3]);
             const level = parseInt(idArr[4]);
@@ -131,7 +119,7 @@ client.on(Events.InteractionCreate, async interaction => {
         }
         case 'module': {
             const module = moduleDict[idArr[1]];
-            const op = opDict[idArr[2]];
+            const op = operatorDict[idArr[2]];
             const level = parseInt(idArr[3]);
 
             const moduleEmbed = create.moduleEmbed(module, op, level);
@@ -140,7 +128,7 @@ client.on(Events.InteractionCreate, async interaction => {
             break;
         }
         case 'paradox': {
-            const paradox = paradoxDict[opDict[idArr[1]].id];
+            const paradox = paradoxDict[operatorDict[idArr[1]].id];
             const page = parseInt(idArr[2]);
 
             const paradoxEmbed = await create.paradoxEmbed(paradox, page);
@@ -188,7 +176,7 @@ client.on(Events.InteractionCreate, async interaction => {
         }
         case 'skill': {
             const skill = skillDict[idArr[1]];
-            const op = opDict[idArr[2]];
+            const op = operatorDict[idArr[2]];
             const level = parseInt(idArr[3]);
 
             const skillEmbed = create.skillEmbed(skill, op, level);
@@ -199,7 +187,7 @@ client.on(Events.InteractionCreate, async interaction => {
         case 'skin': {
             await interaction.deferUpdate();
 
-            const op = opDict[idArr[1]];
+            const op = operatorDict[idArr[1]];
             const page = parseInt(idArr[2]);
             const skinEmbed = create.skinEmbed(op, page);
 
@@ -207,7 +195,7 @@ client.on(Events.InteractionCreate, async interaction => {
             break;
         }
         case 'spine': {
-            const op = opDict[idArr[1]];
+            const op = operatorDict[idArr[1]];
             const type = interaction.values[0];
 
             await interaction.deferUpdate();

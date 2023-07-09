@@ -18,7 +18,7 @@ export const skinDict: { [key: string]: Skin[] } = {};             // Operator i
 export const stageDict: { [key: string]: Stage[] } = {};           // Stage id/code -> Stage object array
 export const toughStageDict: { [key: string]: Stage[] } = {};      // Stage code -> Stage object array
 
-export function initializeAll() {
+export function initializeData() {
     initArchetypes();
     initBases();
     initCC();
@@ -33,51 +33,6 @@ export function initializeAll() {
     initSkins();
     initStages();
     initOperators(); // Ops depend on skills and other stuff, initialize last
-};
-export function archetypes() {
-    return archetypeDict;
-};
-export function bases() {
-    return baseDict;
-};
-export function cc() {
-    return ccDict;
-};
-export function definitions() {
-    return definitionDict;
-};
-export function enemies() {
-    return enemyDict;
-};
-export function items() {
-    return itemDict;
-};
-export function modules() {
-    return moduleDict;
-};
-export function operators() {
-    return operatorDict;
-};
-export function paradoxes() {
-    return paradoxDict;
-};
-export function ranges() {
-    return rangeDict;
-};
-export function rogueThemes() {
-    return rogueThemeArr;
-};
-export function skills() {
-    return skillDict;
-};
-export function skins() {
-    return skinDict;
-};
-export function stages() {
-    return stageDict;
-};
-export function toughStages() {
-    return toughStageDict;
 };
 
 function initArchetypes() {

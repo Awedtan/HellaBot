@@ -1,8 +1,6 @@
-const { SlashCommandBuilder } = require('discord.js');
-const fetch = require('../data');
+import { SlashCommandBuilder } from 'discord.js';
+import { itemDict } from '../data';
 const create = require('../create');
-
-import { Item } from '../types';
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -14,7 +12,6 @@ module.exports = {
                 .setRequired(true)
         ),
     async execute(interaction) {
-        const itemDict: { [key: string]: Item } = fetch.items();
         const name = interaction.options.getString('name').toLowerCase();
 
         if (!itemDict.hasOwnProperty(name))

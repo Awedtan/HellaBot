@@ -1,10 +1,9 @@
-const { SlashCommandBuilder } = require('discord.js');
+import { SlashCommandBuilder } from 'discord.js';
 const nodefetch = require('node-fetch');
-const fetch = require('../data');
+import { operatorDict } from '../data';
 const create = require('../create');
 const { paths } = require('../constants');
 
-import { Operator } from "../types";
 const urlExists = async (url: string) => (await nodefetch(url)).status === 200;
 
 module.exports = {
@@ -17,7 +16,6 @@ module.exports = {
                 .setRequired(true)
         ),
     async execute(interaction) {
-        const operatorDict: { [key: string]: Operator } = fetch.operators();
         const name = interaction.options.getString('name').toLowerCase();
 
         if (!operatorDict.hasOwnProperty(name))

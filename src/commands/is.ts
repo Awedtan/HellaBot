@@ -1,8 +1,6 @@
-const { SlashCommandBuilder } = require('discord.js');
-const fetch = require('../data');
+import { SlashCommandBuilder } from 'discord.js';
+import { rogueThemeArr } from '../data';
 const create = require('../create');
-
-import { RogueTheme } from '../types';
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -40,7 +38,7 @@ module.exports = {
         ),
     async execute(interaction) {
         const theme = interaction.options.getInteger('theme') - 2;
-        const rogueDict: RogueTheme = fetch.rogueThemes()[theme];
+        const rogueDict = rogueThemeArr[theme];
         const type = interaction.options.getString('type').toLowerCase();
         const name = interaction.options.getString('name').toLowerCase();
 

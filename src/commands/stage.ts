@@ -1,8 +1,6 @@
-const { SlashCommandBuilder } = require('discord.js');
-const fetch = require('../data');
+import { SlashCommandBuilder } from 'discord.js';
+import { stageDict, toughStageDict } from '../data';
 const create = require('../create');
-
-import { Stage } from '../types';
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -25,10 +23,10 @@ module.exports = {
         const code = interaction.options.getString('code').toLowerCase();
         const difficulty = interaction.options.getString('difficulty');
 
-        const stageDict: { [key: string]: Stage[] } = difficulty === 'challenge' ? fetch.toughStages() : fetch.stages();
-        const stageArr = stageDict[code];
+        const currStageDict = difficulty === 'challenge' ? toughStageDict : stageDict;
+        const stageArr = currStageDict[code];
 
-        if (!stageDict.hasOwnProperty(code) || stageArr.length === 0)
+        if (!currStageDict.hasOwnProperty(code) || stageArr.length === 0)
             return await interaction.reply({ content: 'That stage doesn\'t exist!', ephemeral: true });
 
         if (stageArr.length == 1) {

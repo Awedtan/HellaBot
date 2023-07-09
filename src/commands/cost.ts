@@ -1,8 +1,6 @@
-const { SlashCommandBuilder } = require('discord.js');
-const fetch = require('../data');
+import { SlashCommandBuilder } from 'discord.js';
+import { operatorDict, } from '../data';
 const create = require('../create');
-
-import { Operator } from "../types";
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -24,7 +22,6 @@ module.exports = {
                 )
         ),
     async execute(interaction) {
-        const operatorDict: { [key: string]: Operator } = fetch.operators();
         const name = interaction.options.getString('name').toLowerCase();
         const type = interaction.options.getString('type');
 

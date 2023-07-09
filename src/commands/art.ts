@@ -1,8 +1,6 @@
-const { SlashCommandBuilder } = require('discord.js');
-const fetch = require('../data');
+import { SlashCommandBuilder } from 'discord.js';
+import { operatorDict, skinDict } from '../data';
 const create = require('../create');
-
-import { Operator, Skin } from "../types";
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -14,8 +12,6 @@ module.exports = {
                 .setRequired(true)
         ),
     async execute(interaction) {
-        const operatorDict: { [key: string]: Operator } = fetch.operators();
-        const skinDict: { [key: string]: Skin[] } = fetch.skins();
         const name = interaction.options.getString('name').toLowerCase();
 
         if (!operatorDict.hasOwnProperty(name))
