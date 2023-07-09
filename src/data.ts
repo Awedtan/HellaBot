@@ -2,85 +2,83 @@ const { gameConsts, paths } = require('./constants');
 
 import { Base, BaseInfo, CCStage, Definition, Enemy, Item, ManufactFormula, Module, Operator, Paradox, ParadoxInfo, Range, RogueTheme, RogueRelic, RogueStage, RogueStageInfo, RogueVariation, Skill, Skin, Stage, StageData, StageInfo, WorkshopFormula } from "./types";
 
-const archetypeDict: { [key: string]: string } = {};        // Archetype id -> archetype name
-const baseDict: { [key: string]: Base } = {};               // Base skill id -> Base object
-const ccDict: { [key: string]: CCStage } = {};              // CC stage name -> CCStage object
-const definitionDict: { [key: string]: Definition } = {};   // Term name -> Definition object
-const enemyDict: { [key: string]: Enemy } = {};             // Enemy id/name/code -> Enemy object
-const itemDict: { [key: string]: Item } = {};               // Item id/name -> Item object
-const moduleDict: { [key: string]: Module } = {};           // Module id -> Module object
-const operatorDict: { [key: string]: Operator } = {};       // Operator id/name -> Operator object
-const paradoxDict: { [key: string]: Paradox } = {};         // Operator id -> Paradox object
-const rangeDict: { [key: string]: Range } = {};             // Range id -> Range object
-const rogueThemeArr: RogueTheme[] = [];                     // IS theme array (0=IS2, 1=IS3)
-const skillDict: { [key: string]: Skill } = {};             // Skill id -> Skill object
-const skinDict: { [key: string]: Skin[] } = {};             // Operator id -> Skin object array
-const stageDict: { [key: string]: Stage[] } = {};           // Stage id/code -> Stage object array
-const toughStageDict: { [key: string]: Stage[] } = {};      // Stage code -> Stage object array
+export const archetypeDict: { [key: string]: string } = {};        // Archetype id -> archetype name
+export const baseDict: { [key: string]: Base } = {};               // Base skill id -> Base object
+export const ccDict: { [key: string]: CCStage } = {};              // CC stage name -> CCStage object
+export const definitionDict: { [key: string]: Definition } = {};   // Term name -> Definition object
+export const enemyDict: { [key: string]: Enemy } = {};             // Enemy id/name/code -> Enemy object
+export const itemDict: { [key: string]: Item } = {};               // Item id/name -> Item object
+export const moduleDict: { [key: string]: Module } = {};           // Module id -> Module object
+export const operatorDict: { [key: string]: Operator } = {};       // Operator id/name -> Operator object
+export const paradoxDict: { [key: string]: Paradox } = {};         // Operator id -> Paradox object
+export const rangeDict: { [key: string]: Range } = {};             // Range id -> Range object
+export const rogueThemeArr: RogueTheme[] = [];                     // IS theme array (0=IS2, 1=IS3)
+export const skillDict: { [key: string]: Skill } = {};             // Skill id -> Skill object
+export const skinDict: { [key: string]: Skin[] } = {};             // Operator id -> Skin object array
+export const stageDict: { [key: string]: Stage[] } = {};           // Stage id/code -> Stage object array
+export const toughStageDict: { [key: string]: Stage[] } = {};      // Stage code -> Stage object array
 
-module.exports = {
-    initializeAll() {
-        initArchetypes();
-        initBases();
-        initCC();
-        initDefinitions();
-        initEnemies();
-        initItems();
-        initModules();
-        initParadoxes();
-        initRanges();
-        initRogueThemes();
-        initSkills();
-        initSkins();
-        initStages();
-        initOperators(); // Ops depend on skills and other stuff, initialize last
-    },
-    archetypes() {
-        return archetypeDict;
-    },
-    bases() {
-        return baseDict;
-    },
-    cc() {
-        return ccDict;
-    },
-    definitions() {
-        return definitionDict;
-    },
-    enemies() {
-        return enemyDict;
-    },
-    items() {
-        return itemDict;
-    },
-    modules() {
-        return moduleDict;
-    },
-    operators() {
-        return operatorDict;
-    },
-    paradoxes() {
-        return paradoxDict;
-    },
-    ranges() {
-        return rangeDict;
-    },
-    rogueThemes() {
-        return rogueThemeArr;
-    },
-    skills() {
-        return skillDict;
-    },
-    skins() {
-        return skinDict;
-    },
-    stages() {
-        return stageDict;
-    },
-    toughStages() {
-        return toughStageDict;
-    }
-}
+export function initializeAll() {
+    initArchetypes();
+    initBases();
+    initCC();
+    initDefinitions();
+    initEnemies();
+    initItems();
+    initModules();
+    initParadoxes();
+    initRanges();
+    initRogueThemes();
+    initSkills();
+    initSkins();
+    initStages();
+    initOperators(); // Ops depend on skills and other stuff, initialize last
+};
+export function archetypes() {
+    return archetypeDict;
+};
+export function bases() {
+    return baseDict;
+};
+export function cc() {
+    return ccDict;
+};
+export function definitions() {
+    return definitionDict;
+};
+export function enemies() {
+    return enemyDict;
+};
+export function items() {
+    return itemDict;
+};
+export function modules() {
+    return moduleDict;
+};
+export function operators() {
+    return operatorDict;
+};
+export function paradoxes() {
+    return paradoxDict;
+};
+export function ranges() {
+    return rangeDict;
+};
+export function rogueThemes() {
+    return rogueThemeArr;
+};
+export function skills() {
+    return skillDict;
+};
+export function skins() {
+    return skinDict;
+};
+export function stages() {
+    return stageDict;
+};
+export function toughStages() {
+    return toughStageDict;
+};
 
 function initArchetypes() {
     type SubProf = {

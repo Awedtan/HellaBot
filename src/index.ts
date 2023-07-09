@@ -3,7 +3,7 @@ const path = require('path');
 const { ActivityType, Client, Collection, Events, GatewayIntentBits } = require('discord.js');
 const { token } = require('../config.json');
 const create = require('./create');
-const fetch = require('./fetch');
+const fetch = require('./data');
 
 // Load command files
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });

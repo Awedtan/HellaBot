@@ -1,5 +1,5 @@
 const { SlashCommandBuilder } = require('discord.js');
-const fetch = require('../fetch');
+const fetch = require('../data');
 const create = require('../create');
 
 import { Enemy } from '../types';

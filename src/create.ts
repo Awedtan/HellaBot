@@ -3,7 +3,7 @@ const { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, EmbedBu
 const nodefetch = require('node-fetch');
 const path = require('path');
 const puppeteer = require('puppeteer');
-const fetch = require('./fetch');
+const fetch = require('./data');
 const { paths } = require('./constants');
 const { gameConsts } = require('./constants');
 
