@@ -63,6 +63,17 @@ const stageDict: { [key: string]: Stage[] } = fetch.stages();
 const toughStageDict: { [key: string]: Stage[] } = fetch.toughStages();
 
 client.on(Events.InteractionCreate, async interaction => {
+    if (!interaction.isAutocomplete()) return;
+
+    try {
+        const command = client.commands.get(interaction.commandName);
+        await command.autocomplete(interaction);
+    } catch (err) {
+        console.log(err);
+    }
+});
+
+client.on(Events.InteractionCreate, async interaction => {
     if (!interaction.isButton() && !interaction.isStringSelectMenu()) return;
 
     const idArr: string[] = interaction.customId.split('ඞ');

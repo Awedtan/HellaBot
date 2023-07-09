@@ -2,13 +2,15 @@
  
 ## todo:
 
+is subcommands
+
+figure out what to do about imports
+
 look into avoiding sending duplicate images
 
 look into using more updated spine viewer
 
 add help command and better command descriptions
-
-count enemies in a stage
 
 maintain bot
 
