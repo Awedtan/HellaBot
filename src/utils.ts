@@ -2143,7 +2143,7 @@ export function operatorAutocomplete(query: string, callback: (op: Operator) => 
         if (opArr.includes(op)) continue;
         opArr.push(op);
     }
-    const filteredArr = opArr.filter(op => op.data.name.toLowerCase().includes(query) && callback(op))
+    const filteredArr = opArr.filter(op => op.data.name.toLowerCase().includes(query) && callback(op));
     const filteredMap = filteredArr.slice(0, 8).map(op => ({ name: op.data.name, value: op.data.name }));
 
     return filteredMap;
