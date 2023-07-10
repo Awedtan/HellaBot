@@ -467,11 +467,11 @@ export function buildInfoEmbed(op: Operator, type: number, page: number, level: 
         .setStyle(ButtonStyle.Success);
     const typeRow = new ActionRowBuilder().addComponents(skillButton, moduleButton, artButton, baseButton, costButton);
 
-    if (op.data.skills.length == 0) {
+    if (op.data.skills.length === 0) {
         skillButton.setStyle(ButtonStyle.Secondary);
         skillButton.setDisabled(true);
     }
-    if (op.modules.length == 0) {
+    if (op.modules.length === 0) {
         moduleButton.setStyle(ButtonStyle.Secondary);
         moduleButton.setDisabled(true);
     }
@@ -479,7 +479,7 @@ export function buildInfoEmbed(op: Operator, type: number, page: number, level: 
         artButton.setStyle(ButtonStyle.Secondary);
         artButton.setDisabled(true);
     }
-    if (op.bases.length == 0) {
+    if (op.bases.length === 0) {
         baseButton.setStyle(ButtonStyle.Secondary);
         baseButton.setDisabled(true);
     }
@@ -2137,18 +2137,14 @@ export function buildStageSelectEmbed(stageArr: Stage[] | RogueStage[]) {
     return { content: 'Multiple stages with that code were found, please select a stage below:', components: [componentRow] };
 }
 
-export function operatorAutocomplete(query: string) {
-    let opArr = [];
+export function operatorAutocomplete(query: string, callback: (op: Operator) => boolean = () => true) {
+    let opArr: Operator[] = [];
     for (const op of Object.values(operatorDict)) {
-        const arr = op.data.name.split(' ');
-        for (let i = 0; i < arr.length; i++) {
-            arr[i] = arr[i].charAt(0).toUpperCase() + arr[i].substring(1);
-        }
-        const prettyName = arr.join(' ');
-        if (opArr.includes(prettyName)) continue;
-        opArr.push(prettyName);
+        if (opArr.includes(op)) continue;
+        opArr.push(op);
     }
-    const filteredMap = opArr.filter(name => name.toLowerCase().includes(query)).slice(0, 8).map(name => ({ name: name, value: name }));
+    const filteredArr = opArr.filter(op => op.data.name.toLowerCase().includes(query) && callback(op))
+    const filteredMap = filteredArr.slice(0, 8).map(op => ({ name: op.data.name, value: op.data.name }));
 
     return filteredMap;
 }

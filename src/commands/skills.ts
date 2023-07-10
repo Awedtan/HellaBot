@@ -18,10 +18,10 @@ module.exports = {
                 .setMinValue(1)
                 .setMaxValue(3)
         ),
-
     async autocomplete(interaction) {
         const value = interaction.options.getFocused().toLowerCase();
-        const arr = operatorAutocomplete(value);
+        const callback = op => op.data.skills.length !== 0;
+        const arr = operatorAutocomplete(value, callback);
 
         await interaction.respond(arr);
     },

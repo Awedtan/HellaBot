@@ -14,7 +14,8 @@ module.exports = {
         ),
     async autocomplete(interaction) {
         const value = interaction.options.getFocused().toLowerCase();
-        const arr = operatorAutocomplete(value);
+        const callback = op => skinDict.hasOwnProperty(op.id);
+        const arr = operatorAutocomplete(value, callback);
 
         await interaction.respond(arr);
     },
