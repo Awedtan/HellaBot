@@ -17,6 +17,47 @@ export const skinDict: { [key: string]: Skin[] } = {};             // Operator i
 export const stageDict: { [key: string]: Stage[] } = {};           // Stage id/code -> Stage object array
 export const toughStageDict: { [key: string]: Stage[] } = {};      // Stage code -> Stage object array
 
+// Kengxxiao/ArknightsGameData info
+//  excel
+//      activity_table              side story event info
+//      battle_equip_table          module stats
+//      character_table             operator stats
+//      char_patch_table            guard amiya
+//      charword_table              operator voice lines
+//      climb_tower_table           SSS areas
+//      crisis_table                CC events
+//      enemy_handbook_table        ingame enemy descriptions
+//      gamedata_const              misc game variables, includes ingame status effect descriptions
+//      handbook_info_table         operator profiles
+//      handbook_team_table         operator allegiances
+//      item_table                  item descriptions
+//      medal_table                 medal descriptions
+//      mission_table               mission descriptions
+//      range_table                 operator ranges
+//      retro_table                 intermezzi stages
+//      roguelike_topic_table       IS2 data and stages
+//      skill_table                 operator skills
+//      skin_table                  operator skins
+//      stage_table                 all stage descriptions
+//      uniequip_table              module descriptions
+//  levels
+//      activities/                 side story stages
+//      enemydata/enemy_database    enemy stats
+//      obt
+//          campaign/               annihalation stages
+//          guide/                  ???
+//          hard/                   H stages
+//          legion/                 SSS stages
+//          main/                   story stages
+//          memory/                 paradox simulation stages
+//          promote/                chip stages
+//          roguelike
+//              ro1/                IS2 stages
+//              ro2/                IS3 stages
+//          rune/                   CC stages
+//          training/               tutorial stages
+//          weekly/                 supply stages
+
 export function initializeData() {
     initArchetypes();
     initBases();
