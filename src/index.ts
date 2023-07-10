@@ -3,7 +3,7 @@ const path = require('path');
 const { ActivityType, Client, Collection, Events, GatewayIntentBits } = require('discord.js');
 const { token } = require('../config.json');
 import { initializeData, ccDict, enemyDict, moduleDict, operatorDict, paradoxDict, rogueThemeArr, skillDict, stageDict, toughStageDict } from './data';
-const create = require('./create');
+import * as utils from './utils';
 
 // Load command files
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
@@ -71,7 +71,7 @@ client.on(Events.InteractionCreate, async interaction => {
             if (idArr[1] === 'select') {
                 const stage = ccDict[interaction.values[0]];
 
-                const ccEmbed = await create.ccEmbed(stage, 0);
+                const ccEmbed = await utils.buildCcEmbed(stage, 0);
                 await interaction.update(ccEmbed);
 
                 break;
@@ -80,7 +80,7 @@ client.on(Events.InteractionCreate, async interaction => {
                 const stage = ccDict[idArr[1]];
                 const page = parseInt(idArr[2]);
 
-                const ccEmbed = await create.ccEmbed(stage, page);
+                const ccEmbed = await utils.buildCcEmbed(stage, page);
                 await interaction.update(ccEmbed);
 
                 break;
@@ -90,7 +90,7 @@ client.on(Events.InteractionCreate, async interaction => {
             const op = operatorDict[idArr[1]];
             const type = idArr[2];
 
-            const costEmbed = create.costEmbed(op, type);
+            const costEmbed = utils.buildCostEmbed(op, type);
             await interaction.update(costEmbed);
 
             break;
@@ -99,7 +99,7 @@ client.on(Events.InteractionCreate, async interaction => {
             const enemy = enemyDict[idArr[1]];
             const level = parseInt(idArr[2]);
 
-            const enemyEmbed = create.enemyEmbed(enemy, level);
+            const enemyEmbed = utils.buildEnemyEmbed(enemy, level);
             await interaction.update(enemyEmbed);
 
             break;
@@ -112,7 +112,7 @@ client.on(Events.InteractionCreate, async interaction => {
             const page = parseInt(idArr[3]);
             const level = parseInt(idArr[4]);
 
-            const infoEmbed = create.infoEmbed(op, type, page, level);
+            const infoEmbed = utils.buildInfoEmbed(op, type, page, level);
             await interaction.editReply(infoEmbed);
 
             break;
@@ -122,7 +122,7 @@ client.on(Events.InteractionCreate, async interaction => {
             const op = operatorDict[idArr[2]];
             const level = parseInt(idArr[3]);
 
-            const moduleEmbed = create.moduleEmbed(module, op, level);
+            const moduleEmbed = utils.buildModuleEmbed(module, op, level);
             await interaction.update(moduleEmbed);
 
             break;
@@ -131,7 +131,7 @@ client.on(Events.InteractionCreate, async interaction => {
             const paradox = paradoxDict[operatorDict[idArr[1]].id];
             const page = parseInt(idArr[2]);
 
-            const paradoxEmbed = await create.paradoxEmbed(paradox, page);
+            const paradoxEmbed = await utils.buildParadoxEmbed(paradox, page);
             await interaction.update(paradoxEmbed);
 
             break;
@@ -142,7 +142,7 @@ client.on(Events.InteractionCreate, async interaction => {
             const tag = idArr[3];
             const select = idArr[4] === 'select';
 
-            const recruitEmbed = create.recruitEmbed(qual, value, tag, select);
+            const recruitEmbed = utils.buildRecruitEmbed(qual, value, tag, select);
             await interaction.update(recruitEmbed);
 
             break;
@@ -153,7 +153,7 @@ client.on(Events.InteractionCreate, async interaction => {
                     const theme = parseInt(idArr[2]);
                     const index = parseInt(idArr[3]);
 
-                    const relicListEmbed = create.rogueRelicListEmbed(theme, index);
+                    const relicListEmbed = utils.buildRogueRelicListEmbed(theme, index);
                     await interaction.update(relicListEmbed);
 
                     break;
@@ -165,7 +165,7 @@ client.on(Events.InteractionCreate, async interaction => {
                     const stage = stages[idArr[3]];
                     const page = parseInt(idArr[5]);
 
-                    const stageEmbed = await create.rogueStageEmbed(theme, stage, page);
+                    const stageEmbed = await utils.buildRogueStageEmbed(theme, stage, page);
                     await interaction.update(stageEmbed);
 
                     break;
@@ -179,7 +179,7 @@ client.on(Events.InteractionCreate, async interaction => {
             const op = operatorDict[idArr[2]];
             const level = parseInt(idArr[3]);
 
-            const skillEmbed = create.skillEmbed(skill, op, level);
+            const skillEmbed = utils.buildSkillEmbed(skill, op, level);
             await interaction.update(skillEmbed);
 
             break;
@@ -189,7 +189,7 @@ client.on(Events.InteractionCreate, async interaction => {
 
             const op = operatorDict[idArr[1]];
             const page = parseInt(idArr[2]);
-            const skinEmbed = create.skinEmbed(op, page);
+            const skinEmbed = utils.buildSkinEmbed(op, page);
 
             await interaction.editReply(skinEmbed);
             break;
@@ -201,14 +201,14 @@ client.on(Events.InteractionCreate, async interaction => {
             await interaction.deferUpdate();
             await interaction.editReply({ content: `Generating \`${type}\` gif...`, components: [] })
 
-            const { page, browser } = await create.spinePage(op, type);
+            const { page, browser } = await utils.buildSpinePage(op, type);
 
             page.on('console', async message => {
                 if (message.text() === 'done') {
                     await new Promise(r => setTimeout(r, 1000));
                     await browser.close();
 
-                    const spineEmbed = await create.spineEmbed(op, type);
+                    const spineEmbed = await utils.buildSpineEmbed(op, type);
                     return await interaction.editReply(spineEmbed);
                 }
             }).on('pageerror', async ({ message }) => {
@@ -223,7 +223,7 @@ client.on(Events.InteractionCreate, async interaction => {
                 const stages = stageDict[idArr[2]];
                 const stage = stages[interaction.values[0]];
 
-                const stageEmbed = await create.stageEmbed(stage, 0);
+                const stageEmbed = await utils.buildStageEmbed(stage, 0);
                 await interaction.update(stageEmbed);
 
                 break;
@@ -233,7 +233,7 @@ client.on(Events.InteractionCreate, async interaction => {
                 const stage = stages[parseInt(idArr[2])];
                 const page = parseInt(idArr[4]);
 
-                const stageEmbed = await create.stageEmbed(stage, page);
+                const stageEmbed = await utils.buildStageEmbed(stage, page);
                 await interaction.update(stageEmbed);
 
                 break;

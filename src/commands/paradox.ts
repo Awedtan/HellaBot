@@ -1,6 +1,6 @@
 import { SlashCommandBuilder } from 'discord.js';
 import { operatorDict, paradoxDict } from '../data';
-const create = require('../create');
+import { buildParadoxEmbed } from '../utils';
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -23,7 +23,7 @@ module.exports = {
             return await interaction.reply({ content: 'That operator doesn\'t have a paradox simulation!', ephemeral: true });
 
         const paradox = paradoxDict[op.id];
-        const paradoxEmbed = await create.paradoxEmbed(paradox, 0);
+        const paradoxEmbed = await buildParadoxEmbed(paradox, 0);
 
         await interaction.reply(paradoxEmbed);
     }

@@ -1,6 +1,6 @@
 import { SlashCommandBuilder } from 'discord.js';
 import { operatorDict, skillDict } from '../data';
-const create = require('../create');
+import { buildSkillEmbed } from '../utils';
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -41,12 +41,12 @@ module.exports = {
             const skill = skillDict[opSkill.skillId];
 
             if (first) {
-                const skillEmbed = create.skillEmbed(skill, op, 0);
+                const skillEmbed = buildSkillEmbed(skill, op, 0);
                 await interaction.reply(skillEmbed);
                 first = false;
             }
             else {
-                const skillEmbed = create.skillEmbed(skill, op, 0);
+                const skillEmbed = buildSkillEmbed(skill, op, 0);
                 await interaction.followUp(skillEmbed);
             }
         }

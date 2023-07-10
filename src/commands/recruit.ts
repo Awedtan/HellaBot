@@ -1,5 +1,5 @@
 import { SlashCommandBuilder } from 'discord.js';
-const create = require('../create');
+import { buildRecruitEmbed } from '../utils';
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -16,7 +16,7 @@ module.exports = {
         ),
     async execute(interaction) {
         const qual = interaction.options.getString('qualification');
-        const recruitEmbed = create.recruitEmbed(qual, 1, '', true);
+        const recruitEmbed = buildRecruitEmbed(qual, 1, '', true);
 
         await interaction.reply(recruitEmbed);
     }

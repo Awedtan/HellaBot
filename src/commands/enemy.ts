@@ -1,6 +1,6 @@
 import { SlashCommandBuilder } from 'discord.js';
 import { enemyDict } from '../data';
-const create = require('../create');
+import { buildEnemyEmbed } from '../utils';
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -18,7 +18,7 @@ module.exports = {
             return await interaction.reply({ content: 'That enemy doesn\'t exist!', ephemeral: true });
 
         const enemy = enemyDict[name];
-        const enemyEmbed = create.enemyEmbed(enemy, 0);
+        const enemyEmbed = buildEnemyEmbed(enemy, 0);
         await interaction.reply(enemyEmbed);
     }
 }

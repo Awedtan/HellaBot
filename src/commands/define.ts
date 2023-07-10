@@ -1,6 +1,6 @@
 import { SlashCommandBuilder } from 'discord.js';
 import { definitionDict } from '../data';
-const create = require('../create');
+import { buildDefineEmbed, buildDefineListEmbed } from '../utils';
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -15,7 +15,7 @@ module.exports = {
         const term = interaction.options.getString('term').toLowerCase();
 
         if (term === 'list') {
-            const defineListEmbed = create.defineListEmbed();
+            const defineListEmbed = buildDefineListEmbed();
             await interaction.reply(defineListEmbed);
         }
         else {
@@ -23,7 +23,7 @@ module.exports = {
                 return await interaction.reply({ content: 'That term doesn\'t exist!', ephemeral: true });
 
             const definition = definitionDict[term];
-            const defineEmbed = create.defineEmbed(definition);
+            const defineEmbed = buildDefineEmbed(definition);
             await interaction.reply(defineEmbed);
         }
     }

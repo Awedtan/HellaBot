@@ -1,10 +1,8 @@
 import { SlashCommandBuilder } from 'discord.js';
 const nodefetch = require('node-fetch');
 import { operatorDict } from '../data';
-const create = require('../create');
+import { buildSpineEmbed, buildSpinePage, urlExists } from '../utils';
 const { paths } = require('../constants');
-
-const urlExists = async (url: string) => (await nodefetch(url)).status === 200;
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -36,14 +34,14 @@ module.exports = {
 
         // Default animations are a single frame that lasts forever, they do not work and should not be shown
         const type = Object.keys(spineJson.animations)[0] === 'Default' ? Object.keys(spineJson.animations)[1] : Object.keys(spineJson.animations)[0];
-        const { page, browser } = await create.spinePage(op, type);
+        const { page, browser } = await buildSpinePage(op, type);
 
         page.on('console', async message => {
             if (message.text() === 'done') {
                 await new Promise(r => setTimeout(r, 1000));
                 await browser.close();
 
-                const spineEmbed = await create.spineEmbed(op, type);
+                const spineEmbed = await buildSpineEmbed(op, type);
                 return await interaction.followUp(spineEmbed);
             }
         }).on('pageerror', async ({ message }) => {

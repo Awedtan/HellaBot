@@ -506,7 +506,7 @@ type ParadoxInfo = {
     stageGetTime: number;
 };
 
-type Range = {
+type GridRange = {
     id: string;
     direction: number;
     grids: {

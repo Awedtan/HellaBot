@@ -1,6 +1,6 @@
 import { SlashCommandBuilder } from 'discord.js';
 import { operatorDict } from '../data';
-const create = require('../create');
+import { buildInfoEmbed } from '../utils';
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -37,7 +37,7 @@ module.exports = {
             return await interaction.reply({ content: 'That operator doesn\'t exist!', ephemeral: true });
 
         const operator = operatorDict[name];
-        const operatorEmbed = create.infoEmbed(operator, 0, 0, 0);
+        const operatorEmbed = buildInfoEmbed(operator, 0, 0, 0);
         await interaction.reply(operatorEmbed);
     }
 }

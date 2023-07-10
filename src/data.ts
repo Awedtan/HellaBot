@@ -1,6 +1,5 @@
 const { gameConsts, paths } = require('./constants');
-
-import { Base, BaseInfo, CCStage, Definition, Enemy, Item, ManufactFormula, Module, Operator, Paradox, ParadoxInfo, Range, RogueTheme, RogueRelic, RogueStage, RogueStageInfo, RogueVariation, Skill, Skin, Stage, StageData, StageInfo, WorkshopFormula } from "./types";
+import type { Base, BaseInfo, CCStage, Definition, Enemy, Item, ManufactFormula, Module, Operator, Paradox, ParadoxInfo, GridRange, RogueTheme, RogueRelic, RogueStage, RogueStageInfo, RogueVariation, Skill, Skin, Stage, StageData, StageInfo, WorkshopFormula } from "./types";
 
 export const archetypeDict: { [key: string]: string } = {};        // Archetype id -> archetype name
 export const baseDict: { [key: string]: Base } = {};               // Base skill id -> Base object
@@ -11,7 +10,7 @@ export const itemDict: { [key: string]: Item } = {};               // Item id/na
 export const moduleDict: { [key: string]: Module } = {};           // Module id -> Module object
 export const operatorDict: { [key: string]: Operator } = {};       // Operator id/name -> Operator object
 export const paradoxDict: { [key: string]: Paradox } = {};         // Operator id -> Paradox object
-export const rangeDict: { [key: string]: Range } = {};             // Range id -> Range object
+export const rangeDict: { [key: string]: GridRange } = {};         // Range id -> Range object
 export const rogueThemeArr: RogueTheme[] = [];                     // IS theme array (0=IS2, 1=IS3)
 export const skillDict: { [key: string]: Skill } = {};             // Skill id -> Skill object
 export const skinDict: { [key: string]: Skin[] } = {};             // Operator id -> Skin object array
@@ -237,7 +236,7 @@ function initParadoxes() {
 }
 
 function initRanges() {
-    const rangeTable: { [key: string]: Range } = require(`${paths.data}/excel/range_table.json`);
+    const rangeTable: { [key: string]: GridRange } = require(`${paths.data}/excel/range_table.json`);
 
     for (const range of Object.values(rangeTable)) {
         rangeDict[range.id.toLowerCase()] = range;

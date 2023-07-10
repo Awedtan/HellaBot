@@ -1,6 +1,6 @@
 import { SlashCommandBuilder } from 'discord.js';
 import { stageDict, toughStageDict } from '../data';
-const create = require('../create');
+import { buildStageEmbed, buildStageSelectEmbed } from '../utils';
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -34,11 +34,11 @@ module.exports = {
             if (stage.excel === undefined || stage.levels === undefined)
                 return await interaction.reply({ content: 'That stage data doesn\'t exist!', ephemeral: true });
 
-            const stageEmbed = await create.stageEmbed(stage, 0);
+            const stageEmbed = await buildStageEmbed(stage, 0);
             await interaction.reply(stageEmbed);
         }
         else {
-            const stageSelectEmbed = create.stageSelectEmbed(stageArr);
+            const stageSelectEmbed = buildStageSelectEmbed(stageArr);
             await interaction.reply(stageSelectEmbed);
         }
     }

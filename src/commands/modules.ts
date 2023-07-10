@@ -1,6 +1,6 @@
 import { SlashCommandBuilder } from 'discord.js';
 import { moduleDict, operatorDict } from '../data';
-const create = require('../create');
+import { buildModuleEmbed } from '../utils';
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -30,12 +30,12 @@ module.exports = {
             const module = moduleDict[moduleId];
 
             if (first) {
-                const moduleEmbed = create.moduleEmbed(module, op, 0);
+                const moduleEmbed = buildModuleEmbed(module, op, 0);
                 await interaction.reply(moduleEmbed);
                 first = false;
             }
             else {
-                const moduleEmbed = create.moduleEmbed(module, op, 0);
+                const moduleEmbed = buildModuleEmbed(module, op, 0);
                 await interaction.followUp(moduleEmbed);
             }
         }

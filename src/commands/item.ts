@@ -1,6 +1,6 @@
 import { SlashCommandBuilder } from 'discord.js';
 import { itemDict } from '../data';
-const create = require('../create');
+import { buildItemEmbed } from '../utils';
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -18,7 +18,7 @@ module.exports = {
             return await interaction.reply({ content: 'That item doesn\'t exist!', ephemeral: true });
 
         const item = itemDict[name];
-        const itemEmbed = await create.itemEmbed(item);
+        const itemEmbed = await buildItemEmbed(item);
         await interaction.reply(itemEmbed);
     }
 }

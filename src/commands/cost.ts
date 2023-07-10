@@ -1,6 +1,6 @@
 import { SlashCommandBuilder } from 'discord.js';
 import { operatorDict, } from '../data';
-const create = require('../create');
+import { buildCostEmbed } from '../utils';
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -33,7 +33,7 @@ module.exports = {
         if (op.data.rarity <= 1)
             return await interaction.reply({ content: 'That operator has no upgrades!', ephemeral: true });
 
-        const costEmbed = create.costEmbed(op, type);
+        const costEmbed = buildCostEmbed(op, type);
         await interaction.reply(costEmbed);
     }
 }
