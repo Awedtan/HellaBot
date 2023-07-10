@@ -1,6 +1,6 @@
 import { SlashCommandBuilder } from 'discord.js';
 import { operatorDict, skillDict } from '../data';
-import { buildSkillEmbed } from '../utils';
+import { buildSkillEmbed, operatorAutocomplete } from '../utils';
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -10,6 +10,7 @@ module.exports = {
             option.setName('name')
                 .setDescription('Operator name')
                 .setRequired(true)
+                .setAutocomplete(true)
         )
         .addIntegerOption(option =>
             option.setName('index')
@@ -17,6 +18,13 @@ module.exports = {
                 .setMinValue(1)
                 .setMaxValue(3)
         ),
+
+    async autocomplete(interaction) {
+        const value = interaction.options.getFocused().toLowerCase();
+        const arr = operatorAutocomplete(value);
+
+        await interaction.respond(arr);
+    },
     async execute(interaction) {
         const name = interaction.options.getString('name').toLowerCase();
         let index = interaction.options.getInteger('index') - 1;

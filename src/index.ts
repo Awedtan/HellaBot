@@ -49,6 +49,7 @@ client.on(Events.InteractionCreate, async interaction => {
 });
 
 // Autocomplete interaction handling
+// thanks to this guy for revealing autocomplete is a thing that exists => https://www.youtube.com/watch?v=znTvzGChzVE
 client.on(Events.InteractionCreate, async interaction => {
     if (!interaction.isAutocomplete()) return;
 

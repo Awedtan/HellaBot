@@ -2136,3 +2136,19 @@ export function buildStageSelectEmbed(stageArr: Stage[] | RogueStage[]) {
 
     return { content: 'Multiple stages with that code were found, please select a stage below:', components: [componentRow] };
 }
+
+export function operatorAutocomplete(query: string) {
+    let opArr = [];
+    for (const op of Object.values(operatorDict)) {
+        const arr = op.data.name.split(' ');
+        for (let i = 0; i < arr.length; i++) {
+            arr[i] = arr[i].charAt(0).toUpperCase() + arr[i].substring(1);
+        }
+        const prettyName = arr.join(' ');
+        if (opArr.includes(prettyName)) continue;
+        opArr.push(prettyName);
+    }
+    const filteredMap = opArr.filter(name => name.toLowerCase().includes(query)).slice(0, 8).map(name => ({ name: name, value: name }));
+
+    return filteredMap;
+}

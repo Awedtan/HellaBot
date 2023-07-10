@@ -1,6 +1,6 @@
 import { SlashCommandBuilder } from 'discord.js';
 import { operatorDict, paradoxDict } from '../data';
-import { buildParadoxEmbed } from '../utils';
+import { buildParadoxEmbed, operatorAutocomplete } from '../utils';
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -10,7 +10,14 @@ module.exports = {
             option.setName('name')
                 .setDescription('Operator name')
                 .setRequired(true)
+                .setAutocomplete(true)
         ),
+    async autocomplete(interaction) {
+        const value = interaction.options.getFocused().toLowerCase();
+        const arr = operatorAutocomplete(value);
+
+        await interaction.respond(arr);
+    },
     async execute(interaction) {
         const name = interaction.options.getString('name').toLowerCase();
 

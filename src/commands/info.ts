@@ -1,6 +1,6 @@
 import { SlashCommandBuilder } from 'discord.js';
 import { operatorDict } from '../data';
-import { buildInfoEmbed } from '../utils';
+import { buildInfoEmbed, operatorAutocomplete } from '../utils';
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -12,23 +12,11 @@ module.exports = {
                 .setRequired(true)
                 .setAutocomplete(true)
         ),
-    async autocomplete(interaction) { // thanks to this guy for revealing autocomplete is a thing => https://www.youtube.com/watch?v=znTvzGChzVE
+    async autocomplete(interaction) {
         const value = interaction.options.getFocused().toLowerCase();
+        const arr = operatorAutocomplete(value);
 
-        let choices = [];
-        for (const op of Object.values(operatorDict)) {
-            const arr = op.data.name.split(' ');
-            for (let i = 0; i < arr.length; i++) {
-                arr[i] = arr[i].charAt(0).toUpperCase() + arr[i].substring(1);
-            }
-            const prettyName = arr.join(' ');
-            if (choices.includes(prettyName)) continue;
-            choices.push(prettyName);
-        }
-        const filtered = choices.filter(choice => choice.toLowerCase().includes(value)).slice(0, 8); // 8 is a good amount i think
-        const filteredMap = filtered.map(choice => ({ name: choice, value: choice }));
-
-        await interaction.respond(filteredMap);
+        await interaction.respond(arr);
     },
     async execute(interaction) {
         const name = interaction.options.getString('name').toLowerCase();
