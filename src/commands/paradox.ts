@@ -16,7 +16,6 @@ module.exports = {
         const value = interaction.options.getFocused().toLowerCase();
         const callback = op => paradoxDict.hasOwnProperty(op.id);
         const arr = operatorAutocomplete(value, callback);
-
         await interaction.respond(arr);
     },
     async execute(interaction) {

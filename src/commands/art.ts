@@ -5,7 +5,7 @@ import { buildSkinEmbed, operatorAutocomplete } from '../utils';
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('art')
-        .setDescription('Show an operator\'s artwork')
+        .setDescription('Show an operator\'s artworks')
         .addStringOption(option =>
             option.setName('name')
                 .setDescription('Operator name')
@@ -16,7 +16,6 @@ module.exports = {
         const value = interaction.options.getFocused().toLowerCase();
         const callback = op => skinDict.hasOwnProperty(op.id);
         const arr = operatorAutocomplete(value, callback);
-
         await interaction.respond(arr);
     },
     async execute(interaction) {

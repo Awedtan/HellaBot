@@ -5,7 +5,7 @@ import { buildDefineEmbed, buildDefineListEmbed } from '../utils';
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('define')
-        .setDescription('Show the definition for in-game terms (use \'list\' to display all in-game terms)')
+        .setDescription('Show definitions for in-game terms (use \'list\' to display all in-game terms)')
         .addStringOption(option =>
             option.setName('term')
                 .setDescription('Term')

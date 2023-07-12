@@ -16,7 +16,6 @@ module.exports = {
         const value = interaction.options.getFocused().toLowerCase();
         const callback = op => op.modules.length !== 0;
         const arr = operatorAutocomplete(value, callback);
-
         await interaction.respond(arr);
     },
     async execute(interaction) {

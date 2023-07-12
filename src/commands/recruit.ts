@@ -4,7 +4,7 @@ import { buildRecruitEmbed } from '../utils';
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('recruit')
-        .setDescription('Find recruitable operators using selected tags')
+        .setDescription('Find recruitable operators from recruitment tags')
         .addStringOption(option =>
             option.setName('qualification')
                 .setDescription('Qualification tag')
