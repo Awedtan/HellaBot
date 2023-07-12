@@ -2,9 +2,7 @@
 
 An Arknights Discord bot that provides information on operators, enemies, stages, and more!
 
-<p align="center">
 <img src="https://raw.githubusercontent.com/Awedtan/HellaBot-Assets/main/readme/demo.gif" height="600"/>
-</p>
 
 ## Installation
 
