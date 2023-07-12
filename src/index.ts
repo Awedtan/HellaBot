@@ -2,8 +2,12 @@ const fs = require('fs');
 const path = require('path');
 const { ActivityType, Client, Collection, Events, GatewayIntentBits } = require('discord.js');
 const { token } = require('../config.json');
+import { deployCommands } from './deploy-commands';
 import { initializeData, ccDict, enemyDict, moduleDict, operatorDict, paradoxDict, rogueThemeArr, skillDict, stageDict, toughStageDict } from './data';
 import * as utils from './utils';
+
+deployCommands();
+initializeData(); // Pull data from ArknightsGameData repo
 
 // Load command files
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
@@ -20,9 +24,6 @@ for (const file of commandFiles) {
         console.log(`[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`);
     }
 }
-
-// Pull data from ArknightsGameData repo
-initializeData();
 
 client.login(token);
 client.once(Events.ClientReady, c => {
