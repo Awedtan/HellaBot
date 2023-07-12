@@ -24,11 +24,11 @@ npm install
 git clone https://github.com/Kengxxiao/ArknightsGameData.git
 ```
 
-6. Create a `config.json` file in the project folder, and copy your Discord bot token and client ID into it
+6. Create a `config.json` file in the project folder, and copy your Discord bot token and application ID into it
 ```json
 {
     "token": "your_bot_token_here",
-    "clientId": "your_client_id_here"
+    "clientId": "your_application_id_here"
 }
 ```
 The project directory should now look something like this:
