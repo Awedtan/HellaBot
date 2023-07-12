@@ -342,6 +342,7 @@ export function buildDefineListEmbed() {
 export function buildEnemyEmbed(enemy: Enemy, level: number) {
     const enemyInfo = enemy.excel;
     const enemyData = enemy.levels.Value[level].enemyData;
+    const baseData = enemy.levels.Value[0].enemyData;
 
     const thumbnailPath = paths.aceshipImageUrl + `/enemy/${enemyInfo.enemyId}.png`;
     const thumbnail = new AttachmentBuilder(thumbnailPath);
@@ -353,13 +354,21 @@ export function buildEnemyEmbed(enemy: Enemy, level: number) {
     const atk = enemyData.attributes.atk.m_value.toString();
     const def = enemyData.attributes.def.m_value.toString();
     const res = enemyData.attributes.magicResistance.m_value.toString();
-    const weight = enemyData.attributes.massLevel.m_defined ? enemyData.attributes.massLevel.m_value.toString() : '1';
-    const life = enemyData.lifePointReduce.m_defined ? enemyData.lifePointReduce.m_value.toString() : '1';
-    const silence = enemyData.attributes.silenceImmune.m_defined ? enemyData.attributes.silenceImmune.m_value : false;
-    const stun = enemyData.attributes.stunImmune.m_defined ? enemyData.attributes.stunImmune.m_value : false;
-    const sleep = enemyData.attributes.sleepImmune.m_defined ? enemyData.attributes.sleepImmune.m_value : false;
-    const frozen = enemyData.attributes.frozenImmune.m_defined ? enemyData.attributes.frozenImmune.m_value : false;
-    const levitate = enemyData.attributes.levitateImmune.m_defined ? enemyData.attributes.levitateImmune.m_value : false;
+
+    const weight = enemyData.attributes.massLevel.m_defined ? enemyData.attributes.massLevel.m_value.toString() :
+        baseData.attributes.massLevel.m_defined ? baseData.attributes.massLevel.m_value.toString() : '1';
+    const life = enemyData.lifePointReduce.m_defined ? enemyData.lifePointReduce.m_value.toString() :
+        baseData.lifePointReduce.m_defined ? baseData.lifePointReduce.m_value.toString() : '1';
+    const silence = enemyData.attributes.silenceImmune.m_defined ? enemyData.attributes.silenceImmune.m_value :
+        baseData.attributes.silenceImmune.m_defined ? baseData.attributes.silenceImmune.m_value.toString() : false;
+    const stun = enemyData.attributes.stunImmune.m_defined ? enemyData.attributes.stunImmune.m_value :
+        baseData.attributes.stunImmune.m_defined ? baseData.attributes.stunImmune.m_value.toString() : false;
+    const sleep = enemyData.attributes.sleepImmune.m_defined ? enemyData.attributes.sleepImmune.m_value :
+        baseData.attributes.sleepImmune.m_defined ? baseData.attributes.sleepImmune.m_value.toString() : false;
+    const frozen = enemyData.attributes.frozenImmune.m_defined ? enemyData.attributes.frozenImmune.m_value :
+        baseData.attributes.frozenImmune.m_defined ? baseData.attributes.frozenImmune.m_value.toString() : false;
+    const levitate = enemyData.attributes.levitateImmune.m_defined ? enemyData.attributes.levitateImmune.m_value :
+        baseData.attributes.levitateImmune.m_defined ? baseData.attributes.levitateImmune.m_value.toString() : false;
 
     const embed = new EmbedBuilder()
         .setColor(embedColour)
