@@ -875,7 +875,6 @@ export function buildInfoSkinEmbed(op: Operator, type: number, page: number, lev
     const skinName = displaySkin.skinName;
     const skinGroupName = displaySkin.skinGroupName;
     const name = skinName === null ? skinGroupName : `${skinGroupName} - ${skinName}`;
-    const artistName = displaySkin.drawerName;
 
     const embed = new EmbedBuilder()
         .setColor(embedColour)
@@ -883,8 +882,12 @@ export function buildInfoSkinEmbed(op: Operator, type: number, page: number, lev
         .setTitle(`${name}`)
         .setImage(`attachment://${cleanFilename(encodeURIComponent(skin.portraitId))}.png`);
 
-    if (artistName !== null && artistName !== '') {
-        embed.addFields({ name: `Artist`, value: artistName });
+    let artistString = '';
+    for (const drawer of displaySkin.drawerList) {
+        artistString += drawer + '\n';
+    }
+    if (artistString !== '') {
+        embed.addFields({ name: displaySkin.drawerList.length > 1 ? 'Artists' : 'Artist', value: artistString });
     }
 
     let thumbnail;
@@ -1825,7 +1828,6 @@ export function buildSkinEmbed(op: Operator, page: number) {
     const skinName = displaySkin.skinName;
     const skinGroupName = displaySkin.skinGroupName;
     const name = skinName === null ? skinGroupName : `${skinGroupName} - ${skinName}`;
-    const artistName = displaySkin.drawerName;
 
     const embed = new EmbedBuilder()
         .setColor(embedColour)
@@ -1833,8 +1835,12 @@ export function buildSkinEmbed(op: Operator, page: number) {
         .setTitle(`${name}`)
         .setImage(`attachment://${cleanFilename(encodeURIComponent(skin.portraitId))}.png`);
 
-    if (artistName !== null && artistName !== '') {
-        embed.addFields({ name: `Artist`, value: artistName });
+    let artistString = '';
+    for (const drawer of displaySkin.drawerList) {
+        artistString += drawer + '\n';
+    }
+    if (artistString !== '') {
+        embed.addFields({ name: 'Artist', value: artistString });
     }
 
     let thumbnail;

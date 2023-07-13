@@ -624,7 +624,7 @@ type Skin = {
         colorList: [string, string, string, string, string];
         titleList: [string, string];
         modelName: string;
-        drawerName: string;
+        drawerList: string[];
         skinGroupId: string;
         skinGroupName: string;
         skinGroupSortIndex: number;
