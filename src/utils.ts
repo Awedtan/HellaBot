@@ -2058,7 +2058,7 @@ export async function buildStageEmbed(stage: Stage, page: number) {
 function buildStageDiagramFields(stageData: StageData) {
     const map = stageData.mapData.map;
     const tiles = stageData.mapData.tiles;
-    let mapString = '', legendString = '';
+    let mapString = '', legendArr = [];
 
     for (let i = 0; i < map.length; i++) {
         for (let j = 0; j < map[0].length; j++) {
@@ -2066,12 +2066,14 @@ function buildStageDiagramFields(stageData: StageData) {
             const tile = gameConsts.tileDict.hasOwnProperty(tileKey) ? gameConsts.tileDict[tileKey] : gameConsts.tileDict['unknown'];
             mapString += tile.emoji;
 
-            if (legendString.includes(tile.name)) continue;
+            if (legendArr.includes(`${tile.emoji} - ${tile.name}`)) continue;
 
-            legendString += `${tile.emoji} - ${tile.name}\n`;
+            legendArr.push(`${tile.emoji} - ${tile.name}`);
         }
         mapString += '\n';
     }
+    const legendString = legendArr.join('\n');
+
     return [{ name: 'Map', value: mapString }, { name: 'Legend', value: legendString }];
 }
 function buildStageEnemyFields(stageData: StageData) {

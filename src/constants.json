@@ -695,7 +695,7 @@
                 "name": "Flat Ground (Nethersea Brand)"
             },
             "tile_creepf": {
-                "emoji": "🟫",
+                "emoji": "❎",
                 "name": "Non-deployable Area (Nethersea Brand)"
             },
             "tile_empty": {
@@ -705,6 +705,22 @@
             "tile_volcano_emp": {
                 "emoji": "🔥",
                 "name": "Heat Pump Passage"
+            },
+            "tile_mire": {
+                "emoji": "🟫",
+                "name": "Mire"
+            },
+            "tile_reed": {
+                "emoji": "🟢",
+                "name": "Flat Ground (Reeds)"
+            },
+            "tile_reedf": {
+                "emoji": "🌱",
+                "name": "Non-deployable Area (Reeds)"
+            },
+            "tile_reedw": {
+                "emoji": "⚪",
+                "name": "High Ground (Reeds)"
             }
         }
     }
