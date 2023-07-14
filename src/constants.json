@@ -706,10 +706,6 @@
                 "emoji": "🔥",
                 "name": "Heat Pump Passage"
             },
-            "tile_mire": {
-                "emoji": "🟫",
-                "name": "Mire"
-            },
             "tile_reed": {
                 "emoji": "🟢",
                 "name": "Flat Ground (Reeds)"
@@ -721,6 +717,30 @@
             "tile_reedw": {
                 "emoji": "⚪",
                 "name": "High Ground (Reeds)"
+            },
+            "tile_mire": {
+                "emoji": "🟫",
+                "name": "Mire"
+            },
+            "tile_passable_wall": {
+                "emoji": "⬜",
+                "name": "Yumen Catastrophe Fortification"
+            },
+            "tile_stairs": {
+                "tileKey": ":ladder:",
+                "name": "Ladder"
+            },
+            "tile_water": {
+                "emoji": "🔷",
+                "name": "Clear Waters"
+            },
+            "tile_grvtybtn": {
+                "emoji": "⏹️",
+                "name": "Gravity Sensor"
+            },
+            "tile_woodrd": {
+                "emoji": ":wood:",
+                "name": "Temporary Path"
             }
         }
     }
