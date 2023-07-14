@@ -351,17 +351,17 @@ export function buildEnemyEmbed(enemy: Enemy, level: number) {
     const description = `${formatText(enemyInfo.ability, [])}\n\n${formatText(enemyInfo.description, [])}`;
 
     const hp = enemyData.attributes.maxHp.m_defined ? enemyData.attributes.maxHp.m_value.toString() :
-        baseData.attributes.maxHp.m_defined ? baseData.attributes.maxHp.m_value.toString() : '-1';
+        baseData.attributes.maxHp.m_defined ? baseData.attributes.maxHp.m_value.toString() : '0';
     const atk = enemyData.attributes.atk.m_defined ? enemyData.attributes.atk.m_value.toString() :
-        baseData.attributes.atk.m_defined ? baseData.attributes.atk.m_value.toString() : '-1';
+        baseData.attributes.atk.m_defined ? baseData.attributes.atk.m_value.toString() : '0';
     const def = enemyData.attributes.def.m_defined ? enemyData.attributes.def.m_value.toString() :
-        baseData.attributes.def.m_defined ? baseData.attributes.def.m_value.toString() : '-1';
+        baseData.attributes.def.m_defined ? baseData.attributes.def.m_value.toString() : '0';
     const res = enemyData.attributes.magicResistance.m_defined ? enemyData.attributes.magicResistance.m_value.toString() :
-        baseData.attributes.magicResistance.m_defined ? baseData.attributes.magicResistance.m_value.toString() : '-1';
+        baseData.attributes.magicResistance.m_defined ? baseData.attributes.magicResistance.m_value.toString() : '0';
     const weight = enemyData.attributes.massLevel.m_defined ? enemyData.attributes.massLevel.m_value.toString() :
-        baseData.attributes.massLevel.m_defined ? baseData.attributes.massLevel.m_value.toString() : '-1';
+        baseData.attributes.massLevel.m_defined ? baseData.attributes.massLevel.m_value.toString() : '1';
     const life = enemyData.lifePointReduce.m_defined ? enemyData.lifePointReduce.m_value.toString() :
-        baseData.lifePointReduce.m_defined ? baseData.lifePointReduce.m_value.toString() : '-1';
+        baseData.lifePointReduce.m_defined ? baseData.lifePointReduce.m_value.toString() : '1';
     const silence = enemyData.attributes.silenceImmune.m_defined ? enemyData.attributes.silenceImmune.m_value :
         baseData.attributes.silenceImmune.m_defined ? baseData.attributes.silenceImmune.m_value.toString() : false;
     const stun = enemyData.attributes.stunImmune.m_defined ? enemyData.attributes.stunImmune.m_value :
