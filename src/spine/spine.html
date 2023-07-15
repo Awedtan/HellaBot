@@ -43,6 +43,7 @@
 
     const charName = vars.get('name');
     const animType = vars.get('type');
+    const randomInt = vars.get('rand');
     const jsonPath = "https://raw.githubusercontent.com/Awedtan/HellaBot-Assets/main/spinejson/";
     const assetPath = `https://raw.githubusercontent.com/Aceship/Arknight-Images/main/spineassets/character/${charName}/front/`;
 
@@ -190,7 +191,7 @@
                             const url = URL.createObjectURL(blob);
                             const link = document.createElement('a');
                             link.href = url;
-                            link.download = 'spine.gif';
+                            link.download = charName + randomInt + '.gif';
                             link.click();
                             console.log('done');
                         });

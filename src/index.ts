@@ -203,15 +203,15 @@ client.on(Events.InteractionCreate, async interaction => {
             await interaction.deferUpdate();
             await interaction.editReply({ content: `Generating \`${type}\` gif...`, components: [] })
 
-            const { page, browser } = await utils.buildSpinePage(op, type);
+            const { page, browser, rand } = await utils.buildSpinePage(op, type);
 
             page.on('console', async message => {
                 if (message.text() === 'done') {
                     await new Promise(r => setTimeout(r, 1000));
                     await browser.close();
-
-                    const spineEmbed = await utils.buildSpineEmbed(op, type);
-                    return await interaction.editReply(spineEmbed);
+                    const spineEmbed = await utils.buildSpineEmbed(op, type, rand);
+                    await interaction.editReply(spineEmbed);
+                    await fs.unlinkSync(path.join(__dirname, 'spine', op.id + rand + '.gif'));
                 }
             }).on('pageerror', async ({ message }) => {
                 console.error(message);

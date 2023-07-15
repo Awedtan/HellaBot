@@ -1,4 +1,4 @@
-const { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder } = require('discord.js');
+import { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder } from 'discord.js';
 // const fs = require('fs');
 const nodefetch = require('node-fetch');
 const path = require('path');
@@ -396,7 +396,7 @@ export function buildEnemyEmbed(enemy: Enemy, level: number) {
     if (enemyLevels === 1)
         return { embeds: [embed], files: [thumbnail] };
 
-    const buttonRow = new ActionRowBuilder();
+    const buttonRow = new ActionRowBuilder<ButtonBuilder>();
     for (let i = 0; i < enemyLevels; i++) {
         buttonRow.addComponents(new ButtonBuilder()
             .setCustomId(`enemyඞ${enemy.excel.enemyId}ඞ${i}`)
@@ -1910,22 +1910,23 @@ export function buildSkinEmbed(op: Operator, page: number) {
 export async function buildSpinePage(op: Operator, type: string) {
     const browser = await puppeteer.launch({ headless: "old", args: ["--no-sandbox", "--disabled-setupid-sandbox"] });
     const page = await browser.newPage();
+    const rand = Math.floor(Math.random() * 100000);
     await page.setViewport({ width: 300, height: 300 });
-    await page.goto("file://" + path.resolve(__dirname, 'spine', `spine.html?name=${op.id}&type=${type}`));
+    await page.goto("file://" + path.resolve(__dirname, 'spine', `spine.html?name=${op.id}&type=${type}&rand=${rand}`));
     const client = await page.target().createCDPSession()
     await client.send('Page.setDownloadBehavior', {
         behavior: 'allow',
         downloadPath: path.resolve(__dirname, 'spine'),
     })
 
-    return { page, browser };
+    return { page, browser, rand };
 }
-export async function buildSpineEmbed(op: Operator, type: string) {
+export async function buildSpineEmbed(op: Operator, type: string, rand: number) {
     const avatarPath = paths.aceshipImageUrl + `/avatars/${op.id}.png`;
     const avatar = new AttachmentBuilder(avatarPath);
     const authorField = buildAuthorField(op);
-
-    const gifPath = path.join(__dirname, 'spine', 'spine.gif');
+    const gifFile = op.id + rand + '.gif';
+    const gifPath = path.join(__dirname, 'spine', gifFile);
     const gif = new AttachmentBuilder(gifPath);
     const spineJson = await (await nodefetch(paths.myAssetUrl + `/spinejson/${op.id}.json`)).json();
     const animArr = Object.keys(spineJson.animations);
@@ -1947,7 +1948,7 @@ export async function buildSpineEmbed(op: Operator, type: string) {
 
     const embed = new EmbedBuilder()
         .setAuthor(authorField)
-        .setImage(`attachment://spine.gif`);
+        .setImage(`attachment://${gifFile}`);
 
     return { content: '', embeds: [embed], files: [avatar, gif], components: [componentRow] };
 }
