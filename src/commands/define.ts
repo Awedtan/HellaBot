@@ -1,6 +1,6 @@
 import { SlashCommandBuilder } from 'discord.js';
 import { definitionDict } from '../data';
-import { buildDefineEmbed, buildDefineListEmbed } from '../utils';
+import { buildDefineEmbed, buildDefineListEmbed, defineAutocomplete } from '../utils';
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -10,7 +10,13 @@ module.exports = {
             option.setName('term')
                 .setDescription('Term')
                 .setRequired(true)
+                .setAutocomplete(true)
         ),
+    async autocomplete(interaction) {
+        const value = interaction.options.getFocused().toLowerCase();
+        const arr = defineAutocomplete(value);
+        await interaction.respond(arr);
+    },
     async execute(interaction) {
         const term = interaction.options.getString('term').toLowerCase();
 

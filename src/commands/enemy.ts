@@ -1,6 +1,6 @@
 import { SlashCommandBuilder } from 'discord.js';
 import { enemyDict } from '../data';
-import { buildEnemyEmbed } from '../utils';
+import { buildEnemyEmbed, enemyAutocomplete } from '../utils';
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -10,7 +10,13 @@ module.exports = {
             option.setName('name')
                 .setDescription('Enemy name')
                 .setRequired(true)
+                .setAutocomplete(true)
         ),
+    async autocomplete(interaction) {
+        const value = interaction.options.getFocused().toLowerCase();
+        const arr = enemyAutocomplete(value);
+        await interaction.respond(arr);
+    },
     async execute(interaction) {
         const name = interaction.options.getString('name').toLowerCase();
 

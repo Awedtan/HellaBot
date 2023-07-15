@@ -1,6 +1,6 @@
 import { SlashCommandBuilder } from 'discord.js';
 import { stageDict, toughStageDict } from '../data';
-import { buildStageEmbed, buildStageSelectEmbed } from '../utils';
+import { buildStageEmbed, buildStageSelectEmbed, stageAutocomplete } from '../utils';
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -10,6 +10,7 @@ module.exports = {
             option.setName('code')
                 .setDescription('Stage code')
                 .setRequired(true)
+                .setAutocomplete(true)
         )
         .addStringOption(option =>
             option.setName('difficulty')
@@ -19,6 +20,11 @@ module.exports = {
                     { name: 'challenge', value: 'challenge' }
                 )
         ),
+    async autocomplete(interaction) {
+        const value = interaction.options.getFocused().toLowerCase();
+        const arr = stageAutocomplete(value);
+        await interaction.respond(arr);
+    },
     async execute(interaction) {
         const code = interaction.options.getString('code').toLowerCase();
         const difficulty = interaction.options.getString('difficulty');
