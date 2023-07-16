@@ -379,6 +379,8 @@ function initStages() {
 
         // Skip easy levels cause no one cares, basically the same as normal anyways
         if (levelId.includes('easy_sub') || levelId.includes('easy')) continue;
+        // Skip SSS challenge levels cause the only thing that changes is the starting danger level
+        if (excel.stageType === 'CLIMB_TOWER' && levelId.substring(levelId.length - 3) === '_ex') continue;
 
         const code = excel.code.toLowerCase();
 

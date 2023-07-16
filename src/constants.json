@@ -741,6 +741,14 @@
             "tile_woodrd": {
                 "emoji": ":wood:",
                 "name": "Temporary Path"
+            },
+            "tile_flower": {
+                "emoji": "🟩",
+                "name": "Flat Ground (Flowerable)"
+            },
+            "tile_flowerf": {
+                "emoji": "❎",
+                "name": "Non-deployable Area (Flowerable)"
             }
         }
     }
