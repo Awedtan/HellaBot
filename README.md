@@ -59,23 +59,24 @@ HellaBot uses event-driven interactions, so buttons and other interactables shou
 
 ### Command List
 
-| Command | Description                                                                  |
-|---------|------------------------------------------------------------------------------|
-| art     | Show an operator's artworks                                                  |
-| base    | Show an operator's base skills                                               |
-| cc      | Show information on a Contingency Contract stage or season                   |
-| cost    | Show an operator's elite, skill, mastery, and module costs                   |
-| define  | Show definitions for in-game terms                                           |
-| enemy   | Show an enemy's information and abilities                                    |
-| info    | Show an operator's information and attributes                                |
-| is      | Show information on Integrated Strategies                                    |
-| item    | Show information on an item                                                  |
-| modules | Show an operator's modules                                                   |
-| paradox | Show an operator's Paradox Simulation stage                                  |
-| recruit | Find recruitable operators from recruitment tags (experimental)              |
-| skills  | Show an operator's skills                                                    |
-| spine   | Show an operator's spine animations (experimental)                           |
-| stage   | Show information on a stage                                                  |
+| Command | Description                                                      |
+|---------|------------------------------------------------------------------|
+| art     | Display an operator's artwork                                    |
+| base    | Show an operator's base skills                                   |
+| cc      | Show information on a Contingency Contract stage or season       |
+| cost    | Show an operator's elite, skill, mastery, and module costs       |
+| define  | Show definitions for in-game terms                               |
+| enemy   | Show an enemy's information and abilities                        |
+| events  | Display a list of in-game events                                 |
+| info    | Show an operator's information and attributes                    |
+| is      | Show information on Integrated Strategies                        |
+| item    | Show information on an item                                      |
+| modules | Show an operator's modules                                       |
+| paradox | Show an operator's Paradox Simulation stage                      |
+| recruit | Find recruitable operators from recruitment tags (experimental)  |
+| skills  | Show an operator's skills                                        |
+| spine   | Render and display an operator's spine animations (experimental) |
+| stage   | Show information on a stage                                      |
 
 ## Acknowledgements
 
