@@ -961,8 +961,7 @@ export function buildInfoSkinEmbed(op: Operator, type: number, page: number, lev
             break;
         }
         default: {
-            const split = displaySkin.skinGroupId.split('#');
-            const newSkinGroupId = `${split[0]}#${split[1]}`;
+            const newSkinGroupId = displaySkin.skinGroupId.split('#')[1];
             const thumbnailPath = paths.myAssetUrl + `/skingroups/${encodeURIComponent(newSkinGroupId)}.png`;
             thumbnail = new AttachmentBuilder(thumbnailPath);
             embed.setThumbnail(`attachment://${cleanFilename(encodeURIComponent(newSkinGroupId))}.png`);
