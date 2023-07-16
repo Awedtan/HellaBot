@@ -231,6 +231,22 @@ type EnemySpData = {
     increment: number;
 };
 
+type Event = {
+    id: string;
+    type: string;
+    displayType: string;
+    name: string;
+    startTime: number;
+    endTime: number;
+    rewardEndTime: number;
+    displayOnHome: boolean;
+    hasStage: boolean;
+    templateShopId: string;
+    medalGroupId: string;
+    isReplicate: boolean;
+};
+
+
 type ManufactFormula = {
     formulaId: string;
     itemId: string;

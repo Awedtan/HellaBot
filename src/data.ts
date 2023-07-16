@@ -1,21 +1,22 @@
 const { gameConsts, paths } = require('./constants');
-import type { Base, BaseInfo, CCStage, Definition, Enemy, Item, ManufactFormula, Module, Operator, Paradox, ParadoxInfo, GridRange, RogueTheme, RogueRelic, RogueStage, RogueStageInfo, RogueVariation, Skill, Skin, Stage, StageData, StageInfo, WorkshopFormula } from "./types";
+import type { Base, BaseInfo, CCStage, Definition, Enemy, Event, Item, ManufactFormula, Module, Operator, Paradox, ParadoxInfo, GridRange, RogueTheme, RogueRelic, RogueStage, RogueStageInfo, RogueVariation, Skill, Skin, Stage, StageData, StageInfo, WorkshopFormula } from "./types";
 
-export const archetypeDict: { [key: string]: string } = {};        // Archetype id -> archetype name
-export const baseDict: { [key: string]: Base } = {};               // Base skill id -> Base object
-export const ccDict: { [key: string]: CCStage } = {};              // CC stage name -> CCStage object
-export const definitionDict: { [key: string]: Definition } = {};   // Term name -> Definition object
-export const enemyDict: { [key: string]: Enemy } = {};             // Enemy id/name/code -> Enemy object
-export const itemDict: { [key: string]: Item } = {};               // Item id/name -> Item object
-export const moduleDict: { [key: string]: Module } = {};           // Module id -> Module object
-export const operatorDict: { [key: string]: Operator } = {};       // Operator id/name -> Operator object
-export const paradoxDict: { [key: string]: Paradox } = {};         // Operator id -> Paradox object
-export const rangeDict: { [key: string]: GridRange } = {};         // Range id -> Range object
-export const rogueThemeArr: RogueTheme[] = [];                     // IS theme array (0=IS2, 1=IS3)
-export const skillDict: { [key: string]: Skill } = {};             // Skill id -> Skill object
-export const skinDict: { [key: string]: Skin[] } = {};             // Operator id -> Skin object array
-export const stageDict: { [key: string]: Stage[] } = {};           // Stage id/code -> Stage object array
-export const toughStageDict: { [key: string]: Stage[] } = {};      // Stage code -> Stage object array
+export const archetypeDict: { [key: string]: string } = {};         // Archetype id -> archetype name
+export const baseDict: { [key: string]: Base } = {};                // Base skill id -> Base object
+export const ccDict: { [key: string]: CCStage } = {};               // CC stage name -> CCStage object
+export const definitionDict: { [key: string]: Definition } = {};    // Term name -> Definition object
+export const enemyDict: { [key: string]: Enemy } = {};              // Enemy id/name/code -> Enemy object
+export const eventDict: { [key: string]: Event } = {};              // Event id -> Event object
+export const itemDict: { [key: string]: Item } = {};                // Item id/name -> Item object
+export const moduleDict: { [key: string]: Module } = {};            // Module id -> Module object
+export const operatorDict: { [key: string]: Operator } = {};        // Operator id/name -> Operator object
+export const paradoxDict: { [key: string]: Paradox } = {};          // Operator id -> Paradox object
+export const rangeDict: { [key: string]: GridRange } = {};          // Range id -> Range object
+export const rogueThemeArr: RogueTheme[] = [];                      // IS theme array (0=IS2, 1=IS3)
+export const skillDict: { [key: string]: Skill } = {};              // Skill id -> Skill object
+export const skinDict: { [key: string]: Skin[] } = {};              // Operator id -> Skin object array
+export const stageDict: { [key: string]: Stage[] } = {};            // Stage id/code -> Stage object array
+export const toughStageDict: { [key: string]: Stage[] } = {};       // Stage code -> Stage object array
 
 // Kengxxiao/ArknightsGameData info
 //  excel
@@ -64,6 +65,7 @@ export function initializeData() {
     initCC();
     initDefinitions();
     initEnemies();
+    initEvents();
     initItems();
     initModules();
     initParadoxes();
@@ -144,6 +146,15 @@ function initEnemies() {
 
             break;
         }
+    }
+}
+
+function initEvents() {
+    const activityTable: { [key: string]: any } = require(`${paths.data}/excel/activity_table.json`);
+    const basicInfo: { [key: string]: Event } = activityTable.basicInfo;
+
+    for (const event of Object.values(basicInfo)) {
+        eventDict[event.id] = event;
     }
 }
 

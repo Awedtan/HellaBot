@@ -106,6 +106,14 @@ client.on(Events.InteractionCreate, async interaction => {
 
             break;
         }
+        case 'events': {
+            const index = parseInt(idArr[1]);
+
+            const eventListEmbed = utils.buildEventListEmbed(index);
+            await interaction.update(eventListEmbed);
+
+            break;
+        }
         case 'info': {
             await interaction.deferUpdate();
 

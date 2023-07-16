@@ -4,8 +4,8 @@ const nodefetch = require('node-fetch');
 const path = require('path');
 const puppeteer = require('puppeteer');
 const { paths, gameConsts } = require('./constants');
-import { archetypeDict, baseDict, definitionDict, enemyDict, itemDict, moduleDict, operatorDict, rangeDict, rogueThemeArr, skillDict, stageDict, skinDict, toughStageDict } from './data';
-import type { Base, BaseInfo, Blackboard, CCStage, Definition, Enemy, Item, LevelUpCost, Module, Paradox, Operator, RogueRelic, RogueStage, RogueTheme, RogueVariation, Skill, Stage, StageData } from "./types";
+import { archetypeDict, baseDict, definitionDict, enemyDict, eventDict, itemDict, moduleDict, operatorDict, rangeDict, rogueThemeArr, skillDict, stageDict, skinDict, toughStageDict } from './data';
+import type { Base, BaseInfo, Blackboard, CCStage, Definition, Enemy, Event, Item, LevelUpCost, Module, Paradox, Operator, RogueRelic, RogueStage, RogueTheme, RogueVariation, Skill, Stage, StageData } from "./types";
 
 const embedColour = 0xebca60;
 
@@ -409,6 +409,51 @@ export function buildEnemyEmbed(enemy: Enemy, level: number) {
     }
 
     return { embeds: [embed], files: [thumbnail], components: [buttonRow] };
+}
+export function buildEventListEmbed(index: number) {
+    const eventCount = 6;
+
+    let eventArr = [];
+    for (const event of Object.values(eventDict)) {
+        const loginArr = ['LOGIN_ONLY', 'CHECKIN_ONLY', 'FLOAT_PARADE', 'PRAY_ONLY', 'GRID_GACHA_V2', 'GRID_GACHA']; // SKip login events
+        if (loginArr.includes(event.type)) continue;
+        eventArr.push(event);
+    }
+    eventArr.sort((first: Event, second: Event) => second.startTime - first.startTime); // Sort by descending start time
+
+    const embed = new EmbedBuilder()
+        .setColor(embedColour)
+        .setTitle('List of In-Game Events')
+        .setDescription(`**Page ${index + 1} of ${Math.ceil(eventArr.length / eventCount)}**`);
+
+    for (let i = index * eventCount; i < index * eventCount + eventCount && i < eventArr.length; i++) {
+        const event = eventArr[i];
+        const startDate = new Date(event.startTime * 1000);
+        const endDate = new Date(event.endTime * 1000);
+        const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+        embed.addFields({ name: event.name, value: `${months[startDate.getMonth()]} ${startDate.getDate()}, ${startDate.getFullYear()} - ${months[endDate.getMonth()]} ${endDate.getDate()}, ${endDate.getFullYear()}` })
+    }
+
+    const prevButton = new ButtonBuilder()
+        .setCustomId(`eventsඞ${index - 1}`)
+        .setLabel('Newer')
+        .setStyle(ButtonStyle.Primary);
+    const nextButton = new ButtonBuilder()
+        .setCustomId(`eventsඞ${index + 1}`)
+        .setLabel('Older')
+        .setStyle(ButtonStyle.Primary);
+    const componentRow = new ActionRowBuilder().addComponents(prevButton, nextButton);
+
+    if (index === 0) {
+        prevButton.setDisabled(true);
+        prevButton.setStyle(ButtonStyle.Secondary);
+    }
+    if (index * eventCount + eventCount >= eventArr.length) {
+        nextButton.setDisabled(true);
+        nextButton.setStyle(ButtonStyle.Secondary);
+    }
+
+    return { embeds: [embed], components: [componentRow] };
 }
 export async function buildItemEmbed(item: Item) {
     const description = item.data.description !== null ? `${item.data.usage}\n\n${item.data.description}` : item.data.usage;
@@ -1565,28 +1610,29 @@ export async function buildRogueRelicEmbed(relic: RogueRelic) {
 }
 export function buildRogueRelicListEmbed(theme: number, index: number) {
     const rogueTheme = rogueThemeArr[theme];
-    const descriptionLengthLimit = 560;
+    const descriptionLengthLimit = 24;
+    const columnCount = 2;
 
     let descriptionArr = [], i = 0;
     for (const relic of Object.values(rogueTheme.relicDict)) {
         if (descriptionArr[i] === undefined) {
             descriptionArr[i] = { string: '', length: 0 };
         }
-        if (descriptionArr[i].length + relic.name.length > descriptionLengthLimit) {
+        if (descriptionArr[i].length > descriptionLengthLimit) {
             i++;
             descriptionArr[i] = { string: '', length: 0 };
         }
 
         descriptionArr[i].string += `${relic.name}\n`
-        descriptionArr[i].length += relic.name.length + 2;
+        descriptionArr[i].length++;
     }
 
     const embed = new EmbedBuilder()
         .setColor(embedColour)
         .setTitle(`List of ${rogueTheme.name} Relics`)
-        .setDescription(`**Page ${index + 1}**`);
+        .setDescription(`**Page ${index + 1} of ${Math.ceil(descriptionArr.length / columnCount)}**`);
 
-    for (let i = index * 3; i < index * 3 + 3 && i < descriptionArr.length; i++) {
+    for (let i = index * columnCount; i < index * columnCount + columnCount && i < descriptionArr.length; i++) {
         embed.addFields({ name: '\u200B', value: descriptionArr[i].string, inline: true });
     }
 
@@ -1604,7 +1650,7 @@ export function buildRogueRelicListEmbed(theme: number, index: number) {
         prevButton.setDisabled(true);
         prevButton.setStyle(ButtonStyle.Secondary);
     }
-    if (index * 3 + 3 >= descriptionArr.length) {
+    if (index * columnCount + columnCount >= descriptionArr.length) {
         nextButton.setDisabled(true);
         nextButton.setStyle(ButtonStyle.Secondary);
     }
