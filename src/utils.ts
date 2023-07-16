@@ -1915,8 +1915,7 @@ export function buildSkinEmbed(op: Operator, page: number) {
             break;
         }
         default: {
-            const split = displaySkin.skinGroupId.split('#');
-            const newSkinGroupId = `${split[0]}#${split[1]}`;
+            const newSkinGroupId = displaySkin.skinGroupId.split('#')[1];
             const thumbnailPath = paths.myAssetUrl + `/skingroups/${encodeURIComponent(newSkinGroupId)}.png`;
             thumbnail = new AttachmentBuilder(thumbnailPath);
             embed.setThumbnail(`attachment://${cleanFilename(encodeURIComponent(newSkinGroupId))}.png`);
@@ -2091,7 +2090,7 @@ export async function buildStageEmbed(stage: Stage, page: number) {
             const diagramFields = buildStageDiagramFields(stageData);
             embed.addFields(diagramFields);
 
-            return { content: '', embeds: [embed] };
+            return { content: '', embeds: [embed], components: [] };
         }
     }
     else {
