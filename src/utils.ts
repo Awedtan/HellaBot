@@ -5,9 +5,7 @@ import type { Base, BaseInfo, Blackboard, CCStage, Definition, Enemy, Event, Ite
 const nodefetch = require('node-fetch');
 const path = require('path');
 const puppeteer = require('puppeteer');
-const { paths, gameConsts } = require('./constants');
-
-const embedColour = 0xebca60;
+const { embedColour, paths, gameConsts } = require('./constants');
 
 const cleanFilename = (text: string) => text.split(/%|[#\+]|&|\[|\]/).join(''); // Remove special characters that discord doesn't like (%, #, etc.)
 // const fileExists = async (path: string) => !!(await fs.promises.stat(path).catch(e => false));
@@ -56,246 +54,6 @@ function formatText(text: string, blackboard: Blackboard[]) { // Dumbass string 
     text = temp.join('');
 
     return text;
-}
-
-function buildArtEmbed(op: Operator, page: number): { embed: EmbedBuilder, thumbnail: AttachmentBuilder } {
-    const skins = skinDict[op.id];
-    const skin = skins[page];
-    const displaySkin = skin.displaySkin;
-
-    const authorField = buildAuthorField(op);
-    const skinName = displaySkin.skinName;
-    const skinGroupName = displaySkin.skinGroupName;
-    const name = skinName === null ? skinGroupName : `${skinGroupName} - ${skinName}`;
-
-    const embed = new EmbedBuilder()
-        .setColor(embedColour)
-        .setAuthor(authorField)
-        .setTitle(`${name}`)
-        .setImage(`attachment://${cleanFilename(encodeURIComponent(skin.portraitId))}.png`);
-
-    let artistString = '';
-    for (const drawer of displaySkin.drawerList) {
-        artistString += drawer + '\n';
-    }
-    if (artistString !== '') {
-        embed.addFields({ name: displaySkin.drawerList.length > 1 ? 'Artists' : 'Artist', value: artistString });
-    }
-
-    let thumbnail;
-    switch (displaySkin.skinGroupId) {
-        case 'ILLUST_0': {
-            const thumbnailPath = paths.aceshipImageUrl + `/ui/elite/0.png`;
-            thumbnail = new AttachmentBuilder(thumbnailPath);
-            embed.setThumbnail(`attachment://0.png`);
-            break;
-        }
-        case 'ILLUST_1': {
-            const thumbnailPath = paths.aceshipImageUrl + `/ui/elite/1.png`;
-            thumbnail = new AttachmentBuilder(thumbnailPath);
-            embed.setThumbnail(`attachment://1.png`);
-            break;
-        }
-        case 'ILLUST_2': {
-            const thumbnailPath = paths.aceshipImageUrl + `/ui/elite/2.png`;
-            thumbnail = new AttachmentBuilder(thumbnailPath);
-            embed.setThumbnail(`attachment://2.png`);
-            break;
-        }
-        case 'ILLUST_3': {
-            const thumbnailPath = paths.aceshipImageUrl + `/ui/elite/3.png`;
-            thumbnail = new AttachmentBuilder(thumbnailPath);
-            embed.setThumbnail(`attachment://3.png`);
-            break;
-        }
-        default: {
-            const newSkinGroupId = displaySkin.skinGroupId.split('#')[1];
-            const thumbnailPath = paths.myAssetUrl + `/skingroups/${encodeURIComponent(newSkinGroupId)}.png`;
-            thumbnail = new AttachmentBuilder(thumbnailPath);
-            embed.setThumbnail(`attachment://${cleanFilename(encodeURIComponent(newSkinGroupId))}.png`);
-            break;
-        }
-    }
-
-    return { embed, thumbnail };
-}
-function buildSkillEmbed(op: Operator, page: number, level: number): { embed: EmbedBuilder, thumbnail: AttachmentBuilder } {
-    const skill = skillDict[op.data.skills[page].skillId];
-    const skillLevel = skill.levels[level];
-
-    const thumbnailFilename = skill.iconId === null ? skill.skillId : skill.iconId;
-    const thumbnailPath = paths.aceshipImageUrl + `/skills/skill_icon_${thumbnailFilename}.png`;
-    const thumbnail = new AttachmentBuilder(thumbnailPath);
-
-    const authorField = buildAuthorField(op);
-    const title = `${skillLevel.name} - ${gameConsts.skillLevels[level]}`;
-    const spType = gameConsts.spTypes[skillLevel.spData.spType];
-    const skillType = gameConsts.skillTypes[skillLevel.skillType];
-    let description = `**${spType} - ${skillType}**\n***Cost:* ${skillLevel.spData.spCost} SP - *Initial:* ${skillLevel.spData.initSp} SP`;
-    if (skillLevel.duration > 0) {
-        description += ` - *Duration:* ${skillLevel.duration} sec`;
-    }
-    description += `**\n${formatText(skillLevel.description, skillLevel.blackboard)} `;
-
-    const embed = new EmbedBuilder()
-        .setColor(embedColour)
-        .setAuthor(authorField)
-        .setTitle(title)
-        .setThumbnail(`attachment://skill_icon_${cleanFilename(thumbnailFilename)}.png`)
-        .setDescription(description);
-
-    if (skillLevel.rangeId !== null) {
-        const rangeField = buildRangeField(skillLevel.rangeId);
-        embed.addFields(rangeField);
-    }
-
-    return { embed, thumbnail };
-}
-function buildCostEmbed(op: Operator, page: number): { embed: EmbedBuilder, thumbnail: AttachmentBuilder } {
-    const authorField = buildAuthorField(op);
-
-    const embed = new EmbedBuilder()
-        .setColor(embedColour)
-        .setAuthor(authorField);
-
-    let thumbnail;
-    switch (page) {
-        default:
-        case 0: {
-            const thumbnailPath = paths.aceshipImageUrl + `/items/sprite_exp_card_t4.png`;
-            thumbnail = new AttachmentBuilder(thumbnailPath);
-
-            embed.setThumbnail(`attachment://sprite_exp_card_t4.png`)
-                .setTitle('Elite Upgrade Costs');
-
-            for (let i = 0; i < op.data.phases.length; i++) {
-                const phase = op.data.phases[i];
-                if (phase.evolveCost === null) continue;
-
-                let phaseDescription = buildCostString(phase.evolveCost);
-                phaseDescription += `LMD **x${gameConsts.eliteLmdCost[op.data.rarity][i - 1]}**\n`;
-                embed.addFields({ name: `Elite ${i}`, value: phaseDescription, inline: true });
-            }
-            break;
-        }
-        case 1: {
-            const thumbnailPath = paths.aceshipImageUrl + `/items/MTL_SKILL2.png`;
-            thumbnail = new AttachmentBuilder(thumbnailPath);
-
-            embed.setThumbnail(`attachment://MTL_SKILL2.png`)
-                .setTitle('Skill Upgrade Costs');
-
-            for (let i = 0; i < op.data.allSkillLvlup.length; i++) {
-                const skillDescription = buildCostString(op.data.allSkillLvlup[i].lvlUpCost);
-                if (skillDescription === '') continue;
-
-                embed.addFields({ name: `Level ${i + 2}`, value: skillDescription, inline: true });
-            }
-            break;
-        }
-        case 2: {
-            const thumbnailPath = paths.aceshipImageUrl + `/items/MTL_SKILL3.png`;
-            thumbnail = new AttachmentBuilder(thumbnailPath);
-
-            embed.setThumbnail(`attachment://MTL_SKILL3.png`)
-                .setTitle('Skill Mastery Costs');
-
-            for (let i = 0; i < op.data.skills.length; i++) {
-                const opSkill = op.data.skills[i];
-                const skill = skillDict[opSkill.skillId];
-
-                embed.addFields({ name: '\u200B', value: `**Skill ${i + 1} - ${skill.levels[0].name}**` });
-
-                for (let i = 0; i < opSkill.levelUpCostCond.length; i++) {
-                    const masteryDescription = buildCostString(opSkill.levelUpCostCond[i].levelUpCost);
-                    embed.addFields({ name: `Mastery ${i + 1}`, value: masteryDescription, inline: true });
-                }
-            }
-            break;
-        }
-        case 3: {
-            const thumbnailPath = paths.aceshipImageUrl + `/items/mod_unlock_token.png`;
-            thumbnail = new AttachmentBuilder(thumbnailPath);
-
-            embed.setThumbnail(`attachment://mod_unlock_token.png`)
-                .setTitle('Module Upgrade Costs');
-
-            for (const moduleId of op.modules) {
-                if (moduleId.includes('uniequip_001')) continue;
-                const module = moduleDict[moduleId];
-
-                embed.addFields({ name: '\u200B', value: `**${module.info.typeIcon.toUpperCase()} - ${module.info.uniEquipName}**` });
-
-                for (const key of Object.keys(module.info.itemCost)) {
-                    const moduleDescription = buildCostString(module.info.itemCost[key]);
-                    embed.addFields({ name: `Level ${key}`, value: moduleDescription, inline: true });
-                }
-            }
-            break;
-        }
-    }
-
-    return { embed, thumbnail };
-}
-function buildModuleEmbed(op: Operator, page: number, level: number): { embed: EmbedBuilder, thumbnail: AttachmentBuilder } {
-    const module = moduleDict[op.modules[page]];
-    const moduleLevel = module.data.phases[level];
-
-    const thumbnailPath = paths.aceshipImageUrl + `/equip/icon/${module.info.uniEquipId}.png`;
-    const thumbnail = new AttachmentBuilder(thumbnailPath);
-
-    const authorField = buildAuthorField(op);
-    const title = `${module.info.typeIcon.toUpperCase()} ${module.info.uniEquipName} - Lv${level + 1}`;
-
-    let description = '', talentName = '', talentDescription = '';
-    for (const part of moduleLevel.parts) {
-        if (part.overrideTraitDataBundle.candidates !== null) {
-            const candidates = part.overrideTraitDataBundle.candidates;
-            const candidate = candidates[candidates.length - 1];
-
-            if (candidate.additionalDescription !== null) {
-                description += `${formatText(candidate.additionalDescription, candidate.blackboard)}\n`;
-            }
-            if (candidate.overrideDescripton !== null) {
-                description += `${formatText(candidate.overrideDescripton, candidate.blackboard)}\n`;
-            }
-        }
-        if (part.addOrOverrideTalentDataBundle.candidates !== null) {
-            const candidates = part.addOrOverrideTalentDataBundle.candidates;
-            const candidate = candidates[candidates.length - 1];
-
-            if (candidate.name !== null) {
-                talentName = candidate.name;
-            }
-            if (candidate.upgradeDescription !== null) {
-                talentDescription += `${formatText(candidate.upgradeDescription, candidate.blackboard)}\n`;
-            }
-        }
-    }
-
-    const embed = new EmbedBuilder()
-        .setColor(embedColour)
-        .setAuthor(authorField)
-        .setTitle(title)
-        .setThumbnail(`attachment://${module.info.uniEquipId}.png`)
-        .setDescription(description);
-
-    if (talentName !== '' && talentDescription !== '') {
-        embed.addFields({ name: `*Talent:* ${talentName}`, value: talentDescription });
-    }
-
-    let statDescription = '';
-    for (const attribute of moduleLevel.attributeBlackboard) {
-        if (attribute.value > 0) {
-            statDescription += `${attribute.key.toUpperCase()} +${attribute.value}\n`;
-        }
-        else {
-            statDescription += `${attribute.key.toUpperCase()} ${attribute.value}\n`;
-        }
-    }
-    embed.addFields({ name: `Stats`, value: statDescription });
-
-    return { embed, thumbnail };
 }
 
 export function buildArtMessage(op: Operator, page: number): BaseMessageOptions {
@@ -2020,6 +1778,245 @@ function buildStageEnemyFields(stageData: StageData): EmbedField[] {
     }
 
     return fieldArr;
+}
+function buildArtEmbed(op: Operator, page: number): { embed: EmbedBuilder, thumbnail: AttachmentBuilder } {
+    const skins = skinDict[op.id];
+    const skin = skins[page];
+    const displaySkin = skin.displaySkin;
+
+    const authorField = buildAuthorField(op);
+    const skinName = displaySkin.skinName;
+    const skinGroupName = displaySkin.skinGroupName;
+    const name = skinName === null ? skinGroupName : `${skinGroupName} - ${skinName}`;
+
+    const embed = new EmbedBuilder()
+        .setColor(embedColour)
+        .setAuthor(authorField)
+        .setTitle(`${name}`)
+        .setImage(`attachment://${cleanFilename(encodeURIComponent(skin.portraitId))}.png`);
+
+    let artistString = '';
+    for (const drawer of displaySkin.drawerList) {
+        artistString += drawer + '\n';
+    }
+    if (artistString !== '') {
+        embed.addFields({ name: displaySkin.drawerList.length > 1 ? 'Artists' : 'Artist', value: artistString });
+    }
+
+    let thumbnail;
+    switch (displaySkin.skinGroupId) {
+        case 'ILLUST_0': {
+            const thumbnailPath = paths.aceshipImageUrl + `/ui/elite/0.png`;
+            thumbnail = new AttachmentBuilder(thumbnailPath);
+            embed.setThumbnail(`attachment://0.png`);
+            break;
+        }
+        case 'ILLUST_1': {
+            const thumbnailPath = paths.aceshipImageUrl + `/ui/elite/1.png`;
+            thumbnail = new AttachmentBuilder(thumbnailPath);
+            embed.setThumbnail(`attachment://1.png`);
+            break;
+        }
+        case 'ILLUST_2': {
+            const thumbnailPath = paths.aceshipImageUrl + `/ui/elite/2.png`;
+            thumbnail = new AttachmentBuilder(thumbnailPath);
+            embed.setThumbnail(`attachment://2.png`);
+            break;
+        }
+        case 'ILLUST_3': {
+            const thumbnailPath = paths.aceshipImageUrl + `/ui/elite/3.png`;
+            thumbnail = new AttachmentBuilder(thumbnailPath);
+            embed.setThumbnail(`attachment://3.png`);
+            break;
+        }
+        default: {
+            const newSkinGroupId = displaySkin.skinGroupId.split('#')[1];
+            const thumbnailPath = paths.myAssetUrl + `/skingroups/${encodeURIComponent(newSkinGroupId)}.png`;
+            thumbnail = new AttachmentBuilder(thumbnailPath);
+            embed.setThumbnail(`attachment://${cleanFilename(encodeURIComponent(newSkinGroupId))}.png`);
+            break;
+        }
+    }
+
+    return { embed, thumbnail };
+}
+function buildSkillEmbed(op: Operator, page: number, level: number): { embed: EmbedBuilder, thumbnail: AttachmentBuilder } {
+    const skill = skillDict[op.data.skills[page].skillId];
+    const skillLevel = skill.levels[level];
+
+    const thumbnailFilename = skill.iconId === null ? skill.skillId : skill.iconId;
+    const thumbnailPath = paths.aceshipImageUrl + `/skills/skill_icon_${thumbnailFilename}.png`;
+    const thumbnail = new AttachmentBuilder(thumbnailPath);
+
+    const authorField = buildAuthorField(op);
+    const title = `${skillLevel.name} - ${gameConsts.skillLevels[level]}`;
+    const spType = gameConsts.spTypes[skillLevel.spData.spType];
+    const skillType = gameConsts.skillTypes[skillLevel.skillType];
+    let description = `**${spType} - ${skillType}**\n***Cost:* ${skillLevel.spData.spCost} SP - *Initial:* ${skillLevel.spData.initSp} SP`;
+    if (skillLevel.duration > 0) {
+        description += ` - *Duration:* ${skillLevel.duration} sec`;
+    }
+    description += `**\n${formatText(skillLevel.description, skillLevel.blackboard)} `;
+
+    const embed = new EmbedBuilder()
+        .setColor(embedColour)
+        .setAuthor(authorField)
+        .setTitle(title)
+        .setThumbnail(`attachment://skill_icon_${cleanFilename(thumbnailFilename)}.png`)
+        .setDescription(description);
+
+    if (skillLevel.rangeId !== null) {
+        const rangeField = buildRangeField(skillLevel.rangeId);
+        embed.addFields(rangeField);
+    }
+
+    return { embed, thumbnail };
+}
+function buildCostEmbed(op: Operator, page: number): { embed: EmbedBuilder, thumbnail: AttachmentBuilder } {
+    const authorField = buildAuthorField(op);
+
+    const embed = new EmbedBuilder()
+        .setColor(embedColour)
+        .setAuthor(authorField);
+
+    let thumbnail;
+    switch (page) {
+        default:
+        case 0: {
+            const thumbnailPath = paths.aceshipImageUrl + `/items/sprite_exp_card_t4.png`;
+            thumbnail = new AttachmentBuilder(thumbnailPath);
+
+            embed.setThumbnail(`attachment://sprite_exp_card_t4.png`)
+                .setTitle('Elite Upgrade Costs');
+
+            for (let i = 0; i < op.data.phases.length; i++) {
+                const phase = op.data.phases[i];
+                if (phase.evolveCost === null) continue;
+
+                let phaseDescription = buildCostString(phase.evolveCost);
+                phaseDescription += `LMD **x${gameConsts.eliteLmdCost[op.data.rarity][i - 1]}**\n`;
+                embed.addFields({ name: `Elite ${i}`, value: phaseDescription, inline: true });
+            }
+            break;
+        }
+        case 1: {
+            const thumbnailPath = paths.aceshipImageUrl + `/items/MTL_SKILL2.png`;
+            thumbnail = new AttachmentBuilder(thumbnailPath);
+
+            embed.setThumbnail(`attachment://MTL_SKILL2.png`)
+                .setTitle('Skill Upgrade Costs');
+
+            for (let i = 0; i < op.data.allSkillLvlup.length; i++) {
+                const skillDescription = buildCostString(op.data.allSkillLvlup[i].lvlUpCost);
+                if (skillDescription === '') continue;
+
+                embed.addFields({ name: `Level ${i + 2}`, value: skillDescription, inline: true });
+            }
+            break;
+        }
+        case 2: {
+            const thumbnailPath = paths.aceshipImageUrl + `/items/MTL_SKILL3.png`;
+            thumbnail = new AttachmentBuilder(thumbnailPath);
+
+            embed.setThumbnail(`attachment://MTL_SKILL3.png`)
+                .setTitle('Skill Mastery Costs');
+
+            for (let i = 0; i < op.data.skills.length; i++) {
+                const opSkill = op.data.skills[i];
+                const skill = skillDict[opSkill.skillId];
+
+                embed.addFields({ name: '\u200B', value: `**Skill ${i + 1} - ${skill.levels[0].name}**` });
+
+                for (let i = 0; i < opSkill.levelUpCostCond.length; i++) {
+                    const masteryDescription = buildCostString(opSkill.levelUpCostCond[i].levelUpCost);
+                    embed.addFields({ name: `Mastery ${i + 1}`, value: masteryDescription, inline: true });
+                }
+            }
+            break;
+        }
+        case 3: {
+            const thumbnailPath = paths.aceshipImageUrl + `/items/mod_unlock_token.png`;
+            thumbnail = new AttachmentBuilder(thumbnailPath);
+
+            embed.setThumbnail(`attachment://mod_unlock_token.png`)
+                .setTitle('Module Upgrade Costs');
+
+            for (const moduleId of op.modules) {
+                if (moduleId.includes('uniequip_001')) continue;
+                const module = moduleDict[moduleId];
+
+                embed.addFields({ name: '\u200B', value: `**${module.info.typeIcon.toUpperCase()} - ${module.info.uniEquipName}**` });
+
+                for (const key of Object.keys(module.info.itemCost)) {
+                    const moduleDescription = buildCostString(module.info.itemCost[key]);
+                    embed.addFields({ name: `Level ${key}`, value: moduleDescription, inline: true });
+                }
+            }
+            break;
+        }
+    }
+
+    return { embed, thumbnail };
+}
+function buildModuleEmbed(op: Operator, page: number, level: number): { embed: EmbedBuilder, thumbnail: AttachmentBuilder } {
+    const module = moduleDict[op.modules[page]];
+    const moduleLevel = module.data.phases[level];
+
+    const thumbnailPath = paths.aceshipImageUrl + `/equip/icon/${module.info.uniEquipId}.png`;
+    const thumbnail = new AttachmentBuilder(thumbnailPath);
+
+    const authorField = buildAuthorField(op);
+    const title = `${module.info.typeIcon.toUpperCase()} ${module.info.uniEquipName} - Lv${level + 1}`;
+
+    let description = '', talentName = '', talentDescription = '';
+    for (const part of moduleLevel.parts) {
+        if (part.overrideTraitDataBundle.candidates !== null) {
+            const candidates = part.overrideTraitDataBundle.candidates;
+            const candidate = candidates[candidates.length - 1];
+
+            if (candidate.additionalDescription !== null) {
+                description += `${formatText(candidate.additionalDescription, candidate.blackboard)}\n`;
+            }
+            if (candidate.overrideDescripton !== null) {
+                description += `${formatText(candidate.overrideDescripton, candidate.blackboard)}\n`;
+            }
+        }
+        if (part.addOrOverrideTalentDataBundle.candidates !== null) {
+            const candidates = part.addOrOverrideTalentDataBundle.candidates;
+            const candidate = candidates[candidates.length - 1];
+
+            if (candidate.name !== null) {
+                talentName = candidate.name;
+            }
+            if (candidate.upgradeDescription !== null) {
+                talentDescription += `${formatText(candidate.upgradeDescription, candidate.blackboard)}\n`;
+            }
+        }
+    }
+
+    const embed = new EmbedBuilder()
+        .setColor(embedColour)
+        .setAuthor(authorField)
+        .setTitle(title)
+        .setThumbnail(`attachment://${module.info.uniEquipId}.png`)
+        .setDescription(description);
+
+    if (talentName !== '' && talentDescription !== '') {
+        embed.addFields({ name: `*Talent:* ${talentName}`, value: talentDescription });
+    }
+
+    let statDescription = '';
+    for (const attribute of moduleLevel.attributeBlackboard) {
+        if (attribute.value > 0) {
+            statDescription += `${attribute.key.toUpperCase()} +${attribute.value}\n`;
+        }
+        else {
+            statDescription += `${attribute.key.toUpperCase()} ${attribute.value}\n`;
+        }
+    }
+    embed.addFields({ name: `Stats`, value: statDescription });
+
+    return { embed, thumbnail };
 }
 
 export function defineAutocomplete(query: string, callback: (op: Definition) => boolean = () => true) {
