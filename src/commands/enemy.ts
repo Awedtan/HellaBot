@@ -1,6 +1,6 @@
 import { SlashCommandBuilder } from 'discord.js';
 import { enemyDict } from '../data';
-import { buildEnemyEmbed, enemyAutocomplete } from '../utils';
+import { buildEnemyMessage, enemyAutocomplete } from '../utils';
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -24,7 +24,7 @@ module.exports = {
             return await interaction.reply({ content: 'That enemy doesn\'t exist!', ephemeral: true });
 
         const enemy = enemyDict[name];
-        const enemyEmbed = buildEnemyEmbed(enemy, 0);
+        const enemyEmbed = buildEnemyMessage(enemy, 0);
         await interaction.reply(enemyEmbed);
     }
 }

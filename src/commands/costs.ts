@@ -1,10 +1,10 @@
 import { SlashCommandBuilder } from 'discord.js';
 import { operatorDict, } from '../data';
-import { buildCostEmbed, operatorAutocomplete } from '../utils';
+import { buildCostMessage, operatorAutocomplete } from '../utils';
 
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName('cost')
+        .setName('costs')
         .setDescription('Show an operator\'s elite, skill, mastery, and module level costs')
         .addStringOption(option =>
             option.setName('name')
@@ -16,10 +16,10 @@ module.exports = {
             option.setName('type')
                 .setDescription('Cost type')
                 .addChoices(
-                    { name: 'promotions', value: 'elite' },
-                    { name: 'skills', value: 'skill' },
-                    { name: 'masteries', value: 'mastery' },
-                    { name: 'modules', value: 'module' }
+                    { name: 'promotions', value: '0' },
+                    { name: 'skills', value: '1' },
+                    { name: 'masteries', value: '2' },
+                    { name: 'modules', value: '3' }
                 )
         ),
     async autocomplete(interaction) {
@@ -30,7 +30,7 @@ module.exports = {
     },
     async execute(interaction) {
         const name = interaction.options.getString('name').toLowerCase();
-        const type = interaction.options.getString('type');
+        const page = parseInt(interaction.options.getString('type'));
 
         if (!operatorDict.hasOwnProperty(name))
             return await interaction.reply({ content: 'That operator doesn\'t exist!', ephemeral: true });
@@ -40,7 +40,7 @@ module.exports = {
         if (op.data.rarity <= 1)
             return await interaction.reply({ content: 'That operator has no upgrades!', ephemeral: true });
 
-        const costEmbed = buildCostEmbed(op, type);
+        const costEmbed = buildCostMessage(op, page);
         await interaction.reply(costEmbed);
     }
 }

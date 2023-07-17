@@ -1,6 +1,6 @@
 import { SlashCommandBuilder } from 'discord.js';
 import { rogueThemeArr } from '../data';
-import { buildRogueRelicEmbed, buildRogueRelicListEmbed, buildRogueStageEmbed, buildRogueVariationEmbed, buildRogueVariationListEmbed } from '../utils';
+import { buildRogueRelicMessage, buildRogueRelicListMessage, buildRogueStageMessage, buildRogueVariationMessage, buildRogueVariationListMessage } from '../utils';
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -55,14 +55,14 @@ module.exports = {
                 if (stage.excel === undefined || stage.levels === undefined)
                     return await interaction.reply({ content: 'That stage data doesn\'t exist!', ephemeral: true });
 
-                const stageEmbed = await buildRogueStageEmbed(theme, stage, 0);
+                const stageEmbed = await buildRogueStageMessage(theme, stage, 0);
                 await interaction.reply(stageEmbed);
 
                 break;
             }
             case 'relic': {
                 if (name === 'list') {
-                    const relicListEmbed = buildRogueRelicListEmbed(theme, 0);
+                    const relicListEmbed = buildRogueRelicListMessage(theme, 0);
                     await interaction.reply(relicListEmbed);
                 }
                 else {
@@ -72,14 +72,14 @@ module.exports = {
                         return await interaction.reply({ content: 'That relic doesn\'t exist!', ephemeral: true });
 
                     const relic = relicDict[name];
-                    const relicEmbed = await buildRogueRelicEmbed(relic);
+                    const relicEmbed = await buildRogueRelicMessage(relic);
                     await interaction.reply(relicEmbed);
                 }
                 break;
             }
             case 'variation': {
                 if (name === 'list') {
-                    const variationListEmbed = buildRogueVariationListEmbed(rogueDict);
+                    const variationListEmbed = buildRogueVariationListMessage(rogueDict);
                     await interaction.reply(variationListEmbed);
                 }
                 else {
@@ -89,7 +89,7 @@ module.exports = {
                         return await interaction.reply({ content: 'That variation doesn\'t exist!', ephemeral: true });
 
                     const variation = variationDict[name];
-                    const variationEmbed = buildRogueVariationEmbed(variation);
+                    const variationEmbed = buildRogueVariationMessage(variation);
                     await interaction.reply(variationEmbed);
                 }
                 break;

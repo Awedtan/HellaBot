@@ -1,6 +1,6 @@
 import { SlashCommandBuilder } from 'discord.js';
-import { operatorDict, skillDict } from '../data';
-import { buildSkillEmbed, operatorAutocomplete } from '../utils';
+import { operatorDict } from '../data';
+import { buildSkillMessage, operatorAutocomplete } from '../utils';
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -43,17 +43,13 @@ module.exports = {
 
         for (let i = 0; i < op.data.skills.length; i++) {
             if (index !== -1 && index !== i) continue;
-
-            const opSkill = op.data.skills[i];
-            const skill = skillDict[opSkill.skillId];
-
             if (first) {
-                const skillEmbed = buildSkillEmbed(skill, op, 0);
+                const skillEmbed = buildSkillMessage(op, i, 0);
                 await interaction.reply(skillEmbed);
                 first = false;
             }
             else {
-                const skillEmbed = buildSkillEmbed(skill, op, 0);
+                const skillEmbed = buildSkillMessage(op, i, 0);
                 await interaction.followUp(skillEmbed);
             }
         }

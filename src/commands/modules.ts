@@ -1,6 +1,6 @@
 import { SlashCommandBuilder } from 'discord.js';
-import { moduleDict, operatorDict } from '../data';
-import { buildModuleEmbed, operatorAutocomplete } from '../utils';
+import { operatorDict } from '../data';
+import { buildModuleMessage, operatorAutocomplete } from '../utils';
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -31,18 +31,15 @@ module.exports = {
 
         let first = true;
 
-        for (const moduleId of op.modules) {
-            if (moduleId.includes('uniequip_001')) continue;
-
-            const module = moduleDict[moduleId];
-
+        for (let i = 0; i < op.modules.length; i++) {
+            if (op.modules[i].includes('uniequip_001')) continue;
             if (first) {
-                const moduleEmbed = buildModuleEmbed(module, op, 0);
+                const moduleEmbed = buildModuleMessage(op, i, 0);
                 await interaction.reply(moduleEmbed);
                 first = false;
             }
             else {
-                const moduleEmbed = buildModuleEmbed(module, op, 0);
+                const moduleEmbed = buildModuleMessage(op, i, 0);
                 await interaction.followUp(moduleEmbed);
             }
         }

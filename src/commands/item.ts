@@ -1,6 +1,6 @@
 import { SlashCommandBuilder } from 'discord.js';
 import { itemDict } from '../data';
-import { buildItemEmbed, itemAutocomplete } from '../utils';
+import { buildItemMessage, itemAutocomplete } from '../utils';
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -24,7 +24,7 @@ module.exports = {
             return await interaction.reply({ content: 'That item doesn\'t exist!', ephemeral: true });
 
         const item = itemDict[name];
-        const itemEmbed = await buildItemEmbed(item);
+        const itemEmbed = await buildItemMessage(item);
         await interaction.reply(itemEmbed);
     }
 }

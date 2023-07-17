@@ -1,6 +1,6 @@
 import { SlashCommandBuilder } from 'discord.js';
 import { ccDict } from '../data';
-import { buildCcEmbed, buildCcSelectEmbed } from '../utils';
+import { buildCcMessage, buildCcSelectMessage } from '../utils';
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -20,7 +20,7 @@ module.exports = {
             if (!ccSeasons.hasOwnProperty(name))
                 return await interaction.reply({ content: 'That stage/season doesn\'t exist!', ephemeral: true });
             else {
-                const ccSelectEmbed = await buildCcSelectEmbed(name);
+                const ccSelectEmbed = await buildCcSelectMessage(name);
                 return await interaction.reply(ccSelectEmbed);
             }
         }
@@ -29,7 +29,7 @@ module.exports = {
         if (stage.const === undefined || stage.levels === undefined)
             return await interaction.reply({ content: 'That stage data doesn\'t exist!', ephemeral: true });
 
-        const ccEmbed = await buildCcEmbed(stage, 0);
+        const ccEmbed = await buildCcMessage(stage, 0);
         await interaction.reply(ccEmbed);
     }
 }

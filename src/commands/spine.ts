@@ -1,7 +1,7 @@
 import { SlashCommandBuilder } from 'discord.js';
 const nodefetch = require('node-fetch');
 import { operatorDict } from '../data';
-import { buildSpineEmbed, buildSpinePage, operatorAutocomplete, urlExists } from '../utils';
+import { buildSpineMessage, buildSpinePage, operatorAutocomplete, urlExists } from '../utils';
 const { paths } = require('../constants');
 
 module.exports = {
@@ -47,7 +47,7 @@ module.exports = {
                 await new Promise(r => setTimeout(r, 1000));
                 await browser.close();
 
-                const spineEmbed = await buildSpineEmbed(op, type, rand);
+                const spineEmbed = await buildSpineMessage(op, type, rand);
                 return await interaction.followUp(spineEmbed);
             }
         }).on('pageerror', async ({ message }) => {

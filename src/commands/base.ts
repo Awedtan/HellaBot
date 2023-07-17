@@ -1,6 +1,6 @@
 import { SlashCommandBuilder } from 'discord.js';
 import { baseDict, operatorDict } from '../data';
-import { buildBaseEmbed, operatorAutocomplete } from '../utils';
+import { buildBaseMessage, operatorAutocomplete } from '../utils';
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -35,12 +35,12 @@ module.exports = {
             const base = baseDict[baseInfo.buffId];
 
             if (first) {
-                const baseEmbed = buildBaseEmbed(base, baseInfo, op);
+                const baseEmbed = buildBaseMessage(base, baseInfo, op);
                 await interaction.reply(baseEmbed);
                 first = false;
             }
             else {
-                const baseEmbed = buildBaseEmbed(base, baseInfo, op);
+                const baseEmbed = buildBaseMessage(base, baseInfo, op);
                 await interaction.followUp(baseEmbed);
             }
         }

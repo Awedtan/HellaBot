@@ -1,6 +1,6 @@
 import { SlashCommandBuilder } from 'discord.js';
 import { operatorDict, skinDict } from '../data';
-import { buildSkinEmbed, operatorAutocomplete } from '../utils';
+import { buildArtMessage, operatorAutocomplete } from '../utils';
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -29,7 +29,7 @@ module.exports = {
         if (!skinDict.hasOwnProperty(op.id))
             return await interaction.reply({ content: 'That operator doesn\'t have any artwork!', ephemeral: true });
 
-        const skinEmbed = buildSkinEmbed(op, 0);
+        const skinEmbed = buildArtMessage(op, 0);
         await interaction.reply(skinEmbed);
     }
 }

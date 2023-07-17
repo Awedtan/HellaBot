@@ -1,31 +1,16 @@
+import { ActivityType, Events, GatewayIntentBits } from 'discord.js';
+import { initializeData, ccDict, enemyDict, operatorDict, paradoxDict, rogueThemeArr, stageDict, toughStageDict } from './data';
+import HellaClient from './HellaClient';
+import * as utils from './utils';
+const { token } = require('../config.json');
 const fs = require('fs');
 const path = require('path');
-const { ActivityType, Client, Collection, Events, GatewayIntentBits } = require('discord.js');
-const { token } = require('../config.json');
-import { deployCommands } from './deploy-commands';
-import { initializeData, ccDict, enemyDict, moduleDict, operatorDict, paradoxDict, rogueThemeArr, skillDict, stageDict, toughStageDict } from './data';
-import * as utils from './utils';
 
-deployCommands();
-initializeData(); // Pull data from ArknightsGameData repo
-
-// Load command files
-const client = new Client({ intents: [GatewayIntentBits.Guilds] });
-client.commands = new Collection();
-const commandsPath = path.join(__dirname, 'commands');
-const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.ts'));
-for (const file of commandFiles) {
-    const filePath = path.join(commandsPath, file);
-    const command = require(filePath);
-    if ('data' in command && 'execute' in command) {
-        client.commands.set(command.data.name, command);
-    }
-    else {
-        console.log(`[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`);
-    }
-}
-
+const client = new HellaClient({ intents: [GatewayIntentBits.Guilds] });
+client.loadCommands();
 client.login(token);
+initializeData();
+
 client.once(Events.ClientReady, c => {
     console.log(`Ready! Logged in as ${c.user.tag}`);
     c.user.setActivity('CC#13', { type: ActivityType.Competing });
@@ -34,7 +19,7 @@ client.once(Events.ClientReady, c => {
 // Initial slash command interaction handling
 client.on(Events.InteractionCreate, async interaction => {
     if (!interaction.isChatInputCommand()) return;
-    const command = interaction.client.commands.get(interaction.commandName);
+    const command = (<HellaClient>interaction.client).commands.get(interaction.commandName);
     if (!command) return console.error(`No command matching ${interaction.commandName} was found.`);
     try {
         await command.execute(interaction);
@@ -70,10 +55,10 @@ client.on(Events.InteractionCreate, async interaction => {
 
     switch (idArr[0]) {
         case 'cc': {
-            if (idArr[1] === 'select') {
+            if (interaction.isStringSelectMenu()) {
                 const stage = ccDict[interaction.values[0]];
 
-                const ccEmbed = await utils.buildCcEmbed(stage, 0);
+                const ccEmbed = await utils.buildCcMessage(stage, 0);
                 await interaction.update(ccEmbed);
 
                 break;
@@ -82,7 +67,7 @@ client.on(Events.InteractionCreate, async interaction => {
                 const stage = ccDict[idArr[1]];
                 const page = parseInt(idArr[2]);
 
-                const ccEmbed = await utils.buildCcEmbed(stage, page);
+                const ccEmbed = await utils.buildCcMessage(stage, page);
                 await interaction.update(ccEmbed);
 
                 break;
@@ -90,9 +75,9 @@ client.on(Events.InteractionCreate, async interaction => {
         }
         case 'cost': {
             const op = operatorDict[idArr[1]];
-            const type = idArr[2];
+            const page = parseInt(idArr[2]);
 
-            const costEmbed = utils.buildCostEmbed(op, type);
+            const costEmbed = utils.buildCostMessage(op, page);
             await interaction.update(costEmbed);
 
             break;
@@ -101,7 +86,7 @@ client.on(Events.InteractionCreate, async interaction => {
             const enemy = enemyDict[idArr[1]];
             const level = parseInt(idArr[2]);
 
-            const enemyEmbed = utils.buildEnemyEmbed(enemy, level);
+            const enemyEmbed = utils.buildEnemyMessage(enemy, level);
             await interaction.update(enemyEmbed);
 
             break;
@@ -109,7 +94,7 @@ client.on(Events.InteractionCreate, async interaction => {
         case 'events': {
             const index = parseInt(idArr[1]);
 
-            const eventListEmbed = utils.buildEventListEmbed(index);
+            const eventListEmbed = utils.buildEventListMessage(index);
             await interaction.update(eventListEmbed);
 
             break;
@@ -122,17 +107,17 @@ client.on(Events.InteractionCreate, async interaction => {
             const page = parseInt(idArr[3]);
             const level = parseInt(idArr[4]);
 
-            const infoEmbed = utils.buildInfoEmbed(op, type, page, level);
+            const infoEmbed = utils.buildInfoMessage(op, type, page, level);
             await interaction.editReply(infoEmbed);
 
             break;
         }
         case 'module': {
-            const module = moduleDict[idArr[1]];
-            const op = operatorDict[idArr[2]];
+            const op = operatorDict[idArr[1]];
+            const page = parseInt(idArr[2]);
             const level = parseInt(idArr[3]);
 
-            const moduleEmbed = utils.buildModuleEmbed(module, op, level);
+            const moduleEmbed = utils.buildModuleMessage(op, page, level);
             await interaction.update(moduleEmbed);
 
             break;
@@ -141,7 +126,7 @@ client.on(Events.InteractionCreate, async interaction => {
             const paradox = paradoxDict[operatorDict[idArr[1]].id];
             const page = parseInt(idArr[2]);
 
-            const paradoxEmbed = await utils.buildParadoxEmbed(paradox, page);
+            const paradoxEmbed = await utils.buildParadoxMessage(paradox, page);
             await interaction.update(paradoxEmbed);
 
             break;
@@ -152,7 +137,7 @@ client.on(Events.InteractionCreate, async interaction => {
             const tag = idArr[3];
             const select = idArr[4] === 'select';
 
-            const recruitEmbed = utils.buildRecruitEmbed(qual, value, tag, select);
+            const recruitEmbed = utils.buildRecruitMessage(qual, value, tag, select);
             await interaction.update(recruitEmbed);
 
             break;
@@ -163,7 +148,7 @@ client.on(Events.InteractionCreate, async interaction => {
                     const theme = parseInt(idArr[2]);
                     const index = parseInt(idArr[3]);
 
-                    const relicListEmbed = utils.buildRogueRelicListEmbed(theme, index);
+                    const relicListEmbed = utils.buildRogueRelicListMessage(theme, index);
                     await interaction.update(relicListEmbed);
 
                     break;
@@ -175,7 +160,7 @@ client.on(Events.InteractionCreate, async interaction => {
                     const stage = stages[idArr[3]];
                     const page = parseInt(idArr[5]);
 
-                    const stageEmbed = await utils.buildRogueStageEmbed(theme, stage, page);
+                    const stageEmbed = await utils.buildRogueStageMessage(theme, stage, page);
                     await interaction.update(stageEmbed);
 
                     break;
@@ -185,11 +170,11 @@ client.on(Events.InteractionCreate, async interaction => {
             break;
         }
         case 'skill': {
-            const skill = skillDict[idArr[1]];
-            const op = operatorDict[idArr[2]];
+            const op = operatorDict[idArr[1]];
+            const page = parseInt(idArr[2]);
             const level = parseInt(idArr[3]);
 
-            const skillEmbed = utils.buildSkillEmbed(skill, op, level);
+            const skillEmbed = utils.buildSkillMessage(op, page, level);
             await interaction.update(skillEmbed);
 
             break;
@@ -199,12 +184,13 @@ client.on(Events.InteractionCreate, async interaction => {
 
             const op = operatorDict[idArr[1]];
             const page = parseInt(idArr[2]);
-            const skinEmbed = utils.buildSkinEmbed(op, page);
+            const skinEmbed = utils.buildArtMessage(op, page);
 
             await interaction.editReply(skinEmbed);
             break;
         }
         case 'spine': {
+            if (interaction.isButton()) break;
             const op = operatorDict[idArr[1]];
             const type = interaction.values[0];
 
@@ -217,7 +203,7 @@ client.on(Events.InteractionCreate, async interaction => {
                 if (message.text() === 'done') {
                     await new Promise(r => setTimeout(r, 1000));
                     await browser.close();
-                    const spineEmbed = await utils.buildSpineEmbed(op, type, rand);
+                    const spineEmbed = await utils.buildSpineMessage(op, type, rand);
                     await interaction.editReply(spineEmbed);
                     await fs.unlinkSync(path.join(__dirname, 'spine', op.id + rand + '.gif'));
                 }
@@ -229,11 +215,11 @@ client.on(Events.InteractionCreate, async interaction => {
             break;
         }
         case 'stage': {
-            if (idArr[1] === 'select') {
+            if (interaction.isStringSelectMenu()) {
                 const stages = stageDict[idArr[2]];
                 const stage = stages[interaction.values[0]];
 
-                const stageEmbed = await utils.buildStageEmbed(stage, 0);
+                const stageEmbed = await utils.buildStageMessage(stage, 0);
                 await interaction.update(stageEmbed);
 
                 break;
@@ -243,7 +229,7 @@ client.on(Events.InteractionCreate, async interaction => {
                 const stage = stages[parseInt(idArr[2])];
                 const page = parseInt(idArr[4]);
 
-                const stageEmbed = await utils.buildStageEmbed(stage, page);
+                const stageEmbed = await utils.buildStageMessage(stage, page);
                 await interaction.update(stageEmbed);
 
                 break;
