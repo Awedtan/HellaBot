@@ -68,13 +68,13 @@ export function initializeData() {
     initEvents();
     initItems();
     initModules();
+    initOperators();
     initParadoxes();
     initRanges();
     initRogueThemes();
     initSkills();
     initSkins();
     initStages();
-    initOperators(); // Ops depend on skills and other stuff, initialize last
 };
 
 function initArchetypes() {
