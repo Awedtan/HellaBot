@@ -1,9 +1,11 @@
 import { AutocompleteInteraction, ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
 import { operatorDict } from '../data';
-import { buildModuleMessage, operatorAutocomplete } from '../utils';
+import { Command } from '../structures/Command';
+import { operatorAutocomplete } from '../utils/autocomplete';
+import { buildModuleMessage } from '../utils/build';
 
-export default {
-    data: new SlashCommandBuilder()
+export default class ModuleCommand implements Command {
+    data = new SlashCommandBuilder()
         .setName('modules')
         .setDescription('Show an operator\'s modules')
         .addStringOption(option =>
@@ -11,13 +13,13 @@ export default {
                 .setDescription('Operator name')
                 .setRequired(true)
                 .setAutocomplete(true)
-        ),
+        );
     async autocomplete(interaction: AutocompleteInteraction) {
         const value = interaction.options.getFocused().toLowerCase();
         const callback = op => op.modules.length !== 0;
         const arr = operatorAutocomplete(value, callback);
-        await interaction.respond(arr);
-    },
+        return await interaction.respond(arr);
+    }
     async execute(interaction: ChatInputCommandInteraction) {
         const name = interaction.options.getString('name').toLowerCase();
 

@@ -1,12 +1,13 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
-import { buildEventListMessage } from '../utils';
+import { Command } from '../structures/Command';
+import { buildEventListMessage } from '../utils/build';
 
-export default {
-    data: new SlashCommandBuilder()
+export default class EventCommand implements Command {
+    data = new SlashCommandBuilder()
         .setName('events')
-        .setDescription('Display a list of in-game events'),
+        .setDescription('Display a list of in-game events');
     async execute(interaction: ChatInputCommandInteraction) {
         const eventListEmbed = buildEventListMessage(0);
-        await interaction.reply(eventListEmbed);
+        return await interaction.reply(eventListEmbed);
     }
 }

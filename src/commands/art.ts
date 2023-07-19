@@ -1,9 +1,11 @@
 import { AutocompleteInteraction, ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
 import { operatorDict, skinDict } from '../data';
-import { buildArtMessage, operatorAutocomplete } from '../utils';
+import { Command } from '../structures/Command';
+import { operatorAutocomplete } from '../utils/autocomplete';
+import { buildArtMessage } from '../utils/build';
 
-export default {
-    data: new SlashCommandBuilder()
+export default class ArtCommand implements Command {
+    data = new SlashCommandBuilder()
         .setName('art')
         .setDescription('Show an operator\'s artworks')
         .addStringOption(option =>
@@ -11,13 +13,13 @@ export default {
                 .setDescription('Operator name')
                 .setRequired(true)
                 .setAutocomplete(true)
-        ),
+        );
     async autocomplete(interaction: AutocompleteInteraction) {
         const value = interaction.options.getFocused().toLowerCase();
         const callback = op => skinDict.hasOwnProperty(op.id);
         const arr = operatorAutocomplete(value, callback);
-        await interaction.respond(arr);
-    },
+        return await interaction.respond(arr);
+    }
     async execute(interaction: ChatInputCommandInteraction) {
         const name = interaction.options.getString('name').toLowerCase();
 
@@ -30,6 +32,6 @@ export default {
             return await interaction.reply({ content: 'That operator doesn\'t have any artwork!', ephemeral: true });
 
         const skinEmbed = buildArtMessage(op, 0);
-        await interaction.reply(skinEmbed);
+        return await interaction.reply(skinEmbed);
     }
 }

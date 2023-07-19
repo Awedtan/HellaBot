@@ -1,9 +1,11 @@
 import { AutocompleteInteraction, ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
 import { itemDict } from '../data';
-import { buildItemMessage, itemAutocomplete } from '../utils';
+import { Command } from '../structures/Command';
+import { itemAutocomplete } from '../utils/autocomplete';
+import { buildItemMessage } from '../utils/build';
 
-export default {
-    data: new SlashCommandBuilder()
+export default class ItemCommand implements Command {
+    data = new SlashCommandBuilder()
         .setName('item')
         .setDescription('Show information on an item')
         .addStringOption(option =>
@@ -11,12 +13,12 @@ export default {
                 .setDescription('Item name')
                 .setRequired(true)
                 .setAutocomplete(true)
-        ),
+        );
     async autocomplete(interaction: AutocompleteInteraction) {
         const value = interaction.options.getFocused().toLowerCase();
         const arr = itemAutocomplete(value);
-        await interaction.respond(arr);
-    },
+        return await interaction.respond(arr);
+    }
     async execute(interaction: ChatInputCommandInteraction) {
         const name = interaction.options.getString('name').toLowerCase();
 
@@ -25,6 +27,6 @@ export default {
 
         const item = itemDict[name];
         const itemEmbed = await buildItemMessage(item);
-        await interaction.reply(itemEmbed);
+        return await interaction.reply(itemEmbed);
     }
 }

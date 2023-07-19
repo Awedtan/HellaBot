@@ -246,7 +246,6 @@ type Event = {
     isReplicate: boolean;
 };
 
-
 type ManufactFormula = {
     formulaId: string;
     itemId: string;

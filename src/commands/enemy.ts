@@ -1,9 +1,11 @@
 import { AutocompleteInteraction, ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
 import { enemyDict } from '../data';
-import { buildEnemyMessage, enemyAutocomplete } from '../utils';
+import { Command } from '../structures/Command';
+import { enemyAutocomplete } from '../utils/autocomplete';
+import { buildEnemyMessage } from '../utils/build';
 
-export default {
-    data: new SlashCommandBuilder()
+export default class EnemyCommand implements Command {
+    data = new SlashCommandBuilder()
         .setName('enemy')
         .setDescription('Show an enemy\'s information and abilities')
         .addStringOption(option =>
@@ -11,12 +13,12 @@ export default {
                 .setDescription('Enemy name')
                 .setRequired(true)
                 .setAutocomplete(true)
-        ),
+        );
     async autocomplete(interaction: AutocompleteInteraction) {
         const value = interaction.options.getFocused().toLowerCase();
         const arr = enemyAutocomplete(value);
-        await interaction.respond(arr);
-    },
+        return await interaction.respond(arr);
+    };
     async execute(interaction: ChatInputCommandInteraction) {
         const name = interaction.options.getString('name').toLowerCase();
 
@@ -25,6 +27,6 @@ export default {
 
         const enemy = enemyDict[name];
         const enemyEmbed = buildEnemyMessage(enemy, 0);
-        await interaction.reply(enemyEmbed);
+        return await interaction.reply(enemyEmbed);
     }
 }

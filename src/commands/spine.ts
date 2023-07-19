@@ -1,11 +1,15 @@
 import { AutocompleteInteraction, ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
+import { unlinkSync } from 'fs';
+import { join } from 'path';
 import { operatorDict } from '../data';
-import { buildSpineMessage, buildSpinePage, operatorAutocomplete, urlExists } from '../utils';
+import { Command } from '../structures/Command';
+import { operatorAutocomplete } from '../utils/autocomplete';
+import { buildSpineMessage, buildSpinePage, urlExists } from '../utils/build';
 const nodefetch = require('node-fetch');
 const { paths } = require('../constants');
 
-export default {
-    data: new SlashCommandBuilder()
+export default class SpineCommand implements Command {
+    data = new SlashCommandBuilder()
         .setName('spine')
         .setDescription('Show an operator\'s spine animations')
         .addStringOption(option =>
@@ -13,12 +17,12 @@ export default {
                 .setDescription('Operator name')
                 .setRequired(true)
                 .setAutocomplete(true)
-        ),
+        );
     async autocomplete(interaction: AutocompleteInteraction) {
         const value = interaction.options.getFocused().toLowerCase();
         const arr = operatorAutocomplete(value);
-        await interaction.respond(arr);
-    },
+        return await interaction.respond(arr);
+    }
     async execute(interaction: ChatInputCommandInteraction) {
         const name = interaction.options.getString('name').toLowerCase();
 
@@ -48,7 +52,8 @@ export default {
                 await browser.close();
 
                 const spineEmbed = await buildSpineMessage(op, type, rand);
-                return await interaction.followUp(spineEmbed);
+                await interaction.followUp(spineEmbed);
+                await unlinkSync(join(__dirname, '..', 'spine', op.id + rand + '.gif'));
             }
         }).on('pageerror', async ({ message }) => {
             console.error(message);

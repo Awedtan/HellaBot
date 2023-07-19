@@ -1,9 +1,11 @@
 import { AutocompleteInteraction, ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
 import { baseDict, operatorDict } from '../data';
-import { buildBaseMessage, operatorAutocomplete } from '../utils';
+import { Command } from '../structures/Command';
+import { operatorAutocomplete } from '../utils/autocomplete';
+import { buildBaseMessage } from '../utils/build';
 
-export default {
-    data: new SlashCommandBuilder()
+export default class BaseCommand implements Command {
+    data = new SlashCommandBuilder()
         .setName('base')
         .setDescription('Show an operator\'s base skills')
         .addStringOption(option =>
@@ -11,13 +13,13 @@ export default {
                 .setDescription('Operator name')
                 .setRequired(true)
                 .setAutocomplete(true)
-        ),
+        );
     async autocomplete(interaction: AutocompleteInteraction) {
         const value = interaction.options.getFocused().toLowerCase();
         const callback = op => op.bases.length !== 0;
         const arr = operatorAutocomplete(value, callback);
-        await interaction.respond(arr);
-    },
+        return await interaction.respond(arr);
+    }
     async execute(interaction: ChatInputCommandInteraction) {
         const name = interaction.options.getString('name').toLowerCase();
 

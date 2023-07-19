@@ -1,11 +1,11 @@
 import { ActionRowBuilder, AttachmentBuilder, BaseMessageOptions, ButtonBuilder, ButtonStyle, EmbedAuthorOptions, EmbedBuilder, EmbedField, StringSelectMenuBuilder, StringSelectMenuOptionBuilder } from 'discord.js';
 import { join, resolve } from 'path';
-import { archetypeDict, baseDict, definitionDict, enemyDict, eventDict, itemDict, moduleDict, operatorDict, rangeDict, rogueThemeArr, skillDict, skinDict, stageDict, toughStageDict } from './data';
-import type { Base, BaseInfo, Blackboard, CCStage, Definition, Enemy, Event, Item, LevelUpCost, Operator, Paradox, RogueRelic, RogueStage, RogueTheme, RogueVariation, Stage, StageData } from "./types";
+import { archetypeDict, baseDict, definitionDict, enemyDict, eventDict, itemDict, moduleDict, operatorDict, rangeDict, rogueThemeArr, skillDict, skinDict, stageDict, toughStageDict } from '../data';
+import type { Base, BaseInfo, Blackboard, CCStage, Definition, Enemy, Event, Item, LevelUpCost, Operator, Paradox, RogueRelic, RogueStage, RogueTheme, RogueVariation, Stage, StageData } from "../types";
 // const fs = require('fs');
 const nodefetch = require('node-fetch');
 const puppeteer = require('puppeteer');
-const { embedColour, paths, gameConsts } = require('./constants');
+const { embedColour, paths, gameConsts } = require('../constants');
 
 const cleanFilename = (text: string) => text.split(/%|[#\+]|&|\[|\]/).join(''); // Remove special characters that discord doesn't like (%, #, etc.)
 // const fileExists = async (path: string) => !!(await fs.promises.stat(path).catch(e => false));
@@ -1045,7 +1045,7 @@ export async function buildSpineMessage(op: Operator, type: string, rand: number
     const avatar = new AttachmentBuilder(avatarPath);
     const authorField = buildAuthorField(op);
     const gifFile = op.id + rand + '.gif';
-    const gifPath = join(__dirname, 'spine', gifFile);
+    const gifPath = join(__dirname, '..', 'spine', gifFile);
     const gif = new AttachmentBuilder(gifPath);
     const spineJson = await (await nodefetch(paths.myAssetUrl + `/spinejson/${op.id}.json`)).json();
     const animArr = Object.keys(spineJson.animations);
@@ -1687,11 +1687,11 @@ export async function buildSpinePage(op: Operator, type: string) {
     const page = await browser.newPage();
     const rand = Math.floor(Math.random() * 100000);
     await page.setViewport({ width: 300, height: 300 });
-    await page.goto("file://" + resolve(__dirname, 'spine', `spine.html?name=${op.id}&type=${type}&rand=${rand}`));
+    await page.goto("file://" + resolve(__dirname, '..', 'spine', `spine.html?name=${op.id}&type=${type}&rand=${rand}`));
     const client = await page.target().createCDPSession()
     await client.send('Page.setDownloadBehavior', {
         behavior: 'allow',
-        downloadPath: resolve(__dirname, 'spine'),
+        downloadPath: resolve(__dirname, '..', 'spine'),
     })
 
     return { page, browser, rand };
@@ -2017,64 +2017,4 @@ function buildModuleEmbed(op: Operator, page: number, level: number): { embed: E
     embed.addFields({ name: `Stats`, value: statDescription });
 
     return { embed, thumbnail };
-}
-
-export function defineAutocomplete(query: string, callback: (op: Definition) => boolean = () => true) {
-    let arr: Definition[] = [];
-    for (const define of Object.values(definitionDict)) {
-        if (arr.includes(define)) continue;
-        arr.push(define);
-    }
-    const filteredArr = arr.filter(define => define.termName.toLowerCase().includes(query) && callback(define));
-    const filteredMap = filteredArr.slice(0, 8).map(define => ({ name: define.termName, value: define.termName }));
-
-    return filteredMap;
-}
-export function enemyAutocomplete(query: string, callback: (op: Enemy) => boolean = () => true) {
-    let arr: Enemy[] = [];
-    for (const enemy of Object.values(enemyDict)) {
-        if (arr.includes(enemy)) continue;
-        arr.push(enemy);
-    }
-    const matchQuery = (enemy: Enemy) => enemy.excel.name.toLowerCase().includes(query) || enemy.excel.enemyIndex.toLowerCase().includes(query);
-    const filteredArr = arr.filter(enemy => matchQuery(enemy) && callback(enemy));
-    const filteredMap = filteredArr.slice(0, 8).map(enemy => ({ name: `${enemy.excel.enemyIndex} - ${enemy.excel.name}`, value: enemy.excel.enemyId }));
-
-    return filteredMap;
-}
-export function itemAutocomplete(query: string, callback: (op: Item) => boolean = () => true) {
-    let arr: Item[] = [];
-    for (const item of Object.values(itemDict)) {
-        if (arr.includes(item)) continue;
-        arr.push(item);
-    }
-    const filteredArr = arr.filter(item => item.data.name.toLowerCase().includes(query) && callback(item));
-    const filteredMap = filteredArr.slice(0, 8).map(item => ({ name: item.data.name, value: item.data.name }));
-
-    return filteredMap;
-}
-export function operatorAutocomplete(query: string, callback: (op: Operator) => boolean = () => true) {
-    let arr: Operator[] = [];
-    for (const op of Object.values(operatorDict)) {
-        if (arr.includes(op)) continue;
-        arr.push(op);
-    }
-    const filteredArr = arr.filter(op => op.data.name.toLowerCase().includes(query) && callback(op));
-    const filteredMap = filteredArr.slice(0, 8).map(op => ({ name: op.data.name, value: op.data.name }));
-
-    return filteredMap;
-}
-export function stageAutocomplete(query: string, callback: (op: Stage) => boolean = () => true) {
-    let arr: Stage[] = [];
-    for (const stageArr of Object.values(stageDict)) {
-        for (const stage of stageArr) {
-            if (arr.includes(stage)) continue;
-            arr.push(stage);
-        }
-    }
-    const matchQuery = (stage: Stage) => stage.excel.name.toLowerCase().includes(query) || stage.excel.code.toLowerCase().includes(query);
-    const filteredArr = arr.filter(stage => matchQuery(stage) && callback(stage));
-    const filteredMap = filteredArr.slice(0, 8).map(stage => ({ name: `${stage.excel.code} - ${stage.excel.name}`, value: stage.excel.stageId }));
-
-    return filteredMap;
 }

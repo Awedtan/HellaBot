@@ -1,9 +1,11 @@
 import { AutocompleteInteraction, ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
 import { operatorDict, paradoxDict } from '../data';
-import { buildParadoxMessage, operatorAutocomplete } from '../utils';
+import { Command } from '../structures/Command';
+import { operatorAutocomplete } from '../utils/autocomplete';
+import { buildParadoxMessage } from '../utils/build';
 
-export default {
-    data: new SlashCommandBuilder()
+export default class ParadoxCommand implements Command {
+    data = new SlashCommandBuilder()
         .setName('paradox')
         .setDescription('Show an operator\'s Paradox Simulation stage')
         .addStringOption(option =>
@@ -11,13 +13,13 @@ export default {
                 .setDescription('Operator name')
                 .setRequired(true)
                 .setAutocomplete(true)
-        ),
+        );
     async autocomplete(interaction: AutocompleteInteraction) {
         const value = interaction.options.getFocused().toLowerCase();
         const callback = op => paradoxDict.hasOwnProperty(op.id);
         const arr = operatorAutocomplete(value, callback);
-        await interaction.respond(arr);
-    },
+        return await interaction.respond(arr);
+    }
     async execute(interaction: ChatInputCommandInteraction) {
         const name = interaction.options.getString('name').toLowerCase();
 
@@ -32,6 +34,6 @@ export default {
         const paradox = paradoxDict[op.id];
         const paradoxEmbed = await buildParadoxMessage(paradox, 0);
 
-        await interaction.reply(paradoxEmbed);
+        return await interaction.reply(paradoxEmbed);
     }
 }

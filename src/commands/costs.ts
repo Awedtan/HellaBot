@@ -1,9 +1,11 @@
 import { AutocompleteInteraction, ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
 import { operatorDict, } from '../data';
-import { buildCostMessage, operatorAutocomplete } from '../utils';
+import { Command } from '../structures/Command';
+import { operatorAutocomplete } from '../utils/autocomplete';
+import { buildCostMessage } from '../utils/build';
 
-export default {
-    data: new SlashCommandBuilder()
+export default class CostCommand implements Command {
+    data = new SlashCommandBuilder()
         .setName('costs')
         .setDescription('Show an operator\'s elite, skill, mastery, and module level costs')
         .addStringOption(option =>
@@ -21,13 +23,13 @@ export default {
                     { name: 'masteries', value: '2' },
                     { name: 'modules', value: '3' }
                 )
-        ),
+        );
     async autocomplete(interaction: AutocompleteInteraction) {
         const value = interaction.options.getFocused().toLowerCase();
         const callback = op => op.data.rarity > 1;
         const arr = operatorAutocomplete(value, callback);
-        await interaction.respond(arr);
-    },
+        return await interaction.respond(arr);
+    }
     async execute(interaction: ChatInputCommandInteraction) {
         const name = interaction.options.getString('name').toLowerCase();
         const page = parseInt(interaction.options.getString('type'));
@@ -41,6 +43,6 @@ export default {
             return await interaction.reply({ content: 'That operator has no upgrades!', ephemeral: true });
 
         const costEmbed = buildCostMessage(op, page);
-        await interaction.reply(costEmbed);
+        return await interaction.reply(costEmbed);
     }
 }

@@ -1,16 +1,17 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
 import { ccDict } from '../data';
-import { buildCcMessage, buildCcSelectMessage } from '../utils';
+import { Command } from '../structures/Command';
+import { buildCcMessage, buildCcSelectMessage } from '../utils/build';
 
-export default {
-    data: new SlashCommandBuilder()
+export default class CcCommand implements Command {
+    data = new SlashCommandBuilder()
         .setName('cc')
         .setDescription('Show information on a CC stage or season')
         .addStringOption(option =>
             option.setName('name')
                 .setDescription('Stage name/season number')
                 .setRequired(true)
-        ),
+        );
     async execute(interaction: ChatInputCommandInteraction) {
         const name = interaction.options.getString('name').toLowerCase();
 
@@ -30,6 +31,6 @@ export default {
             return await interaction.reply({ content: 'That stage data doesn\'t exist!', ephemeral: true });
 
         const ccEmbed = await buildCcMessage(stage, 0);
-        await interaction.reply(ccEmbed);
+        return await interaction.reply(ccEmbed);
     }
 }

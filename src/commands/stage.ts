@@ -1,9 +1,11 @@
 import { AutocompleteInteraction, ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
 import { stageDict, toughStageDict } from '../data';
-import { buildStageMessage, buildStageSelectMessage, stageAutocomplete } from '../utils';
+import { Command } from '../structures/Command';
+import { stageAutocomplete } from '../utils/autocomplete';
+import { buildStageMessage, buildStageSelectMessage } from '../utils/build';
 
-export default {
-    data: new SlashCommandBuilder()
+export default class StageCommand implements Command {
+    data = new SlashCommandBuilder()
         .setName('stage')
         .setDescription('Show information on a stage')
         .addStringOption(option =>
@@ -19,12 +21,12 @@ export default {
                     { name: 'normal', value: 'normal' },
                     { name: 'challenge', value: 'challenge' }
                 )
-        ),
+        );
     async autocomplete(interaction: AutocompleteInteraction) {
         const value = interaction.options.getFocused().toLowerCase();
         const arr = stageAutocomplete(value);
-        await interaction.respond(arr);
-    },
+        return await interaction.respond(arr);
+    }
     async execute(interaction: ChatInputCommandInteraction) {
         const code = interaction.options.getString('code').toLowerCase();
         const difficulty = interaction.options.getString('difficulty');

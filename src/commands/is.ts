@@ -1,9 +1,10 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
 import { rogueThemeArr } from '../data';
-import { buildRogueRelicListMessage, buildRogueRelicMessage, buildRogueStageMessage, buildRogueVariationListMessage, buildRogueVariationMessage } from '../utils';
+import { Command } from '../structures/Command';
+import { buildRogueRelicListMessage, buildRogueRelicMessage, buildRogueStageMessage, buildRogueVariationListMessage, buildRogueVariationMessage } from '../utils/build';
 
-export default {
-    data: new SlashCommandBuilder()
+export default class IsCommand implements Command {
+    data = new SlashCommandBuilder()
         .setName('is')
         .setDescription('Show information on Integrated Strategies')
         .addIntegerOption(option =>
@@ -35,7 +36,7 @@ export default {
                     { name: 'normal', value: 'normal' },
                     { name: 'emergency', value: 'emergency' }
                 )
-        ),
+        );
     async execute(interaction: ChatInputCommandInteraction) {
         const theme = interaction.options.getInteger('theme') - 2;
         const rogueDict = rogueThemeArr[theme];
@@ -56,14 +57,12 @@ export default {
                     return await interaction.reply({ content: 'That stage data doesn\'t exist!', ephemeral: true });
 
                 const stageEmbed = await buildRogueStageMessage(theme, stage, 0);
-                await interaction.reply(stageEmbed);
-
-                break;
+                return await interaction.reply(stageEmbed);
             }
             case 'relic': {
                 if (name === 'list') {
                     const relicListEmbed = buildRogueRelicListMessage(theme, 0);
-                    await interaction.reply(relicListEmbed);
+                    return await interaction.reply(relicListEmbed);
                 }
                 else {
                     const relicDict = rogueDict.relicDict;
@@ -73,14 +72,13 @@ export default {
 
                     const relic = relicDict[name];
                     const relicEmbed = await buildRogueRelicMessage(relic);
-                    await interaction.reply(relicEmbed);
+                    return await interaction.reply(relicEmbed);
                 }
-                break;
             }
             case 'variation': {
                 if (name === 'list') {
                     const variationListEmbed = buildRogueVariationListMessage(rogueDict);
-                    await interaction.reply(variationListEmbed);
+                    return await interaction.reply(variationListEmbed);
                 }
                 else {
                     const variationDict = rogueDict.variationDict;
@@ -90,9 +88,8 @@ export default {
 
                     const variation = variationDict[name];
                     const variationEmbed = buildRogueVariationMessage(variation);
-                    await interaction.reply(variationEmbed);
+                    return await interaction.reply(variationEmbed);
                 }
-                break;
             }
         }
     }
