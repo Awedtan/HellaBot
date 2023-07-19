@@ -1,8 +1,8 @@
-import { SlashCommandBuilder } from 'discord.js';
+import { ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
 import { rogueThemeArr } from '../data';
-import { buildRogueRelicMessage, buildRogueRelicListMessage, buildRogueStageMessage, buildRogueVariationMessage, buildRogueVariationListMessage } from '../utils';
+import { buildRogueRelicListMessage, buildRogueRelicMessage, buildRogueStageMessage, buildRogueVariationListMessage, buildRogueVariationMessage } from '../utils';
 
-module.exports = {
+export default {
     data: new SlashCommandBuilder()
         .setName('is')
         .setDescription('Show information on Integrated Strategies')
@@ -36,7 +36,7 @@ module.exports = {
                     { name: 'emergency', value: 'emergency' }
                 )
         ),
-    async execute(interaction) {
+    async execute(interaction: ChatInputCommandInteraction) {
         const theme = interaction.options.getInteger('theme') - 2;
         const rogueDict = rogueThemeArr[theme];
         const type = interaction.options.getString('type').toLowerCase();

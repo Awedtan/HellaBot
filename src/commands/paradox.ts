@@ -1,8 +1,8 @@
-import { SlashCommandBuilder } from 'discord.js';
+import { AutocompleteInteraction, ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
 import { operatorDict, paradoxDict } from '../data';
 import { buildParadoxMessage, operatorAutocomplete } from '../utils';
 
-module.exports = {
+export default {
     data: new SlashCommandBuilder()
         .setName('paradox')
         .setDescription('Show an operator\'s Paradox Simulation stage')
@@ -12,13 +12,13 @@ module.exports = {
                 .setRequired(true)
                 .setAutocomplete(true)
         ),
-    async autocomplete(interaction) {
+    async autocomplete(interaction: AutocompleteInteraction) {
         const value = interaction.options.getFocused().toLowerCase();
         const callback = op => paradoxDict.hasOwnProperty(op.id);
         const arr = operatorAutocomplete(value, callback);
         await interaction.respond(arr);
     },
-    async execute(interaction) {
+    async execute(interaction: ChatInputCommandInteraction) {
         const name = interaction.options.getString('name').toLowerCase();
 
         if (!operatorDict.hasOwnProperty(name))

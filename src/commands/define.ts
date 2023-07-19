@@ -1,8 +1,8 @@
-import { SlashCommandBuilder } from 'discord.js';
+import { AutocompleteInteraction, ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
 import { definitionDict } from '../data';
-import { buildDefineMessage, buildDefineListMessage, defineAutocomplete } from '../utils';
+import { buildDefineListMessage, buildDefineMessage, defineAutocomplete } from '../utils';
 
-module.exports = {
+export default {
     data: new SlashCommandBuilder()
         .setName('define')
         .setDescription('Show definitions for in-game terms (use \'list\' to display all in-game terms)')
@@ -12,12 +12,12 @@ module.exports = {
                 .setRequired(true)
                 .setAutocomplete(true)
         ),
-    async autocomplete(interaction) {
+    async autocomplete(interaction: AutocompleteInteraction) {
         const value = interaction.options.getFocused().toLowerCase();
         const arr = defineAutocomplete(value);
         await interaction.respond(arr);
     },
-    async execute(interaction) {
+    async execute(interaction: ChatInputCommandInteraction) {
         const term = interaction.options.getString('term').toLowerCase();
 
         if (term === 'list') {

@@ -1,8 +1,8 @@
-import { SlashCommandBuilder } from 'discord.js';
+import { AutocompleteInteraction, ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
 import { itemDict } from '../data';
 import { buildItemMessage, itemAutocomplete } from '../utils';
 
-module.exports = {
+export default {
     data: new SlashCommandBuilder()
         .setName('item')
         .setDescription('Show information on an item')
@@ -12,12 +12,12 @@ module.exports = {
                 .setRequired(true)
                 .setAutocomplete(true)
         ),
-    async autocomplete(interaction) {
+    async autocomplete(interaction: AutocompleteInteraction) {
         const value = interaction.options.getFocused().toLowerCase();
         const arr = itemAutocomplete(value);
         await interaction.respond(arr);
     },
-    async execute(interaction) {
+    async execute(interaction: ChatInputCommandInteraction) {
         const name = interaction.options.getString('name').toLowerCase();
 
         if (!itemDict.hasOwnProperty(name))

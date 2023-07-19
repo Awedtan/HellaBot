@@ -1,10 +1,10 @@
-import { SlashCommandBuilder } from 'discord.js';
-const nodefetch = require('node-fetch');
+import { AutocompleteInteraction, ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
 import { operatorDict } from '../data';
 import { buildSpineMessage, buildSpinePage, operatorAutocomplete, urlExists } from '../utils';
+const nodefetch = require('node-fetch');
 const { paths } = require('../constants');
 
-module.exports = {
+export default {
     data: new SlashCommandBuilder()
         .setName('spine')
         .setDescription('Show an operator\'s spine animations')
@@ -14,12 +14,12 @@ module.exports = {
                 .setRequired(true)
                 .setAutocomplete(true)
         ),
-    async autocomplete(interaction) {
+    async autocomplete(interaction: AutocompleteInteraction) {
         const value = interaction.options.getFocused().toLowerCase();
         const arr = operatorAutocomplete(value);
         await interaction.respond(arr);
     },
-    async execute(interaction) {
+    async execute(interaction: ChatInputCommandInteraction) {
         const name = interaction.options.getString('name').toLowerCase();
 
         if (!operatorDict.hasOwnProperty(name))

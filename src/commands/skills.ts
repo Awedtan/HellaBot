@@ -1,8 +1,8 @@
-import { SlashCommandBuilder } from 'discord.js';
+import { AutocompleteInteraction, ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
 import { operatorDict } from '../data';
 import { buildSkillMessage, operatorAutocomplete } from '../utils';
 
-module.exports = {
+export default {
     data: new SlashCommandBuilder()
         .setName('skills')
         .setDescription('Show an operator\'s skills')
@@ -18,13 +18,13 @@ module.exports = {
                 .setMinValue(1)
                 .setMaxValue(3)
         ),
-    async autocomplete(interaction) {
+    async autocomplete(interaction: AutocompleteInteraction) {
         const value = interaction.options.getFocused().toLowerCase();
         const callback = op => op.data.skills.length !== 0;
         const arr = operatorAutocomplete(value, callback);
         await interaction.respond(arr);
     },
-    async execute(interaction) {
+    async execute(interaction: ChatInputCommandInteraction) {
         const name = interaction.options.getString('name').toLowerCase();
         let index = interaction.options.getInteger('index') - 1;
 

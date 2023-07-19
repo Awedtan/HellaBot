@@ -1,8 +1,8 @@
-import { SlashCommandBuilder } from 'discord.js';
+import { AutocompleteInteraction, ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
 import { operatorDict, } from '../data';
 import { buildCostMessage, operatorAutocomplete } from '../utils';
 
-module.exports = {
+export default {
     data: new SlashCommandBuilder()
         .setName('costs')
         .setDescription('Show an operator\'s elite, skill, mastery, and module level costs')
@@ -22,13 +22,13 @@ module.exports = {
                     { name: 'modules', value: '3' }
                 )
         ),
-    async autocomplete(interaction) {
+    async autocomplete(interaction: AutocompleteInteraction) {
         const value = interaction.options.getFocused().toLowerCase();
         const callback = op => op.data.rarity > 1;
         const arr = operatorAutocomplete(value, callback);
         await interaction.respond(arr);
     },
-    async execute(interaction) {
+    async execute(interaction: ChatInputCommandInteraction) {
         const name = interaction.options.getString('name').toLowerCase();
         const page = parseInt(interaction.options.getString('type'));
 

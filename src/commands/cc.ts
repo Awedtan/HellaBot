@@ -1,8 +1,8 @@
-import { SlashCommandBuilder } from 'discord.js';
+import { ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
 import { ccDict } from '../data';
 import { buildCcMessage, buildCcSelectMessage } from '../utils';
 
-module.exports = {
+export default {
     data: new SlashCommandBuilder()
         .setName('cc')
         .setDescription('Show information on a CC stage or season')
@@ -11,7 +11,7 @@ module.exports = {
                 .setDescription('Stage name/season number')
                 .setRequired(true)
         ),
-    async execute(interaction) {
+    async execute(interaction: ChatInputCommandInteraction) {
         const name = interaction.options.getString('name').toLowerCase();
 
         if (!ccDict.hasOwnProperty(name)) {

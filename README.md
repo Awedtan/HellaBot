@@ -86,11 +86,13 @@ Thanks to [MrJAwesome](https://www.youtube.com/@MrJAwesomeYT) for making extensi
 
 ## todo:
 
-look into avoiding sending duplicate images
-
-look into using more updated spine viewer
+separate events from constructor
 
 add help command and better command descriptions
+
+look into using a database
+
+look into using more updated spine viewer
 
 maintain bot
 

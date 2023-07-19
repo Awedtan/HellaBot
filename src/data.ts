@@ -1,5 +1,5 @@
 const { gameConsts, paths } = require('./constants');
-import type { Base, BaseInfo, CCStage, Definition, Enemy, Event, Item, ManufactFormula, Module, Operator, Paradox, ParadoxInfo, GridRange, RogueTheme, RogueRelic, RogueStage, RogueStageInfo, RogueVariation, Skill, Skin, Stage, StageData, StageInfo, WorkshopFormula } from "./types";
+import type { Base, BaseInfo, CCStage, Definition, Enemy, Event, GridRange, Item, ManufactFormula, Module, Operator, Paradox, ParadoxInfo, RogueRelic, RogueStage, RogueStageInfo, RogueTheme, RogueVariation, Skill, Skin, Stage, StageData, StageInfo, WorkshopFormula } from "./types";
 
 export const archetypeDict: { [key: string]: string } = {};         // Archetype id -> archetype name
 export const baseDict: { [key: string]: Base } = {};                // Base skill id -> Base object

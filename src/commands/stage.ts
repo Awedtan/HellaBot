@@ -1,8 +1,8 @@
-import { SlashCommandBuilder } from 'discord.js';
+import { AutocompleteInteraction, ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
 import { stageDict, toughStageDict } from '../data';
 import { buildStageMessage, buildStageSelectMessage, stageAutocomplete } from '../utils';
 
-module.exports = {
+export default {
     data: new SlashCommandBuilder()
         .setName('stage')
         .setDescription('Show information on a stage')
@@ -20,12 +20,12 @@ module.exports = {
                     { name: 'challenge', value: 'challenge' }
                 )
         ),
-    async autocomplete(interaction) {
+    async autocomplete(interaction: AutocompleteInteraction) {
         const value = interaction.options.getFocused().toLowerCase();
         const arr = stageAutocomplete(value);
         await interaction.respond(arr);
     },
-    async execute(interaction) {
+    async execute(interaction: ChatInputCommandInteraction) {
         const code = interaction.options.getString('code').toLowerCase();
         const difficulty = interaction.options.getString('difficulty');
 
@@ -41,11 +41,11 @@ module.exports = {
                 return await interaction.reply({ content: 'That stage data doesn\'t exist!', ephemeral: true });
 
             const stageEmbed = await buildStageMessage(stage, 0);
-            await interaction.reply(stageEmbed);
+            return await interaction.reply(stageEmbed);
         }
         else {
             const stageSelectEmbed = buildStageSelectMessage(stageArr);
-            await interaction.reply(stageSelectEmbed);
+            return await interaction.reply(stageSelectEmbed);
         }
     }
-}
+};

@@ -1,7 +1,7 @@
-import { SlashCommandBuilder } from 'discord.js';
+import { ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
 import { buildRecruitMessage } from '../utils';
 
-module.exports = {
+export default {
     data: new SlashCommandBuilder()
         .setName('recruit')
         .setDescription('Find recruitable operators from recruitment tags')
@@ -14,7 +14,7 @@ module.exports = {
                     { name: 'top', value: 'top' }
                 )
         ),
-    async execute(interaction) {
+    async execute(interaction: ChatInputCommandInteraction) {
         const qual = interaction.options.getString('qualification');
         const recruitEmbed = buildRecruitMessage(qual, 1, '', true);
 

@@ -1,9 +1,9 @@
 import { ActionRowBuilder, AttachmentBuilder, BaseMessageOptions, ButtonBuilder, ButtonStyle, EmbedAuthorOptions, EmbedBuilder, EmbedField, StringSelectMenuBuilder, StringSelectMenuOptionBuilder } from 'discord.js';
-import { archetypeDict, baseDict, definitionDict, enemyDict, eventDict, itemDict, moduleDict, operatorDict, rangeDict, rogueThemeArr, skillDict, stageDict, skinDict, toughStageDict } from './data';
-import type { Base, BaseInfo, Blackboard, CCStage, Definition, Enemy, Event, Item, LevelUpCost, Paradox, Operator, RogueRelic, RogueStage, RogueTheme, RogueVariation, Stage, StageData } from "./types";
+import { join, resolve } from 'path';
+import { archetypeDict, baseDict, definitionDict, enemyDict, eventDict, itemDict, moduleDict, operatorDict, rangeDict, rogueThemeArr, skillDict, skinDict, stageDict, toughStageDict } from './data';
+import type { Base, BaseInfo, Blackboard, CCStage, Definition, Enemy, Event, Item, LevelUpCost, Operator, Paradox, RogueRelic, RogueStage, RogueTheme, RogueVariation, Stage, StageData } from "./types";
 // const fs = require('fs');
 const nodefetch = require('node-fetch');
-const path = require('path');
 const puppeteer = require('puppeteer');
 const { embedColour, paths, gameConsts } = require('./constants');
 
@@ -1045,7 +1045,7 @@ export async function buildSpineMessage(op: Operator, type: string, rand: number
     const avatar = new AttachmentBuilder(avatarPath);
     const authorField = buildAuthorField(op);
     const gifFile = op.id + rand + '.gif';
-    const gifPath = path.join(__dirname, 'spine', gifFile);
+    const gifPath = join(__dirname, 'spine', gifFile);
     const gif = new AttachmentBuilder(gifPath);
     const spineJson = await (await nodefetch(paths.myAssetUrl + `/spinejson/${op.id}.json`)).json();
     const animArr = Object.keys(spineJson.animations);
@@ -1687,11 +1687,11 @@ export async function buildSpinePage(op: Operator, type: string) {
     const page = await browser.newPage();
     const rand = Math.floor(Math.random() * 100000);
     await page.setViewport({ width: 300, height: 300 });
-    await page.goto("file://" + path.resolve(__dirname, 'spine', `spine.html?name=${op.id}&type=${type}&rand=${rand}`));
+    await page.goto("file://" + resolve(__dirname, 'spine', `spine.html?name=${op.id}&type=${type}&rand=${rand}`));
     const client = await page.target().createCDPSession()
     await client.send('Page.setDownloadBehavior', {
         behavior: 'allow',
-        downloadPath: path.resolve(__dirname, 'spine'),
+        downloadPath: resolve(__dirname, 'spine'),
     })
 
     return { page, browser, rand };
