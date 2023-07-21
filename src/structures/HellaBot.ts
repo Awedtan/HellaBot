@@ -4,6 +4,7 @@ import { join } from 'path';
 import { ccDict, enemyDict, operatorDict, paradoxDict, rogueThemeArr, stageDict, toughStageDict } from '../data';
 import * as utils from '../utils/build';
 import { Command } from './Command';
+import { getCcStage, getEnemy, getOperator, getParadox } from '../api';
 const { clientId, token } = require('../../config.json');
 
 export default class HellaBot {
@@ -77,7 +78,8 @@ export default class HellaBot {
                 switch (idArr[0]) {
                     case 'cc': {
                         if (interaction.isStringSelectMenu()) {
-                            const stage = ccDict[interaction.values[0]];
+                            // const stage = ccDict[interaction.values[0]];
+                            const stage = await getCcStage(interaction.values[0])
 
                             const ccEmbed = await utils.buildCcMessage(stage, 0);
                             await interaction.update(ccEmbed);
@@ -85,7 +87,8 @@ export default class HellaBot {
                             break;
                         }
                         else {
-                            const stage = ccDict[idArr[1]];
+                            // const stage = ccDict[idArr[1]];
+                            const stage = await getCcStage(idArr[1])
                             const page = parseInt(idArr[2]);
 
                             const ccEmbed = await utils.buildCcMessage(stage, page);
@@ -95,7 +98,8 @@ export default class HellaBot {
                         }
                     }
                     case 'cost': {
-                        const op = operatorDict[idArr[1]];
+                        // const op = operatorDict[idArr[1]];
+                        const op = await getOperator(idArr[1]);
                         const page = parseInt(idArr[2]);
 
                         const costEmbed = utils.buildCostMessage(op, page);
@@ -104,7 +108,8 @@ export default class HellaBot {
                         break;
                     }
                     case 'enemy': {
-                        const enemy = enemyDict[idArr[1]];
+                        // const enemy = enemyDict[idArr[1]];
+                        const enemy = await getEnemy(idArr[1]);
                         const level = parseInt(idArr[2]);
 
                         const enemyEmbed = utils.buildEnemyMessage(enemy, level);
@@ -123,7 +128,8 @@ export default class HellaBot {
                     case 'info': {
                         await interaction.deferUpdate();
 
-                        const op = operatorDict[idArr[1]];
+                        // const op = operatorDict[idArr[1]];
+                        const op = await getOperator(idArr[1]);
                         const type = parseInt(idArr[2]);
                         const page = parseInt(idArr[3]);
                         const level = parseInt(idArr[4]);
@@ -134,7 +140,8 @@ export default class HellaBot {
                         break;
                     }
                     case 'module': {
-                        const op = operatorDict[idArr[1]];
+                        // const op = operatorDict[idArr[1]];
+                        const op = await getOperator(idArr[1]);
                         const page = parseInt(idArr[2]);
                         const level = parseInt(idArr[3]);
 
@@ -144,7 +151,9 @@ export default class HellaBot {
                         break;
                     }
                     case 'paradox': {
-                        const paradox = paradoxDict[operatorDict[idArr[1]].id];
+                        // const paradox = paradoxDict[operatorDict[idArr[1]].id];
+                        const op = await getOperator(idArr[1]);
+                        const paradox = await getParadox(op.id);
                         const page = parseInt(idArr[2]);
 
                         const paradoxEmbed = await utils.buildParadoxMessage(paradox, page);
@@ -191,7 +200,8 @@ export default class HellaBot {
                         break;
                     }
                     case 'skill': {
-                        const op = operatorDict[idArr[1]];
+                        // const op = operatorDict[idArr[1]];
+                        const op = await getOperator(idArr[1]);
                         const page = parseInt(idArr[2]);
                         const level = parseInt(idArr[3]);
 
@@ -203,7 +213,8 @@ export default class HellaBot {
                     case 'skin': {
                         await interaction.deferUpdate();
 
-                        const op = operatorDict[idArr[1]];
+                        // const op = operatorDict[idArr[1]];
+                        const op = await getOperator(idArr[1]);
                         const page = parseInt(idArr[2]);
                         const skinEmbed = utils.buildArtMessage(op, page);
 
@@ -212,7 +223,8 @@ export default class HellaBot {
                     }
                     case 'spine': {
                         if (interaction.isButton()) break;
-                        const op = operatorDict[idArr[1]];
+                        // const op = operatorDict[idArr[1]];
+                        const op = await getOperator(idArr[1]);
                         const type = interaction.values[0];
 
                         await interaction.deferUpdate();
