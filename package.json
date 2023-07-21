@@ -12,6 +12,7 @@
     "dependencies": {
         "discord.js": "^14.11.0",
         "dotenv": "^16.0.3",
+        "node-fetch": "^2.6.12",
         "puppeteer": "^20.7.3",
         "simple-git": "^3.18.0",
         "ts-node": "^10.9.1",

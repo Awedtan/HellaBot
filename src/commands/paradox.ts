@@ -3,6 +3,7 @@ import { operatorDict, paradoxDict } from '../data';
 import { Command } from '../structures/Command';
 import { operatorAutocomplete } from '../utils/autocomplete';
 import { buildParadoxMessage } from '../utils/build';
+import { getOperator, getParadox } from '../api';
 
 export default class ParadoxCommand implements Command {
     data = new SlashCommandBuilder()
@@ -26,12 +27,15 @@ export default class ParadoxCommand implements Command {
         if (!operatorDict.hasOwnProperty(name))
             return await interaction.reply({ content: 'That operator doesn\'t exist!', ephemeral: true });
 
-        const op = operatorDict[name];
+        // const op = operatorDict[name];
+        const op = await getOperator(name);
 
         if (!paradoxDict.hasOwnProperty(op.id))
             return await interaction.reply({ content: 'That operator doesn\'t have a paradox simulation!', ephemeral: true });
 
-        const paradox = paradoxDict[op.id];
+        // const paradox = paradoxDict[op.id];
+        const paradox = await getParadox(op.id);
+
         const paradoxEmbed = await buildParadoxMessage(paradox, 0);
 
         return await interaction.reply(paradoxEmbed);

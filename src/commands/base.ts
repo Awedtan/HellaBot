@@ -3,6 +3,7 @@ import { baseDict, operatorDict } from '../data';
 import { Command } from '../structures/Command';
 import { operatorAutocomplete } from '../utils/autocomplete';
 import { buildBaseMessage } from '../utils/build';
+import { getBase } from '../api';
 
 export default class BaseCommand implements Command {
     data = new SlashCommandBuilder()
@@ -34,7 +35,8 @@ export default class BaseCommand implements Command {
         let first = true;
 
         for (const baseInfo of op.bases) {
-            const base = baseDict[baseInfo.buffId];
+            // const base = baseDict[baseInfo.buffId];
+            const base = await getBase(baseInfo.buffId);
 
             if (first) {
                 const baseEmbed = buildBaseMessage(base, baseInfo, op);

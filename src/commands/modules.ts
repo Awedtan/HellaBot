@@ -3,6 +3,7 @@ import { operatorDict } from '../data';
 import { Command } from '../structures/Command';
 import { operatorAutocomplete } from '../utils/autocomplete';
 import { buildModuleMessage } from '../utils/build';
+import { getOperator } from '../api';
 
 export default class ModuleCommand implements Command {
     data = new SlashCommandBuilder()
@@ -26,7 +27,8 @@ export default class ModuleCommand implements Command {
         if (!operatorDict.hasOwnProperty(name))
             return await interaction.reply({ content: 'That operator doesn\'t exist!', ephemeral: true });
 
-        const op = operatorDict[name];
+        // const op = operatorDict[name];
+        const op = await getOperator(name);
 
         if (op.modules.length === 0)
             return await interaction.reply({ content: 'That operator doesn\'t have any modules!', ephemeral: true });

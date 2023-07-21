@@ -3,6 +3,7 @@ import { operatorDict, skinDict } from '../data';
 import { Command } from '../structures/Command';
 import { operatorAutocomplete } from '../utils/autocomplete';
 import { buildArtMessage } from '../utils/build';
+import { getOperator } from '../api';
 
 export default class ArtCommand implements Command {
     data = new SlashCommandBuilder()
@@ -26,7 +27,8 @@ export default class ArtCommand implements Command {
         if (!operatorDict.hasOwnProperty(name))
             return await interaction.reply({ content: 'That operator doesn\'t exist!', ephemeral: true });
 
-        const op = operatorDict[name];
+        // const op = operatorDict[name];
+        const op = await getOperator(name);
 
         if (!skinDict.hasOwnProperty(op.id))
             return await interaction.reply({ content: 'That operator doesn\'t have any artwork!', ephemeral: true });

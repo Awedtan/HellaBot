@@ -3,6 +3,7 @@ import { definitionDict } from '../data';
 import { Command } from '../structures/Command';
 import { defineAutocomplete } from '../utils/autocomplete';
 import { buildDefineListMessage, buildDefineMessage } from '../utils/build';
+import { getDefinition } from '../api';
 
 export default class DefineCommand implements Command {
     data = new SlashCommandBuilder()
@@ -30,7 +31,9 @@ export default class DefineCommand implements Command {
             if (!definitionDict.hasOwnProperty(term))
                 return await interaction.reply({ content: 'That term doesn\'t exist!', ephemeral: true });
 
-            const definition = definitionDict[term];
+            // const definition = definitionDict[term];
+            const definition = await getDefinition(term);
+
             const defineEmbed = buildDefineMessage(definition);
             return await interaction.reply(defineEmbed);
         }

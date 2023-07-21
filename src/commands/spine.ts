@@ -5,6 +5,7 @@ import { operatorDict } from '../data';
 import { Command } from '../structures/Command';
 import { operatorAutocomplete } from '../utils/autocomplete';
 import { buildSpineMessage, buildSpinePage, urlExists } from '../utils/build';
+import { getOperator } from '../api';
 const nodefetch = require('node-fetch');
 const { paths } = require('../constants');
 
@@ -29,7 +30,9 @@ export default class SpineCommand implements Command {
         if (!operatorDict.hasOwnProperty(name))
             return await interaction.reply({ content: 'That operator doesn\'t exist!', ephemeral: true });
 
-        const op = operatorDict[name];
+        // const op = operatorDict[name];
+        const op = await getOperator(name);
+
         const jsonPath = paths.myAssetUrl + `/spinejson/${op.id}.json`;
 
         if (!await urlExists(jsonPath))

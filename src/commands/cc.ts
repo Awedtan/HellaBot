@@ -2,6 +2,7 @@ import { ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
 import { ccDict } from '../data';
 import { Command } from '../structures/Command';
 import { buildCcMessage, buildCcSelectMessage } from '../utils/build';
+import { getCcStage } from '../api';
 
 export default class CcCommand implements Command {
     data = new SlashCommandBuilder()
@@ -26,7 +27,9 @@ export default class CcCommand implements Command {
             }
         }
 
-        const stage = ccDict[name];
+        // const stage = ccDict[name];
+        const stage = await getCcStage(name);
+
         if (stage.const === undefined || stage.levels === undefined)
             return await interaction.reply({ content: 'That stage data doesn\'t exist!', ephemeral: true });
 

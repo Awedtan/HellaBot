@@ -3,6 +3,7 @@ import { enemyDict } from '../data';
 import { Command } from '../structures/Command';
 import { enemyAutocomplete } from '../utils/autocomplete';
 import { buildEnemyMessage } from '../utils/build';
+import { getEnemy } from '../api';
 
 export default class EnemyCommand implements Command {
     data = new SlashCommandBuilder()
@@ -25,7 +26,9 @@ export default class EnemyCommand implements Command {
         if (!enemyDict.hasOwnProperty(name))
             return await interaction.reply({ content: 'That enemy doesn\'t exist!', ephemeral: true });
 
-        const enemy = enemyDict[name];
+        // const enemy = enemyDict[name];
+        const enemy = await getEnemy(name);
+
         const enemyEmbed = buildEnemyMessage(enemy, 0);
         return await interaction.reply(enemyEmbed);
     }

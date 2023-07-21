@@ -3,6 +3,7 @@ import { operatorDict, } from '../data';
 import { Command } from '../structures/Command';
 import { operatorAutocomplete } from '../utils/autocomplete';
 import { buildCostMessage } from '../utils/build';
+import { getOperator } from '../api';
 
 export default class CostCommand implements Command {
     data = new SlashCommandBuilder()
@@ -37,7 +38,8 @@ export default class CostCommand implements Command {
         if (!operatorDict.hasOwnProperty(name))
             return await interaction.reply({ content: 'That operator doesn\'t exist!', ephemeral: true });
 
-        const op = operatorDict[name];
+        // const op = operatorDict[name];
+        const op = await getOperator(name);
 
         if (op.data.rarity <= 1)
             return await interaction.reply({ content: 'That operator has no upgrades!', ephemeral: true });
