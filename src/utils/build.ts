@@ -255,7 +255,9 @@ export async function buildDefineMessage(definition: Definition): Promise<BaseMe
 }
 export async function buildDefineListMessage(): Promise<BaseMessageOptions> {
     let statusDescription = '', effectDescription = '', groupDescription = '';
-    for (const term of await getAllDefinitions()) {
+    const dataArr = await getAllDefinitions();
+    for (const data of dataArr) {
+        const term = data.value;
         const termName = term.termName;
         const termArr = term.termId.split('.');
 
@@ -364,9 +366,11 @@ export async function buildEventListMessage(index: number): Promise<BaseMessageO
     const eventCount = 6;
 
     let eventArr = [];
-    for (const event of await getAllEvents()) {
-        const loginArr = ['LOGIN_ONLY', 'CHECKIN_ONLY', 'FLOAT_PARADE', 'PRAY_ONLY', 'GRID_GACHA_V2', 'GRID_GACHA']; // Skip login events
-        if (loginArr.includes(event.type)) continue;
+    const dataArr = await getAllEvents();
+    for (const data of dataArr) {
+        const event = data.value;
+        const skipLoginArr = ['LOGIN_ONLY', 'CHECKIN_ONLY', 'FLOAT_PARADE', 'PRAY_ONLY', 'GRID_GACHA_V2', 'GRID_GACHA']; // Skip login events
+        if (skipLoginArr.includes(event.type)) continue;
         eventArr.push(event);
     }
     eventArr.sort((first: GameEvent, second: GameEvent) => second.startTime - first.startTime); // Sort by descending start time
@@ -1744,7 +1748,7 @@ async function buildStageEnemyFields(stageData: StageData): Promise<EmbedField[]
     let enemyString = '', eliteString = '', bossString = '';
     for (const enemyRef of stageData.enemyDbRefs) {
         const enemy = await getEnemy(enemyRef.id);
-
+        
         if (!enemy) continue;
 
         let enemyLine = `${enemy.excel.enemyIndex} - ${enemy.excel.name}`;

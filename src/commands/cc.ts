@@ -22,8 +22,10 @@ export default class CcCommand implements Command {
             if (!ccSeasons.hasOwnProperty(name))
                 return await interaction.reply({ content: 'That stage/season doesn\'t exist!', ephemeral: true });
             else {
+                await interaction.deferReply();
+
                 const ccSelectEmbed = await buildCcSelectMessage(name);
-                return await interaction.reply(ccSelectEmbed);
+                return await interaction.editReply(ccSelectEmbed);
             }
         }
 
@@ -32,7 +34,9 @@ export default class CcCommand implements Command {
         if (stage.const === undefined || stage.levels === undefined)
             return await interaction.reply({ content: 'That stage data doesn\'t exist!', ephemeral: true });
 
+        await interaction.deferReply();
+
         const ccEmbed = await buildCcMessage(stage, 0);
-        return await interaction.reply(ccEmbed);
+        return await interaction.editReply(ccEmbed);
     }
 }

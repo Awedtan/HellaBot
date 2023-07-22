@@ -39,6 +39,8 @@ export default class SkillCommand implements Command {
         if (op.data.skills.length === 0)
             return await interaction.reply({ content: 'That operator doesn\'t have any skills!', ephemeral: true });
 
+        await interaction.deferReply();
+
         if (index !== -1 && index > op.data.skills.length - 1)
             index = -1;
 
@@ -48,7 +50,7 @@ export default class SkillCommand implements Command {
             if (index !== -1 && index !== i) continue;
             if (first) {
                 const skillEmbed = await buildSkillMessage(op, i, 0);
-                await interaction.reply(skillEmbed);
+                await interaction.editReply(skillEmbed);
                 first = false;
             }
             else {

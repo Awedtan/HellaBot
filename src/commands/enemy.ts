@@ -26,9 +26,11 @@ export default class EnemyCommand implements Command {
         if (!enemyDict.hasOwnProperty(name))
             return await interaction.reply({ content: 'That enemy doesn\'t exist!', ephemeral: true });
 
+        await interaction.deferReply();
+
         const enemy = await getEnemy(name);
 
         const enemyEmbed = await buildEnemyMessage(enemy, 0);
-        return await interaction.reply(enemyEmbed);
+        return await interaction.editReply(enemyEmbed);
     }
 }

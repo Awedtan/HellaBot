@@ -43,7 +43,9 @@ export default class CostCommand implements Command {
         if (op.data.rarity <= 1)
             return await interaction.reply({ content: 'That operator has no upgrades!', ephemeral: true });
 
+        await interaction.deferReply();
+
         const costEmbed = await buildCostMessage(op, page);
-        return await interaction.reply(costEmbed);
+        return await interaction.editReply(costEmbed);
     }
 }

@@ -32,6 +32,8 @@ export default class BaseCommand implements Command {
         if (op.bases.length === 0)
             return await interaction.reply({ content: 'That operator doesn\'t have any base skills!', ephemeral: true });
 
+        await interaction.deferReply();
+
         let first = true;
 
         for (const baseInfo of op.bases) {
@@ -39,7 +41,7 @@ export default class BaseCommand implements Command {
 
             if (first) {
                 const baseEmbed = await buildBaseMessage(base, baseInfo, op);
-                await interaction.reply(baseEmbed);
+                await interaction.editReply(baseEmbed);
                 first = false;
             }
             else {

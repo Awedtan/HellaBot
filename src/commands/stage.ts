@@ -42,12 +42,16 @@ export default class StageCommand implements Command {
             if (stage.excel === undefined || stage.levels === undefined)
                 return await interaction.reply({ content: 'That stage data doesn\'t exist!', ephemeral: true });
 
+            await interaction.deferReply();
+
             const stageEmbed = await buildStageMessage(stage, 0);
-            return await interaction.reply(stageEmbed);
+            return await interaction.editReply(stageEmbed);
         }
         else {
+            await interaction.deferReply();
+
             const stageSelectEmbed = await buildStageSelectMessage(stageArr);
-            return await interaction.reply(stageSelectEmbed);
+            return await interaction.editReply(stageSelectEmbed);
         }
     }
 };

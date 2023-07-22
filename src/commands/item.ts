@@ -26,9 +26,11 @@ export default class ItemCommand implements Command {
         if (!itemDict.hasOwnProperty(name))
             return await interaction.reply({ content: 'That item doesn\'t exist!', ephemeral: true });
 
+        await interaction.deferReply();
+
         const item = await getItem(name);
 
         const itemEmbed = await buildItemMessage(item);
-        return await interaction.reply(itemEmbed);
+        return await interaction.editReply(itemEmbed);
     }
 }

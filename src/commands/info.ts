@@ -26,9 +26,11 @@ export default class InfoCommand implements Command {
         if (!operatorDict.hasOwnProperty(name))
             return await interaction.reply({ content: 'That operator doesn\'t exist!', ephemeral: true });
 
+        await interaction.deferReply();
+
         const op = await getOperator(name);
 
         const operatorEmbed = await buildInfoMessage(op, 0, 0, 0);
-        return await interaction.reply(operatorEmbed);
+        return await interaction.editReply(operatorEmbed);
     }
 }

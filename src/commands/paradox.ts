@@ -28,13 +28,15 @@ export default class ParadoxCommand implements Command {
             return await interaction.reply({ content: 'That operator doesn\'t exist!', ephemeral: true });
 
         const op = await getOperator(name);
-        
+
         if (!paradoxDict.hasOwnProperty(op.id))
             return await interaction.reply({ content: 'That operator doesn\'t have a paradox simulation!', ephemeral: true });
+
+        await interaction.deferReply();
 
         const paradox = await getParadox(op.id);
         const paradoxEmbed = await buildParadoxMessage(paradox, 0);
 
-        return await interaction.reply(paradoxEmbed);
+        return await interaction.editReply(paradoxEmbed);
     }
 }

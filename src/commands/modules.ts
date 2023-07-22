@@ -32,13 +32,15 @@ export default class ModuleCommand implements Command {
         if (op.modules.length === 0)
             return await interaction.reply({ content: 'That operator doesn\'t have any modules!', ephemeral: true });
 
+        await interaction.deferReply();
+
         let first = true;
 
         for (let i = 0; i < op.modules.length; i++) {
             if (op.modules[i].includes('uniequip_001')) continue;
             if (first) {
                 const moduleEmbed = await buildModuleMessage(op, i, 0);
-                await interaction.reply(moduleEmbed);
+                await interaction.editReply(moduleEmbed);
                 first = false;
             }
             else {
