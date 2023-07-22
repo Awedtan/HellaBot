@@ -86,19 +86,19 @@ Thanks to [MrJAwesome](https://www.youtube.com/@MrJAwesomeYT) for making extensi
 
 ## todo:
 
+revamp is and spine commands
+
+finish implementing api
+
 separate events from constructor
 
 add help command and better command descriptions
 
-look into using a database
-
-look into using more updated spine viewer
-
 maintain bot
 
-make a better readme
-
 ### maybe/probably not:
+
+look into using more updated spine viewer
 
 gacha banners
 
