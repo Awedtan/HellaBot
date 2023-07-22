@@ -24,7 +24,7 @@ export default class StageCommand implements Command {
         );
     async autocomplete(interaction: AutocompleteInteraction) {
         const value = interaction.options.getFocused().toLowerCase();
-        const arr = stageAutocomplete(value);
+        const arr = await stageAutocomplete(value);
         return await interaction.respond(arr);
     }
     async execute(interaction: ChatInputCommandInteraction) {

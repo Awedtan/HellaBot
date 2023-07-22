@@ -16,7 +16,7 @@ export default class InfoCommand implements Command {
         );
     async autocomplete(interaction: AutocompleteInteraction) {
         const value = interaction.options.getFocused().toLowerCase();
-        const arr = operatorAutocomplete(value);
+        const arr = await operatorAutocomplete(value);
         return await interaction.respond(arr);
     }
     async execute(interaction: ChatInputCommandInteraction) {

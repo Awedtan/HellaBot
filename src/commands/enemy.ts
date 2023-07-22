@@ -16,7 +16,7 @@ export default class EnemyCommand implements Command {
         );
     async autocomplete(interaction: AutocompleteInteraction) {
         const value = interaction.options.getFocused().toLowerCase();
-        const arr = enemyAutocomplete(value);
+        const arr = await enemyAutocomplete(value);
         return await interaction.respond(arr);
     };
     async execute(interaction: ChatInputCommandInteraction) {

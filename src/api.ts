@@ -95,6 +95,7 @@ export async function getToughStageArr(code: string): Promise<Stage[]> {
 }
 
 async function GET(route: string, query: string) {
+    console.log(`GET/${route}/${query}`);
     const response = await fetch(apiUrl + `/${route}/${query}`);
     if (!response.ok) return { value: null };
     return await response.json();

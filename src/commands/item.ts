@@ -16,7 +16,7 @@ export default class ItemCommand implements Command {
         );
     async autocomplete(interaction: AutocompleteInteraction) {
         const value = interaction.options.getFocused().toLowerCase();
-        const arr = itemAutocomplete(value);
+        const arr = await itemAutocomplete(value);
         return await interaction.respond(arr);
     }
     async execute(interaction: ChatInputCommandInteraction) {

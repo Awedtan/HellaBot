@@ -1,6 +1,5 @@
 import { AutocompleteInteraction, ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
 import { getOperator, getParadox } from '../api';
-import { paradoxDict } from '../data';
 import { Command } from '../structures/Command';
 import { operatorAutocomplete } from '../utils/autocomplete';
 import { buildParadoxMessage } from '../utils/build';
@@ -17,8 +16,8 @@ export default class ParadoxCommand implements Command {
         );
     async autocomplete(interaction: AutocompleteInteraction) {
         const value = interaction.options.getFocused().toLowerCase();
-        const callback = op => paradoxDict.hasOwnProperty(op.id);
-        const arr = operatorAutocomplete(value, callback);
+        // const callback = async op => !!await getParadox(op.id);
+        const arr = await operatorAutocomplete(value);
         return await interaction.respond(arr);
     }
     async execute(interaction: ChatInputCommandInteraction) {

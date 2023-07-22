@@ -16,8 +16,8 @@ export default class BaseCommand implements Command {
         );
     async autocomplete(interaction: AutocompleteInteraction) {
         const value = interaction.options.getFocused().toLowerCase();
-        const callback = op => op.bases.length !== 0;
-        const arr = operatorAutocomplete(value, callback);
+        const callback = async op => op.bases.length !== 0;
+        const arr = await operatorAutocomplete(value, callback);
         return await interaction.respond(arr);
     }
     async execute(interaction: ChatInputCommandInteraction) {

@@ -16,7 +16,7 @@ export default class DefineCommand implements Command {
         );
     async autocomplete(interaction: AutocompleteInteraction) {
         const value = interaction.options.getFocused().toLowerCase();
-        const arr = defineAutocomplete(value);
+        const arr = await defineAutocomplete(value);
         return await interaction.respond(arr);
     }
     async execute(interaction: ChatInputCommandInteraction) {

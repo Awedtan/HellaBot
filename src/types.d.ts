@@ -246,6 +246,15 @@ type GameEvent = {
     isReplicate: boolean;
 };
 
+type GridRange = {
+    id: string;
+    direction: number;
+    grids: {
+        row: number;
+        col: number;
+    }[];
+};
+
 type ManufactFormula = {
     formulaId: string;
     itemId: string;
@@ -519,15 +528,6 @@ type ParadoxInfo = {
     zoneNameForShow: string;
     picId: string;
     stageGetTime: number;
-};
-
-type GridRange = {
-    id: string;
-    direction: number;
-    grids: {
-        row: number;
-        col: number;
-    }[];
 };
 
 type RogueTheme = {

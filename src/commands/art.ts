@@ -1,6 +1,5 @@
 import { AutocompleteInteraction, ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
 import { getOperator, getSkinArr } from '../api';
-import { skinDict } from '../data';
 import { Command } from '../structures/Command';
 import { operatorAutocomplete } from '../utils/autocomplete';
 import { buildArtMessage } from '../utils/build';
@@ -17,9 +16,8 @@ export default class ArtCommand implements Command {
         );
     async autocomplete(interaction: AutocompleteInteraction) {
         const value = interaction.options.getFocused().toLowerCase();
-        const callback = op => skinDict.hasOwnProperty(op.id);
-        // const callback = async op => await getSkinArr(op.id);
-        const arr = operatorAutocomplete(value, callback);
+        // const callback = async op => !!await getSkinArr(op.id);
+        const arr = await operatorAutocomplete(value);
         return await interaction.respond(arr);
     }
     async execute(interaction: ChatInputCommandInteraction) {

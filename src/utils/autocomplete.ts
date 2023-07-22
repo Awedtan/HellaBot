@@ -1,66 +1,81 @@
 import { definitionDict, enemyDict, itemDict, operatorDict, stageDict } from "../data";
 import { Definition, Enemy, Item, Operator, Stage } from "../types";
 
-export function defineAutocomplete(query: string, callback: (op: Definition) => boolean = () => true) {
+const limit = 6;
+
+export async function defineAutocomplete(query: string, callback: (op: Definition) => boolean = () => true) {
     let arr: Definition[] = [];
+    let i = 0;
     for (const define of Object.values(definitionDict)) {
-        if (arr.includes(define)) continue;
+        if (i >= limit) break;
+        if (arr.includes(define) || !define.termName.toLowerCase().includes(query) || !await callback(define)) continue;
         arr.push(define);
+        i++;
     }
-    const filteredArr = arr.filter(define => define.termName.toLowerCase().includes(query) && callback(define));
-    const filteredMap = filteredArr.slice(0, 8).map(define => ({ name: define.termName, value: define.termName }));
+    const mappedArr = arr.slice(0, limit).map(define => ({ name: define.termName, value: define.termName }));
 
-    return filteredMap;
+    return mappedArr;
 }
 
-export function enemyAutocomplete(query: string, callback: (op: Enemy) => boolean = () => true) {
-    let arr: Enemy[] = [];
-    for (const enemy of Object.values(enemyDict)) {
-        if (arr.includes(enemy)) continue;
-        arr.push(enemy);
-    }
+export async function enemyAutocomplete(query: string, callback: (op: Enemy) => boolean = () => true) {
     const matchQuery = (enemy: Enemy) => enemy.excel.name.toLowerCase().includes(query) || enemy.excel.enemyIndex.toLowerCase().includes(query);
-    const filteredArr = arr.filter(enemy => matchQuery(enemy) && callback(enemy));
-    const filteredMap = filteredArr.slice(0, 8).map(enemy => ({ name: `${enemy.excel.enemyIndex} - ${enemy.excel.name}`, value: enemy.excel.enemyId }));
 
-    return filteredMap;
+    let arr: Enemy[] = [];
+    let i = 0;
+    for (const enemy of Object.values(enemyDict)) {
+        if (i >= limit) break;
+        if (arr.includes(enemy) || !matchQuery || !await callback(enemy)) continue;
+        arr.push(enemy);
+        i++;
+    }
+    const mappedArr = arr.map(enemy => ({ name: `${enemy.excel.enemyIndex} - ${enemy.excel.name}`, value: enemy.excel.enemyId }));
+
+    return mappedArr;
 }
 
-export function itemAutocomplete(query: string, callback: (op: Item) => boolean = () => true) {
+export async function itemAutocomplete(query: string, callback: (op: Item) => boolean = () => true) {
     let arr: Item[] = [];
+    let i = 0;
     for (const item of Object.values(itemDict)) {
-        if (arr.includes(item)) continue;
+        if (i >= limit) break;
+        if (arr.includes(item) || !item.data.name.toLowerCase().includes(query) || !await callback(item)) continue;
         arr.push(item);
+        i++;
     }
-    const filteredArr = arr.filter(item => item.data.name.toLowerCase().includes(query) && callback(item));
-    const filteredMap = filteredArr.slice(0, 8).map(item => ({ name: item.data.name, value: item.data.name }));
+    const mappedArr = arr.map(item => ({ name: item.data.name, value: item.data.name }));
 
-    return filteredMap;
+    return mappedArr;
 }
 
-export function operatorAutocomplete(query: string, callback: (op: Operator) => boolean = () => true) {
+export async function operatorAutocomplete(query: string, callback: (op: Operator) => Promise<Boolean> = async () => true) {
     let arr: Operator[] = [];
+    let i = 0;
     for (const op of Object.values(operatorDict)) {
-        if (arr.includes(op)) continue;
+        if (i >= limit) break;
+        if (arr.includes(op) || !op.data.name.toLowerCase().includes(query) || !await callback(op)) continue;
         arr.push(op);
+        i++;
     }
-    const filteredArr = arr.filter(op => op.data.name.toLowerCase().includes(query) && callback(op));
-    const filteredMap = filteredArr.slice(0, 8).map(op => ({ name: op.data.name, value: op.data.name }));
+    const mappedArr = arr.map(op => ({ name: op.data.name, value: op.data.name }));
 
-    return filteredMap;
+    return mappedArr;
 }
 
-export function stageAutocomplete(query: string, callback: (op: Stage) => boolean = () => true) {
+export async function stageAutocomplete(query: string, callback: (op: Stage) => boolean = () => true) {
+    const matchQuery = (stage: Stage) => stage.excel.name.toLowerCase().includes(query) || stage.excel.code.toLowerCase().includes(query);
+
     let arr: Stage[] = [];
+    let i = 0;
     for (const stageArr of Object.values(stageDict)) {
         for (const stage of stageArr) {
-            if (arr.includes(stage)) continue;
+            if (i >= limit) break;
+            if (arr.includes(stage) || !matchQuery(stage) || !await callback(stage)) continue;
             arr.push(stage);
+            i++;
         }
     }
-    const matchQuery = (stage: Stage) => stage.excel.name.toLowerCase().includes(query) || stage.excel.code.toLowerCase().includes(query);
-    const filteredArr = arr.filter(stage => matchQuery(stage) && callback(stage));
-    const filteredMap = filteredArr.slice(0, 8).map(stage => ({ name: `${stage.excel.code} - ${stage.excel.name}`, value: stage.excel.stageId }));
 
-    return filteredMap;
+    const mappedArr = arr.map(stage => ({ name: `${stage.excel.code} - ${stage.excel.name}`, value: stage.excel.stageId }));
+
+    return mappedArr;
 }
