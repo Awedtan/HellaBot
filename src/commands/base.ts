@@ -35,16 +35,15 @@ export default class BaseCommand implements Command {
         let first = true;
 
         for (const baseInfo of op.bases) {
-            // const base = baseDict[baseInfo.buffId];
             const base = await getBase(baseInfo.buffId);
 
             if (first) {
-                const baseEmbed = buildBaseMessage(base, baseInfo, op);
+                const baseEmbed = await buildBaseMessage(base, baseInfo, op);
                 await interaction.reply(baseEmbed);
                 first = false;
             }
             else {
-                const baseEmbed = buildBaseMessage(base, baseInfo, op);
+                const baseEmbed = await buildBaseMessage(base, baseInfo, op);
                 await interaction.followUp(baseEmbed);
             }
         }

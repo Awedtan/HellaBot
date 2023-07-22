@@ -27,7 +27,6 @@ export default class CcCommand implements Command {
             }
         }
 
-        // const stage = ccDict[name];
         const stage = await getCcStage(name);
 
         if (stage.const === undefined || stage.levels === undefined)

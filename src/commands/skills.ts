@@ -34,7 +34,6 @@ export default class SkillCommand implements Command {
         if (!operatorDict.hasOwnProperty(name))
             return await interaction.reply({ content: 'That operator doesn\'t exist!', ephemeral: true });
 
-        // const op = operatorDict[name];
         const op = await getOperator(name);
 
         if (op.data.skills.length === 0)
@@ -48,12 +47,12 @@ export default class SkillCommand implements Command {
         for (let i = 0; i < op.data.skills.length; i++) {
             if (index !== -1 && index !== i) continue;
             if (first) {
-                const skillEmbed = buildSkillMessage(op, i, 0);
+                const skillEmbed = await buildSkillMessage(op, i, 0);
                 await interaction.reply(skillEmbed);
                 first = false;
             }
             else {
-                const skillEmbed = buildSkillMessage(op, i, 0);
+                const skillEmbed = await buildSkillMessage(op, i, 0);
                 await interaction.followUp(skillEmbed);
             }
         }

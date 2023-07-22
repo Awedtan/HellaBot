@@ -7,7 +7,7 @@ export default class EventCommand implements Command {
         .setName('events')
         .setDescription('Display a list of in-game events');
     async execute(interaction: ChatInputCommandInteraction) {
-        const eventListEmbed = buildEventListMessage(0);
+        const eventListEmbed = await buildEventListMessage(0);
         return await interaction.reply(eventListEmbed);
     }
 }

@@ -24,17 +24,16 @@ export default class DefineCommand implements Command {
         const term = interaction.options.getString('term').toLowerCase();
 
         if (term === 'list') {
-            const defineListEmbed = buildDefineListMessage();
+            const defineListEmbed = await buildDefineListMessage();
             return await interaction.reply(defineListEmbed);
         }
         else {
             if (!definitionDict.hasOwnProperty(term))
                 return await interaction.reply({ content: 'That term doesn\'t exist!', ephemeral: true });
 
-            // const definition = definitionDict[term];
             const definition = await getDefinition(term);
 
-            const defineEmbed = buildDefineMessage(definition);
+            const defineEmbed = await buildDefineMessage(definition);
             return await interaction.reply(defineEmbed);
         }
     }

@@ -61,7 +61,7 @@ export default class IsCommand implements Command {
             }
             case 'relic': {
                 if (name === 'list') {
-                    const relicListEmbed = buildRogueRelicListMessage(theme, 0);
+                    const relicListEmbed = await buildRogueRelicListMessage(theme, 0);
                     return await interaction.reply(relicListEmbed);
                 }
                 else {
@@ -77,7 +77,7 @@ export default class IsCommand implements Command {
             }
             case 'variation': {
                 if (name === 'list') {
-                    const variationListEmbed = buildRogueVariationListMessage(rogueDict);
+                    const variationListEmbed = await buildRogueVariationListMessage(rogueDict);
                     return await interaction.reply(variationListEmbed);
                 }
                 else {
@@ -87,7 +87,7 @@ export default class IsCommand implements Command {
                         return await interaction.reply({ content: 'That variation doesn\'t exist!', ephemeral: true });
 
                     const variation = variationDict[name];
-                    const variationEmbed = buildRogueVariationMessage(variation);
+                    const variationEmbed = await buildRogueVariationMessage(variation);
                     return await interaction.reply(variationEmbed);
                 }
             }

@@ -30,7 +30,6 @@ export default class SpineCommand implements Command {
         if (!operatorDict.hasOwnProperty(name))
             return await interaction.reply({ content: 'That operator doesn\'t exist!', ephemeral: true });
 
-        // const op = operatorDict[name];
         const op = await getOperator(name);
 
         const jsonPath = paths.myAssetUrl + `/spinejson/${op.id}.json`;

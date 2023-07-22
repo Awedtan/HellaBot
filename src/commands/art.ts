@@ -27,13 +27,12 @@ export default class ArtCommand implements Command {
         if (!operatorDict.hasOwnProperty(name))
             return await interaction.reply({ content: 'That operator doesn\'t exist!', ephemeral: true });
 
-        // const op = operatorDict[name];
         const op = await getOperator(name);
 
         if (!skinDict.hasOwnProperty(op.id))
             return await interaction.reply({ content: 'That operator doesn\'t have any artwork!', ephemeral: true });
 
-        const skinEmbed = buildArtMessage(op, 0);
+        const skinEmbed = await buildArtMessage(op, 0);
         return await interaction.reply(skinEmbed);
     }
 }

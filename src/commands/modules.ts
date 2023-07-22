@@ -27,7 +27,6 @@ export default class ModuleCommand implements Command {
         if (!operatorDict.hasOwnProperty(name))
             return await interaction.reply({ content: 'That operator doesn\'t exist!', ephemeral: true });
 
-        // const op = operatorDict[name];
         const op = await getOperator(name);
 
         if (op.modules.length === 0)
@@ -38,12 +37,12 @@ export default class ModuleCommand implements Command {
         for (let i = 0; i < op.modules.length; i++) {
             if (op.modules[i].includes('uniequip_001')) continue;
             if (first) {
-                const moduleEmbed = buildModuleMessage(op, i, 0);
+                const moduleEmbed = await buildModuleMessage(op, i, 0);
                 await interaction.reply(moduleEmbed);
                 first = false;
             }
             else {
-                const moduleEmbed = buildModuleMessage(op, i, 0);
+                const moduleEmbed = await buildModuleMessage(op, i, 0);
                 await interaction.followUp(moduleEmbed);
             }
         }

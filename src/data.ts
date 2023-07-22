@@ -1,12 +1,12 @@
 const { gameConsts, paths } = require('./constants');
-import type { Base, BaseInfo, CCStage, Definition, Enemy, Event, GridRange, Item, ManufactFormula, Module, Operator, Paradox, ParadoxInfo, RogueRelic, RogueStage, RogueStageInfo, RogueTheme, RogueVariation, Skill, Skin, Stage, StageData, StageInfo, WorkshopFormula } from "./types";
+import type { Base, BaseInfo, CCStage, Definition, Enemy, GameEvent, GridRange, Item, ManufactFormula, Module, Operator, Paradox, ParadoxInfo, RogueRelic, RogueStage, RogueStageInfo, RogueTheme, RogueVariation, Skill, Skin, Stage, StageData, StageInfo, WorkshopFormula } from "./types";
 
 export const archetypeDict: { [key: string]: string } = {};         // Archetype id -> archetype name
 export const baseDict: { [key: string]: Base } = {};                // Base skill id -> Base object
 export const ccDict: { [key: string]: CCStage } = {};               // CC stage name -> CCStage object
 export const definitionDict: { [key: string]: Definition } = {};    // Term name -> Definition object
 export const enemyDict: { [key: string]: Enemy } = {};              // Enemy id/name/code -> Enemy object
-export const eventDict: { [key: string]: Event } = {};              // Event id -> Event object
+export const eventDict: { [key: string]: GameEvent } = {};          // Event id -> Event object
 export const itemDict: { [key: string]: Item } = {};                // Item id/name -> Item object
 export const moduleDict: { [key: string]: Module } = {};            // Module id -> Module object
 export const operatorDict: { [key: string]: Operator } = {};        // Operator id/name -> Operator object
@@ -151,7 +151,7 @@ function initEnemies() {
 
 function initEvents() {
     const activityTable: { [key: string]: any } = require(`${paths.data}/excel/activity_table.json`);
-    const basicInfo: { [key: string]: Event } = activityTable.basicInfo;
+    const basicInfo: { [key: string]: GameEvent } = activityTable.basicInfo;
 
     for (const event of Object.values(basicInfo)) {
         eventDict[event.id] = event;

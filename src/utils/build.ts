@@ -1,7 +1,7 @@
 import { ActionRowBuilder, AttachmentBuilder, BaseMessageOptions, ButtonBuilder, ButtonStyle, EmbedAuthorOptions, EmbedBuilder, EmbedField, StringSelectMenuBuilder, StringSelectMenuOptionBuilder } from 'discord.js';
 import { join, resolve } from 'path';
-import { archetypeDict, baseDict, definitionDict, enemyDict, eventDict, itemDict, moduleDict, operatorDict, rangeDict, rogueThemeArr, skillDict, skinDict, stageDict, toughStageDict } from '../data';
-import type { Base, BaseInfo, Blackboard, CCStage, Definition, Enemy, Event, Item, LevelUpCost, Operator, Paradox, RogueRelic, RogueStage, RogueTheme, RogueVariation, Stage, StageData } from "../types";
+import { getAllDefinitions, getAllEvents, getArchetype, getBase, getEnemy, getItem, getModule, getOperator, getRange, getRogueTheme, getSkill, getSkinArr, getStageArr, getToughStageArr } from '../api';
+import type { Base, BaseInfo, Blackboard, CCStage, Definition, Enemy, GameEvent, Item, LevelUpCost, Operator, Paradox, RogueRelic, RogueStage, RogueTheme, RogueVariation, Stage, StageData } from "../types";
 // const fs = require('fs');
 const nodefetch = require('node-fetch');
 const puppeteer = require('puppeteer');
@@ -56,8 +56,8 @@ function formatText(text: string, blackboard: Blackboard[]) { // Dumbass string 
     return text;
 }
 
-export function buildArtMessage(op: Operator, page: number): BaseMessageOptions {
-    const skins = skinDict[op.id];
+export async function buildArtMessage(op: Operator, page: number): Promise<BaseMessageOptions> {
+    const skins = await getSkinArr(op.id);
     const skin = skins[page];
 
     const avatarPath = paths.aceshipImageUrl + `/avatars/${op.id}.png`;
@@ -65,7 +65,7 @@ export function buildArtMessage(op: Operator, page: number): BaseMessageOptions 
     const imagePath = paths.aceshipImageUrl + `/characters/${encodeURIComponent(skin.portraitId)}.png`;
     const image = new AttachmentBuilder(imagePath);
 
-    const { embed, thumbnail } = buildArtEmbed(op, page);
+    const { embed, thumbnail } = await buildArtEmbed(op, page);
 
     const defaultSkinArr = new ActionRowBuilder();
     const skinArr = new ActionRowBuilder();
@@ -95,7 +95,7 @@ export function buildArtMessage(op: Operator, page: number): BaseMessageOptions 
 
     return { embeds: [embed], files: [avatar, thumbnail, image], components: components };
 }
-export function buildBaseMessage(base: Base, baseInfo: BaseInfo, op: Operator): BaseMessageOptions {
+export async function buildBaseMessage(base: Base, baseInfo: BaseInfo, op: Operator): Promise<BaseMessageOptions> {
     const avatarPath = paths.aceshipImageUrl + `/avatars/${op.id}.png`;
     const avatar = new AttachmentBuilder(avatarPath);
     const thumbnailPath = paths.aceshipImageUrl + `/ui/infrastructure/skill/${base.skillIcon}.png`;
@@ -126,7 +126,7 @@ export async function buildCcMessage(stage: CCStage, page: number): Promise<Base
         .setTitle(title)
         .setDescription(description);
 
-    const enemyFields = buildStageEnemyFields(stageData);
+    const enemyFields = await buildStageEnemyFields(stageData);
     embed.addFields(enemyFields);
 
     const imageButton = new ButtonBuilder()
@@ -170,7 +170,7 @@ export async function buildCcMessage(stage: CCStage, page: number): Promise<Base
         return { content: '', embeds: [embed], files: [], components: [buttonRow] };
     }
 }
-export function buildCcSelectMessage(season: string): BaseMessageOptions {
+export async function buildCcSelectMessage(season: string): Promise<BaseMessageOptions> {
     const ccSelector = new StringSelectMenuBuilder()
         .setCustomId(`ccඞselect`)
         .setPlaceholder('Select a stage!');
@@ -186,11 +186,11 @@ export function buildCcSelectMessage(season: string): BaseMessageOptions {
 
     return { content: `Please select a stage from CC#${season} below:`, components: [componentRow] };
 }
-export function buildCostMessage(op: Operator, page: number): BaseMessageOptions {
+export async function buildCostMessage(op: Operator, page: number): Promise<BaseMessageOptions> {
     const avatarPath = paths.aceshipImageUrl + `/avatars/${op.id}.png`;
     const avatar = new AttachmentBuilder(avatarPath);
 
-    const { embed, thumbnail } = buildCostEmbed(op, page);
+    const { embed, thumbnail } = await buildCostEmbed(op, page);
 
     const eliteButton = new ButtonBuilder()
         .setCustomId(`costඞ${op.id}ඞ0`)
@@ -245,7 +245,7 @@ export function buildCostMessage(op: Operator, page: number): BaseMessageOptions
 
     return { embeds: [embed], files: [avatar, thumbnail], components: [buttonRow] };
 }
-export function buildDefineMessage(definition: Definition): BaseMessageOptions {
+export async function buildDefineMessage(definition: Definition): Promise<BaseMessageOptions> {
     const embed = new EmbedBuilder()
         .setColor(embedColour)
         .setTitle(definition.termName)
@@ -253,9 +253,9 @@ export function buildDefineMessage(definition: Definition): BaseMessageOptions {
 
     return { embeds: [embed] };
 }
-export function buildDefineListMessage(): BaseMessageOptions {
+export async function buildDefineListMessage(): Promise<BaseMessageOptions> {
     let statusDescription = '', effectDescription = '', groupDescription = '';
-    for (const term of Object.values(definitionDict)) {
+    for (const term of await getAllDefinitions()) {
         const termName = term.termName;
         const termArr = term.termId.split('.');
 
@@ -289,7 +289,7 @@ export function buildDefineListMessage(): BaseMessageOptions {
 
     return { embeds: [embed] };
 }
-export function buildEnemyMessage(enemy: Enemy, level: number): BaseMessageOptions {
+export async function buildEnemyMessage(enemy: Enemy, level: number): Promise<BaseMessageOptions> {
     const enemyInfo = enemy.excel;
     const enemyData = enemy.levels.Value[level].enemyData;
     const baseData = enemy.levels.Value[0].enemyData;
@@ -360,16 +360,16 @@ export function buildEnemyMessage(enemy: Enemy, level: number): BaseMessageOptio
 
     return { embeds: [embed], files: [thumbnail], components: [buttonRow] };
 }
-export function buildEventListMessage(index: number): BaseMessageOptions {
+export async function buildEventListMessage(index: number): Promise<BaseMessageOptions> {
     const eventCount = 6;
 
     let eventArr = [];
-    for (const event of Object.values(eventDict)) {
-        const loginArr = ['LOGIN_ONLY', 'CHECKIN_ONLY', 'FLOAT_PARADE', 'PRAY_ONLY', 'GRID_GACHA_V2', 'GRID_GACHA']; // SKip login events
+    for (const event of await getAllEvents()) {
+        const loginArr = ['LOGIN_ONLY', 'CHECKIN_ONLY', 'FLOAT_PARADE', 'PRAY_ONLY', 'GRID_GACHA_V2', 'GRID_GACHA']; // Skip login events
         if (loginArr.includes(event.type)) continue;
         eventArr.push(event);
     }
-    eventArr.sort((first: Event, second: Event) => second.startTime - first.startTime); // Sort by descending start time
+    eventArr.sort((first: GameEvent, second: GameEvent) => second.startTime - first.startTime); // Sort by descending start time
 
     const embed = new EmbedBuilder()
         .setColor(embedColour)
@@ -418,14 +418,14 @@ export async function buildItemMessage(item: Item): Promise<BaseMessageOptions> 
         const stageId = stageDrop.stageId;
         if (!stageId.includes('main') && !stageId.includes('sub')) continue;
 
-        const stage = stageDict[stageId][0];
+        const stage = await getStageArr(stageId)[0];
         stageString += `${stage.excel.code} - ${gameConsts.itemDropRarities[stageDrop.occPer]}\n`;
     }
     if (stageString !== '') {
         embed.addFields({ name: 'Drop Stages', value: stageString, inline: true });
     }
     if (item.formula !== null && item.formula.costs.length > 0) {
-        const formulaString = buildCostString(item.formula.costs);
+        const formulaString = await buildCostString(item.formula.costs);
         embed.addFields({ name: 'Crafting Formula', value: formulaString, inline: true });
     }
 
@@ -440,11 +440,11 @@ export async function buildItemMessage(item: Item): Promise<BaseMessageOptions> 
         return { embeds: [embed] };
     }
 }
-export function buildModuleMessage(op: Operator, page: number, level: number): BaseMessageOptions {
+export async function buildModuleMessage(op: Operator, page: number, level: number): Promise<BaseMessageOptions> {
     const avatarPath = paths.aceshipImageUrl + `/avatars/${op.id}.png`;
     const avatar = new AttachmentBuilder(avatarPath);
 
-    const { embed, thumbnail } = buildModuleEmbed(op, page, level);
+    const { embed, thumbnail } = await buildModuleEmbed(op, page, level);
 
     const lOne = new ButtonBuilder()
         .setCustomId(`moduleඞ${op.id}ඞ${page}ඞ0`)
@@ -474,7 +474,7 @@ export function buildModuleMessage(op: Operator, page: number, level: number): B
 
     return { embeds: [embed], files: [thumbnail, avatar], components: [rowOne] };
 }
-export function buildOperatorMessage(op: Operator): BaseMessageOptions {
+export async function buildOperatorMessage(op: Operator): Promise<BaseMessageOptions> {
     const opMax = op.data.phases[op.data.phases.length - 1];
 
     const thumbnailPath = paths.aceshipImageUrl + `/avatars/${op.id}.png`;
@@ -493,8 +493,8 @@ export function buildOperatorMessage(op: Operator): BaseMessageOptions {
             description = formatText(candidate.overrideDescripton, candidate.blackboard);
         }
     }
-    const descriptionField = { name: `${gameConsts.professions[op.data.profession]} - ${archetypeDict[op.data.subProfessionId]}`, value: description };
-    const rangeField = buildRangeField(opMax.rangeId);
+    const descriptionField = { name: `${gameConsts.professions[op.data.profession]} - ${await getArchetype(op.data.subProfessionId)}`, value: description };
+    const rangeField = await buildRangeField(opMax.rangeId);
 
     const embed = new EmbedBuilder()
         .setColor(embedColour)
@@ -557,7 +557,7 @@ export function buildOperatorMessage(op: Operator): BaseMessageOptions {
 export async function buildParadoxMessage(paradox: Paradox, page: number): Promise<BaseMessageOptions> {
     const stageInfo = paradox.excel;
     const stageData = paradox.levels;
-    const op = operatorDict[stageInfo.charId];
+    const op = await getOperator(stageInfo.charId);
 
     const avatarPath = paths.aceshipImageUrl + `/avatars/${op.id}.png`;
     const avatar = new AttachmentBuilder(avatarPath);
@@ -572,7 +572,7 @@ export async function buildParadoxMessage(paradox: Paradox, page: number): Promi
         .setTitle(title)
         .setDescription(description);
 
-    const enemyFields = buildStageEnemyFields(stageData);
+    const enemyFields = await buildStageEnemyFields(stageData);
     embed.addFields(enemyFields);
 
     const imageButton = new ButtonBuilder()
@@ -616,7 +616,7 @@ export async function buildParadoxMessage(paradox: Paradox, page: number): Promi
         return { embeds: [embed], files: [avatar], components: [buttonRow] };
     }
 }
-export function buildRecruitMessage(qual: string, value: number, tag: string, select: boolean): BaseMessageOptions {
+export async function buildRecruitMessage(qual: string, value: number, tag: string, select: boolean): Promise<BaseMessageOptions> {
     if (tag !== '') {
         if (select) {
             value *= gameConsts.tagValues[tag];
@@ -772,7 +772,7 @@ export function buildRecruitMessage(qual: string, value: number, tag: string, se
 
     if (selectedButtons.length >= 1) {
         for (const opId of Object.values(gameConsts.recruitPool)) {
-            const op = operatorDict[String(opId)];
+            const op = await getOperator(String(opId));
             if (op.recruitId % value !== 0) continue;
             if (qual !== null && qual !== 'null' && op.data.rarity !== gameConsts.qualifications[qual]) continue;
 
@@ -820,8 +820,8 @@ export async function buildRogueRelicMessage(relic: RogueRelic): Promise<BaseMes
         return { embeds: [embed] };
     }
 }
-export function buildRogueRelicListMessage(theme: number, index: number): BaseMessageOptions {
-    const rogueTheme = rogueThemeArr[theme];
+export async function buildRogueRelicListMessage(theme: number, index: number): Promise<BaseMessageOptions> {
+    const rogueTheme = await getRogueTheme(theme);
     const descriptionLengthLimit = 24;
     const columnCount = 2;
 
@@ -882,7 +882,7 @@ export async function buildRogueStageMessage(theme: number, stage: RogueStage, p
         .setTitle(title)
         .setDescription(description);
 
-    const enemyFields = buildStageEnemyFields(stageData);
+    const enemyFields = await buildStageEnemyFields(stageData);
     embed.addFields(enemyFields);
 
     const imageButton = new ButtonBuilder()
@@ -926,7 +926,7 @@ export async function buildRogueStageMessage(theme: number, stage: RogueStage, p
         return { embeds: [embed], files: [], components: [buttonRow] };
     }
 }
-export function buildRogueVariationMessage(variation: RogueVariation): BaseMessageOptions {
+export async function buildRogueVariationMessage(variation: RogueVariation): Promise<BaseMessageOptions> {
     const description = `${variation.desc}\n\n${variation.functionDesc}`;
 
     const embed = new EmbedBuilder()
@@ -936,7 +936,7 @@ export function buildRogueVariationMessage(variation: RogueVariation): BaseMessa
 
     return { embeds: [embed] };
 }
-export function buildRogueVariationListMessage(theme: RogueTheme): BaseMessageOptions {
+export async function buildRogueVariationListMessage(theme: RogueTheme): Promise<BaseMessageOptions> {
     let description = '';
     for (const variation of Object.values(theme.variationDict)) {
         description += `${variation.innerName}\n`;
@@ -949,11 +949,11 @@ export function buildRogueVariationListMessage(theme: RogueTheme): BaseMessageOp
 
     return { embeds: [embed] };
 }
-export function buildSkillMessage(op: Operator, page: number, level: number): BaseMessageOptions {
+export async function buildSkillMessage(op: Operator, page: number, level: number): Promise<BaseMessageOptions> {
     const avatarPath = paths.aceshipImageUrl + `/avatars/${op.id}.png`;
     const avatar = new AttachmentBuilder(avatarPath);
 
-    const { embed, thumbnail } = buildSkillEmbed(op, page, level);
+    const { embed, thumbnail } = await buildSkillEmbed(op, page, level);
 
     const lOne = new ButtonBuilder()
         .setCustomId(`skillඞ${op.id}ඞ${page}ඞ0`)
@@ -998,7 +998,7 @@ export function buildSkillMessage(op: Operator, page: number, level: number): Ba
     const rowOne = new ActionRowBuilder<ButtonBuilder>().addComponents(lOne, lTwo, lThree, lFour, lFive);
     const rowTwo = new ActionRowBuilder<ButtonBuilder>().addComponents(lSix, lSeven, mOne, mTwo, mThree);
 
-    const skill = skillDict[op.data.skills[page].skillId];
+    const skill = await getSkill(op.data.skills[page].skillId);
     if (skill.levels.length === 7) {
         mOne.setDisabled(true);
         mTwo.setDisabled(true);
@@ -1097,10 +1097,10 @@ export async function buildStageMessage(stage: Stage, page: number): Promise<Bas
         // 8: yellow rock
         switch (item.dropType) {
             case 2:
-                regularString += `${itemDict[item.id].data.name}\n`;
+                regularString += `${(await getItem(item.id)).data.name}\n`;
                 break;
             case 3:
-                specialString += `${itemDict[item.id].data.name}\n`;
+                specialString += `${(await getItem(item.id)).data.name}\n`;
                 break;
         }
     }
@@ -1112,10 +1112,13 @@ export async function buildStageMessage(stage: Stage, page: number): Promise<Bas
         embed.addFields({ name: 'Special Drops', value: specialString });
     }
 
-    const enemyFields = buildStageEnemyFields(stageData);
+    const enemyFields = await buildStageEnemyFields(stageData);
     embed.addFields(enemyFields);
 
-    const stageIndex = isChallenge ? toughStageDict[stage.excel.code.toLowerCase()].indexOf(stage) : stageDict[stage.excel.code.toLowerCase()].indexOf(stage);
+    let stageIndex = (await getStageArr(stage.excel.code.toLowerCase())).findIndex(x => x.excel.stageId = stage.excel.stageId);
+    if (isChallenge) {
+        stageIndex = (await getToughStageArr(stage.excel.code.toLowerCase())).findIndex(x => x.excel.stageId = stage.excel.stageId);
+    }
 
     const imageButton = new ButtonBuilder()
         .setCustomId(`stageඞ${stage.excel.code.toLowerCase()}ඞ${stageIndex}ඞ${isChallenge}ඞ0`)
@@ -1173,7 +1176,7 @@ export async function buildStageMessage(stage: Stage, page: number): Promise<Bas
         return { content: '', embeds: [embed], files: [], components: [buttonRow] };
     }
 }
-export function buildStageSelectMessage(stageArr: Stage[] | RogueStage[]): BaseMessageOptions {
+export async function buildStageSelectMessage(stageArr: Stage[] | RogueStage[]): Promise<BaseMessageOptions> {
     const stageSelector = new StringSelectMenuBuilder()
         .setCustomId(`stageඞselectඞ${stageArr[0].excel.code.toLowerCase()}`)
         .setPlaceholder('Select a stage!');
@@ -1192,10 +1195,10 @@ export function buildStageSelectMessage(stageArr: Stage[] | RogueStage[]): BaseM
     return { content: 'Multiple stages with that code were found, please select a stage below:', components: [componentRow] };
 }
 
-export function buildInfoMessage(op: Operator, type: number, page: number, level: number): BaseMessageOptions {
+export async function buildInfoMessage(op: Operator, type: number, page: number, level: number): Promise<BaseMessageOptions> {
     const embedArr = [], fileArr = [], rowArr = [];
 
-    const operatorEmbed = buildOperatorMessage(op);
+    const operatorEmbed = await buildOperatorMessage(op);
     for (const embed of operatorEmbed.embeds) {
         embedArr.push(embed);
     }
@@ -1233,7 +1236,7 @@ export function buildInfoMessage(op: Operator, type: number, page: number, level
         moduleButton.setStyle(ButtonStyle.Secondary);
         moduleButton.setDisabled(true);
     }
-    if (!skinDict.hasOwnProperty(op.id)) {
+    if (await getSkinArr(op.id)) {
         artButton.setStyle(ButtonStyle.Secondary);
         artButton.setDisabled(true);
     }
@@ -1252,7 +1255,7 @@ export function buildInfoMessage(op: Operator, type: number, page: number, level
         case 1: {
             skillButton.setDisabled(true);
 
-            const skillEmbed = buildInfoSkillMessage(op, type, page, level);
+            const skillEmbed = await buildInfoSkillMessage(op, type, page, level);
             for (const embed of skillEmbed.embeds) {
                 embedArr.push(embed);
             }
@@ -1297,7 +1300,7 @@ export function buildInfoMessage(op: Operator, type: number, page: number, level
         case 2: {
             moduleButton.setDisabled(true);
 
-            const moduleEmbed = buildInfoModuleMessage(op, type, page, level);
+            const moduleEmbed = await buildInfoModuleMessage(op, type, page, level);
             for (const embed of moduleEmbed.embeds) {
                 embedArr.push(embed);
             }
@@ -1337,7 +1340,7 @@ export function buildInfoMessage(op: Operator, type: number, page: number, level
         case 3: {
             artButton.setDisabled(true);
 
-            const skinEmbed = buildInfoArtMessage(op, type, page, level);
+            const skinEmbed = await buildInfoArtMessage(op, type, page, level);
             for (const embed of skinEmbed.embeds) {
                 embedArr.push(embed);
             }
@@ -1353,8 +1356,8 @@ export function buildInfoMessage(op: Operator, type: number, page: number, level
             baseButton.setDisabled(true);
 
             for (const baseInfo of op.bases) {
-                const base = baseDict[baseInfo.buffId];
-                const baseEmbed = buildBaseMessage(base, baseInfo, op);
+                const base = await getBase(baseInfo.buffId);
+                const baseEmbed = await buildBaseMessage(base, baseInfo, op);
                 for (const embed of baseEmbed.embeds) {
                     embedArr.push(embed);
                 }
@@ -1367,7 +1370,7 @@ export function buildInfoMessage(op: Operator, type: number, page: number, level
         case 5: {
             costButton.setDisabled(true);
 
-            const costEmbed = buildInfoCostMessage(op, type, page, level);
+            const costEmbed = await buildInfoCostMessage(op, type, page, level);
             for (const embed of costEmbed.embeds) {
                 embedArr.push(embed);
             }
@@ -1385,8 +1388,8 @@ export function buildInfoMessage(op: Operator, type: number, page: number, level
 
     return { embeds: embedArr, files: fileArr, components: rowArr };
 }
-export function buildInfoArtMessage(op: Operator, type: number, page: number, level: number): BaseMessageOptions {
-    const skins = skinDict[op.id];
+export async function buildInfoArtMessage(op: Operator, type: number, page: number, level: number): Promise<BaseMessageOptions> {
+    const skins = await getSkinArr(op.id);
     const skin = skins[page];
 
     const avatarPath = paths.aceshipImageUrl + `/avatars/${op.id}.png`;
@@ -1394,7 +1397,7 @@ export function buildInfoArtMessage(op: Operator, type: number, page: number, le
     const imagePath = paths.aceshipImageUrl + `/characters/${encodeURIComponent(skin.portraitId)}.png`;
     const image = new AttachmentBuilder(imagePath);
 
-    const { embed, thumbnail } = buildArtEmbed(op, page);
+    const { embed, thumbnail } = await buildArtEmbed(op, page);
 
     const defaultSkinArr = new ActionRowBuilder();
     const skinArr = new ActionRowBuilder();
@@ -1425,11 +1428,11 @@ export function buildInfoArtMessage(op: Operator, type: number, page: number, le
 
     return { embeds: [embed], files: [image, avatar, thumbnail], components: components };
 }
-export function buildInfoCostMessage(op: Operator, type: number, page: number, level: number): BaseMessageOptions {
+export async function buildInfoCostMessage(op: Operator, type: number, page: number, level: number): Promise<BaseMessageOptions> {
     const avatarPath = paths.aceshipImageUrl + `/avatars/${op.id}.png`;
     const avatar = new AttachmentBuilder(avatarPath);
 
-    const { embed, thumbnail } = buildCostEmbed(op, page);
+    const { embed, thumbnail } = await buildCostEmbed(op, page);
 
     const eliteButton = new ButtonBuilder()
         .setCustomId(`infoඞ${op.id}ඞ${type}ඞ0ඞ${level}ඞcost`)
@@ -1484,11 +1487,11 @@ export function buildInfoCostMessage(op: Operator, type: number, page: number, l
 
     return { embeds: [embed], files: [avatar, thumbnail], components: [buttonRow] };
 }
-export function buildInfoModuleMessage(op: Operator, type: number, page: number, level: number): BaseMessageOptions {
+export async function buildInfoModuleMessage(op: Operator, type: number, page: number, level: number): Promise<BaseMessageOptions> {
     const avatarPath = paths.aceshipImageUrl + `/avatars/${op.id}.png`;
     const avatar = new AttachmentBuilder(avatarPath);
 
-    const { embed, thumbnail } = buildModuleEmbed(op, page + 1, level); // +1 since info command excludes default but modules command doesnt
+    const { embed, thumbnail } = await buildModuleEmbed(op, page + 1, level); // +1 since info command excludes default but modules command doesnt
 
     const lOne = new ButtonBuilder()
         .setCustomId(`infoඞ${op.id}ඞ${type}ඞ${page}ඞ0ඞmodule`)
@@ -1521,11 +1524,11 @@ export function buildInfoModuleMessage(op: Operator, type: number, page: number,
 
     return { embeds: [embed], files: [avatar, thumbnail], components: [rowOne] };
 }
-export function buildInfoSkillMessage(op: Operator, type: number, page: number, level: number): BaseMessageOptions {
+export async function buildInfoSkillMessage(op: Operator, type: number, page: number, level: number): Promise<BaseMessageOptions> {
     const avatarPath = paths.aceshipImageUrl + `/avatars/${op.id}.png`;
     const avatar = new AttachmentBuilder(avatarPath);
 
-    const { embed, thumbnail } = buildSkillEmbed(op, page, level);
+    const { embed, thumbnail } = await buildSkillEmbed(op, page, level);
 
     const lOne = new ButtonBuilder()
         .setCustomId(`infoඞ${op.id}ඞ${type}ඞ${page}ඞ0ඞskill`)
@@ -1570,7 +1573,7 @@ export function buildInfoSkillMessage(op: Operator, type: number, page: number, 
     const rowOne = new ActionRowBuilder<ButtonBuilder>().addComponents(lOne, lTwo, lThree, lFour, lFive);
     const rowTwo = new ActionRowBuilder<ButtonBuilder>().addComponents(lSix, lSeven, mOne, mTwo, mThree);
 
-    const skill = skillDict[op.data.skills[page].skillId];
+    const skill = await getSkill(op.data.skills[page].skillId);
     if (skill.levels.length === 7) {
         mOne.setDisabled(true);
         mTwo.setDisabled(true);
@@ -1629,16 +1632,16 @@ function buildAuthorField(op: Operator): EmbedAuthorOptions {
     const authorField = { name: op.data.name, iconURL: `attachment://${op.id}.png`, url: `https://gamepress.gg/arknights/operator/${urlName}` };
     return authorField;
 }
-function buildCostString(costs: LevelUpCost[]): string {
+async function buildCostString(costs: LevelUpCost[]): Promise<string> {
     let description = '';
     for (const cost of costs) {
-        const item = itemDict[cost.id];
+        const item = await getItem(cost.id);
         description += `${item.data.name} **x${cost.count}**\n`;
     }
     return description;
 }
-function buildRangeField(rangeId: string): EmbedField {
-    const range = rangeDict[rangeId];
+async function buildRangeField(rangeId: string): Promise<EmbedField> {
+    const range = await getRange(rangeId);
 
     let left = 0, right = 0, top = 0, bottom = 0;
     for (const square of range.grids) {
@@ -1717,7 +1720,7 @@ function buildStageDiagramFields(stageData: StageData): EmbedField[] {
 
     return [{ name: 'Map', value: mapString, inline: false }, { name: 'Legend', value: legendString, inline: false }];
 }
-function buildStageEnemyFields(stageData: StageData): EmbedField[] {
+async function buildStageEnemyFields(stageData: StageData): Promise<EmbedField[]> {
     const waveDict: { [key: string]: number } = {}; // enemyId => enemy quantity
     for (const wave of stageData.waves) { // Count number of enemies in stage, store results in waveDict
         for (const fragment of wave.fragments) {
@@ -1740,29 +1743,29 @@ function buildStageEnemyFields(stageData: StageData): EmbedField[] {
 
     let enemyString = '', eliteString = '', bossString = '';
     for (const enemyRef of stageData.enemyDbRefs) {
-        if (enemyDict.hasOwnProperty(enemyRef.id)) {
-            const enemy = enemyDict[enemyRef.id];
+        const enemy = await getEnemy(enemyRef.id);
 
-            let enemyLine = `${enemy.excel.enemyIndex} - ${enemy.excel.name}`;
-            if (enemy.levels.Value.length !== 1) {
-                enemyLine += ` (Lv${enemyRef.level + 1})`; // Add predefine level if enemy has more than one
-            }
-            if (waveDict.hasOwnProperty(enemy.excel.enemyId)) {
-                enemyLine += ` **x${waveDict[enemy.excel.enemyId]}**`; // Enemies like IS3 chests and OD rock slugs don't have predefined quantities, exclude these
-            }
-            enemyLine += '\n';
+        if (!enemy) continue;
 
-            switch (enemy.excel.enemyLevel) {
-                case ('NORMAL'):
-                    enemyString += enemyLine;
-                    break;
-                case ('ELITE'):
-                    eliteString += enemyLine;
-                    break;
-                case ('BOSS'):
-                    bossString += enemyLine;
-                    break;
-            }
+        let enemyLine = `${enemy.excel.enemyIndex} - ${enemy.excel.name}`;
+        if (enemy.levels.Value.length !== 1) {
+            enemyLine += ` (Lv${enemyRef.level + 1})`; // Add predefine level if enemy has more than one
+        }
+        if (waveDict.hasOwnProperty(enemy.excel.enemyId)) {
+            enemyLine += ` **x${waveDict[enemy.excel.enemyId]}**`; // Enemies like IS3 chests and OD rock slugs don't have predefined quantities, exclude these
+        }
+        enemyLine += '\n';
+
+        switch (enemy.excel.enemyLevel) {
+            case ('NORMAL'):
+                enemyString += enemyLine;
+                break;
+            case ('ELITE'):
+                eliteString += enemyLine;
+                break;
+            case ('BOSS'):
+                bossString += enemyLine;
+                break;
         }
     }
 
@@ -1779,8 +1782,8 @@ function buildStageEnemyFields(stageData: StageData): EmbedField[] {
 
     return fieldArr;
 }
-function buildArtEmbed(op: Operator, page: number): { embed: EmbedBuilder, thumbnail: AttachmentBuilder } {
-    const skins = skinDict[op.id];
+async function buildArtEmbed(op: Operator, page: number): Promise<{ embed: EmbedBuilder, thumbnail: AttachmentBuilder }> {
+    const skins = await getSkinArr(op.id);
     const skin = skins[page];
     const displaySkin = skin.displaySkin;
 
@@ -1840,8 +1843,8 @@ function buildArtEmbed(op: Operator, page: number): { embed: EmbedBuilder, thumb
 
     return { embed, thumbnail };
 }
-function buildSkillEmbed(op: Operator, page: number, level: number): { embed: EmbedBuilder, thumbnail: AttachmentBuilder } {
-    const skill = skillDict[op.data.skills[page].skillId];
+async function buildSkillEmbed(op: Operator, page: number, level: number): Promise<{ embed: EmbedBuilder, thumbnail: AttachmentBuilder }> {
+    const skill = await getSkill(op.data.skills[page].skillId);
     const skillLevel = skill.levels[level];
 
     const thumbnailFilename = skill.iconId === null ? skill.skillId : skill.iconId;
@@ -1866,13 +1869,13 @@ function buildSkillEmbed(op: Operator, page: number, level: number): { embed: Em
         .setDescription(description);
 
     if (skillLevel.rangeId !== null) {
-        const rangeField = buildRangeField(skillLevel.rangeId);
+        const rangeField = await buildRangeField(skillLevel.rangeId);
         embed.addFields(rangeField);
     }
 
     return { embed, thumbnail };
 }
-function buildCostEmbed(op: Operator, page: number): { embed: EmbedBuilder, thumbnail: AttachmentBuilder } {
+async function buildCostEmbed(op: Operator, page: number): Promise<{ embed: EmbedBuilder, thumbnail: AttachmentBuilder }> {
     const authorField = buildAuthorField(op);
 
     const embed = new EmbedBuilder()
@@ -1893,7 +1896,7 @@ function buildCostEmbed(op: Operator, page: number): { embed: EmbedBuilder, thum
                 const phase = op.data.phases[i];
                 if (phase.evolveCost === null) continue;
 
-                let phaseDescription = buildCostString(phase.evolveCost);
+                let phaseDescription = await buildCostString(phase.evolveCost);
                 phaseDescription += `LMD **x${gameConsts.eliteLmdCost[op.data.rarity][i - 1]}**\n`;
                 embed.addFields({ name: `Elite ${i}`, value: phaseDescription, inline: true });
             }
@@ -1907,7 +1910,7 @@ function buildCostEmbed(op: Operator, page: number): { embed: EmbedBuilder, thum
                 .setTitle('Skill Upgrade Costs');
 
             for (let i = 0; i < op.data.allSkillLvlup.length; i++) {
-                const skillDescription = buildCostString(op.data.allSkillLvlup[i].lvlUpCost);
+                const skillDescription = await buildCostString(op.data.allSkillLvlup[i].lvlUpCost);
                 if (skillDescription === '') continue;
 
                 embed.addFields({ name: `Level ${i + 2}`, value: skillDescription, inline: true });
@@ -1923,12 +1926,12 @@ function buildCostEmbed(op: Operator, page: number): { embed: EmbedBuilder, thum
 
             for (let i = 0; i < op.data.skills.length; i++) {
                 const opSkill = op.data.skills[i];
-                const skill = skillDict[opSkill.skillId];
+                const skill = await getSkill(opSkill.skillId);
 
                 embed.addFields({ name: '\u200B', value: `**Skill ${i + 1} - ${skill.levels[0].name}**` });
 
                 for (let i = 0; i < opSkill.levelUpCostCond.length; i++) {
-                    const masteryDescription = buildCostString(opSkill.levelUpCostCond[i].levelUpCost);
+                    const masteryDescription = await buildCostString(opSkill.levelUpCostCond[i].levelUpCost);
                     embed.addFields({ name: `Mastery ${i + 1}`, value: masteryDescription, inline: true });
                 }
             }
@@ -1943,12 +1946,12 @@ function buildCostEmbed(op: Operator, page: number): { embed: EmbedBuilder, thum
 
             for (const moduleId of op.modules) {
                 if (moduleId.includes('uniequip_001')) continue;
-                const module = moduleDict[moduleId];
+                const module = await getModule(moduleId);
 
                 embed.addFields({ name: '\u200B', value: `**${module.info.typeIcon.toUpperCase()} - ${module.info.uniEquipName}**` });
 
                 for (const key of Object.keys(module.info.itemCost)) {
-                    const moduleDescription = buildCostString(module.info.itemCost[key]);
+                    const moduleDescription = await buildCostString(module.info.itemCost[key]);
                     embed.addFields({ name: `Level ${key}`, value: moduleDescription, inline: true });
                 }
             }
@@ -1958,8 +1961,8 @@ function buildCostEmbed(op: Operator, page: number): { embed: EmbedBuilder, thum
 
     return { embed, thumbnail };
 }
-function buildModuleEmbed(op: Operator, page: number, level: number): { embed: EmbedBuilder, thumbnail: AttachmentBuilder } {
-    const module = moduleDict[op.modules[page]];
+async function buildModuleEmbed(op: Operator, page: number, level: number): Promise<{ embed: EmbedBuilder, thumbnail: AttachmentBuilder }> {
+    const module = await getModule(op.modules[page]);
     const moduleLevel = module.data.phases[level];
 
     const thumbnailPath = paths.aceshipImageUrl + `/equip/icon/${module.info.uniEquipId}.png`;

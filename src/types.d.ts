@@ -231,7 +231,7 @@ type EnemySpData = {
     increment: number;
 };
 
-type Event = {
+type GameEvent = {
     id: string;
     type: string;
     displayType: string;

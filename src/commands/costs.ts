@@ -38,13 +38,12 @@ export default class CostCommand implements Command {
         if (!operatorDict.hasOwnProperty(name))
             return await interaction.reply({ content: 'That operator doesn\'t exist!', ephemeral: true });
 
-        // const op = operatorDict[name];
         const op = await getOperator(name);
 
         if (op.data.rarity <= 1)
             return await interaction.reply({ content: 'That operator has no upgrades!', ephemeral: true });
 
-        const costEmbed = buildCostMessage(op, page);
+        const costEmbed = await buildCostMessage(op, page);
         return await interaction.reply(costEmbed);
     }
 }

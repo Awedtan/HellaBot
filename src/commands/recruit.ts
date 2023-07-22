@@ -17,7 +17,7 @@ export default class RecruitCommand implements Command {
         );
     async execute(interaction: ChatInputCommandInteraction) {
         const qual = interaction.options.getString('qualification');
-        const recruitEmbed = buildRecruitMessage(qual, 1, '', true);
+        const recruitEmbed = await buildRecruitMessage(qual, 1, '', true);
 
         return await interaction.reply(recruitEmbed);
     }

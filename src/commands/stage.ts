@@ -46,7 +46,7 @@ export default class StageCommand implements Command {
             return await interaction.reply(stageEmbed);
         }
         else {
-            const stageSelectEmbed = buildStageSelectMessage(stageArr);
+            const stageSelectEmbed = await buildStageSelectMessage(stageArr);
             return await interaction.reply(stageSelectEmbed);
         }
     }
