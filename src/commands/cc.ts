@@ -1,8 +1,7 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
-import { ccDict } from '../data';
+import { getCcStage } from '../api';
 import { Command } from '../structures/Command';
 import { buildCcMessage, buildCcSelectMessage } from '../utils/build';
-import { getCcStage } from '../api';
 
 export default class CcCommand implements Command {
     data = new SlashCommandBuilder()
@@ -15,8 +14,9 @@ export default class CcCommand implements Command {
         );
     async execute(interaction: ChatInputCommandInteraction) {
         const name = interaction.options.getString('name').toLowerCase();
+        const stage = await getCcStage(name);
 
-        if (!ccDict.hasOwnProperty(name)) {
+        if (!stage) {
             const { gameConsts } = require('../constants');
             const ccSeasons: { [key: string]: string[] } = gameConsts.ccSeasons;
             if (!ccSeasons.hasOwnProperty(name))
@@ -28,8 +28,6 @@ export default class CcCommand implements Command {
                 return await interaction.editReply(ccSelectEmbed);
             }
         }
-
-        const stage = await getCcStage(name);
 
         if (stage.const === undefined || stage.levels === undefined)
             return await interaction.reply({ content: 'That stage data doesn\'t exist!', ephemeral: true });

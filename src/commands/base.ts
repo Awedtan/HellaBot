@@ -1,9 +1,8 @@
 import { AutocompleteInteraction, ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
-import { baseDict, operatorDict } from '../data';
+import { getBase, getOperator } from '../api';
 import { Command } from '../structures/Command';
 import { operatorAutocomplete } from '../utils/autocomplete';
 import { buildBaseMessage } from '../utils/build';
-import { getBase } from '../api';
 
 export default class BaseCommand implements Command {
     data = new SlashCommandBuilder()
@@ -23,12 +22,10 @@ export default class BaseCommand implements Command {
     }
     async execute(interaction: ChatInputCommandInteraction) {
         const name = interaction.options.getString('name').toLowerCase();
+        const op = await getOperator(name);
 
-        if (!operatorDict.hasOwnProperty(name))
+        if (!op)
             return await interaction.reply({ content: 'That operator doesn\'t exist!', ephemeral: true });
-
-        const op = operatorDict[name];
-
         if (op.bases.length === 0)
             return await interaction.reply({ content: 'That operator doesn\'t have any base skills!', ephemeral: true });
 

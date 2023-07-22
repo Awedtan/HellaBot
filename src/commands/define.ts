@@ -1,9 +1,8 @@
 import { AutocompleteInteraction, ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
-import { definitionDict } from '../data';
+import { getDefinition } from '../api';
 import { Command } from '../structures/Command';
 import { defineAutocomplete } from '../utils/autocomplete';
 import { buildDefineListMessage, buildDefineMessage } from '../utils/build';
-import { getDefinition } from '../api';
 
 export default class DefineCommand implements Command {
     data = new SlashCommandBuilder()
@@ -30,12 +29,12 @@ export default class DefineCommand implements Command {
             return await interaction.editReply(defineListEmbed);
         }
         else {
-            if (!definitionDict.hasOwnProperty(term))
+            const definition = await getDefinition(term);
+
+            if (!definition)
                 return await interaction.reply({ content: 'That term doesn\'t exist!', ephemeral: true });
 
             await interaction.deferReply();
-
-            const definition = await getDefinition(term);
 
             const defineEmbed = await buildDefineMessage(definition);
             return await interaction.editReply(defineEmbed);

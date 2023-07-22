@@ -1,9 +1,9 @@
 import { AutocompleteInteraction, ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
-import { operatorDict, paradoxDict } from '../data';
+import { getOperator, getParadox } from '../api';
+import { paradoxDict } from '../data';
 import { Command } from '../structures/Command';
 import { operatorAutocomplete } from '../utils/autocomplete';
 import { buildParadoxMessage } from '../utils/build';
-import { getOperator, getParadox } from '../api';
 
 export default class ParadoxCommand implements Command {
     data = new SlashCommandBuilder()
@@ -23,20 +23,19 @@ export default class ParadoxCommand implements Command {
     }
     async execute(interaction: ChatInputCommandInteraction) {
         const name = interaction.options.getString('name').toLowerCase();
-
-        if (!operatorDict.hasOwnProperty(name))
-            return await interaction.reply({ content: 'That operator doesn\'t exist!', ephemeral: true });
-
         const op = await getOperator(name);
 
-        if (!paradoxDict.hasOwnProperty(op.id))
+        if (!op)
+            return await interaction.reply({ content: 'That operator doesn\'t exist!', ephemeral: true });
+
+        const paradox = await getParadox(op.id);
+
+        if (!paradox)
             return await interaction.reply({ content: 'That operator doesn\'t have a paradox simulation!', ephemeral: true });
 
         await interaction.deferReply();
 
-        const paradox = await getParadox(op.id);
         const paradoxEmbed = await buildParadoxMessage(paradox, 0);
-
         return await interaction.editReply(paradoxEmbed);
     }
 }

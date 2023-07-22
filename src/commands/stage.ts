@@ -1,5 +1,5 @@
 import { AutocompleteInteraction, ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
-import { stageDict, toughStageDict } from '../data';
+import { getStageArr, getToughStageArr } from '../api';
 import { Command } from '../structures/Command';
 import { stageAutocomplete } from '../utils/autocomplete';
 import { buildStageMessage, buildStageSelectMessage } from '../utils/build';
@@ -30,11 +30,9 @@ export default class StageCommand implements Command {
     async execute(interaction: ChatInputCommandInteraction) {
         const code = interaction.options.getString('code').toLowerCase();
         const difficulty = interaction.options.getString('difficulty');
+        const stageArr = difficulty === 'challenge' ? await getToughStageArr(code) : await getStageArr(code);
 
-        const currStageDict = difficulty === 'challenge' ? toughStageDict : stageDict;
-        const stageArr = currStageDict[code];
-
-        if (!currStageDict.hasOwnProperty(code) || stageArr.length === 0)
+        if (!stageArr || stageArr.length === 0)
             return await interaction.reply({ content: 'That stage doesn\'t exist!', ephemeral: true });
 
         if (stageArr.length == 1) {

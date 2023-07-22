@@ -1240,7 +1240,7 @@ export async function buildInfoMessage(op: Operator, type: number, page: number,
         moduleButton.setStyle(ButtonStyle.Secondary);
         moduleButton.setDisabled(true);
     }
-    if (await getSkinArr(op.id)) {
+    if (!await getSkinArr(op.id)) {
         artButton.setStyle(ButtonStyle.Secondary);
         artButton.setDisabled(true);
     }
@@ -1748,7 +1748,7 @@ async function buildStageEnemyFields(stageData: StageData): Promise<EmbedField[]
     let enemyString = '', eliteString = '', bossString = '';
     for (const enemyRef of stageData.enemyDbRefs) {
         const enemy = await getEnemy(enemyRef.id);
-        
+
         if (!enemy) continue;
 
         let enemyLine = `${enemy.excel.enemyIndex} - ${enemy.excel.name}`;

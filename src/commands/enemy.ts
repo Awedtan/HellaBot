@@ -1,9 +1,8 @@
 import { AutocompleteInteraction, ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
-import { enemyDict } from '../data';
+import { getEnemy } from '../api';
 import { Command } from '../structures/Command';
 import { enemyAutocomplete } from '../utils/autocomplete';
 import { buildEnemyMessage } from '../utils/build';
-import { getEnemy } from '../api';
 
 export default class EnemyCommand implements Command {
     data = new SlashCommandBuilder()
@@ -22,13 +21,12 @@ export default class EnemyCommand implements Command {
     };
     async execute(interaction: ChatInputCommandInteraction) {
         const name = interaction.options.getString('name').toLowerCase();
+        const enemy = await getEnemy(name);
 
-        if (!enemyDict.hasOwnProperty(name))
+        if (!enemy)
             return await interaction.reply({ content: 'That enemy doesn\'t exist!', ephemeral: true });
 
         await interaction.deferReply();
-
-        const enemy = await getEnemy(name);
 
         const enemyEmbed = await buildEnemyMessage(enemy, 0);
         return await interaction.editReply(enemyEmbed);
