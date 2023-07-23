@@ -21,12 +21,7 @@ cd HellaBot
 ```sh
 npm install
 ```
-5. Clone or download [Kengxxiao/ArknightsGameData](https://github.com/Kengxxiao/ArknightsGameData) into the project folder
-```sh
-git clone https://github.com/Kengxxiao/ArknightsGameData.git
-```
-
-6. Create a `config.json` file in the project folder, and copy your Discord bot token and application ID into it
+5. Create a `config.json` file in the project folder, and copy your Discord bot token and application ID into it
 ```json
 {
     "token": "your_bot_token_here",
@@ -36,16 +31,14 @@ git clone https://github.com/Kengxxiao/ArknightsGameData.git
 The project directory should now look something like this:
 ```sh
 HellaBot/
-├── ArknightsGameData/
 ├── config.json
-├── README.md
 ├── node_modules/
 ├── package-lock.json
 ├── package.json
+├── README.md
 ├── src/
 └── tsconfig.json
 ```
-
 7. Run the bot!
 ```sh
 npm start
@@ -85,6 +78,8 @@ Huge thanks to [Kengxxiao/ArknightsGameData](https://github.com/Kengxxiao/Arknig
 Thanks to [MrJAwesome](https://www.youtube.com/@MrJAwesomeYT) for making extensive videos on Discord.js so I can preview features without going through all the drudgery myself.
 
 ## todo:
+
+optimize database and minimize api calls
 
 separate events from constructor
 
