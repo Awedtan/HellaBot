@@ -83,17 +83,15 @@ optimize database and minimize api calls
 
 separate events from constructor
 
+revamp is and spine commands
+
 add help command and better command descriptions
-
-look into using a database
-
-look into using more updated spine viewer
 
 maintain bot
 
-make a better readme
-
 ### maybe/probably not:
+
+look into using more updated spine viewer
 
 gacha banners
 
