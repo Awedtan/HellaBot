@@ -1,9 +1,8 @@
 import { AutocompleteInteraction, ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
-import { baseDict, operatorDict } from '../data';
+import { getBase, getOperator } from '../api';
 import { Command } from '../structures/Command';
 import { operatorAutocomplete } from '../utils/autocomplete';
 import { buildBaseMessage } from '../utils/build';
-import { getBase } from '../api';
 
 export default class BaseCommand implements Command {
     data = new SlashCommandBuilder()
@@ -17,34 +16,33 @@ export default class BaseCommand implements Command {
         );
     async autocomplete(interaction: AutocompleteInteraction) {
         const value = interaction.options.getFocused().toLowerCase();
-        const callback = op => op.bases.length !== 0;
-        const arr = operatorAutocomplete(value, callback);
+        const callback = async op => op.bases.length !== 0;
+        const arr = await operatorAutocomplete(value, callback);
         return await interaction.respond(arr);
     }
     async execute(interaction: ChatInputCommandInteraction) {
         const name = interaction.options.getString('name').toLowerCase();
+        const op = await getOperator(name);
 
-        if (!operatorDict.hasOwnProperty(name))
+        if (!op)
             return await interaction.reply({ content: 'That operator doesn\'t exist!', ephemeral: true });
-
-        const op = operatorDict[name];
-
         if (op.bases.length === 0)
             return await interaction.reply({ content: 'That operator doesn\'t have any base skills!', ephemeral: true });
+
+        await interaction.deferReply();
 
         let first = true;
 
         for (const baseInfo of op.bases) {
-            // const base = baseDict[baseInfo.buffId];
             const base = await getBase(baseInfo.buffId);
 
             if (first) {
-                const baseEmbed = buildBaseMessage(base, baseInfo, op);
-                await interaction.reply(baseEmbed);
+                const baseEmbed = await buildBaseMessage(base, baseInfo, op);
+                await interaction.editReply(baseEmbed);
                 first = false;
             }
             else {
-                const baseEmbed = buildBaseMessage(base, baseInfo, op);
+                const baseEmbed = await buildBaseMessage(base, baseInfo, op);
                 await interaction.followUp(baseEmbed);
             }
         }

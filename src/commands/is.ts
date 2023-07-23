@@ -1,5 +1,5 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
-import { rogueThemeArr } from '../data';
+import { getRogueTheme } from '../api';
 import { Command } from '../structures/Command';
 import { buildRogueRelicListMessage, buildRogueRelicMessage, buildRogueStageMessage, buildRogueVariationListMessage, buildRogueVariationMessage } from '../utils/build';
 
@@ -39,29 +39,29 @@ export default class IsCommand implements Command {
         );
     async execute(interaction: ChatInputCommandInteraction) {
         const theme = interaction.options.getInteger('theme') - 2;
-        const rogueDict = rogueThemeArr[theme];
+        const rogueDict = await getRogueTheme(theme);
         const type = interaction.options.getString('type').toLowerCase();
         const name = interaction.options.getString('name').toLowerCase();
 
         switch (type) {
             case 'stage': {
                 const stageMode = interaction.options.getString('difficulty');
-
                 const stageDict = stageMode === 'emergency' ? rogueDict.toughStageDict : rogueDict.stageDict;
                 const stage = stageDict[name];
 
                 if (!stageDict.hasOwnProperty(name))
                     return await interaction.reply({ content: 'That stage doesn\'t exist!', ephemeral: true });
-
                 if (stage.excel === undefined || stage.levels === undefined)
                     return await interaction.reply({ content: 'That stage data doesn\'t exist!', ephemeral: true });
 
+                await interaction.deferReply();
+
                 const stageEmbed = await buildRogueStageMessage(theme, stage, 0);
-                return await interaction.reply(stageEmbed);
+                return await interaction.editReply(stageEmbed);
             }
             case 'relic': {
                 if (name === 'list') {
-                    const relicListEmbed = buildRogueRelicListMessage(theme, 0);
+                    const relicListEmbed = await buildRogueRelicListMessage(theme, 0);
                     return await interaction.reply(relicListEmbed);
                 }
                 else {
@@ -70,15 +70,19 @@ export default class IsCommand implements Command {
                     if (!relicDict.hasOwnProperty(name))
                         return await interaction.reply({ content: 'That relic doesn\'t exist!', ephemeral: true });
 
+                    await interaction.deferReply();
+
                     const relic = relicDict[name];
                     const relicEmbed = await buildRogueRelicMessage(relic);
-                    return await interaction.reply(relicEmbed);
+                    return await interaction.editReply(relicEmbed);
                 }
             }
             case 'variation': {
                 if (name === 'list') {
-                    const variationListEmbed = buildRogueVariationListMessage(rogueDict);
-                    return await interaction.reply(variationListEmbed);
+                    await interaction.deferReply();
+
+                    const variationListEmbed = await buildRogueVariationListMessage(rogueDict);
+                    return await interaction.editReply(variationListEmbed);
                 }
                 else {
                     const variationDict = rogueDict.variationDict;
@@ -86,9 +90,11 @@ export default class IsCommand implements Command {
                     if (!variationDict.hasOwnProperty(name))
                         return await interaction.reply({ content: 'That variation doesn\'t exist!', ephemeral: true });
 
+                    await interaction.deferReply();
+
                     const variation = variationDict[name];
-                    const variationEmbed = buildRogueVariationMessage(variation);
-                    return await interaction.reply(variationEmbed);
+                    const variationEmbed = await buildRogueVariationMessage(variation);
+                    return await interaction.editReply(variationEmbed);
                 }
             }
         }

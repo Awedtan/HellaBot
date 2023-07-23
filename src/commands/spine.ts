@@ -1,11 +1,10 @@
 import { AutocompleteInteraction, ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
 import { unlinkSync } from 'fs';
 import { join } from 'path';
-import { operatorDict } from '../data';
+import { getOperator } from '../api';
 import { Command } from '../structures/Command';
 import { operatorAutocomplete } from '../utils/autocomplete';
 import { buildSpineMessage, buildSpinePage, urlExists } from '../utils/build';
-import { getOperator } from '../api';
 const nodefetch = require('node-fetch');
 const { paths } = require('../constants');
 
@@ -21,17 +20,16 @@ export default class SpineCommand implements Command {
         );
     async autocomplete(interaction: AutocompleteInteraction) {
         const value = interaction.options.getFocused().toLowerCase();
-        const arr = operatorAutocomplete(value);
+        const arr = await operatorAutocomplete(value);
         return await interaction.respond(arr);
     }
     async execute(interaction: ChatInputCommandInteraction) {
         const name = interaction.options.getString('name').toLowerCase();
 
-        if (!operatorDict.hasOwnProperty(name))
-            return await interaction.reply({ content: 'That operator doesn\'t exist!', ephemeral: true });
-
-        // const op = operatorDict[name];
         const op = await getOperator(name);
+
+        if (!op)
+            return await interaction.reply({ content: 'That operator doesn\'t exist!', ephemeral: true });
 
         const jsonPath = paths.myAssetUrl + `/spinejson/${op.id}.json`;
 

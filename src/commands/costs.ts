@@ -1,9 +1,8 @@
 import { AutocompleteInteraction, ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
-import { operatorDict, } from '../data';
+import { getOperator } from '../api';
 import { Command } from '../structures/Command';
 import { operatorAutocomplete } from '../utils/autocomplete';
 import { buildCostMessage } from '../utils/build';
-import { getOperator } from '../api';
 
 export default class CostCommand implements Command {
     data = new SlashCommandBuilder()
@@ -27,24 +26,23 @@ export default class CostCommand implements Command {
         );
     async autocomplete(interaction: AutocompleteInteraction) {
         const value = interaction.options.getFocused().toLowerCase();
-        const callback = op => op.data.rarity > 1;
-        const arr = operatorAutocomplete(value, callback);
+        const callback = async op => op.data.rarity > 1;
+        const arr = await operatorAutocomplete(value, callback);
         return await interaction.respond(arr);
     }
     async execute(interaction: ChatInputCommandInteraction) {
         const name = interaction.options.getString('name').toLowerCase();
         const page = parseInt(interaction.options.getString('type'));
-
-        if (!operatorDict.hasOwnProperty(name))
-            return await interaction.reply({ content: 'That operator doesn\'t exist!', ephemeral: true });
-
-        // const op = operatorDict[name];
         const op = await getOperator(name);
 
+        if (!op)
+            return await interaction.reply({ content: 'That operator doesn\'t exist!', ephemeral: true });
         if (op.data.rarity <= 1)
             return await interaction.reply({ content: 'That operator has no upgrades!', ephemeral: true });
 
-        const costEmbed = buildCostMessage(op, page);
-        return await interaction.reply(costEmbed);
+        await interaction.deferReply();
+
+        const costEmbed = await buildCostMessage(op, page);
+        return await interaction.editReply(costEmbed);
     }
 }

@@ -231,7 +231,7 @@ type EnemySpData = {
     increment: number;
 };
 
-type Event = {
+type GameEvent = {
     id: string;
     type: string;
     displayType: string;
@@ -244,6 +244,15 @@ type Event = {
     templateShopId: string;
     medalGroupId: string;
     isReplicate: boolean;
+};
+
+type GridRange = {
+    id: string;
+    direction: number;
+    grids: {
+        row: number;
+        col: number;
+    }[];
 };
 
 type ManufactFormula = {
@@ -519,15 +528,6 @@ type ParadoxInfo = {
     zoneNameForShow: string;
     picId: string;
     stageGetTime: number;
-};
-
-type GridRange = {
-    id: string;
-    direction: number;
-    grids: {
-        row: number;
-        col: number;
-    }[];
 };
 
 type RogueTheme = {

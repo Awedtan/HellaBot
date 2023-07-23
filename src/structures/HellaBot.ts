@@ -1,8 +1,8 @@
 import { ActivityType, Client, Collection, Events, GatewayIntentBits, REST, Routes } from 'discord.js';
 import { readdirSync, unlinkSync } from 'fs';
 import { join } from 'path';
-import { ccDict, enemyDict, operatorDict, paradoxDict, rogueThemeArr, stageDict, toughStageDict } from '../data';
-import * as utils from '../utils/build';
+import { getCcStage, getEnemy, getOperator, getParadox, getRogueTheme, getStageArr, getToughStageArr } from '../api';
+import * as build from '../utils/build';
 import { Command } from './Command';
 const { clientId, token } = require('../../config.json');
 
@@ -67,88 +67,79 @@ export default class HellaBot {
             }
         });
 
-        // Button and select menu interaction handling
+        // Button interaction handling
         this.client.on(Events.InteractionCreate, async interaction => {
-            if (!interaction.isButton() && !interaction.isStringSelectMenu()) return;
+            if (!interaction.isButton()) return;
 
             try {
                 const idArr: string[] = interaction.customId.split('ඞ');
 
+                await interaction.deferUpdate();
+
                 switch (idArr[0]) {
                     case 'cc': {
-                        if (interaction.isStringSelectMenu()) {
-                            const stage = ccDict[interaction.values[0]];
-
-                            const ccEmbed = await utils.buildCcMessage(stage, 0);
-                            await interaction.update(ccEmbed);
-
-                            break;
-                        }
-                        else {
-                            const stage = ccDict[idArr[1]];
-                            const page = parseInt(idArr[2]);
-
-                            const ccEmbed = await utils.buildCcMessage(stage, page);
-                            await interaction.update(ccEmbed);
-
-                            break;
-                        }
-                    }
-                    case 'cost': {
-                        const op = operatorDict[idArr[1]];
+                        const stage = await getCcStage(idArr[1])
                         const page = parseInt(idArr[2]);
 
-                        const costEmbed = utils.buildCostMessage(op, page);
-                        await interaction.update(costEmbed);
+                        const ccEmbed = await build.buildCcMessage(stage, page);
+                        await interaction.editReply(ccEmbed);
+
+                        break;
+                    }
+                    case 'cost': {
+                        const op = await getOperator(idArr[1]);
+                        const page = parseInt(idArr[2]);
+
+                        const costEmbed = await build.buildCostMessage(op, page);
+                        await interaction.editReply(costEmbed);
 
                         break;
                     }
                     case 'enemy': {
-                        const enemy = enemyDict[idArr[1]];
+                        const enemy = await getEnemy(idArr[1]);
                         const level = parseInt(idArr[2]);
 
-                        const enemyEmbed = utils.buildEnemyMessage(enemy, level);
-                        await interaction.update(enemyEmbed);
+                        const enemyEmbed = await build.buildEnemyMessage(enemy, level);
+                        await interaction.editReply(enemyEmbed);
 
                         break;
                     }
                     case 'events': {
                         const index = parseInt(idArr[1]);
 
-                        const eventListEmbed = utils.buildEventListMessage(index);
-                        await interaction.update(eventListEmbed);
+                        const eventListEmbed = await build.buildEventListMessage(index);
+                        await interaction.editReply(eventListEmbed);
 
                         break;
                     }
                     case 'info': {
-                        await interaction.deferUpdate();
-
-                        const op = operatorDict[idArr[1]];
+                        const op = await getOperator(idArr[1]);
                         const type = parseInt(idArr[2]);
                         const page = parseInt(idArr[3]);
                         const level = parseInt(idArr[4]);
 
-                        const infoEmbed = utils.buildInfoMessage(op, type, page, level);
+                        const infoEmbed = await build.buildInfoMessage(op, type, page, level);
                         await interaction.editReply(infoEmbed);
 
                         break;
                     }
                     case 'module': {
-                        const op = operatorDict[idArr[1]];
+                        const op = await getOperator(idArr[1]);
                         const page = parseInt(idArr[2]);
                         const level = parseInt(idArr[3]);
 
-                        const moduleEmbed = utils.buildModuleMessage(op, page, level);
-                        await interaction.update(moduleEmbed);
+                        const moduleEmbed = await build.buildModuleMessage(op, page, level);
+                        await interaction.editReply(moduleEmbed);
 
                         break;
                     }
                     case 'paradox': {
-                        const paradox = paradoxDict[operatorDict[idArr[1]].id];
+                        const op = await getOperator(idArr[1]);
+                        const paradox = await getParadox(op.id);
                         const page = parseInt(idArr[2]);
 
-                        const paradoxEmbed = await utils.buildParadoxMessage(paradox, page);
-                        await interaction.update(paradoxEmbed);
+                        const paradoxEmbed = await build.buildParadoxMessage(paradox, page);
+                        await interaction.editReply(paradoxEmbed);
 
                         break;
                     }
@@ -158,8 +149,8 @@ export default class HellaBot {
                         const tag = idArr[3];
                         const select = idArr[4] === 'select';
 
-                        const recruitEmbed = utils.buildRecruitMessage(qual, value, tag, select);
-                        await interaction.update(recruitEmbed);
+                        const recruitEmbed = await build.buildRecruitMessage(qual, value, tag, select);
+                        await interaction.editReply(recruitEmbed);
 
                         break;
                     }
@@ -169,20 +160,20 @@ export default class HellaBot {
                                 const theme = parseInt(idArr[2]);
                                 const index = parseInt(idArr[3]);
 
-                                const relicListEmbed = utils.buildRogueRelicListMessage(theme, index);
-                                await interaction.update(relicListEmbed);
+                                const relicListEmbed = await build.buildRogueRelicListMessage(theme, index);
+                                await interaction.editReply(relicListEmbed);
 
                                 break;
                             }
                             case 'stage': {
                                 const theme = parseInt(idArr[2]);
-                                const rogueTheme = rogueThemeArr[theme];
+                                const rogueTheme = await getRogueTheme(theme)
                                 const stages = idArr[4] === 'true' ? rogueTheme.toughStageDict : rogueTheme.stageDict;
                                 const stage = stages[idArr[3]];
                                 const page = parseInt(idArr[5]);
 
-                                const stageEmbed = await utils.buildRogueStageMessage(theme, stage, page);
-                                await interaction.update(stageEmbed);
+                                const stageEmbed = await build.buildRogueStageMessage(theme, stage, page);
+                                await interaction.editReply(stageEmbed);
 
                                 break;
                             }
@@ -191,40 +182,69 @@ export default class HellaBot {
                         break;
                     }
                     case 'skill': {
-                        const op = operatorDict[idArr[1]];
+                        const op = await getOperator(idArr[1]);
                         const page = parseInt(idArr[2]);
                         const level = parseInt(idArr[3]);
 
-                        const skillEmbed = utils.buildSkillMessage(op, page, level);
-                        await interaction.update(skillEmbed);
+                        const skillEmbed = await build.buildSkillMessage(op, page, level);
+                        await interaction.editReply(skillEmbed);
 
                         break;
                     }
                     case 'skin': {
-                        await interaction.deferUpdate();
-
-                        const op = operatorDict[idArr[1]];
+                        const op = await getOperator(idArr[1]);
                         const page = parseInt(idArr[2]);
-                        const skinEmbed = utils.buildArtMessage(op, page);
+                        const skinEmbed = await build.buildArtMessage(op, page);
 
                         await interaction.editReply(skinEmbed);
                         break;
                     }
+                    case 'stage': {
+                        const stage = idArr[3] === 'true' ? (await getToughStageArr(idArr[1]))[parseInt(idArr[2])] : (await getStageArr(idArr[1]))[parseInt(idArr[2])];
+                        const page = parseInt(idArr[4]);
+
+                        const stageEmbed = await build.buildStageMessage(stage, page);
+                        await interaction.editReply(stageEmbed);
+
+                        break;
+                    }
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        });
+
+        // Select menu interaction handling
+        this.client.on(Events.InteractionCreate, async interaction => {
+            if (!interaction.isStringSelectMenu()) return;
+
+            try {
+                const idArr: string[] = interaction.customId.split('ඞ');
+
+                await interaction.deferUpdate();
+
+                switch (idArr[0]) {
+                    case 'cc': {
+                        const stage = await getCcStage(interaction.values[0])
+
+                        const ccEmbed = await build.buildCcMessage(stage, 0);
+                        await interaction.editReply(ccEmbed);
+
+                        break;
+                    }
                     case 'spine': {
-                        if (interaction.isButton()) break;
-                        const op = operatorDict[idArr[1]];
+                        const op = await getOperator(idArr[1]);
                         const type = interaction.values[0];
 
-                        await interaction.deferUpdate();
                         await interaction.editReply({ content: `Generating \`${type}\` gif...`, components: [] })
 
-                        const { page, browser, rand } = await utils.buildSpinePage(op, type);
+                        const { page, browser, rand } = await build.buildSpinePage(op, type);
 
                         page.on('console', async message => {
                             if (message.text() !== 'done') return;
                             await new Promise(r => setTimeout(r, 1000));
                             await browser.close();
-                            const spineEmbed = await utils.buildSpineMessage(op, type, rand);
+                            const spineEmbed = await build.buildSpineMessage(op, type, rand);
                             await interaction.editReply(spineEmbed);
                             await unlinkSync(join(__dirname, '..', 'spine', op.id + rand + '.gif'));
                         }).on('pageerror', async ({ message }) => {
@@ -235,25 +255,12 @@ export default class HellaBot {
                         break;
                     }
                     case 'stage': {
-                        if (interaction.isStringSelectMenu()) {
-                            const stages = stageDict[idArr[2]];
-                            const stage = stages[interaction.values[0]];
+                        const stage = (await getStageArr(idArr[2]))[interaction.values[0]];
 
-                            const stageEmbed = await utils.buildStageMessage(stage, 0);
-                            await interaction.update(stageEmbed);
+                        const stageEmbed = await build.buildStageMessage(stage, 0);
+                        await interaction.editReply(stageEmbed);
 
-                            break;
-                        }
-                        else {
-                            const stages = idArr[3] === 'true' ? toughStageDict[idArr[1]] : stageDict[idArr[1]];
-                            const stage = stages[parseInt(idArr[2])];
-                            const page = parseInt(idArr[4]);
-
-                            const stageEmbed = await utils.buildStageMessage(stage, page);
-                            await interaction.update(stageEmbed);
-
-                            break;
-                        }
+                        break;
                     }
                 }
             } catch (err) {
