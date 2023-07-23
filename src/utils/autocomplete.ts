@@ -1,4 +1,4 @@
-import { definitionDict, enemyDict, itemDict, operatorDict, stageDict } from "../data";
+import { getAllDefinitions, getAllEnemies, getAllItems, getAllOperators, getAllStageArrs } from "../api";
 import { Definition, Enemy, Item, Operator, Stage } from "../types";
 
 const limit = 6;
@@ -6,7 +6,8 @@ const limit = 6;
 export async function defineAutocomplete(query: string, callback: (op: Definition) => boolean = () => true) {
     let arr: Definition[] = [];
     let i = 0;
-    for (const define of Object.values(definitionDict)) {
+    const definitionArr = await getAllDefinitions();
+    for (const define of definitionArr) {
         if (i >= limit) break;
         if (arr.includes(define) || !define.termName.toLowerCase().includes(query) || !await callback(define)) continue;
         arr.push(define);
@@ -22,7 +23,8 @@ export async function enemyAutocomplete(query: string, callback: (op: Enemy) => 
 
     let arr: Enemy[] = [];
     let i = 0;
-    for (const enemy of Object.values(enemyDict)) {
+    const enemyArr = await getAllEnemies();
+    for (const enemy of enemyArr) {
         if (i >= limit) break;
         if (arr.includes(enemy) || !matchQuery || !await callback(enemy)) continue;
         arr.push(enemy);
@@ -36,7 +38,8 @@ export async function enemyAutocomplete(query: string, callback: (op: Enemy) => 
 export async function itemAutocomplete(query: string, callback: (op: Item) => boolean = () => true) {
     let arr: Item[] = [];
     let i = 0;
-    for (const item of Object.values(itemDict)) {
+    const itemArr = await getAllItems();
+    for (const item of itemArr) {
         if (i >= limit) break;
         if (arr.includes(item) || !item.data.name.toLowerCase().includes(query) || !await callback(item)) continue;
         arr.push(item);
@@ -50,7 +53,8 @@ export async function itemAutocomplete(query: string, callback: (op: Item) => bo
 export async function operatorAutocomplete(query: string, callback: (op: Operator) => Promise<Boolean> = async () => true) {
     let arr: Operator[] = [];
     let i = 0;
-    for (const op of Object.values(operatorDict)) {
+    const operatorArr = await getAllOperators();
+    for (const op of operatorArr) {
         if (i >= limit) break;
         if (arr.includes(op) || !op.data.name.toLowerCase().includes(query) || !await callback(op)) continue;
         arr.push(op);
@@ -66,7 +70,8 @@ export async function stageAutocomplete(query: string, callback: (op: Stage) => 
 
     let arr: Stage[] = [];
     let i = 0;
-    for (const stageArr of Object.values(stageDict)) {
+    const stageArrArr = await getAllStageArrs();
+    for (const stageArr of stageArrArr) {
         for (const stage of stageArr) {
             if (i >= limit) break;
             if (arr.includes(stage) || !matchQuery(stage) || !await callback(stage)) continue;

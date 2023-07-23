@@ -256,8 +256,7 @@ export async function buildDefineMessage(definition: Definition): Promise<BaseMe
 export async function buildDefineListMessage(): Promise<BaseMessageOptions> {
     let statusDescription = '', effectDescription = '', groupDescription = '';
     const dataArr = await getAllDefinitions();
-    for (const data of dataArr) {
-        const term = data.value;
+    for (const term of dataArr) {
         const termName = term.termName;
         const termArr = term.termId.split('.');
 
@@ -367,8 +366,7 @@ export async function buildEventListMessage(index: number): Promise<BaseMessageO
 
     let eventArr = [];
     const dataArr = await getAllEvents();
-    for (const data of dataArr) {
-        const event = data.value;
+    for (const event of dataArr) {
         const skipLoginArr = ['LOGIN_ONLY', 'CHECKIN_ONLY', 'FLOAT_PARADE', 'PRAY_ONLY', 'GRID_GACHA_V2', 'GRID_GACHA']; // Skip login events
         if (skipLoginArr.includes(event.type)) continue;
         eventArr.push(event);
