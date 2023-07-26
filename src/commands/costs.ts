@@ -1,6 +1,7 @@
 import { AutocompleteInteraction, ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
-import { getOperator } from '../api';
 import { Command } from '../structures/Command';
+import { Operator } from '../types';
+import { getOperator } from '../utils/api';
 import { operatorAutocomplete } from '../utils/autocomplete';
 import { buildCostMessage } from '../utils/build';
 
@@ -26,14 +27,14 @@ export default class CostCommand implements Command {
         );
     async autocomplete(interaction: AutocompleteInteraction) {
         const value = interaction.options.getFocused().toLowerCase();
-        const callback = async op => op.data.rarity > 1;
-        const arr = await operatorAutocomplete(value, callback);
+        const callback = (op: Operator) => op.data.rarity > 1;
+        const arr = await operatorAutocomplete({ query: value, include: ['data.name', 'data.rarity'] }, callback);
         return await interaction.respond(arr);
     }
     async execute(interaction: ChatInputCommandInteraction) {
         const name = interaction.options.getString('name').toLowerCase();
         const page = parseInt(interaction.options.getString('type'));
-        const op = await getOperator(name);
+        const op = await getOperator({ query: name });
 
         if (!op)
             return await interaction.reply({ content: 'That operator doesn\'t exist!', ephemeral: true });

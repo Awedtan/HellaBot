@@ -405,9 +405,17 @@ type Module = {
 
 type Operator = {
     id: string;
-    recruitId: number;
-    modules: string[];
-    bases: BaseInfo[];
+    recruit: number;
+    archetype: string;
+    range: GridRange;
+    skills: Skill[];
+    modules: Module[];
+    skins: Skin[];
+    bases: {
+        condition: BaseInfo;
+        skill: Base;
+    }[];
+    paradox: Paradox;
     data: {
         name: string;
         description: string;

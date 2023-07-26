@@ -79,8 +79,6 @@ Thanks to [MrJAwesome](https://www.youtube.com/@MrJAwesomeYT) for making extensi
 
 ## todo:
 
-optimize database and minimize api calls
-
 separate events from constructor
 
 revamp is and spine commands

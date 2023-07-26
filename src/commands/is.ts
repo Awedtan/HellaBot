@@ -1,6 +1,6 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
-import { getRogueTheme } from '../api';
 import { Command } from '../structures/Command';
+import { getRogueTheme } from '../utils/api';
 import { buildRogueRelicListMessage, buildRogueRelicMessage, buildRogueStageMessage, buildRogueVariationListMessage, buildRogueVariationMessage } from '../utils/build';
 
 export default class IsCommand implements Command {
@@ -39,7 +39,7 @@ export default class IsCommand implements Command {
         );
     async execute(interaction: ChatInputCommandInteraction) {
         const theme = interaction.options.getInteger('theme') - 2;
-        const rogueDict = await getRogueTheme(theme);
+        const rogueDict = await getRogueTheme({ query: theme.toString() });
         const type = interaction.options.getString('type').toLowerCase();
         const name = interaction.options.getString('name').toLowerCase();
 

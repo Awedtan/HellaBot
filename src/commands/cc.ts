@@ -1,6 +1,6 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
-import { getCcStage } from '../api';
 import { Command } from '../structures/Command';
+import { getCcStage } from '../utils/api';
 import { buildCcMessage, buildCcSelectMessage } from '../utils/build';
 
 export default class CcCommand implements Command {
@@ -14,7 +14,7 @@ export default class CcCommand implements Command {
         );
     async execute(interaction: ChatInputCommandInteraction) {
         const name = interaction.options.getString('name').toLowerCase();
-        const stage = await getCcStage(name);
+        const stage = await getCcStage({ query: name });
 
         if (!stage) {
             const { gameConsts } = require('../constants');

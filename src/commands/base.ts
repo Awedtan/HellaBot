@@ -1,6 +1,7 @@
 import { AutocompleteInteraction, ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
-import { getBase, getOperator } from '../api';
 import { Command } from '../structures/Command';
+import { Operator } from '../types';
+import { getOperator } from '../utils/api';
 import { operatorAutocomplete } from '../utils/autocomplete';
 import { buildBaseMessage } from '../utils/build';
 
@@ -16,13 +17,13 @@ export default class BaseCommand implements Command {
         );
     async autocomplete(interaction: AutocompleteInteraction) {
         const value = interaction.options.getFocused().toLowerCase();
-        const callback = async op => op.bases.length !== 0;
-        const arr = await operatorAutocomplete(value, callback);
+        const callback = (op: Operator) => op.bases.length !== 0;
+        const arr = await operatorAutocomplete({ query: value, include: ['data.name', 'bases.buffId'] }, callback);
         return await interaction.respond(arr);
     }
     async execute(interaction: ChatInputCommandInteraction) {
         const name = interaction.options.getString('name').toLowerCase();
-        const op = await getOperator(name);
+        const op = await getOperator({ query: name });
 
         if (!op)
             return await interaction.reply({ content: 'That operator doesn\'t exist!', ephemeral: true });
@@ -32,17 +33,13 @@ export default class BaseCommand implements Command {
         await interaction.deferReply();
 
         let first = true;
-
-        for (const baseInfo of op.bases) {
-            const base = await getBase(baseInfo.buffId);
-
+        for (let i = 0; i < op.bases.length; i++) {
+            const baseEmbed = await buildBaseMessage(op, i);
             if (first) {
-                const baseEmbed = await buildBaseMessage(base, baseInfo, op);
                 await interaction.editReply(baseEmbed);
                 first = false;
             }
             else {
-                const baseEmbed = await buildBaseMessage(base, baseInfo, op);
                 await interaction.followUp(baseEmbed);
             }
         }

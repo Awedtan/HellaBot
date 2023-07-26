@@ -1,7 +1,7 @@
 import { ActionRowBuilder, AttachmentBuilder, BaseMessageOptions, ButtonBuilder, ButtonStyle, EmbedAuthorOptions, EmbedBuilder, EmbedField, StringSelectMenuBuilder, StringSelectMenuOptionBuilder } from 'discord.js';
 import { join, resolve } from 'path';
-import { getAllDefinitions, getAllEvents, getArchetype, getBase, getEnemy, getItem, getModule, getOperator, getRange, getRogueTheme, getSkill, getSkinArr, getStageArr, getToughStageArr } from '../api';
-import type { Base, BaseInfo, Blackboard, CCStage, Definition, Enemy, GameEvent, Item, LevelUpCost, Operator, Paradox, RogueRelic, RogueStage, RogueTheme, RogueVariation, Stage, StageData } from "../types";
+import type { Blackboard, CCStage, Definition, Enemy, GameEvent, GridRange, Item, LevelUpCost, Operator, Paradox, RogueRelic, RogueStage, RogueTheme, RogueVariation, Stage, StageData } from "../types";
+import { getAllDefinitions, getAllEvents, getEnemy, getItem, getOperator, getRange, getRogueTheme, getStageArr, getToughStageArr } from './api';
 // const fs = require('fs');
 const nodefetch = require('node-fetch');
 const puppeteer = require('puppeteer');
@@ -57,7 +57,7 @@ function formatText(text: string, blackboard: Blackboard[]) { // Dumbass string 
 }
 
 export async function buildArtMessage(op: Operator, page: number): Promise<BaseMessageOptions> {
-    const skins = await getSkinArr(op.id);
+    const skins = op.skins;
     const skin = skins[page];
 
     const avatarPath = paths.aceshipImageUrl + `/avatars/${op.id}.png`;
@@ -95,7 +95,10 @@ export async function buildArtMessage(op: Operator, page: number): Promise<BaseM
 
     return { embeds: [embed], files: [avatar, thumbnail, image], components: components };
 }
-export async function buildBaseMessage(base: Base, baseInfo: BaseInfo, op: Operator): Promise<BaseMessageOptions> {
+export async function buildBaseMessage(op: Operator, page: number): Promise<BaseMessageOptions> {
+    const baseInfo = op.bases[page].condition;
+    const base = op.bases[page].skill;
+
     const avatarPath = paths.aceshipImageUrl + `/avatars/${op.id}.png`;
     const avatar = new AttachmentBuilder(avatarPath);
     const thumbnailPath = paths.aceshipImageUrl + `/ui/infrastructure/skill/${base.skillIcon}.png`;
@@ -420,7 +423,7 @@ export async function buildItemMessage(item: Item): Promise<BaseMessageOptions> 
         const stageId = stageDrop.stageId;
         if (!stageId.includes('main') && !stageId.includes('sub')) continue;
 
-        const stage = await getStageArr(stageId)[0];
+        const stage = await getStageArr({ query: stageId })[0];
         stageString += `${stage.excel.code} - ${gameConsts.itemDropRarities[stageDrop.occPer]}\n`;
     }
     if (stageString !== '') {
@@ -495,8 +498,8 @@ export async function buildOperatorMessage(op: Operator): Promise<BaseMessageOpt
             description = formatText(candidate.overrideDescripton, candidate.blackboard);
         }
     }
-    const descriptionField = { name: `${gameConsts.professions[op.data.profession]} - ${await getArchetype(op.data.subProfessionId)}`, value: description };
-    const rangeField = await buildRangeField(opMax.rangeId);
+    const descriptionField = { name: `${gameConsts.professions[op.data.profession]} - ${op.archetype}`, value: description };
+    const rangeField = await buildRangeField({ range: op.range });
 
     const embed = new EmbedBuilder()
         .setColor(embedColour)
@@ -559,7 +562,7 @@ export async function buildOperatorMessage(op: Operator): Promise<BaseMessageOpt
 export async function buildParadoxMessage(paradox: Paradox, page: number): Promise<BaseMessageOptions> {
     const stageInfo = paradox.excel;
     const stageData = paradox.levels;
-    const op = await getOperator(stageInfo.charId);
+    const op = await getOperator({ query: stageInfo.charId });
 
     const avatarPath = paths.aceshipImageUrl + `/avatars/${op.id}.png`;
     const avatar = new AttachmentBuilder(avatarPath);
@@ -774,8 +777,8 @@ export async function buildRecruitMessage(qual: string, value: number, tag: stri
 
     if (selectedButtons.length >= 1) {
         for (const opId of Object.values(gameConsts.recruitPool)) {
-            const op = await getOperator(String(opId));
-            if (op.recruitId % value !== 0) continue;
+            const op = await getOperator({ query: String(opId) });
+            if (op.recruit % value !== 0) continue;
             if (qual !== null && qual !== 'null' && op.data.rarity !== gameConsts.qualifications[qual]) continue;
 
             opArr.push(op);
@@ -823,7 +826,7 @@ export async function buildRogueRelicMessage(relic: RogueRelic): Promise<BaseMes
     }
 }
 export async function buildRogueRelicListMessage(theme: number, index: number): Promise<BaseMessageOptions> {
-    const rogueTheme = await getRogueTheme(theme);
+    const rogueTheme = await getRogueTheme({ query: theme.toString() });
     const descriptionLengthLimit = 24;
     const columnCount = 2;
 
@@ -1000,7 +1003,7 @@ export async function buildSkillMessage(op: Operator, page: number, level: numbe
     const rowOne = new ActionRowBuilder<ButtonBuilder>().addComponents(lOne, lTwo, lThree, lFour, lFive);
     const rowTwo = new ActionRowBuilder<ButtonBuilder>().addComponents(lSix, lSeven, mOne, mTwo, mThree);
 
-    const skill = await getSkill(op.data.skills[page].skillId);
+    const skill = op.skills[page];
     if (skill.levels.length === 7) {
         mOne.setDisabled(true);
         mTwo.setDisabled(true);
@@ -1099,10 +1102,10 @@ export async function buildStageMessage(stage: Stage, page: number): Promise<Bas
         // 8: yellow rock
         switch (item.dropType) {
             case 2:
-                regularString += `${(await getItem(item.id)).data.name}\n`;
+                regularString += `${(await getItem({ query: item.id })).data.name}\n`;
                 break;
             case 3:
-                specialString += `${(await getItem(item.id)).data.name}\n`;
+                specialString += `${(await getItem({ query: item.id })).data.name}\n`;
                 break;
         }
     }
@@ -1117,9 +1120,9 @@ export async function buildStageMessage(stage: Stage, page: number): Promise<Bas
     const enemyFields = await buildStageEnemyFields(stageData);
     embed.addFields(enemyFields);
 
-    let stageIndex = (await getStageArr(stage.excel.code.toLowerCase())).findIndex(x => x.excel.stageId = stage.excel.stageId);
+    let stageIndex = (await getStageArr({ query: stage.excel.code.toLowerCase() })).findIndex(x => x.excel.stageId = stage.excel.stageId);
     if (isChallenge) {
-        stageIndex = (await getToughStageArr(stage.excel.code.toLowerCase())).findIndex(x => x.excel.stageId = stage.excel.stageId);
+        stageIndex = (await getToughStageArr({ query: stage.excel.code.toLowerCase() })).findIndex(x => x.excel.stageId = stage.excel.stageId);
     }
 
     const imageButton = new ButtonBuilder()
@@ -1230,19 +1233,19 @@ export async function buildInfoMessage(op: Operator, type: number, page: number,
         .setStyle(ButtonStyle.Success);
     const typeRow = new ActionRowBuilder<ButtonBuilder>().addComponents(skillButton, moduleButton, artButton, baseButton, costButton);
 
-    if (op.data.skills.length === 0) {
+    if (!op.skills || op.skills.length === 0) {
         skillButton.setStyle(ButtonStyle.Secondary);
         skillButton.setDisabled(true);
     }
-    if (op.modules.length === 0) {
+    if (!op.modules || op.modules.length === 0) {
         moduleButton.setStyle(ButtonStyle.Secondary);
         moduleButton.setDisabled(true);
     }
-    if (!await getSkinArr(op.id)) {
+    if (!op.skins || op.skins.length === 0) {
         artButton.setStyle(ButtonStyle.Secondary);
         artButton.setDisabled(true);
     }
-    if (op.bases.length === 0) {
+    if (!op.bases || op.bases.length === 0) {
         baseButton.setStyle(ButtonStyle.Secondary);
         baseButton.setDisabled(true);
     }
@@ -1357,9 +1360,8 @@ export async function buildInfoMessage(op: Operator, type: number, page: number,
         case 4: {
             baseButton.setDisabled(true);
 
-            for (const baseInfo of op.bases) {
-                const base = await getBase(baseInfo.buffId);
-                const baseEmbed = await buildBaseMessage(base, baseInfo, op);
+            for (let i = 0; i < op.bases.length; i++) {
+                const baseEmbed = await buildBaseMessage(op, i);
                 for (const embed of baseEmbed.embeds) {
                     embedArr.push(embed);
                 }
@@ -1390,8 +1392,146 @@ export async function buildInfoMessage(op: Operator, type: number, page: number,
 
     return { embeds: embedArr, files: fileArr, components: rowArr };
 }
+export async function buildInfoSkillMessage(op: Operator, type: number, page: number, level: number): Promise<BaseMessageOptions> {
+    const avatarPath = paths.aceshipImageUrl + `/avatars/${op.id}.png`;
+    const avatar = new AttachmentBuilder(avatarPath);
+
+    const { embed, thumbnail } = await buildSkillEmbed(op, page, level);
+
+    const lOne = new ButtonBuilder()
+        .setCustomId(`infoඞ${op.id}ඞ${type}ඞ${page}ඞ0ඞskill`)
+        .setLabel('Lv1')
+        .setStyle(ButtonStyle.Secondary);
+    const lTwo = new ButtonBuilder()
+        .setCustomId(`infoඞ${op.id}ඞ${type}ඞ${page}ඞ1ඞskill`)
+        .setLabel('Lv2')
+        .setStyle(ButtonStyle.Secondary);
+    const lThree = new ButtonBuilder()
+        .setCustomId(`infoඞ${op.id}ඞ${type}ඞ${page}ඞ2ඞskill`)
+        .setLabel('Lv3')
+        .setStyle(ButtonStyle.Secondary);
+    const lFour = new ButtonBuilder()
+        .setCustomId(`infoඞ${op.id}ඞ${type}ඞ${page}ඞ3ඞskill`)
+        .setLabel('Lv4')
+        .setStyle(ButtonStyle.Secondary);
+    const lFive = new ButtonBuilder()
+        .setCustomId(`infoඞ${op.id}ඞ${type}ඞ${page}ඞ4ඞskill`)
+        .setLabel('Lv5')
+        .setStyle(ButtonStyle.Secondary);
+    const lSix = new ButtonBuilder()
+        .setCustomId(`infoඞ${op.id}ඞ${type}ඞ${page}ඞ5ඞskill`)
+        .setLabel('Lv6')
+        .setStyle(ButtonStyle.Secondary);
+    const lSeven = new ButtonBuilder()
+        .setCustomId(`infoඞ${op.id}ඞ${type}ඞ${page}ඞ6ඞskill`)
+        .setLabel('Lv7')
+        .setStyle(ButtonStyle.Secondary);
+    const mOne = new ButtonBuilder()
+        .setCustomId(`infoඞ${op.id}ඞ${type}ඞ${page}ඞ7ඞskill`)
+        .setLabel('M1')
+        .setStyle(ButtonStyle.Danger);
+    const mTwo = new ButtonBuilder()
+        .setCustomId(`infoඞ${op.id}ඞ${type}ඞ${page}ඞ8ඞskill`)
+        .setLabel('M2')
+        .setStyle(ButtonStyle.Danger);
+    const mThree = new ButtonBuilder()
+        .setCustomId(`infoඞ${op.id}ඞ${type}ඞ${page}ඞ9ඞskill`)
+        .setLabel('M3')
+        .setStyle(ButtonStyle.Danger);
+    const rowOne = new ActionRowBuilder<ButtonBuilder>().addComponents(lOne, lTwo, lThree, lFour, lFive);
+    const rowTwo = new ActionRowBuilder<ButtonBuilder>().addComponents(lSix, lSeven, mOne, mTwo, mThree);
+
+    const skill = op.skills[page];
+    if (skill.levels.length === 7) {
+        mOne.setDisabled(true);
+        mTwo.setDisabled(true);
+        mThree.setDisabled(true);
+    }
+
+    switch (level) {
+        case 0:
+            lOne.setCustomId(`info_skill_currentlevel`);
+            lOne.setDisabled(true);
+            break;
+        case 1:
+            lTwo.setCustomId(`info_skill_currentlevel`);
+            lTwo.setDisabled(true);
+            break;
+        case 2:
+            lThree.setCustomId(`info_skill_currentlevel`);
+            lThree.setDisabled(true);
+            break;
+        case 3:
+            lFour.setCustomId(`info_skill_currentlevel`);
+            lFour.setDisabled(true);
+            break;
+        case 4:
+            lFive.setCustomId(`info_skill_currentlevel`);
+            lFive.setDisabled(true);
+            break;
+        case 5:
+            lSix.setCustomId(`info_skill_currentlevel`);
+            lSix.setDisabled(true);
+            break;
+        case 6:
+            lSeven.setCustomId(`info_skill_currentlevel`);
+            lSeven.setDisabled(true);
+            break;
+        case 7:
+            mOne.setCustomId(`info_skill_currentlevel`);
+            mOne.setDisabled(true);
+            break;
+        case 8:
+            mTwo.setCustomId(`info_skill_currentlevel`);
+            mTwo.setDisabled(true);
+            break;
+        case 9:
+            mThree.setCustomId(`info_skill_currentlevel`);
+            mThree.setDisabled(true);
+            break;
+    }
+
+    return { embeds: [embed], files: [avatar, thumbnail], components: [rowOne, rowTwo] };
+}
+export async function buildInfoModuleMessage(op: Operator, type: number, page: number, level: number): Promise<BaseMessageOptions> {
+    const avatarPath = paths.aceshipImageUrl + `/avatars/${op.id}.png`;
+    const avatar = new AttachmentBuilder(avatarPath);
+
+    const { embed, thumbnail } = await buildModuleEmbed(op, page + 1, level); // +1 since info command excludes default but modules command doesnt
+
+    const lOne = new ButtonBuilder()
+        .setCustomId(`infoඞ${op.id}ඞ${type}ඞ${page}ඞ0ඞmodule`)
+        .setLabel('Lv1')
+        .setStyle(ButtonStyle.Secondary);
+    const lTwo = new ButtonBuilder()
+        .setCustomId(`infoඞ${op.id}ඞ${type}ඞ${page}ඞ1ඞmodule`)
+        .setLabel('Lv2')
+        .setStyle(ButtonStyle.Secondary);
+    const lThree = new ButtonBuilder()
+        .setCustomId(`infoඞ${op.id}ඞ${type}ඞ${page}ඞ2ඞmodule`)
+        .setLabel('Lv3')
+        .setStyle(ButtonStyle.Secondary);
+    const rowOne = new ActionRowBuilder<ButtonBuilder>().addComponents(lOne, lTwo, lThree);
+
+    switch (level) {
+        case 0:
+            lOne.setCustomId(`info_module_currentlevel`);
+            lOne.setDisabled(true);
+            break;
+        case 1:
+            lOne.setCustomId(`info_module_currentlevel`);
+            lTwo.setDisabled(true);
+            break;
+        case 2:
+            lOne.setCustomId(`info_module_currentlevel`);
+            lThree.setDisabled(true);
+            break;
+    }
+
+    return { embeds: [embed], files: [avatar, thumbnail], components: [rowOne] };
+}
 export async function buildInfoArtMessage(op: Operator, type: number, page: number, level: number): Promise<BaseMessageOptions> {
-    const skins = await getSkinArr(op.id);
+    const skins = op.skins;
     const skin = skins[page];
 
     const avatarPath = paths.aceshipImageUrl + `/avatars/${op.id}.png`;
@@ -1489,144 +1629,6 @@ export async function buildInfoCostMessage(op: Operator, type: number, page: num
 
     return { embeds: [embed], files: [avatar, thumbnail], components: [buttonRow] };
 }
-export async function buildInfoModuleMessage(op: Operator, type: number, page: number, level: number): Promise<BaseMessageOptions> {
-    const avatarPath = paths.aceshipImageUrl + `/avatars/${op.id}.png`;
-    const avatar = new AttachmentBuilder(avatarPath);
-
-    const { embed, thumbnail } = await buildModuleEmbed(op, page + 1, level); // +1 since info command excludes default but modules command doesnt
-
-    const lOne = new ButtonBuilder()
-        .setCustomId(`infoඞ${op.id}ඞ${type}ඞ${page}ඞ0ඞmodule`)
-        .setLabel('Lv1')
-        .setStyle(ButtonStyle.Secondary);
-    const lTwo = new ButtonBuilder()
-        .setCustomId(`infoඞ${op.id}ඞ${type}ඞ${page}ඞ1ඞmodule`)
-        .setLabel('Lv2')
-        .setStyle(ButtonStyle.Secondary);
-    const lThree = new ButtonBuilder()
-        .setCustomId(`infoඞ${op.id}ඞ${type}ඞ${page}ඞ2ඞmodule`)
-        .setLabel('Lv3')
-        .setStyle(ButtonStyle.Secondary);
-    const rowOne = new ActionRowBuilder<ButtonBuilder>().addComponents(lOne, lTwo, lThree);
-
-    switch (level) {
-        case 0:
-            lOne.setCustomId(`info_module_currentlevel`);
-            lOne.setDisabled(true);
-            break;
-        case 1:
-            lOne.setCustomId(`info_module_currentlevel`);
-            lTwo.setDisabled(true);
-            break;
-        case 2:
-            lOne.setCustomId(`info_module_currentlevel`);
-            lThree.setDisabled(true);
-            break;
-    }
-
-    return { embeds: [embed], files: [avatar, thumbnail], components: [rowOne] };
-}
-export async function buildInfoSkillMessage(op: Operator, type: number, page: number, level: number): Promise<BaseMessageOptions> {
-    const avatarPath = paths.aceshipImageUrl + `/avatars/${op.id}.png`;
-    const avatar = new AttachmentBuilder(avatarPath);
-
-    const { embed, thumbnail } = await buildSkillEmbed(op, page, level);
-
-    const lOne = new ButtonBuilder()
-        .setCustomId(`infoඞ${op.id}ඞ${type}ඞ${page}ඞ0ඞskill`)
-        .setLabel('Lv1')
-        .setStyle(ButtonStyle.Secondary);
-    const lTwo = new ButtonBuilder()
-        .setCustomId(`infoඞ${op.id}ඞ${type}ඞ${page}ඞ1ඞskill`)
-        .setLabel('Lv2')
-        .setStyle(ButtonStyle.Secondary);
-    const lThree = new ButtonBuilder()
-        .setCustomId(`infoඞ${op.id}ඞ${type}ඞ${page}ඞ2ඞskill`)
-        .setLabel('Lv3')
-        .setStyle(ButtonStyle.Secondary);
-    const lFour = new ButtonBuilder()
-        .setCustomId(`infoඞ${op.id}ඞ${type}ඞ${page}ඞ3ඞskill`)
-        .setLabel('Lv4')
-        .setStyle(ButtonStyle.Secondary);
-    const lFive = new ButtonBuilder()
-        .setCustomId(`infoඞ${op.id}ඞ${type}ඞ${page}ඞ4ඞskill`)
-        .setLabel('Lv5')
-        .setStyle(ButtonStyle.Secondary);
-    const lSix = new ButtonBuilder()
-        .setCustomId(`infoඞ${op.id}ඞ${type}ඞ${page}ඞ5ඞskill`)
-        .setLabel('Lv6')
-        .setStyle(ButtonStyle.Secondary);
-    const lSeven = new ButtonBuilder()
-        .setCustomId(`infoඞ${op.id}ඞ${type}ඞ${page}ඞ6ඞskill`)
-        .setLabel('Lv7')
-        .setStyle(ButtonStyle.Secondary);
-    const mOne = new ButtonBuilder()
-        .setCustomId(`infoඞ${op.id}ඞ${type}ඞ${page}ඞ7ඞskill`)
-        .setLabel('M1')
-        .setStyle(ButtonStyle.Danger);
-    const mTwo = new ButtonBuilder()
-        .setCustomId(`infoඞ${op.id}ඞ${type}ඞ${page}ඞ8ඞskill`)
-        .setLabel('M2')
-        .setStyle(ButtonStyle.Danger);
-    const mThree = new ButtonBuilder()
-        .setCustomId(`infoඞ${op.id}ඞ${type}ඞ${page}ඞ9ඞskill`)
-        .setLabel('M3')
-        .setStyle(ButtonStyle.Danger);
-    const rowOne = new ActionRowBuilder<ButtonBuilder>().addComponents(lOne, lTwo, lThree, lFour, lFive);
-    const rowTwo = new ActionRowBuilder<ButtonBuilder>().addComponents(lSix, lSeven, mOne, mTwo, mThree);
-
-    const skill = await getSkill(op.data.skills[page].skillId);
-    if (skill.levels.length === 7) {
-        mOne.setDisabled(true);
-        mTwo.setDisabled(true);
-        mThree.setDisabled(true);
-    }
-
-    switch (level) {
-        case 0:
-            lOne.setCustomId(`info_skill_currentlevel`);
-            lOne.setDisabled(true);
-            break;
-        case 1:
-            lTwo.setCustomId(`info_skill_currentlevel`);
-            lTwo.setDisabled(true);
-            break;
-        case 2:
-            lThree.setCustomId(`info_skill_currentlevel`);
-            lThree.setDisabled(true);
-            break;
-        case 3:
-            lFour.setCustomId(`info_skill_currentlevel`);
-            lFour.setDisabled(true);
-            break;
-        case 4:
-            lFive.setCustomId(`info_skill_currentlevel`);
-            lFive.setDisabled(true);
-            break;
-        case 5:
-            lSix.setCustomId(`info_skill_currentlevel`);
-            lSix.setDisabled(true);
-            break;
-        case 6:
-            lSeven.setCustomId(`info_skill_currentlevel`);
-            lSeven.setDisabled(true);
-            break;
-        case 7:
-            mOne.setCustomId(`info_skill_currentlevel`);
-            mOne.setDisabled(true);
-            break;
-        case 8:
-            mTwo.setCustomId(`info_skill_currentlevel`);
-            mTwo.setDisabled(true);
-            break;
-        case 9:
-            mThree.setCustomId(`info_skill_currentlevel`);
-            mThree.setDisabled(true);
-            break;
-    }
-
-    return { embeds: [embed], files: [avatar, thumbnail], components: [rowOne, rowTwo] };
-}
 
 function buildAuthorField(op: Operator): EmbedAuthorOptions {
     // Unholy dumbness
@@ -1637,13 +1639,13 @@ function buildAuthorField(op: Operator): EmbedAuthorOptions {
 async function buildCostString(costs: LevelUpCost[]): Promise<string> {
     let description = '';
     for (const cost of costs) {
-        const item = await getItem(cost.id);
+        const item = await getItem({ query: cost.id });
         description += `${item.data.name} **x${cost.count}**\n`;
     }
     return description;
 }
-async function buildRangeField(rangeId: string): Promise<EmbedField> {
-    const range = await getRange(rangeId);
+async function buildRangeField({ range, rangeId }: { range?: GridRange, rangeId?: string }): Promise<EmbedField> {
+    if (!range) range = await getRange({ query: rangeId });
 
     let left = 0, right = 0, top = 0, bottom = 0;
     for (const square of range.grids) {
@@ -1745,7 +1747,7 @@ async function buildStageEnemyFields(stageData: StageData): Promise<EmbedField[]
 
     let enemyString = '', eliteString = '', bossString = '';
     for (const enemyRef of stageData.enemyDbRefs) {
-        const enemy = await getEnemy(enemyRef.id);
+        const enemy = await getEnemy({ query: enemyRef.id });
 
         if (!enemy) continue;
 
@@ -1784,8 +1786,9 @@ async function buildStageEnemyFields(stageData: StageData): Promise<EmbedField[]
 
     return fieldArr;
 }
+
 async function buildArtEmbed(op: Operator, page: number): Promise<{ embed: EmbedBuilder, thumbnail: AttachmentBuilder }> {
-    const skins = await getSkinArr(op.id);
+    const skins = op.skins;
     const skin = skins[page];
     const displaySkin = skin.displaySkin;
 
@@ -1846,7 +1849,7 @@ async function buildArtEmbed(op: Operator, page: number): Promise<{ embed: Embed
     return { embed, thumbnail };
 }
 async function buildSkillEmbed(op: Operator, page: number, level: number): Promise<{ embed: EmbedBuilder, thumbnail: AttachmentBuilder }> {
-    const skill = await getSkill(op.data.skills[page].skillId);
+    const skill = op.skills[page];
     const skillLevel = skill.levels[level];
 
     const thumbnailFilename = skill.iconId === null ? skill.skillId : skill.iconId;
@@ -1871,7 +1874,7 @@ async function buildSkillEmbed(op: Operator, page: number, level: number): Promi
         .setDescription(description);
 
     if (skillLevel.rangeId !== null) {
-        const rangeField = await buildRangeField(skillLevel.rangeId);
+        const rangeField = await buildRangeField({ rangeId: skillLevel.rangeId });
         embed.addFields(rangeField);
     }
 
@@ -1928,7 +1931,7 @@ async function buildCostEmbed(op: Operator, page: number): Promise<{ embed: Embe
 
             for (let i = 0; i < op.data.skills.length; i++) {
                 const opSkill = op.data.skills[i];
-                const skill = await getSkill(opSkill.skillId);
+                const skill = op.skills[i];
 
                 embed.addFields({ name: '\u200B', value: `**Skill ${i + 1} - ${skill.levels[0].name}**` });
 
@@ -1946,9 +1949,8 @@ async function buildCostEmbed(op: Operator, page: number): Promise<{ embed: Embe
             embed.setThumbnail(`attachment://mod_unlock_token.png`)
                 .setTitle('Module Upgrade Costs');
 
-            for (const moduleId of op.modules) {
-                if (moduleId.includes('uniequip_001')) continue;
-                const module = await getModule(moduleId);
+            for (const module of op.modules) {
+                if (module.info.uniEquipId.includes('uniequip_001')) continue;
 
                 embed.addFields({ name: '\u200B', value: `**${module.info.typeIcon.toUpperCase()} - ${module.info.uniEquipName}**` });
 
@@ -1964,7 +1966,7 @@ async function buildCostEmbed(op: Operator, page: number): Promise<{ embed: Embe
     return { embed, thumbnail };
 }
 async function buildModuleEmbed(op: Operator, page: number, level: number): Promise<{ embed: EmbedBuilder, thumbnail: AttachmentBuilder }> {
-    const module = await getModule(op.modules[page]);
+    const module = op.modules[page];
     const moduleLevel = module.data.phases[level];
 
     const thumbnailPath = paths.aceshipImageUrl + `/equip/icon/${module.info.uniEquipId}.png`;

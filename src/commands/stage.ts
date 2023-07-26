@@ -1,6 +1,6 @@
 import { AutocompleteInteraction, ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
-import { getStageArr, getToughStageArr } from '../api';
 import { Command } from '../structures/Command';
+import { getStageArr, getToughStageArr } from '../utils/api';
 import { stageAutocomplete } from '../utils/autocomplete';
 import { buildStageMessage, buildStageSelectMessage } from '../utils/build';
 
@@ -24,13 +24,13 @@ export default class StageCommand implements Command {
         );
     async autocomplete(interaction: AutocompleteInteraction) {
         const value = interaction.options.getFocused().toLowerCase();
-        const arr = await stageAutocomplete(value);
+        const arr = await stageAutocomplete({ query: value, include: ['excel.name', 'excel.code', 'excel.stageId'] });
         return await interaction.respond(arr);
     }
     async execute(interaction: ChatInputCommandInteraction) {
         const code = interaction.options.getString('code').toLowerCase();
         const difficulty = interaction.options.getString('difficulty');
-        const stageArr = difficulty === 'challenge' ? await getToughStageArr(code) : await getStageArr(code);
+        const stageArr = difficulty === 'challenge' ? await getToughStageArr({ query: code }) : await getStageArr({ query: code });
 
         if (!stageArr || stageArr.length === 0)
             return await interaction.reply({ content: 'That stage doesn\'t exist!', ephemeral: true });

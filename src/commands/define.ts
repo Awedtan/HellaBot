@@ -1,6 +1,6 @@
 import { AutocompleteInteraction, ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
-import { getDefinition } from '../api';
 import { Command } from '../structures/Command';
+import { getDefinition } from '../utils/api';
 import { defineAutocomplete } from '../utils/autocomplete';
 import { buildDefineListMessage, buildDefineMessage } from '../utils/build';
 
@@ -16,7 +16,7 @@ export default class DefineCommand implements Command {
         );
     async autocomplete(interaction: AutocompleteInteraction) {
         const value = interaction.options.getFocused().toLowerCase();
-        const arr = await defineAutocomplete(value);
+        const arr = await defineAutocomplete({ query: value, include: ['termName'] });
         return await interaction.respond(arr);
     }
     async execute(interaction: ChatInputCommandInteraction) {
@@ -29,7 +29,7 @@ export default class DefineCommand implements Command {
             return await interaction.editReply(defineListEmbed);
         }
         else {
-            const definition = await getDefinition(term);
+            const definition = await getDefinition({ query: term });
 
             if (!definition)
                 return await interaction.reply({ content: 'That term doesn\'t exist!', ephemeral: true });

@@ -1,6 +1,6 @@
 import { AutocompleteInteraction, ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
-import { getOperator } from '../api';
 import { Command } from '../structures/Command';
+import { getOperator } from '../utils/api';
 import { operatorAutocomplete } from '../utils/autocomplete';
 import { buildInfoMessage } from '../utils/build';
 
@@ -16,12 +16,12 @@ export default class InfoCommand implements Command {
         );
     async autocomplete(interaction: AutocompleteInteraction) {
         const value = interaction.options.getFocused().toLowerCase();
-        const arr = await operatorAutocomplete(value);
+        const arr = await operatorAutocomplete({ query: value, include: ['data.name'] });
         return await interaction.respond(arr);
     }
     async execute(interaction: ChatInputCommandInteraction) {
         const name = interaction.options.getString('name').toLowerCase();
-        const op = await getOperator(name);
+        const op = await getOperator({ query: name });
 
         if (!op)
             return await interaction.reply({ content: 'That operator doesn\'t exist!', ephemeral: true });
