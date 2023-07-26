@@ -1,8 +1,10 @@
 # HellaBot
 
-An Arknights Discord bot that provides information on operators, enemies, stages, and more!
+<img src="https://raw.githubusercontent.com/Awedtan/HellaBot-Assets/main/readme/demo.gif" height="600"/>
 
-<img src="https://raw.githubusercontent.com/Awedtan/HellaBot-Assets/main/readme/demo.gif" height="700"/>
+An Arknights Discord bot that provides information on operators, enemies, stages, and more! A fun personal project.
+
+Most game data is fetched from a MongoDB Atlas database through an Express API. This data is loaded from [Kengxxiao/ArknightsGameData](https://github.com/Kengxxiao/ArknightsGameData), massaged into a nicer format, and sent into the database.
 
 ## Installation
 
@@ -85,21 +87,13 @@ revamp is and spine commands
 
 add help command and better command descriptions
 
-maintain bot
+maintain bot and api
 
-### maybe/probably not:
-
-look into using more updated spine viewer
-
-gacha banners
-
-enemy wave and pathing visualizations
+### maybe:
 
 improve recruit command
 
 add material sanity costs, stage efficiencies
-
-find limited event stage previews
 
 krooster stuff
 
