@@ -23,11 +23,12 @@ cd HellaBot
 ```sh
 npm install
 ```
-5. Create a `config.json` file in the project folder, and copy your Discord bot token and application ID into it
+5. Create a `config.json` file in the project folder, and copy your Discord bot token and application ID into it. You can put in an optional text channel ID, and the bot will log some messages to that channel.
 ```json
 {
     "token": "your_bot_token_here",
-    "clientId": "your_application_id_here"
+    "clientId": "your_application_id_here",
+    "channelId": "your_text_channel_id_here"
 }
 ```
 The project directory should now look something like this:

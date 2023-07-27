@@ -4,26 +4,24 @@ import { join } from 'path';
 import { getCcStage, getEnemy, getOperator, getParadox, getRogueTheme, getStageArr, getToughStageArr } from '../utils/api';
 import * as build from '../utils/build';
 import { Command } from './Command';
-const { clientId, token } = require('../../config.json');
 
 export default class HellaBot {
     client: Client;
     commands = new Collection<string, Command>();
 
-    public constructor(intents: { intents: GatewayIntentBits[] }) {
+    public constructor(token: string, clientId: string, channelId: string, intents: { intents: GatewayIntentBits[] }) {
         this.client = new Client(intents);
         this.client.login(token);
-        this.loadCommands();
+        this.loadCommands(token, clientId);
+        this.handleInteractions(channelId);
 
         this.client.once(Events.ClientReady, client => {
             console.log(`Ready! Logged in as ${client.user.tag}`);
             client.user.setActivity('CC#13', { type: ActivityType.Competing });
         });
-
-        this.handleInteractions();
     }
 
-    async loadCommands() {
+    async loadCommands(token: string, clientId: string) {
         const commandArr = [];
         const commandFiles = readdirSync(join(__dirname, '..', 'commands')).filter(file => file.endsWith('.ts'));
         for (const file of commandFiles) {
@@ -35,7 +33,28 @@ export default class HellaBot {
         await rest.put(Routes.applicationCommands(clientId), { body: commandArr },);
     }
 
-    async handleInteractions() {
+    async handleInteractions(channelId: string) {
+        if (channelId && channelId !== '') {
+            this.client.on(Events.GuildCreate, async guild => {
+                const channel = await this.client.channels.fetch(channelId);
+                const name = guild.name;
+                const memberCount = guild.memberCount;
+                const owner = (await this.client.users.fetch(guild.ownerId)).username;
+                if (channel.isTextBased()) {
+                    channel.send(`Joined server \`${name}\`, owned by \`${owner}\`, with \`${memberCount}\` members.`);
+                }
+            });
+            this.client.on(Events.GuildDelete, async guild => {
+                const channel = await this.client.channels.fetch(channelId);
+                const name = guild.name;
+                const memberCount = guild.memberCount;
+                const owner = (await this.client.users.fetch(guild.ownerId)).username;
+                if (channel.isTextBased()) {
+                    channel.send(`Left server \`${name}\`, owned by \`${owner}\`, with \`${memberCount}\` members.`);
+                }
+            });
+        }
+
         // Initial slash command interaction handling
         this.client.on(Events.InteractionCreate, async interaction => {
             if (!interaction.isChatInputCommand()) return;
