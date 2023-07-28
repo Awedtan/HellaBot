@@ -728,7 +728,7 @@
                 "name": "Yumen Catastrophe Fortification"
             },
             "tile_stairs": {
-                "tileKey": ":ladder:",
+                "emoji": "🪜",
                 "name": "Ladder"
             },
             "tile_water": {
@@ -740,7 +740,7 @@
                 "name": "Gravity Sensor"
             },
             "tile_woodrd": {
-                "emoji": ":wood:",
+                "emoji": "🪵",
                 "name": "Temporary Path"
             },
             "tile_flower": {
