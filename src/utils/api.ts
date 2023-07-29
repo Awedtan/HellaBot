@@ -171,7 +171,7 @@ async function GET({ route, query, include, exclude }: { route: string, query: s
             path += `&exclude=${exclude[i]}`;
         }
     }
-    console.log(path);
+    // console.log(path);
     let response = await fetch(path);
 
     if (!response.ok) return { value: null };
