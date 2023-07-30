@@ -2,23 +2,6 @@
 <script src="./build/gif.js"></script>
 <script src="./build/spine-webgl.js"></script>
 <script src="https://code.jquery.com/jquery-3.1.0.min.js"></script>
-<style>
-    * {
-        margin: 0;
-        padding: 0;
-    }
-
-    body,
-    html {
-        height: 100%
-    }
-
-    canvas {
-        position: absolute;
-        width: 100%;
-        height: 100%;
-    }
-</style>
 
 <body>
     <canvas id="canvas"></canvas>
@@ -36,6 +19,9 @@
     var shapes;
     var skeletons = {};
     var activeSkeleton = "current";
+    var swirlEffect = new spine.SwirlEffect(0);
+    var jitterEffect = new spine.JitterEffect(20, 20);
+    var swirlTime = 0;
 
 
     // MY STUFF BELOW HERE
@@ -44,8 +30,7 @@
     const charName = vars.get('name');
     const animType = vars.get('type');
     const randomInt = vars.get('rand');
-    const jsonPath = "https://raw.githubusercontent.com/Awedtan/HellaBot-Assets/main/spinejson/";
-    const assetPath = `https://raw.githubusercontent.com/Aceship/Arknight-Images/main/spineassets/character/${charName}/front/`;
+    const assetPath = `https://raw.githubusercontent.com/Awedtan/HellaBot-Assets/main/spine/BattleFront/${charName}/`;
 
     let frameDelay = 20;
     const maxFrames = 2000;
@@ -62,7 +47,8 @@
         blob = new Blob([workerStr], {
             type: 'application/javascript'
         });
-    } catch (e) { // Backwards-compatibility
+    }
+    catch (e) { // Backwards-compatibility
         window.BlobBuilder = window.BlobBuilder || window.WebKitBlobBuilder || window.MozBlobBuilder;
         blob = new BlobBuilder();
         blob.append(response);
@@ -70,8 +56,8 @@
     }
 
     const gif = new GIF({
-        workers: 1,
-        quality: 50,
+        workers: 2,
+        quality: 1,
         width: 300,
         height: 300,
         workerScript: URL.createObjectURL(blob),
@@ -82,6 +68,24 @@
     function captureFrame(frameDelay) {
         frameArr.push(gl.canvas.toDataURL('image/png'));
         delayArr.push(frameDelay);
+    }
+    function waitForImagesLoaded(imageURLs, callback) {
+        var imageElements = [];
+        var remaining = imageURLs.length;
+        var onEachImageLoad = function () {
+            if (--remaining === 0 && callback) {
+                console.log('call')
+                callback(imageElements);
+            }
+        };
+
+        // first create the images and apply the onload method
+        for (var i = 0, len = imageURLs.length; i < len; i++) {
+            var img = new Image();
+            imageElements.push(img);
+            img.onload = onEachImageLoad;
+            img.src = imageURLs[i];
+        }
     }
     // MY STUFF ABOVE HERE
 
@@ -94,27 +98,31 @@
         canvas.height = window.innerHeight;
         var config = { alpha: false };
         gl = canvas.getContext("webgl", config) || canvas.getContext("experimental-webgl", config);
+        if (!gl) {
+            alert('WebGL is unavailable.');
+            return;
+        }
 
         // Create a simple shader, mesh, model-view-projection matrix and SkeletonRenderer.
-        shader = spine.webgl.Shader.newColoredTextured(gl);
+        shader = spine.webgl.Shader.newTwoColoredTextured(gl);
         batcher = new spine.webgl.PolygonBatcher(gl);
         mvp.ortho2d(0, 0, canvas.width - 1, canvas.height - 1);
         skeletonRenderer = new spine.webgl.SkeletonRenderer(gl);
         debugRenderer = new spine.webgl.SkeletonDebugRenderer(gl);
-        debugRenderer.drawRegionAttachments = false;
-        debugRenderer.drawBoundingBoxes = false;
-        debugRenderer.drawMeshHull = false;
-        debugRenderer.drawMeshTriangles = false;
-        debugRenderer.drawPaths = false;
+        debugRenderer.drawRegionAttachments = true;
+        debugRenderer.drawBoundingBoxes = true;
+        debugRenderer.drawMeshHull = true;
+        debugRenderer.drawMeshTriangles = true;
+        debugRenderer.drawPaths = true;
         debugShader = spine.webgl.Shader.newColored(gl);
         shapes = new spine.webgl.ShapeRenderer(gl);
         assetManager = new spine.webgl.AssetManager(gl);
 
-        // Tell AssetManager to load the resources for each model, including the exported .json file, the .atlas file and the .png
+        // Tell AssetManager to load the resources for each model, including the exported .skel file, the .atlas file and the .png
         // file for the atlas. We then wait until all resources are loaded in the load() method.
-        assetManager.loadText(jsonPath + charName + ".json");
-        assetManager.loadText(assetPath + charName + ".atlas");
-        assetManager.loadTexture(assetPath + charName + ".png");
+        assetManager.loadBinary(assetPath + charName + ".skel");
+        console.log(assetPath + charName + ".atlas")
+        assetManager.loadTextureAtlas(assetPath + charName + ".atlas");
         requestAnimationFrame(load);
     }
 
@@ -131,52 +139,19 @@
     function loadSkeleton(name, initialAnimation, premultipliedAlpha, skin) {
         if (skin === undefined) skin = "default";
 
-        // Load the texture atlas using name.atlas and name.png from the AssetManager.
-        // The function passed to TextureAtlas is used to resolve relative paths.
-        atlas = new spine.TextureAtlas(assetManager.get(assetPath + name + ".atlas"), function (path) {
-            return assetManager.get(assetPath + path);
-        });
-
-        // Create a AtlasAttachmentLoader that resolves region, mesh, boundingbox and path attachments
+        atlas = assetManager.get(assetPath + charName + ".atlas");
         atlasLoader = new spine.AtlasAttachmentLoader(atlas);
-
-        // Create a SkeletonJson instance for parsing the .json file.
-        var skeletonJson = new spine.SkeletonJson(atlasLoader);
-
-        // Set the scale to apply during parsing, parse the file, and create a new skeleton.
-        var skeletonData = skeletonJson.readSkeletonData(assetManager.get(jsonPath + name + ".json"));
+        var skeletonBinary = new spine.SkeletonBinary(atlasLoader);
+        var skeletonData = skeletonBinary.readSkeletonData(assetManager.get(assetPath + charName + ".skel"));
         var skeleton = new spine.Skeleton(skeletonData);
         skeleton.setSkinByName(skin);
         var bounds = calculateBounds(skeleton);
 
-        // Create an AnimationState, and set the initial animation in looping mode.
         animationStateData = new spine.AnimationStateData(skeleton.data);
         var animationState = new spine.AnimationState(animationStateData);
-        if (name == "spineboy") {
-            animationStateData.setMix("walk", "jump", 0.4)
-            animationStateData.setMix("jump", "run", 0.4);
-            animationState.setAnimation(0, "walk", true);
-            var jumpEntry = animationState.addAnimation(0, "jump", false, 3);
-            animationState.addAnimation(0, "run", true, 0);
-        } else {
-            animationState.setAnimation(0, initialAnimation, true);
-        }
+        animationState.setAnimation(0, initialAnimation, true);
         animationState.addListener({
-            start: function (track) {
-                // console.log("Animation on track " + track.trackIndex + " started");
-            },
-            interrupt: function (track) {
-                // console.log("Animation on track " + track.trackIndex + " interrupted");
-            },
-            end: function (track) {
-                // console.log("Animation on track " + track.trackIndex + " ended");
-            },
-            disposed: function (track) {
-                // console.log("Animation on track " + track.trackIndex + " disposed");
-            },
             complete: function (track) {
-                // console.log("Animation on track " + track.trackIndex + " completed");
-
                 if (start && !done) {
                     done = true;
 
@@ -204,12 +179,8 @@
                 if (!start && !done)
                     start = true;
             },
-            event: function (track, event) {
-                // console.log("Event on track " + track.trackIndex + ": " + JSON.stringify(event));
-            }
         })
 
-        // Pack everything up and return to caller.
         return { skeleton: skeleton, state: animationState, bounds: bounds, premultipliedAlpha: premultipliedAlpha };
     }
 
@@ -218,32 +189,14 @@
         skeleton.updateWorldTransform();
         var offset = new spine.Vector2();
         var size = new spine.Vector2();
-        skeleton.getBounds(offset, size);
+        skeleton.getBounds(offset, size, []);
         return { offset: offset, size: size };
-    }
-
-    function waitForImagesLoaded(imageURLs, callback) {
-        var imageElements = [];
-        var remaining = imageURLs.length;
-        var onEachImageLoad = function () {
-            if (--remaining === 0 && callback) {
-                console.log('call')
-                callback(imageElements);
-            }
-        };
-
-        // first create the images and apply the onload method
-        for (var i = 0, len = imageURLs.length; i < len; i++) {
-            var img = new Image();
-            imageElements.push(img);
-            img.onload = onEachImageLoad;
-            img.src = imageURLs[i];
-        }
     }
 
     function render() {
         var now = Date.now() / 1000;
         var delta = now - lastFrameTime;
+        // delta = 0.016;
         lastFrameTime = now;
 
         // Update the MVP matrix to adjust for canvas size changes
@@ -255,6 +208,7 @@
         // Apply the animation state based on the delta time.
         var state = skeletons[activeSkeleton].state;
         var skeleton = skeletons[activeSkeleton].skeleton;
+        var bounds = skeletons[activeSkeleton].bounds;
         var premultipliedAlpha = skeletons[activeSkeleton].premultipliedAlpha;
         state.update(delta);
         state.apply(skeleton);
@@ -267,6 +221,24 @@
 
         // Start the batch and tell the SkeletonRenderer to render the active skeleton.
         batcher.begin(shader);
+
+        var effect = $("#effectList option:selected").text();
+        if (effect == "None") {
+            skeletonRenderer.vertexEffect = null;
+        } else if (effect == "Swirl") {
+            swirlTime += delta;
+            var percent = swirlTime % 2;
+            if (percent > 1) percent = 1 - (percent - 1);
+            // swirlEffect.angle = -60 + 120 * (perecent < 0.5 ? Math.pow(percent * 2, 2) / 2 : Math.pow((percent - 1) * 2, 2) / -2 + 1);
+            swirlEffect.angle = 360 * percent;
+            swirlEffect.centerX = 200; //bounds.offset.x + bounds.size.x / 2
+            swirlEffect.centerY = 200; //bounds.offset.y + bounds.size.y / 2
+            swirlEffect.radius = Math.sqrt(bounds.size.x * bounds.size.x + bounds.size.y * bounds.size.y);
+            skeletonRenderer.vertexEffect = swirlEffect;
+        } else if (effect == "Jitter") {
+            skeletonRenderer.vertexEffect = jitterEffect;
+        }
+
         skeletonRenderer.premultipliedAlpha = premultipliedAlpha;
         skeletonRenderer.draw(batcher, skeleton);
         batcher.end();
@@ -274,14 +246,18 @@
         shader.unbind();
 
         // draw debug information
-        debugShader.bind();
-        debugShader.setUniform4x4f(spine.webgl.Shader.MVP_MATRIX, mvp.values);
-        debugRenderer.premultipliedAlpha = premultipliedAlpha;
-        shapes.begin(debugShader);
-        debugRenderer.draw(shapes, skeleton);
-        shapes.end();
-        debugShader.unbind();
+        var debug = $('#debug').is(':checked');
+        if (debug) {
+            debugShader.bind();
+            debugShader.setUniform4x4f(spine.webgl.Shader.MVP_MATRIX, mvp.values);
+            debugRenderer.premultipliedAlpha = premultipliedAlpha;
+            shapes.begin(debugShader);
+            debugRenderer.draw(shapes, skeleton);
+            shapes.end();
+            debugShader.unbind();
+        }
 
+        // Capture a frame and apply the time delay
         if (start && !done) {
             cumDeltaDelay += delta * 1000;
 

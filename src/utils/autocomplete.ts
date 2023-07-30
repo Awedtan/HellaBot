@@ -1,5 +1,5 @@
 import { Definition, Enemy, Item, Operator, Stage } from "../types";
-import { SingleParams, getAllDefinitions, getAllEnemies, getAllItems, getAllOperators, getAllStageArrs } from "./api";
+import { SingleParams, getAllDefinitions, getAllEnemies, getAllItems, getAllOperators, getAllStageArrs } from "./Api";
 
 const limit = 6;
 

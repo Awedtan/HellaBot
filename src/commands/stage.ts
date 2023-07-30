@@ -1,8 +1,8 @@
 import { AutocompleteInteraction, ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
 import { Command } from '../structures/Command';
-import { getStageArr, getToughStageArr } from '../utils/api';
-import { stageAutocomplete } from '../utils/autocomplete';
-import { buildStageMessage, buildStageSelectMessage } from '../utils/build';
+import { getStageArr, getToughStageArr } from '../utils/Api';
+import { stageAutocomplete } from '../utils/Autocomplete';
+import { buildStageMessage, buildStageSelectMessage } from '../utils/Build';
 
 export default class StageCommand implements Command {
     data = new SlashCommandBuilder()

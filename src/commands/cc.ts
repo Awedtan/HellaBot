@@ -1,7 +1,7 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
 import { Command } from '../structures/Command';
-import { getCcStage } from '../utils/api';
-import { buildCcMessage, buildCcSelectMessage } from '../utils/build';
+import { getCcStage } from '../utils/Api';
+import { buildCcMessage, buildCcSelectMessage } from '../utils/Build';
 
 export default class CcCommand implements Command {
     data = new SlashCommandBuilder()

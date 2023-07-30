@@ -1,9 +1,9 @@
 import { AutocompleteInteraction, ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
 import { Command } from '../structures/Command';
 import { Operator } from '../types';
-import { getOperator } from '../utils/api';
-import { operatorAutocomplete } from '../utils/autocomplete';
-import { buildCostMessage } from '../utils/build';
+import { getOperator } from '../utils/Api';
+import { operatorAutocomplete } from '../utils/Autocomplete';
+import { buildCostMessage } from '../utils/Build';
 
 export default class CostCommand implements Command {
     data = new SlashCommandBuilder()

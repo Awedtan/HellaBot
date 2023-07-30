@@ -1,14 +1,11 @@
 import { ActionRowBuilder, AttachmentBuilder, BaseMessageOptions, ButtonBuilder, ButtonStyle, EmbedAuthorOptions, EmbedBuilder, EmbedField, StringSelectMenuBuilder, StringSelectMenuOptionBuilder } from 'discord.js';
-import { join, resolve } from 'path';
+import { join } from 'path';
 import type { Blackboard, CCStage, Definition, Enemy, GameEvent, GridRange, Item, LevelUpCost, Operator, Paradox, RogueRelic, RogueStage, RogueTheme, RogueVariation, Stage, StageData } from "../types";
-import { getAllDefinitions, getAllEvents, getEnemy, getItem, getOperator, getRange, getRogueTheme, getStageArr, getToughStageArr } from './api';
-// const fs = require('fs');
+import { getAllDefinitions, getAllEvents, getEnemy, getItem, getOperator, getRange, getRogueTheme, getStageArr, getToughStageArr } from './Api';
 const nodefetch = require('node-fetch');
-const puppeteer = require('puppeteer');
 const { embedColour, paths, gameConsts } = require('../constants');
 
 const cleanFilename = (text: string) => text.split(/%|[#\+]|&|\[|\]/).join(''); // Remove special characters that discord doesn't like (%, #, etc.)
-// const fileExists = async (path: string) => !!(await fs.promises.stat(path).catch(e => false));
 export const urlExists = async (url: string) => (await nodefetch(url)).status === 200;
 function formatText(text: string, blackboard: Blackboard[]) { // Dumbass string manipulation
     if (text === null || text === undefined) return '';
@@ -1045,15 +1042,13 @@ export async function buildSkillMessage(op: Operator, page: number, level: numbe
 
     return { embeds: [embed], files: [avatar, thumbnail], components: [rowOne, rowTwo] };
 }
-export async function buildSpineMessage(op: Operator, type: string, rand: number): Promise<BaseMessageOptions> {
+export async function buildSpineMessage(op: Operator, animArr: string[], type: string, rand: number): Promise<BaseMessageOptions> {
     const avatarPath = paths.aceshipImageUrl + `/avatars/${op.id}.png`;
     const avatar = new AttachmentBuilder(avatarPath);
     const authorField = buildAuthorField(op);
     const gifFile = op.id + rand + '.gif';
-    const gifPath = join(__dirname, '..', 'spine', gifFile);
+    const gifPath = join(__dirname, 'spine', gifFile);
     const gif = new AttachmentBuilder(gifPath);
-    const spineJson = await (await nodefetch(paths.myAssetUrl + `/spinejson/${op.id}.json`)).json();
-    const animArr = Object.keys(spineJson.animations);
 
     const animSelector = new StringSelectMenuBuilder()
         .setCustomId(`spineඞ${op.id}`)
@@ -1688,20 +1683,6 @@ async function buildRangeField({ range, rangeId }: { range?: GridRange, rangeId?
         rangeString += '\n';
     }
     return { name: 'Range', value: rangeString, inline: false };
-}
-export async function buildSpinePage(op: Operator, type: string) {
-    const browser = await puppeteer.launch({ headless: "old", args: ["--no-sandbox", "--disabled-setupid-sandbox"] });
-    const page = await browser.newPage();
-    const rand = Math.floor(Math.random() * 100000);
-    await page.setViewport({ width: 300, height: 300 });
-    await page.goto("file://" + resolve(__dirname, '..', 'spine', `spine.html?name=${op.id}&type=${type}&rand=${rand}`));
-    const client = await page.target().createCDPSession()
-    await client.send('Page.setDownloadBehavior', {
-        behavior: 'allow',
-        downloadPath: resolve(__dirname, '..', 'spine'),
-    })
-
-    return { page, browser, rand };
 }
 function buildStageDiagramFields(stageData: StageData): EmbedField[] {
     const map = stageData.mapData.map;

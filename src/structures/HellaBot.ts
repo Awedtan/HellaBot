@@ -1,8 +1,9 @@
 import { ActivityType, Client, Collection, Events, GatewayIntentBits, REST, Routes } from 'discord.js';
 import { readdirSync, unlinkSync } from 'fs';
 import { join } from 'path';
-import { getCcStage, getEnemy, getOperator, getParadox, getRogueTheme, getStageArr, getToughStageArr } from '../utils/api';
-import * as build from '../utils/build';
+import { getCcStage, getEnemy, getOperator, getParadox, getRogueTheme, getStageArr, getToughStageArr } from '../utils/Api';
+import * as Build from '../utils/Build';
+import * as SpineHelper from '../utils/SpineHelper';
 import { Command } from './Command';
 
 export default class HellaBot {
@@ -100,7 +101,7 @@ export default class HellaBot {
                         const stage = await getCcStage({ query: idArr[1] })
                         const page = parseInt(idArr[2]);
 
-                        const ccEmbed = await build.buildCcMessage(stage, page);
+                        const ccEmbed = await Build.buildCcMessage(stage, page);
                         await interaction.editReply(ccEmbed);
 
                         break;
@@ -109,7 +110,7 @@ export default class HellaBot {
                         const op = await getOperator({ query: idArr[1] });
                         const page = parseInt(idArr[2]);
 
-                        const costEmbed = await build.buildCostMessage(op, page);
+                        const costEmbed = await Build.buildCostMessage(op, page);
                         await interaction.editReply(costEmbed);
 
                         break;
@@ -118,7 +119,7 @@ export default class HellaBot {
                         const enemy = await getEnemy({ query: idArr[1] });
                         const level = parseInt(idArr[2]);
 
-                        const enemyEmbed = await build.buildEnemyMessage(enemy, level);
+                        const enemyEmbed = await Build.buildEnemyMessage(enemy, level);
                         await interaction.editReply(enemyEmbed);
 
                         break;
@@ -126,7 +127,7 @@ export default class HellaBot {
                     case 'events': {
                         const index = parseInt(idArr[1]);
 
-                        const eventListEmbed = await build.buildEventListMessage(index);
+                        const eventListEmbed = await Build.buildEventListMessage(index);
                         await interaction.editReply(eventListEmbed);
 
                         break;
@@ -137,7 +138,7 @@ export default class HellaBot {
                         const page = parseInt(idArr[3]);
                         const level = parseInt(idArr[4]);
 
-                        const infoEmbed = await build.buildInfoMessage(op, type, page, level);
+                        const infoEmbed = await Build.buildInfoMessage(op, type, page, level);
                         await interaction.editReply(infoEmbed);
 
                         break;
@@ -147,7 +148,7 @@ export default class HellaBot {
                         const page = parseInt(idArr[2]);
                         const level = parseInt(idArr[3]);
 
-                        const moduleEmbed = await build.buildModuleMessage(op, page, level);
+                        const moduleEmbed = await Build.buildModuleMessage(op, page, level);
                         await interaction.editReply(moduleEmbed);
 
                         break;
@@ -157,7 +158,7 @@ export default class HellaBot {
                         const paradox = await getParadox({ query: op.id });
                         const page = parseInt(idArr[2]);
 
-                        const paradoxEmbed = await build.buildParadoxMessage(paradox, page);
+                        const paradoxEmbed = await Build.buildParadoxMessage(paradox, page);
                         await interaction.editReply(paradoxEmbed);
 
                         break;
@@ -168,7 +169,7 @@ export default class HellaBot {
                         const tag = idArr[3];
                         const select = idArr[4] === 'select';
 
-                        const recruitEmbed = await build.buildRecruitMessage(qual, value, tag, select);
+                        const recruitEmbed = await Build.buildRecruitMessage(qual, value, tag, select);
                         await interaction.editReply(recruitEmbed);
 
                         break;
@@ -179,7 +180,7 @@ export default class HellaBot {
                                 const theme = parseInt(idArr[2]);
                                 const index = parseInt(idArr[3]);
 
-                                const relicListEmbed = await build.buildRogueRelicListMessage(theme, index);
+                                const relicListEmbed = await Build.buildRogueRelicListMessage(theme, index);
                                 await interaction.editReply(relicListEmbed);
 
                                 break;
@@ -191,7 +192,7 @@ export default class HellaBot {
                                 const stage = stages[idArr[3]];
                                 const page = parseInt(idArr[5]);
 
-                                const stageEmbed = await build.buildRogueStageMessage(theme, stage, page);
+                                const stageEmbed = await Build.buildRogueStageMessage(theme, stage, page);
                                 await interaction.editReply(stageEmbed);
 
                                 break;
@@ -205,7 +206,7 @@ export default class HellaBot {
                         const page = parseInt(idArr[2]);
                         const level = parseInt(idArr[3]);
 
-                        const skillEmbed = await build.buildSkillMessage(op, page, level);
+                        const skillEmbed = await Build.buildSkillMessage(op, page, level);
                         await interaction.editReply(skillEmbed);
 
                         break;
@@ -213,7 +214,7 @@ export default class HellaBot {
                     case 'skin': {
                         const op = await getOperator({ query: idArr[1] });
                         const page = parseInt(idArr[2]);
-                        const skinEmbed = await build.buildArtMessage(op, page);
+                        const skinEmbed = await Build.buildArtMessage(op, page);
 
                         await interaction.editReply(skinEmbed);
                         break;
@@ -222,7 +223,7 @@ export default class HellaBot {
                         const stage = idArr[3] === 'true' ? (await getToughStageArr({ query: idArr[1] }))[parseInt(idArr[2])] : (await getStageArr({ query: idArr[1] }))[parseInt(idArr[2])];
                         const page = parseInt(idArr[4]);
 
-                        const stageEmbed = await build.buildStageMessage(stage, page);
+                        const stageEmbed = await Build.buildStageMessage(stage, page);
                         await interaction.editReply(stageEmbed);
 
                         break;
@@ -246,7 +247,7 @@ export default class HellaBot {
                     case 'cc': {
                         const stage = await getCcStage({ query: interaction.values[0] })
 
-                        const ccEmbed = await build.buildCcMessage(stage, 0);
+                        const ccEmbed = await Build.buildCcMessage(stage, 0);
                         await interaction.editReply(ccEmbed);
 
                         break;
@@ -257,17 +258,24 @@ export default class HellaBot {
 
                         await interaction.editReply({ content: `Generating \`${type}\` gif...`, components: [] })
 
-                        const { page, browser, rand } = await build.buildSpinePage(op, type);
+                        const skelData = await SpineHelper.loadSkel(op);
+                        const animArr = [];
+                        for (const animation of skelData.animations) {
+                            if (animation.name === 'Default') continue;
+                            animArr.push(animation.name);
+                        }
+
+                        const { page, browser, rand } = await SpineHelper.launchPage(op, type);
 
                         page.on('console', async message => {
                             if (message.text() !== 'done') return;
                             await new Promise(r => setTimeout(r, 1000));
                             await browser.close();
-                            const spineEmbed = await build.buildSpineMessage(op, type, rand);
+                            const spineEmbed = await Build.buildSpineMessage(op, animArr, type, rand);
                             await interaction.editReply(spineEmbed);
-                            await unlinkSync(join(__dirname, '..', 'spine', op.id + rand + '.gif'));
+                            await unlinkSync(join(__dirname, '..', 'utils', 'spine', op.id + rand + '.gif'));
                         }).on('pageerror', async ({ message }) => {
-                            console.error(message);
+                            console.error(`Spine error for ${op.data.name}: ` + message);
                             return await interaction.editReply({ content: 'There was an error while generating the animation!' });
                         });
 
@@ -276,7 +284,7 @@ export default class HellaBot {
                     case 'stage': {
                         const stage = (await getStageArr({ query: idArr[2] }))[interaction.values[0]];
 
-                        const stageEmbed = await build.buildStageMessage(stage, 0);
+                        const stageEmbed = await Build.buildStageMessage(stage, 0);
                         await interaction.editReply(stageEmbed);
 
                         break;

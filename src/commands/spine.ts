@@ -2,11 +2,10 @@ import { AutocompleteInteraction, ChatInputCommandInteraction, SlashCommandBuild
 import { unlinkSync } from 'fs';
 import { join } from 'path';
 import { Command } from '../structures/Command';
-import { getOperator } from '../utils/api';
-import { operatorAutocomplete } from '../utils/autocomplete';
-import { buildSpineMessage, buildSpinePage, urlExists } from '../utils/build';
-const nodefetch = require('node-fetch');
-const { paths } = require('../constants');
+import { getOperator } from '../utils/Api';
+import { operatorAutocomplete } from '../utils/Autocomplete';
+import { buildSpineMessage } from '../utils/Build';
+import * as SpineHelper from '../utils/SpineHelper';
 
 export default class SpineCommand implements Command {
     data = new SlashCommandBuilder()
@@ -25,39 +24,37 @@ export default class SpineCommand implements Command {
     }
     async execute(interaction: ChatInputCommandInteraction) {
         const name = interaction.options.getString('name').toLowerCase();
-
         const op = await getOperator({ query: name });
 
         if (!op)
             return await interaction.reply({ content: 'That operator doesn\'t exist!', ephemeral: true });
 
-        const jsonPath = paths.myAssetUrl + `/spinejson/${op.id}.json`;
+        const skelData = await SpineHelper.loadSkel(op);
 
-        if (!await urlExists(jsonPath))
-            return await interaction.reply({ content: 'That operator doesn\'t have any spine data yet!', ephemeral: true });
+        if (!skelData)
+            return await interaction.reply({ content: 'nope', ephemeral: true });
 
-        const spineJson = await (await nodefetch(paths.myAssetUrl + `/spinejson/${op.id}.json`)).json();
-
-        if (spineJson.skeleton.spine !== '3.5.51')
-            return await interaction.reply({ content: 'That operator\'s spine data is not yet supported!', ephemeral: true });
+        const animArr = [];
+        for (const animation of skelData.animations) {
+            if (animation.name === 'Default') continue;
+            animArr.push(animation.name);
+        }
 
         await interaction.deferReply();
 
-        // Default animations are a single frame that lasts forever, they do not work and should not be shown
-        const type = Object.keys(spineJson.animations)[0] === 'Default' ? Object.keys(spineJson.animations)[1] : Object.keys(spineJson.animations)[0];
-        const { page, browser, rand } = await buildSpinePage(op, type);
+        const { page, browser, rand } = await SpineHelper.launchPage(op, animArr[0]);
 
         page.on('console', async message => {
             if (message.text() === 'done') {
                 await new Promise(r => setTimeout(r, 1000));
                 await browser.close();
 
-                const spineEmbed = await buildSpineMessage(op, type, rand);
+                const spineEmbed = await buildSpineMessage(op, animArr, animArr[0], rand);
                 await interaction.followUp(spineEmbed);
-                await unlinkSync(join(__dirname, '..', 'spine', op.id + rand + '.gif'));
+                unlinkSync(join(__dirname, '..', 'utils', 'spine', op.id + rand + '.gif'));
             }
         }).on('pageerror', async ({ message }) => {
-            console.error(message);
+            console.error(`Spine error for ${op.data.name}: ` + message);
             return await interaction.editReply({ content: 'There was an error while generating the animation!' });
         });
     }
