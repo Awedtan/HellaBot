@@ -29,7 +29,7 @@ async function launchPage(op, type) {
     const rand = Math.floor(Math.random() * 100000);
     await page.setViewport({ width: 300, height: 300 });
 
-    const spineFolder = path.join(__dirname, '..', 'utils', 'spine');
+    const spineFolder = path.join(__dirname, 'spine');
     await page.goto("file://" + path.join(spineFolder, `spine.html?name=${op.id}&type=${type}&rand=${rand}`));
 
     const client = await page.target().createCDPSession();
