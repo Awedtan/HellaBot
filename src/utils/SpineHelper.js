@@ -10,7 +10,6 @@ async function loadSkel(op) {
         const assetManager = new spine.AssetManager();
         assetManager.loadBinary(path.join(spinePath, op.id + ".skel"));
 
-
         while (!assetManager.isLoadingComplete())
             await new Promise(resolve => setTimeout(resolve, 100));
 

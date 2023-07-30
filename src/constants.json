@@ -727,6 +727,10 @@
                 "emoji": "⬜",
                 "name": "Yumen Catastrophe Fortification"
             },
+            "tile_passable_wall_forbidden": {
+                "emoji": "◽",
+                "name": "Yumen Catastrophe Fortification (Non-deployable)"
+            },
             "tile_stairs": {
                 "emoji": "🪜",
                 "name": "Ladder"
