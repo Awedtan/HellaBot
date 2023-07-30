@@ -82,11 +82,15 @@ Thanks to [MrJAwesome](https://www.youtube.com/@MrJAwesomeYT) for making extensi
 
 ## todo:
 
+make sure spine stuff works
+
 separate events from constructor
 
-revamp is and spine commands
+revamp is commands
 
 add help command and better command descriptions
+
+document datamining procedures for more consistent results
 
 maintain bot and api
 
