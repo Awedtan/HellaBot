@@ -59,8 +59,8 @@
     const gif = new GIF({
         workers: 1,
         quality: 10,
-        width: 300,
-        height: 300,
+        width: 200,
+        height: 200,
         workerScript: URL.createObjectURL(blob),
         // dither: "FalseFloydSteinberg",
         debug: true
@@ -199,7 +199,7 @@
     function render() {
         var now = Date.now() / 1000;
         var delta = now - lastFrameTime;
-        // delta = 0.016;
+        delta = 0.042; // 24 fps
         lastFrameTime = now;
 
         // Update the MVP matrix to adjust for canvas size changes
