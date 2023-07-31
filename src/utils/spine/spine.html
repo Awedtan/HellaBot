@@ -38,6 +38,7 @@
     const delayArr = [];
     let frameCount = 0;
     let start = false;
+    let startfr = false;
     let done = false;
     let cumDeltaDelay = 0;
 
@@ -152,7 +153,7 @@
         animationState.setAnimation(0, initialAnimation, true);
         animationState.addListener({
             complete: function (track) {
-                if (start && !done) {
+                if (startfr && !done) {
                     done = true;
 
                     waitForImagesLoaded(frameArr, function (images) {
@@ -178,6 +179,8 @@
 
                 if (!start && !done)
                     start = true;
+                if (start && !done)
+                    startfr = true;
             },
         })
 
@@ -258,7 +261,7 @@
         }
 
         // Capture a frame and apply the time delay
-        if (start && !done) {
+        if (startfr && !done) {
             cumDeltaDelay += delta * 1000;
 
             if (frameCount < maxFrames && cumDeltaDelay >= frameDelay) {
