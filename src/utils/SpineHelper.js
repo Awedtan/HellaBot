@@ -5,7 +5,7 @@ const XMLHttpRequest = require('w3c-xmlhttprequest').XMLHttpRequest;
 
 async function loadSkel(op) {
     try {
-        const spinePath = paths.myAssetUrl + `/spine/BattleFront/${op.id}`;
+        const spinePath = paths.myAssetUrl + `/spine/${op.id}`;
 
         const assetManager = new spine.AssetManager();
         assetManager.loadBinary(path.join(spinePath, op.id + ".skel"));
