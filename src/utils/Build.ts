@@ -7,50 +7,75 @@ const { embedColour, paths, gameConsts } = require('../constants');
 
 const cleanFilename = (text: string) => text.split(/%|[#\+]|&|\[|\]/).join(''); // Remove special characters that discord doesn't like (%, #, etc.)
 export const urlExists = async (url: string) => (await nodefetch(url)).status === 200;
-function formatText(text: string, blackboard: Blackboard[]) { // Dumbass string manipulation
-    if (text === null || text === undefined) return '';
-    if (blackboard === null || blackboard === undefined) blackboard = [];
-
-    text = text.trim();
-    const skillKeys: { [key: string]: number | string } = {};
-    for (const stat of blackboard) {
-        const key = stat.key;
-        const value = stat.value;
-        const getKeyIndex = (text: string, key: string) => { // Probably the worst way to do this
-            let tempText = text;
-            let keyIndex = tempText.indexOf(key);
-            for (let i = 0; i < 8; i++) { // Arbitrary loop limit to prevent accidental infinite loop, 99.8% chance this will not be a problem ever
-                const nextChar = tempText.charAt(keyIndex + key.length);
-                if (nextChar === ':' || nextChar === '}') break;
-                tempText = tempText.substring(keyIndex + 1);
-                keyIndex = tempText.indexOf(key);
-            }
-            return text.indexOf(tempText) + keyIndex;
-        }
-
-        // If a tag has a colon like "<tag_name:0>", the value should be a percentage and thus must be converted to one (0.2 => 20%)
-        if (text.charAt(getKeyIndex(text, key) + key.length) === ':' || text.charAt(getKeyIndex(text, key.toUpperCase()) + key.length) === ':') {
-            skillKeys[key] = `${Math.round(value * 100)}%`;
-        }
-        else {
-            skillKeys[key] = value;
-        }
-    }
-
-    const endTagRegex = /<\/[^<]*>/; // Checks for "</tag_name>"
-    const tagRegex = /<.[a-z]{2,5}?\.[^<]+>|<color=[^<]*>|:0%|:0.0%|:0.0|(?<=[^0-9]):0/; // Absolute fuckery
-    text = text.split(endTagRegex).join('').split(tagRegex).join('');
-
-    // Split text into chunks, each blackboard tag should be in its own chunk
-    const temp = text.split(/-?{-?|}/);
-    for (let i = 0; i < temp.length; i++) {
-        if (skillKeys.hasOwnProperty(temp[i].toLowerCase())) { // If current chunk is a tag, replace current chunk with tag value
-            temp[i] = `\`${skillKeys[temp[i].toLowerCase()]}\``;
-        }
-    }
-    text = temp.join('');
-
+function removeStyleTags(text: string) {
+    const regex = /<.[a-z]{2,5}?\.[^<]+>|<\/[^<]*>/;
+    text = text.split(regex).join('');
     return text;
+}
+function insertBlackboardVariables(text: string, blackboard: Blackboard[]) {
+    // Note: check these every so often to see if their skills still display properly
+    // silverash s2/s3
+    // eyjafjalla s2
+    // lin s1
+    // tachanka s1/s2
+    // mizuki s1
+    // mostima s3
+    // irene s1
+    // utage s2
+
+    const chunkIsVariable = (chunk: string, blackboard: Blackboard[]) => {
+        chunk = chunk.toLowerCase();
+        for (const variable of blackboard) {
+            const key = variable.key;
+            if (chunk.indexOf(key.toLowerCase()) !== 0 && !(chunk.charAt(0) === '-' && chunk.indexOf(key.toLowerCase()) === 1)) continue;
+            if (chunk.split(' ').length !== 1) continue;
+            if (![key.charAt(key.length - 1), '0', '%'].includes(chunk.charAt(chunk.length - 1))) continue;
+            return true;
+        }
+        return false;
+    }
+    const formatVariable = (chunk: string, blackboard: Blackboard[]) => {
+        // {tag} {tag:0} {tag:0%} {tag:0.0} {tag:0.0%}
+        chunk = chunk.toLowerCase();
+        let value;
+        const tag = chunk.split(':')[0];
+        for (const variable of blackboard) {
+            const key = variable.key;
+            if (tag === key) {
+                switch (chunk.charAt(chunk.length - 1)) {
+                    case key.charAt(key.length - 1):
+                    case '0':
+                        value = variable.value;
+                        break;
+                    case '%':
+                        value = `${Math.round(variable.value * 100)}%`
+                        break;
+                }
+            }
+            else if (tag === `-${key}`) {
+                switch (chunk.charAt(chunk.length - 1)) {
+                    case key.charAt(key.length - 1):
+                    case '0':
+                        value = -variable.value;
+                        break;
+                    case '%':
+                        value = `${-Math.round(variable.value * 100)}%`
+                        break;
+                }
+            }
+        }
+        return `\`${value}\``;
+    }
+
+    const textArr = removeStyleTags(text.trim()).split(/{|}/);
+
+    for (let i = 0; i < textArr.length; i++) {
+        if (chunkIsVariable(textArr[i], blackboard)) {
+            textArr[i] = formatVariable(textArr[i], blackboard);
+        }
+    }
+
+    return textArr.join('').split('-`').join('`-').split('+`').join('`+');
 }
 
 export async function buildArtMessage(op: Operator, page: number): Promise<BaseMessageOptions> {
@@ -103,7 +128,7 @@ export async function buildBaseMessage(op: Operator, page: number): Promise<Base
 
     const authorField = buildAuthorField(op);
     const title = `${base.buffName} - ${gameConsts.eliteLevels[baseInfo.cond.phase]} Lv${baseInfo.cond.level}`;
-    const description = formatText(base.description, []);
+    const description = removeStyleTags(base.description);
 
     const embed = new EmbedBuilder()
         .setColor(embedColour)
@@ -119,7 +144,7 @@ export async function buildCcMessage(stage: CCStage, page: number): Promise<Base
     const stageData = stage.levels;
 
     const title = `${stageInfo.location} - ${stageInfo.name}`;
-    const description = formatText(stageInfo.description, []);
+    const description = removeStyleTags(stageInfo.description);
 
     const embed = new EmbedBuilder()
         .setColor(embedColour)
@@ -249,7 +274,7 @@ export async function buildDefineMessage(definition: Definition): Promise<BaseMe
     const embed = new EmbedBuilder()
         .setColor(embedColour)
         .setTitle(definition.termName)
-        .setDescription(formatText(definition.description, []));
+        .setDescription(removeStyleTags(definition.description));
 
     return { embeds: [embed] };
 }
@@ -299,7 +324,7 @@ export async function buildEnemyMessage(enemy: Enemy, level: number): Promise<Ba
     const thumbnail = new AttachmentBuilder(thumbnailPath);
 
     const title = `${enemyInfo.enemyIndex} - ${enemyInfo.name}`;
-    const description = `${formatText(enemyInfo.description, [])}\n\n${formatText(enemyInfo.ability, [])}`;
+    const description = `${removeStyleTags(enemyInfo.description)}\n\n${removeStyleTags(enemyInfo.ability)}`;
 
     const hp = enemyData.attributes.maxHp.m_defined ? enemyData.attributes.maxHp.m_value.toString() :
         baseData.attributes.maxHp.m_defined ? baseData.attributes.maxHp.m_value.toString() : '0';
@@ -488,11 +513,11 @@ export async function buildOperatorMessage(op: Operator): Promise<BaseMessageOpt
         title += '★';
     }
 
-    let description = formatText(op.data.description, []);
+    let description = removeStyleTags(op.data.description);
     if (op.data.trait !== null) {
         const candidate = op.data.trait.candidates[op.data.trait.candidates.length - 1];
         if (candidate.overrideDescripton !== null) {
-            description = formatText(candidate.overrideDescripton, candidate.blackboard);
+            description = insertBlackboardVariables(candidate.overrideDescripton, candidate.blackboard);
         }
     }
     const descriptionField = { name: `${gameConsts.professions[op.data.profession]} - ${op.archetype}`, value: description };
@@ -508,7 +533,7 @@ export async function buildOperatorMessage(op: Operator): Promise<BaseMessageOpt
     if (op.data.talents !== null) {
         for (const talent of op.data.talents) {
             const candidate = talent.candidates[talent.candidates.length - 1];
-            embed.addFields({ name: `*Talent:* ${candidate.name}`, value: formatText(candidate.description, []) });
+            embed.addFields({ name: `*Talent:* ${candidate.name}`, value: removeStyleTags(candidate.description) });
         }
     }
 
@@ -566,7 +591,7 @@ export async function buildParadoxMessage(paradox: Paradox, page: number): Promi
 
     const authorField = buildAuthorField(op);
     const title = `Paradox Simulation - ${stageInfo.name}`;
-    const description = formatText(stageInfo.description, []);
+    const description = removeStyleTags(stageInfo.description);
 
     const embed = new EmbedBuilder()
         .setColor(embedColour)
@@ -877,7 +902,7 @@ export async function buildRogueStageMessage(theme: number, stage: RogueStage, p
     const isChallenge = stageInfo.difficulty !== 'NORMAL';
 
     const title = isChallenge ? `Emergency ${stageInfo.code} - ${stageInfo.name}` : `${stageInfo.code} - ${stageInfo.name}`;
-    const description = isChallenge ? formatText(`${stageInfo.description}\n${stageInfo.eliteDesc}`, []) : formatText(stageInfo.description, []);
+    const description = isChallenge ? removeStyleTags(`${stageInfo.description}\n${stageInfo.eliteDesc}`) : removeStyleTags(stageInfo.description);
 
     const embed = new EmbedBuilder()
         .setColor(embedColour)
@@ -1077,7 +1102,7 @@ export async function buildStageMessage(stage: Stage, page: number): Promise<Bas
     const isChallenge = stageInfo.diffGroup === 'TOUGH' || stageInfo.difficulty === 'FOUR_STAR'
 
     const title = isChallenge ? `Challenge ${stageInfo.code} - ${stageInfo.name}` : `${stageInfo.code} - ${stageInfo.name}`;
-    const description = formatText(stageInfo.description, []);
+    const description = removeStyleTags(stageInfo.description);
 
     const embed = new EmbedBuilder()
         .setColor(embedColour)
@@ -1325,7 +1350,7 @@ export async function buildInfoMessage(op: Operator, type: number, page: number,
             rowArr.push(moduleRow);
 
             const moduleArr = [moduleOne, moduleTwo];
-            for (let i = 0; i < op.modules.length - 1; i++) {
+            for (let i = 0; i < op.modules.length; i++) {
                 moduleArr[i].setStyle(ButtonStyle.Primary);
                 if (i !== page) {
                     moduleArr[i].setCustomId(`infoඞ${op.id}ඞ${type}ඞ${i}ඞ${level}ඞmodule`)
@@ -1492,7 +1517,7 @@ export async function buildInfoModuleMessage(op: Operator, type: number, page: n
     const avatarPath = paths.aceshipImageUrl + `/avatars/${op.id}.png`;
     const avatar = new AttachmentBuilder(avatarPath);
 
-    const { embed, thumbnail } = await buildModuleEmbed(op, page + 1, level); // +1 since info command excludes default but modules command doesnt
+    const { embed, thumbnail } = await buildModuleEmbed(op, page, level);
 
     const lOne = new ButtonBuilder()
         .setCustomId(`infoඞ${op.id}ඞ${type}ඞ${page}ඞ0ඞmodule`)
@@ -1845,7 +1870,7 @@ async function buildSkillEmbed(op: Operator, page: number, level: number): Promi
     if (skillLevel.duration > 0) {
         description += ` - *Duration:* ${skillLevel.duration} sec`;
     }
-    description += `**\n${formatText(skillLevel.description, skillLevel.blackboard)} `;
+    description += `**\n${insertBlackboardVariables(skillLevel.description, skillLevel.blackboard)} `;
 
     const embed = new EmbedBuilder()
         .setColor(embedColour)
@@ -1963,10 +1988,10 @@ async function buildModuleEmbed(op: Operator, page: number, level: number): Prom
             const candidate = candidates[candidates.length - 1];
 
             if (candidate.additionalDescription !== null) {
-                description += `${formatText(candidate.additionalDescription, candidate.blackboard)}\n`;
+                description += `${insertBlackboardVariables(candidate.additionalDescription, candidate.blackboard)}\n`;
             }
             if (candidate.overrideDescripton !== null) {
-                description += `${formatText(candidate.overrideDescripton, candidate.blackboard)}\n`;
+                description += `${insertBlackboardVariables(candidate.overrideDescripton, candidate.blackboard)}\n`;
             }
         }
         if (part.addOrOverrideTalentDataBundle.candidates !== null) {
@@ -1977,7 +2002,7 @@ async function buildModuleEmbed(op: Operator, page: number, level: number): Prom
                 talentName = candidate.name;
             }
             if (candidate.upgradeDescription !== null) {
-                talentDescription += `${formatText(candidate.upgradeDescription, candidate.blackboard)}\n`;
+                talentDescription += `${insertBlackboardVariables(candidate.upgradeDescription, candidate.blackboard)}\n`;
             }
         }
     }

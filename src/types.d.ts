@@ -28,8 +28,8 @@ export type AttributesKeyFrame = {
 
 type Blackboard = {
     key: string;
-    value: number;
-    valueStr: string;
+    value?: number;
+    valueStr?: string;
 };
 
 type Base = {
