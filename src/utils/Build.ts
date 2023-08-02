@@ -1908,7 +1908,7 @@ async function buildCostEmbed(op: Operator, page: number): Promise<{ embed: Embe
                 if (phase.evolveCost === null) continue;
 
                 let phaseDescription = await buildCostString(phase.evolveCost);
-                phaseDescription += `LMD **x${gameConsts.eliteLmdCost[op.data.rarity][i - 1]}**\n`;
+                phaseDescription += `LMD **x${gameConsts.evolveGoldCost[op.data.rarity][i - 1]}**\n`;
                 embed.addFields({ name: `Elite ${i}`, value: phaseDescription, inline: true });
             }
             break;
