@@ -1,10 +1,8 @@
 # HellaBot
 
+An Arknights Discord bot that provides information on operators, enemies, stages, and more! An under construction fun personal project.
+
 <img src="https://raw.githubusercontent.com/Awedtan/HellaBot-Assets/main/readme/demo.gif" height="600"/>
-
-An Arknights Discord bot that provides information on operators, enemies, stages, and more! A fun personal project.
-
-Most game data is fetched from a MongoDB Atlas database through an Express API. This data is loaded from [Kengxxiao/ArknightsGameData](https://github.com/Kengxxiao/ArknightsGameData), massaged into a nicer format, and sent into the database.
 
 ## Installation
 
