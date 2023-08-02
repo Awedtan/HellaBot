@@ -62,8 +62,7 @@
         width: 200,
         height: 200,
         workerScript: URL.createObjectURL(blob),
-        // dither: "FalseFloydSteinberg",
-        debug: true
+        // debug: true
     });
 
     function captureFrame(frameDelay) {
@@ -197,9 +196,11 @@
     }
 
     function render() {
+        if (done) return;
+        
         var now = Date.now() / 1000;
         var delta = now - lastFrameTime;
-        delta = 0.042; // 24 fps
+        delta = 0.05; // 20 fps
         lastFrameTime = now;
 
         // Update the MVP matrix to adjust for canvas size changes

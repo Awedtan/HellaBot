@@ -23,7 +23,7 @@ async function loadSkel(op) {
 }
 
 async function launchPage(op, type) {
-    const browser = await puppeteer.launch({ headless: "old", args: ["--no-sandbox", "--disabled-setupid-sandbox"] });
+    const browser = await puppeteer.launch({ headless: 'new', args: ["--no-sandbox", "--disabled-setupid-sandbox"] });
     const page = await browser.newPage();
     const rand = Math.floor(Math.random() * 100000);
     await page.setViewport({ width: 200, height: 200 });
