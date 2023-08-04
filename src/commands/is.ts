@@ -16,7 +16,6 @@ function buildSubcommandGroup(subcommandGroup: SlashCommandSubcommandGroupBuilde
                 .addStringOption(option =>
                     option.setName('difficulty')
                         .setDescription('Stage difficulty')
-                        .setRequired(true)
                         .addChoices(
                             { name: 'normal', value: 'normal' },
                             { name: 'emergency', value: 'emergency' }
