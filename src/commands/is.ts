@@ -1,57 +1,76 @@
-import { ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
+import { ChatInputCommandInteraction, SlashCommandBuilder, SlashCommandSubcommandGroupBuilder } from 'discord.js';
 import { Command } from '../structures/Command';
 import { getRogueTheme } from '../utils/Api';
 import { buildRogueRelicListMessage, buildRogueRelicMessage, buildRogueStageMessage, buildRogueVariationListMessage, buildRogueVariationMessage } from '../utils/Build';
+
+function buildSubcommandGroup(subcommandGroup: SlashCommandSubcommandGroupBuilder, index: number) {
+    subcommandGroup.setName(index.toString()).setDescription(`IS${index}`)
+        .addSubcommand(subcommand =>
+            subcommand.setName('stage')
+                .setDescription(`IS${index} stages`)
+                .addStringOption(option =>
+                    option.setName('name')
+                        .setDescription('Name')
+                        .setRequired(true)
+                )
+                .addStringOption(option =>
+                    option.setName('difficulty')
+                        .setDescription('Stage difficulty')
+                        .setRequired(true)
+                        .addChoices(
+                            { name: 'normal', value: 'normal' },
+                            { name: 'emergency', value: 'emergency' }
+                        )
+                )
+        )
+        .addSubcommand(subcommand =>
+            subcommand.setName('relic')
+                .setDescription(`IS${index} relics`)
+                .addStringOption(option =>
+                    option.setName('name')
+                        .setDescription('Name')
+                        .setRequired(true)
+                )
+        )
+        .addSubcommand(subcommand =>
+            subcommand.setName('variation')
+                .setDescription(`IS${index} floor effects`)
+                .addStringOption(option =>
+                    option.setName('name')
+                        .setDescription('Name')
+                        .setRequired(true)
+                )
+        )
+
+    return subcommandGroup;
+}
 
 export default class IsCommand implements Command {
     data = new SlashCommandBuilder()
         .setName('is')
         .setDescription('Show information on Integrated Strategies')
-        .addIntegerOption(option =>
-            option.setName('theme')
-                .setDescription('IS #')
-                .setMinValue(2)
-                .setMaxValue(3)
-                .setRequired(true)
+        .addSubcommandGroup(subcommandGroup =>
+            buildSubcommandGroup(subcommandGroup, 2)
         )
-        .addStringOption(option =>
-            option.setName('type')
-                .setDescription('Info type')
-                .addChoices(
-                    { name: 'stage', value: 'stage' },
-                    { name: 'relic', value: 'relic' },
-                    { name: 'variation', value: 'variation' }
-                )
-                .setRequired(true)
-        )
-        .addStringOption(option =>
-            option.setName('name')
-                .setDescription('Name (use \'list\' to display all relics/variations)')
-                .setRequired(true)
-        )
-        .addStringOption(option =>
-            option.setName('difficulty')
-                .setDescription('Stage difficulty')
-                .addChoices(
-                    { name: 'normal', value: 'normal' },
-                    { name: 'emergency', value: 'emergency' }
-                )
+        .addSubcommandGroup(subcommandGroup =>
+            buildSubcommandGroup(subcommandGroup, 3)
         );
     async execute(interaction: ChatInputCommandInteraction) {
-        const theme = interaction.options.getInteger('theme') - 2;
-        const rogueDict = await getRogueTheme({ query: theme.toString() });
-        const type = interaction.options.getString('type').toLowerCase();
+        const theme = parseInt(interaction.options.getSubcommandGroup()) - 2;
+        const type = interaction.options.getSubcommand();
         const name = interaction.options.getString('name').toLowerCase();
 
         switch (type) {
             case 'stage': {
-                const stageMode = interaction.options.getString('difficulty');
-                const stageDict = stageMode === 'emergency' ? rogueDict.toughStageDict : rogueDict.stageDict;
+                const difficulty = interaction.options.getString('difficulty');
+                const stageDict = difficulty === 'emergency' ?
+                    (await getRogueTheme({ query: theme.toString(), include: ['toughStageDict'] })).toughStageDict :
+                    (await getRogueTheme({ query: theme.toString(), include: ['stageDict'] })).stageDict;
                 const stage = stageDict[name];
 
                 if (!stageDict.hasOwnProperty(name))
                     return await interaction.reply({ content: 'That stage doesn\'t exist!', ephemeral: true });
-                if (stage.excel === undefined || stage.levels === undefined)
+                if (!stage.excel || !stage.levels)
                     return await interaction.reply({ content: 'That stage data doesn\'t exist!', ephemeral: true });
 
                 await interaction.deferReply();
@@ -61,11 +80,13 @@ export default class IsCommand implements Command {
             }
             case 'relic': {
                 if (name === 'list') {
+                    await interaction.deferReply();
+
                     const relicListEmbed = await buildRogueRelicListMessage(theme, 0);
-                    return await interaction.reply(relicListEmbed);
+                    return await interaction.editReply(relicListEmbed);
                 }
                 else {
-                    const relicDict = rogueDict.relicDict;
+                    const relicDict = (await getRogueTheme({ query: theme.toString(), include: ['relicDict'] })).relicDict;
 
                     if (!relicDict.hasOwnProperty(name))
                         return await interaction.reply({ content: 'That relic doesn\'t exist!', ephemeral: true });
@@ -81,11 +102,11 @@ export default class IsCommand implements Command {
                 if (name === 'list') {
                     await interaction.deferReply();
 
-                    const variationListEmbed = await buildRogueVariationListMessage(rogueDict);
+                    const variationListEmbed = await buildRogueVariationListMessage(theme);
                     return await interaction.editReply(variationListEmbed);
                 }
                 else {
-                    const variationDict = rogueDict.variationDict;
+                    const variationDict = (await getRogueTheme({ query: theme.toString(), include: ['variationDict'] })).variationDict;
 
                     if (!variationDict.hasOwnProperty(name))
                         return await interaction.reply({ content: 'That variation doesn\'t exist!', ephemeral: true });

@@ -306,7 +306,7 @@ export async function buildDefineListMessage(): Promise<BaseMessageOptions> {
 
     const embed = new EmbedBuilder()
         .setColor(embedColour)
-        .setTitle('List of In-Game Terms and Groups')
+        .setTitle('In-Game Terms and Groups')
         .addFields(
             { name: 'Status Effects', value: statusDescription, inline: true },
             { name: 'Base Effects', value: effectDescription, inline: true },
@@ -400,7 +400,7 @@ export async function buildEventListMessage(index: number): Promise<BaseMessageO
 
     const embed = new EmbedBuilder()
         .setColor(embedColour)
-        .setTitle('List of In-Game Events')
+        .setTitle('In-Game Events')
         .setDescription(`**Page ${index + 1} of ${Math.ceil(eventArr.length / eventCount)}**`);
 
     for (let i = index * eventCount; i < index * eventCount + eventCount && i < eventArr.length; i++) {
@@ -848,7 +848,7 @@ export async function buildRogueRelicMessage(relic: RogueRelic): Promise<BaseMes
     }
 }
 export async function buildRogueRelicListMessage(theme: number, index: number): Promise<BaseMessageOptions> {
-    const rogueTheme = await getRogueTheme({ query: theme.toString() });
+    const rogueTheme = await getRogueTheme({ query: theme.toString(), include: ['name', 'relicDict'] });
     const descriptionLengthLimit = 24;
     const columnCount = 2;
 
@@ -868,7 +868,7 @@ export async function buildRogueRelicListMessage(theme: number, index: number): 
 
     const embed = new EmbedBuilder()
         .setColor(embedColour)
-        .setTitle(`List of ${rogueTheme.name} Relics`)
+        .setTitle(`*${rogueTheme.name}* Relics`)
         .setDescription(`**Page ${index + 1} of ${Math.ceil(descriptionArr.length / columnCount)}**`);
 
     for (let i = index * columnCount; i < index * columnCount + columnCount && i < descriptionArr.length; i++) {
@@ -963,15 +963,17 @@ export async function buildRogueVariationMessage(variation: RogueVariation): Pro
 
     return { embeds: [embed] };
 }
-export async function buildRogueVariationListMessage(theme: RogueTheme): Promise<BaseMessageOptions> {
+export async function buildRogueVariationListMessage(theme: number): Promise<BaseMessageOptions> {
+    const rogueTheme = await getRogueTheme({ query: theme.toString(), include: ['name', 'variationDict'] });
+
     let description = '';
-    for (const variation of Object.values(theme.variationDict)) {
-        description += `${variation.innerName}\n`;
+    for (const variation of Object.values(rogueTheme.variationDict)) {
+        description += `${variation.outerName}\n`;
     }
 
     const embed = new EmbedBuilder()
         .setColor(embedColour)
-        .setTitle(`List of ${theme.name} Floor Variations`)
+        .setTitle(`*${rogueTheme.name}* Floor Effects`)
         .setDescription(description);
 
     return { embeds: [embed] };
