@@ -10,7 +10,7 @@ export default class StageCommand implements Command {
         .setDescription('Show information on a stage')
         .addSubcommand(subcommand =>
             subcommand.setName('normal')
-                .setDescription('Show information on a normal stage')
+                .setDescription('Show information on a stage')
                 .addStringOption(option =>
                     option.setName('code')
                         .setDescription('Stage code')

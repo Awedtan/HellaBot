@@ -1,5 +1,5 @@
-import { CCStage, Definition, Enemy, Item, Operator, Stage } from "../types";
-import { SingleParams, getAllDefinitions, getAllEnemies, getAllItems, getAllOperators, getAllStageArrs, getAllToughStageArrs } from "./Api";
+import { CCStage, Definition, Enemy, Item, Operator, RogueRelic, RogueStage, RogueVariation, Stage } from "../types";
+import { SingleParams, getAllDefinitions, getAllEnemies, getAllItems, getAllOperators, getAllStageArrs, getAllToughStageArrs, getRogueTheme } from "./Api";
 const { gameConsts } = require('../constants');
 
 const limit = 6;
@@ -50,6 +50,70 @@ export async function enemyAutocomplete({ query, include, exclude }: SingleParam
         i++;
     }
     const mappedArr = arr.map(enemy => ({ name: `${enemy.excel.enemyIndex} - ${enemy.excel.name}`, value: enemy.excel.enemyId }));
+
+    return mappedArr;
+}
+
+export async function rogueRelicAutocomplete(theme: number, { query, include, exclude }: SingleParams, callback: (op: RogueRelic) => boolean = () => true) {
+    const arr: RogueRelic[] = [];
+    let i = 0;
+    const rogueTheme = await getRogueTheme({ query: theme.toString(), include, exclude });
+    for (const relic of Object.values(rogueTheme.relicDict)) {
+        if (i >= limit) break;
+        if (arr.includes(relic) || !relic.name.toLowerCase().includes(query) || !callback(relic)) continue;
+        arr.push(relic);
+        i++;
+    }
+    const mappedArr = arr.map(relic => ({ name: relic.name, value: relic.name }));
+
+    return mappedArr;
+}
+
+export async function rogueStageAutocomplete(theme: number, { query, include, exclude }: SingleParams, callback: (op: RogueStage) => boolean = () => true) {
+    const matchQuery = (stage: RogueStage) => stage.excel.name.toLowerCase().includes(query) || stage.excel.code.toLowerCase().includes(query);
+
+    const arr: RogueStage[] = [];
+    let i = 0;
+    const rogueTheme = await getRogueTheme({ query: theme.toString(), include, exclude });
+    for (const stage of Object.values(rogueTheme.stageDict)) {
+        if (i >= limit) break;
+        if (arr.some(s => s.excel.id === stage.excel.id) || !matchQuery(stage) || !callback(stage)) continue;
+        arr.push(stage);
+        i++;
+    }
+    const mappedArr = arr.map(stage => ({ name: `${stage.excel.code} - ${stage.excel.name}`, value: stage.excel.name }));
+
+    return mappedArr;
+}
+
+export async function rogueToughStageAutocomplete(theme: number, { query, include, exclude }: SingleParams, callback: (op: RogueStage) => boolean = () => true) {
+    const matchQuery = (stage: RogueStage) => stage.excel.name.toLowerCase().includes(query) || stage.excel.code.toLowerCase().includes(query);
+
+    const arr: RogueStage[] = [];
+    let i = 0;
+    const rogueTheme = await getRogueTheme({ query: theme.toString(), include, exclude });
+    for (const stage of Object.values(rogueTheme.toughStageDict)) {
+        if (i >= limit) break;
+        if (arr.some(s => s.excel.id === stage.excel.id) || !matchQuery(stage) || !callback(stage)) continue;
+        arr.push(stage);
+        i++;
+    }
+    const mappedArr = arr.map(stage => ({ name: `${stage.excel.code} - ${stage.excel.name}`, value: stage.excel.name }));
+
+    return mappedArr;
+}
+
+export async function rogueVariationAutocomplete(theme: number, { query, include, exclude }: SingleParams, callback: (op: RogueVariation) => boolean = () => true) {
+    const arr: RogueVariation[] = [];
+    let i = 0;
+    const rogueTheme = await getRogueTheme({ query: theme.toString(), include, exclude });
+    for (const variation of Object.values(rogueTheme.variationDict)) {
+        if (i >= limit) break;
+        if (arr.includes(variation) || !variation.outerName.toLowerCase().includes(query) || !callback(variation)) continue;
+        arr.push(variation);
+        i++;
+    }
+    const mappedArr = arr.map(variation => ({ name: variation.outerName, value: variation.outerName }));
 
     return mappedArr;
 }
