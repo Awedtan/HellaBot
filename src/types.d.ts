@@ -45,11 +45,6 @@ type Base = {
     description: string;
 };
 
-type BaseInfo = {
-    buffId: string;
-    cond: OperatorUnlockCond;
-};
-
 type CCStage = {
     const: {
         code: string;
@@ -412,7 +407,10 @@ type Operator = {
     modules: Module[];
     skins: Skin[];
     bases: {
-        condition: BaseInfo;
+        condition: {
+            buffId: string;
+            cond: OperatorUnlockCond;
+        };
         skill: Base;
     }[];
     paradox: Paradox;
@@ -508,34 +506,32 @@ type OperatorUnlockCond = {
 };
 
 type Paradox = {
-    excel: ParadoxInfo;
+    excel: {
+        charId: string;
+        stageId: string;
+        levelId: string;
+        zoneId: string;
+        code: string;
+        name: string;
+        loadingPicId: string;
+        description: string;
+        unlockParam: {
+            unlockType: number;
+            unlockParam1: string;
+            unlockParam2: string;
+            unlockParam3: null;
+        }[];
+        rewardItem: {
+            id: string;
+            count: number;
+            type: string;
+        }[];
+        stageNameForShow: string;
+        zoneNameForShow: string;
+        picId: string;
+        stageGetTime: number;
+    };
     levels: StageData;
-};
-
-type ParadoxInfo = {
-    charId: string;
-    stageId: string;
-    levelId: string;
-    zoneId: string;
-    code: string;
-    name: string;
-    loadingPicId: string;
-    description: string;
-    unlockParam: {
-        unlockType: number;
-        unlockParam1: string;
-        unlockParam2: string;
-        unlockParam3: null;
-    }[];
-    rewardItem: {
-        id: string;
-        count: number;
-        type: string;
-    }[];
-    stageNameForShow: string;
-    zoneNameForShow: string;
-    picId: string;
-    stageGetTime: number;
 };
 
 type RogueTheme = {
@@ -563,7 +559,23 @@ type RogueRelic = {
 };
 
 type RogueStage = {
-    excel: RogueStageInfo;
+    excel: {
+        id: string;
+        linkedStageId: string;
+        levelId: string;
+        code: string;
+        name: string;
+        loadingPicId: string;
+        description: string;
+        eliteDesc: string;
+        isBoss: number;
+        isElite: number;
+        difficulty: string;
+        capsulePool: string;
+        capsuleProb: number;
+        vutresProb: number[];
+        boxProb: number[];
+    };
     levels: StageData;
 };
 
@@ -576,24 +588,6 @@ type RogueVariation = {
     desc: string;
     iconId: string;
     sound: string;
-};
-
-type RogueStageInfo = {
-    id: string;
-    linkedStageId: string;
-    levelId: string;
-    code: string;
-    name: string;
-    loadingPicId: string;
-    description: string;
-    eliteDesc: string;
-    isBoss: number;
-    isElite: number;
-    difficulty: string;
-    capsulePool: string;
-    capsuleProb: number;
-    vutresProb: number[];
-    boxProb: number[];
 };
 
 type Skill = {
@@ -665,76 +659,74 @@ type Skin = {
 };
 
 type Stage = {
-    excel: StageInfo;
-    levels: StageData;
-};
-
-type StageInfo = {
-    stageType: string;
-    difficulty: string;
-    performanceStageFlag: string;
-    diffGroup: string;
-    unlockCondition: {
+    excel: {
+        stageType: string;
+        difficulty: string;
+        performanceStageFlag: string;
+        diffGroup: string;
+        unlockCondition: {
+            stageId: string;
+            completeState: number;
+        }[];
         stageId: string;
-        completeState: number;
-    }[];
-    stageId: string;
-    levelId: string;
-    zoneId: string;
-    code: string;
-    name: string;
-    description: string;
-    hardStagedId: string;
-    dangerLevel: string;
-    dangerPoint: number;
-    loadingPicId: string;
-    canPractice: boolean;
-    canBattleReplay: boolean;
-    apCost: number;
-    apFailReturn: number;
-    etItemId: string;
-    etCost: number;
-    etFailReturn: number;
-    etButtonStyle: string;
-    apProtectTimes: number;
-    diamondOnceDrop: number;
-    practiceTicketCost: number;
-    dailyStageDifficulty: number;
-    expGain: number;
-    goldGain: number;
-    loseExpGain: number;
-    loseGoldGain: number;
-    passFavor: number;
-    completeFavor: number;
-    slProgress: number;
-    displayMainItem: string;
-    hilightMark: boolean;
-    bossMark: boolean;
-    isPredefined: boolean;
-    isHardPredefined: boolean;
-    isSkillSelectablePredefined: boolean;
-    isStoryOnly: boolean;
-    appearanceStyle: number;
-    stageDropInfo: {
-        firstPassRewards: null;
-        firstCompleteRewards: null;
-        passRewards: null;
-        completeRewards: null;
-        displayRewards: {
-            type: string;
-            id: string;
-            dropType: number;
-        }[];
-        displayDetailRewards: {
-            occPercent: number;
-            type: string;
-            id: string;
-            dropType: number;
-        }[];
+        levelId: string;
+        zoneId: string;
+        code: string;
+        name: string;
+        description: string;
+        hardStagedId: string;
+        dangerLevel: string;
+        dangerPoint: number;
+        loadingPicId: string;
+        canPractice: boolean;
+        canBattleReplay: boolean;
+        apCost: number;
+        apFailReturn: number;
+        etItemId: string;
+        etCost: number;
+        etFailReturn: number;
+        etButtonStyle: string;
+        apProtectTimes: number;
+        diamondOnceDrop: number;
+        practiceTicketCost: number;
+        dailyStageDifficulty: number;
+        expGain: number;
+        goldGain: number;
+        loseExpGain: number;
+        loseGoldGain: number;
+        passFavor: number;
+        completeFavor: number;
+        slProgress: number;
+        displayMainItem: string;
+        hilightMark: boolean;
+        bossMark: boolean;
+        isPredefined: boolean;
+        isHardPredefined: boolean;
+        isSkillSelectablePredefined: boolean;
+        isStoryOnly: boolean;
+        appearanceStyle: number;
+        stageDropInfo: {
+            firstPassRewards: null;
+            firstCompleteRewards: null;
+            passRewards: null;
+            completeRewards: null;
+            displayRewards: {
+                type: string;
+                id: string;
+                dropType: number;
+            }[];
+            displayDetailRewards: {
+                occPercent: number;
+                type: string;
+                id: string;
+                dropType: number;
+            }[];
+        };
+        startButtonOverrideId: string;
+        isStagePatch: boolean;
+        mainStageId: string;
     };
-    startButtonOverrideId: string;
-    isStagePatch: boolean;
-    mainStageId: string;
+    levels: StageData;
 };
 
 type StageData = {

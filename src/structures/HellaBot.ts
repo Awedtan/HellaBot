@@ -1,7 +1,7 @@
 import { ActivityType, Client, Collection, Events, GatewayIntentBits, REST, Routes } from 'discord.js';
 import { readdirSync, unlinkSync } from 'fs';
 import { join } from 'path';
-import { getCcStage, getEnemy, getOperator, getParadox, getRogueTheme, getStageArr, getToughStageArr } from '../utils/Api';
+import { getCCStage, getEnemy, getOperator, getParadox, getRogueTheme, getStageArr, getToughStageArr } from '../utils/Api';
 import * as Build from '../utils/Build';
 import * as SpineHelper from '../utils/SpineHelper';
 import { Command } from './Command';
@@ -98,7 +98,7 @@ export default class HellaBot {
 
                 switch (idArr[0]) {
                     case 'cc': {
-                        const stage = await getCcStage({ query: idArr[1] })
+                        const stage = await getCCStage({ query: idArr[1] })
                         const page = parseInt(idArr[2]);
 
                         const ccEmbed = await Build.buildCcMessage(stage, page);
@@ -245,7 +245,7 @@ export default class HellaBot {
 
                 switch (idArr[0]) {
                     case 'cc': {
-                        const stage = await getCcStage({ query: interaction.values[0] })
+                        const stage = await getCCStage({ query: interaction.values[0] })
 
                         const ccEmbed = await Build.buildCcMessage(stage, 0);
                         await interaction.editReply(ccEmbed);

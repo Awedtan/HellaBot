@@ -1811,12 +1811,14 @@ async function buildArtEmbed(op: Operator, page: number): Promise<{ embed: Embed
         .setTitle(`${name}`)
         .setImage(`attachment://${cleanFilename(encodeURIComponent(skin.portraitId))}.png`);
 
-    let artistString = '';
-    for (const drawer of displaySkin.drawerList) {
-        artistString += drawer + '\n';
-    }
-    if (artistString !== '') {
-        embed.addFields({ name: displaySkin.drawerList.length > 1 ? 'Artists' : 'Artist', value: artistString });
+    if (displaySkin.drawerList) {
+        let artistString = '';
+        for (const drawer of displaySkin.drawerList) {
+            artistString += drawer + '\n';
+        }
+        if (artistString !== '') {
+            embed.addFields({ name: displaySkin.drawerList.length > 1 ? 'Artists' : 'Artist', value: artistString });
+        }
     }
 
     let thumbnail;
