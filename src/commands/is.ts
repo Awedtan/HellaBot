@@ -7,7 +7,7 @@ function buildSubcommandGroup(subcommandGroup: SlashCommandSubcommandGroupBuilde
     subcommandGroup.setName(index.toString()).setDescription(`IS${index}`)
         .addSubcommand(subcommand =>
             subcommand.setName('stage')
-                .setDescription(`IS${index} stages`)
+                .setDescription(`Show information on IS${index} stages`)
                 .addStringOption(option =>
                     option.setName('name')
                         .setDescription('Name')
@@ -24,7 +24,7 @@ function buildSubcommandGroup(subcommandGroup: SlashCommandSubcommandGroupBuilde
         )
         .addSubcommand(subcommand =>
             subcommand.setName('relic')
-                .setDescription(`IS${index} relics`)
+                .setDescription(`Show information on IS${index} relics`)
                 .addStringOption(option =>
                     option.setName('name')
                         .setDescription('Name')
@@ -33,7 +33,7 @@ function buildSubcommandGroup(subcommandGroup: SlashCommandSubcommandGroupBuilde
         )
         .addSubcommand(subcommand =>
             subcommand.setName('variation')
-                .setDescription(`IS${index} floor effects`)
+                .setDescription(`Show information on IS${index} floor effects`)
                 .addStringOption(option =>
                     option.setName('name')
                         .setDescription('Name')
@@ -44,7 +44,7 @@ function buildSubcommandGroup(subcommandGroup: SlashCommandSubcommandGroupBuilde
     return subcommandGroup;
 }
 
-export default class IsCommand implements Command {
+export default class ISCommand implements Command {
     data = new SlashCommandBuilder()
         .setName('is')
         .setDescription('Show information on Integrated Strategies')

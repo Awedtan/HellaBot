@@ -854,7 +854,7 @@ export async function buildRogueRelicListMessage(theme: number, index: number): 
 
     let descriptionArr = [], i = 0;
     for (const relic of Object.values(rogueTheme.relicDict)) {
-        if (descriptionArr[i] === undefined) {
+        if (!descriptionArr[i]) {
             descriptionArr[i] = { string: '', length: 0 };
         }
         if (descriptionArr[i].length > descriptionLengthLimit) {
@@ -1179,13 +1179,13 @@ export async function buildStageMessage(stage: Stage, page: number): Promise<Bas
         }
         else if (await urlExists(toughPath)) {
             const image = new AttachmentBuilder(toughPath);
-            embed.setImage(`attachment://${stageInfo.stageId}.png`)
+            embed.setImage(`attachment://${stageInfo.stageId.replace('tough', 'main')}.png`)
 
             return { content: '', embeds: [embed], files: [image], components: [buttonRow] };
         }
         else if (await urlExists(newPath)) {
             const image = new AttachmentBuilder(newPath);
-            embed.setImage(`attachment://${stageInfo.stageId}.png`)
+            embed.setImage(`attachment://${stageInfo.stageId.substring(0, stageInfo.stageId.length - 3)}.png`)
 
             return { content: '', embeds: [embed], files: [image], components: [buttonRow] };
         }
@@ -1748,7 +1748,7 @@ async function buildStageEnemyFields(stageData: StageData): Promise<EmbedField[]
                 // 7: stage effect (rumble)
                 // 8: environmental effect (blizzards)
                 // 9: some sss tutorial thing idk
-                waveDict[action.key] = waveDict[action.key] === undefined ? action.count : waveDict[action.key] + action.count;
+                waveDict[action.key] = waveDict[action.key] ? waveDict[action.key] + action.count : action.count;
             }
         }
     }

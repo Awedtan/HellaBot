@@ -149,7 +149,7 @@ export async function getAllStageArrs({ include, exclude }: AllParams = {}): Pro
 }
 
 export async function getToughStageArr({ query, include, exclude }: SingleParams): Promise<Stage[]> {
-    const data = await GET({ route: 'toughstage', query: query, include: include, exclude: exclude });
+    const data = await GET({ route: 'toughstage', query: query.split('#').join(''), include: include, exclude: exclude });
     return data.value;
 }
 export async function getAllToughStageArrs({ include, exclude }: AllParams = {}): Promise<Stage[][]> {

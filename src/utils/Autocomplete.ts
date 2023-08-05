@@ -1,10 +1,29 @@
-import { Definition, Enemy, Item, Operator, Stage } from "../types";
-import { SingleParams, getAllDefinitions, getAllEnemies, getAllItems, getAllOperators, getAllStageArrs } from "./Api";
+import { CCStage, Definition, Enemy, Item, Operator, Stage } from "../types";
+import { SingleParams, getAllDefinitions, getAllEnemies, getAllItems, getAllOperators, getAllStageArrs, getAllToughStageArrs } from "./Api";
+const { gameConsts } = require('../constants');
 
 const limit = 6;
 
+export async function ccAutocomplete(query: string, callback: (op: CCStage['const']) => boolean = () => true) {
+    const matchQuery = (stage: CCStage['const']) => stage.name.toLowerCase().includes(query) || stage.location.toLowerCase().includes(query) || stage.code.toLowerCase().includes(query);
+
+    const arr: CCStage['const'][] = [];
+    let i = 0;
+    const ccStages: CCStage['const'][] = gameConsts.ccStages;
+    for (const stage of ccStages) {
+        if (i >= limit) break;
+        if (arr.includes(stage) || !matchQuery(stage) || !callback(stage)) continue;
+        arr.push(stage);
+        i++;
+    }
+
+    const mappedArr = arr.map(stage => ({ name: `${stage.location} - ${stage.name}`, value: stage.code }));
+
+    return mappedArr;
+}
+
 export async function defineAutocomplete({ query, include, exclude }: SingleParams, callback: (op: Definition) => boolean = () => true) {
-    let arr: Definition[] = [];
+    const arr: Definition[] = [];
     let i = 0;
     const definitionArr = await getAllDefinitions({ include, exclude });
     for (const define of definitionArr) {
@@ -21,7 +40,7 @@ export async function defineAutocomplete({ query, include, exclude }: SinglePara
 export async function enemyAutocomplete({ query, include, exclude }: SingleParams, callback: (op: Enemy) => boolean = () => true) {
     const matchQuery = (enemy: Enemy) => enemy.excel.name.toLowerCase().includes(query) || enemy.excel.enemyIndex.toLowerCase().includes(query);
 
-    let arr: Enemy[] = [];
+    const arr: Enemy[] = [];
     let i = 0;
     const enemyArr = await getAllEnemies({ include, exclude });
     for (const enemy of enemyArr) {
@@ -36,7 +55,7 @@ export async function enemyAutocomplete({ query, include, exclude }: SingleParam
 }
 
 export async function itemAutocomplete({ query, include, exclude }: SingleParams, callback: (op: Item) => boolean = () => true) {
-    let arr: Item[] = [];
+    const arr: Item[] = [];
     let i = 0;
     const itemArr = await getAllItems({ include, exclude });
     for (const item of itemArr) {
@@ -51,7 +70,7 @@ export async function itemAutocomplete({ query, include, exclude }: SingleParams
 }
 
 export async function operatorAutocomplete({ query, include, exclude }: SingleParams, callback: (op: Operator) => Boolean = () => true) {
-    let arr: Operator[] = [];
+    const arr: Operator[] = [];
     let i = 0;
     const operatorArr = await getAllOperators({ include, exclude });
     for (const op of operatorArr) {
@@ -68,18 +87,36 @@ export async function operatorAutocomplete({ query, include, exclude }: SinglePa
 export async function stageAutocomplete({ query, include, exclude }: SingleParams, callback: (op: Stage) => boolean = () => true) {
     const matchQuery = (stage: Stage) => stage.excel.name.toLowerCase().includes(query) || stage.excel.code.toLowerCase().includes(query);
 
-    let arr: Stage[] = [];
+    const arr: Stage[] = [];
     let i = 0;
     const stageArrArr = await getAllStageArrs({ include, exclude });
     for (const stageArr of stageArrArr) {
         for (const stage of stageArr) {
             if (i >= limit) break;
-            if (arr.includes(stage) || !matchQuery(stage) || !callback(stage)) continue;
+            if (arr.some(s => s.excel.stageId === stage.excel.stageId) || !matchQuery(stage) || !callback(stage)) continue;
             arr.push(stage);
             i++;
         }
     }
+    const mappedArr = arr.map(stage => ({ name: `${stage.excel.code} - ${stage.excel.name}`, value: stage.excel.stageId }));
 
+    return mappedArr;
+}
+
+export async function toughStageAutocomplete({ query, include, exclude }: SingleParams, callback: (op: Stage) => boolean = () => true) {
+    const matchQuery = (stage: Stage) => stage.excel.name.toLowerCase().includes(query) || stage.excel.code.toLowerCase().includes(query);
+
+    const arr: Stage[] = [];
+    let i = 0;
+    const stageArrArr = await getAllToughStageArrs({ include, exclude });
+    for (const stageArr of stageArrArr) {
+        for (const stage of stageArr) {
+            if (i >= limit) break;
+            if (arr.some(s => s.excel.stageId === stage.excel.stageId) || !matchQuery(stage) || !callback(stage)) continue;
+            arr.push(stage);
+            i++;
+        }
+    }
     const mappedArr = arr.map(stage => ({ name: `${stage.excel.code} - ${stage.excel.name}`, value: stage.excel.stageId }));
 
     return mappedArr;

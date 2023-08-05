@@ -2208,7 +2208,7 @@ module.exports = { loadSkel, launchPage };
             AnimationStateData.prototype.getMix = function (from, to) {
                 var key = from.name + "." + to.name;
                 var value = this.animationToMixTime[key];
-                return value === undefined ? this.defaultMix : value;
+                return value ? value : this.defaultMix;
             };
             return AnimationStateData;
         }());

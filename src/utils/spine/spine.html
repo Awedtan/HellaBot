@@ -137,7 +137,7 @@
     }
 
     function loadSkeleton(name, initialAnimation, premultipliedAlpha, skin) {
-        if (skin === undefined) skin = "default";
+        if (!skin) skin = "default";
 
         atlas = assetManager.get(assetPath + charName + ".atlas");
         atlasLoader = new spine.AtlasAttachmentLoader(atlas);
