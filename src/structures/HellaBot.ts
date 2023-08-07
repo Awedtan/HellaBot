@@ -253,29 +253,34 @@ export default class HellaBot {
                         break;
                     }
                     case 'spine': {
-                        const op = await getOperator({ query: idArr[1] });
-                        const type = interaction.values[0];
+                        const type = idArr[1];
+                        const id = idArr[2];
+                        const anim = interaction.values[0];
 
-                        await interaction.editReply({ content: `Generating \`${type}\` gif...`, components: [] })
+                        await interaction.editReply({ content: `Generating \`${anim}\` gif...`, components: [] })
 
-                        const skelData = await SpineHelper.loadSkel(op);
+                        const char = type === 'operator' ? await getOperator({ query: id, include: ['id', 'data'] }) : await getEnemy({ query: id, include: ['excel'] });
+                        const skelData = await SpineHelper.loadSkel(type, id);
+
                         const animArr = [];
                         for (const animation of skelData.animations) {
                             if (animation.name === 'Default') continue;
                             animArr.push(animation.name);
                         }
 
-                        const { page, browser, rand } = await SpineHelper.launchPage(op, type);
+                        const { page, browser, rand } = await SpineHelper.launchPage(type, id, anim);
 
                         page.on('console', async message => {
-                            if (message.text() !== 'done') return;
-                            await new Promise(r => setTimeout(r, 1000));
-                            await browser.close();
-                            const spineEmbed = await Build.buildSpineMessage(op, animArr, type, rand);
-                            await interaction.editReply(spineEmbed);
-                            await unlinkSync(join(__dirname, '..', 'utils', 'spine', op.id + rand + '.gif'));
+                            if (message.text() === 'done') {
+                                await new Promise(r => setTimeout(r, 1000));
+                                await browser.close();
+
+                                const spineEmbed = await Build.buildSpineMessage(char, animArr, anim, rand);
+                                await interaction.editReply(spineEmbed);
+                                unlinkSync(join(__dirname, '..', 'utils', 'spine', id + rand + '.gif'));
+                            }
                         }).on('pageerror', async ({ message }) => {
-                            console.error(`Spine error for ${op.data.name}: ` + message);
+                            console.error(`Spine error for ${id}: ` + message);
                             return await interaction.editReply({ content: 'There was an error while generating the animation!' });
                         });
 

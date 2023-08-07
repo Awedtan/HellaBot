@@ -27,10 +27,11 @@
     // MY STUFF BELOW HERE
     const vars = new URL(window.location.href).searchParams;
 
+    const spineType = vars.get('type');
     const charName = vars.get('name');
-    const animType = vars.get('type');
+    const animType = vars.get('anim');
     const randomInt = vars.get('rand');
-    const assetPath = `https://raw.githubusercontent.com/Awedtan/HellaBot-Assets/main/spine/${charName}/`;
+    const assetPath = `https://raw.githubusercontent.com/Awedtan/HellaBot-Assets/main/spine/${spineType}/${charName}/`;
 
     let frameDelay = 20;
     const maxFrames = 2000;
@@ -197,7 +198,7 @@
 
     function render() {
         if (done) return;
-        
+
         var now = Date.now() / 1000;
         var delta = now - lastFrameTime;
         delta = 0.05; // 20 fps

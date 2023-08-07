@@ -1069,17 +1069,19 @@ export async function buildSkillMessage(op: Operator, page: number, level: numbe
 
     return { embeds: [embed], files: [avatar, thumbnail], components: [rowOne, rowTwo] };
 }
-export async function buildSpineMessage(op: Operator, animArr: string[], type: string, rand: number): Promise<BaseMessageOptions> {
-    const avatarPath = paths.aceshipImageUrl + `/avatars/${op.id}.png`;
+export async function buildSpineMessage(char: Enemy | Operator, animArr: string[], anim: string, rand: number): Promise<BaseMessageOptions> {
+    const type = (char as Operator).id ? 'operator' : 'enemy';
+    const id = type === 'operator' ? (char as Operator).id : (char as Enemy).excel.enemyId;
+    const avatarPath = paths.aceshipImageUrl + (type === 'operator' ? `/avatars/${id}.png` : `/enemy/${id}.png`);
     const avatar = new AttachmentBuilder(avatarPath);
-    const authorField = buildAuthorField(op);
-    const gifFile = op.id + rand + '.gif';
+    const authorField = buildAuthorField(char);
+    const gifFile = id + rand + '.gif';
     const gifPath = join(__dirname, 'spine', gifFile);
     const gif = new AttachmentBuilder(gifPath);
 
     const animSelector = new StringSelectMenuBuilder()
-        .setCustomId(`spineඞ${op.id}`)
-        .setPlaceholder(type);
+        .setCustomId(`spineඞ${type}ඞ${id}`)
+        .setPlaceholder(anim);
     const componentRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(animSelector);
 
     for (let i = 0; i < animArr.length; i++) {
@@ -1652,11 +1654,19 @@ export async function buildInfoCostMessage(op: Operator, type: number, page: num
     return { embeds: [embed], files: [avatar, thumbnail], components: [buttonRow] };
 }
 
-function buildAuthorField(op: Operator): EmbedAuthorOptions {
-    // Unholy dumbness
-    const urlName = op.data.name.toLowerCase().split(' the ').join('-').split('\'').join('').split(' ').join('-').split('ë').join('e').split('ł').join('l');
-    const authorField = { name: op.data.name, iconURL: `attachment://${op.id}.png`, url: `https://gamepress.gg/arknights/operator/${urlName}` };
-    return authorField;
+function buildAuthorField(char: Enemy | Operator): EmbedAuthorOptions {
+    if ((char as Operator).id && (char as Operator).data) {
+        const op = (char as Operator);
+        const urlName = op.data.name.toLowerCase().split(' the ').join('-').split(/'|,/).join('').split(' ').join('-').split('ë').join('e').split('ł').join('l');// Unholy dumbness
+        const authorField = { name: op.data.name, iconURL: `attachment://${op.id}.png`, url: `https://gamepress.gg/arknights/operator/${urlName}` };
+        return authorField;
+    }
+    else if ((char as Enemy).excel) {
+        const enem = (char as Enemy);
+        const authorField = { name: enem.excel.name, iconURL: `attachment://${enem.excel.enemyId}.png` };
+        return authorField;
+    }
+    return null;
 }
 async function buildCostString(costs: LevelUpCost[]): Promise<string> {
     let description = '';

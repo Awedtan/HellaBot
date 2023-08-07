@@ -3,18 +3,18 @@ const path = require('path');
 const puppeteer = require('puppeteer');
 const XMLHttpRequest = require('w3c-xmlhttprequest').XMLHttpRequest;
 
-async function loadSkel(op) {
+async function loadSkel(type, id) {
     try {
-        const spinePath = paths.myAssetUrl + `/spine/${op.id}`;
+        const spinePath = paths.myAssetUrl + `/spine/${type}/${id}`;
 
         const assetManager = new spine.AssetManager();
-        assetManager.loadBinary(path.join(spinePath, op.id + ".skel"));
+        assetManager.loadBinary(path.join(spinePath, id + ".skel"));
 
         while (!assetManager.isLoadingComplete())
             await new Promise(resolve => setTimeout(resolve, 100));
 
         const skelBin = new spine.SkeletonBinary();
-        const skelData = skelBin.readSkeletonData(assetManager.get(path.join(spinePath, op.id + ".skel")));
+        const skelData = skelBin.readSkeletonData(assetManager.get(path.join(spinePath, id + ".skel")));
 
         return skelData;
     } catch (e) {
@@ -22,14 +22,14 @@ async function loadSkel(op) {
     }
 }
 
-async function launchPage(op, type) {
+async function launchPage(type, id, anim) {
     const browser = await puppeteer.launch({ headless: 'new', args: ["--no-sandbox", "--disabled-setupid-sandbox"] });
     const page = await browser.newPage();
     const rand = Math.floor(Math.random() * 100000);
     await page.setViewport({ width: 200, height: 200 });
 
     const spineFolder = path.join(__dirname, 'spine');
-    await page.goto("file://" + path.join(spineFolder, `spine.html?name=${op.id}&type=${type}&rand=${rand}`));
+    await page.goto("file://" + path.join(spineFolder, `spine.html?type=${type}&name=${id}&anim=${anim}&rand=${rand}`));
 
     const client = await page.target().createCDPSession();
     await client.send('Page.setDownloadBehavior', {
