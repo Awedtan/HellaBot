@@ -214,6 +214,14 @@
         var state = skeletons[activeSkeleton].state;
         var skeleton = skeletons[activeSkeleton].skeleton;
         var bounds = skeletons[activeSkeleton].bounds;
+
+        // Sort of fixes scaling issues
+        bounds.offset.y = 0;
+        if (Math.max(bounds.size.x, bounds.size.y) > 600) {
+            bounds.offset.x = -200;
+            bounds.size = { x: 500, y: 500 }
+        }
+
         var premultipliedAlpha = skeletons[activeSkeleton].premultipliedAlpha;
         state.update(delta);
         state.apply(skeleton);
