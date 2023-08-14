@@ -8,6 +8,7 @@ const { embedColour, paths, gameConsts } = require('../constants');
 const cleanFilename = (text: string) => text.split(/%|[#\+]|&|\[|\]/).join(''); // Remove special characters that discord doesn't like (%, #, etc.)
 export const urlExists = async (url: string) => (await nodefetch(url)).status === 200;
 function removeStyleTags(text: string) {
+    if (!text) text = '';
     const regex = /<.[a-z]{2,5}?\.[^<]+>|<\/[^<]*>/;
     text = text.split(regex).join('');
     return text;
