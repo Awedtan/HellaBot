@@ -138,13 +138,12 @@
     }
 
     function loadSkeleton(name, initialAnimation, premultipliedAlpha, skin) {
-        if (!skin) skin = "default";
-
         atlas = assetManager.get(assetPath + charName + ".atlas");
         atlasLoader = new spine.AtlasAttachmentLoader(atlas);
         var skeletonBinary = new spine.SkeletonBinary(atlasLoader);
         var skeletonData = skeletonBinary.readSkeletonData(assetManager.get(assetPath + charName + ".skel"));
         var skeleton = new spine.Skeleton(skeletonData);
+        if (!skin) skin = skeleton.data.skins[0].name;
         skeleton.setSkinByName(skin);
         var bounds = calculateBounds(skeleton);
 
