@@ -28,10 +28,13 @@
     const vars = new URL(window.location.href).searchParams;
 
     const spineType = vars.get('type');
-    const charName = vars.get('name');
+    let charName = vars.get('name');
     const animType = vars.get('anim');
     const randomInt = vars.get('rand');
     const assetPath = `https://raw.githubusercontent.com/Awedtan/HellaBot-Assets/main/spine/${spineType}/${charName}/`;
+
+    if (charName === 'enemy_1027_mob_2')
+        charName = 'enemy_1027_mob';
 
     let frameDelay = 20;
     const maxFrames = 2000;

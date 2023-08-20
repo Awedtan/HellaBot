@@ -56,7 +56,7 @@ export default class SpineCommand implements Command {
         if (!char)
             return await interaction.reply({ content: `That ${type} doesn\'t exist!`, ephemeral: true });
 
-        const id = type === 'operator' ? (char as Operator).id : (char as Enemy).excel.enemyId;
+        let id = type === 'operator' ? (char as Operator).id : (char as Enemy).excel.enemyId;
         const skelData = await SpineHelper.loadSkel(type, id);
 
         if (!skelData)
@@ -79,6 +79,10 @@ export default class SpineCommand implements Command {
 
                 const spineEmbed = await buildSpineMessage(char, animArr, animArr[0], rand);
                 await interaction.followUp(spineEmbed);
+
+                if (id === 'enemy_1027_mob_2')
+                    id = 'enemy_1027_mob';
+                
                 unlinkSync(join(__dirname, '..', 'utils', 'spine', id + rand + '.gif'));
             }
         }).on('pageerror', async ({ message }) => {

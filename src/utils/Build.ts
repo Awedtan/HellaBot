@@ -1073,10 +1073,15 @@ export async function buildSkillMessage(op: Operator, page: number, level: numbe
 export async function buildSpineMessage(char: Enemy | Operator, animArr: string[], anim: string, rand: number): Promise<BaseMessageOptions> {
     const type = (char as Operator).id ? 'operator' : 'enemy';
     const id = type === 'operator' ? (char as Operator).id : (char as Enemy).excel.enemyId;
+
+    let gifId = id;
+    if (gifId === 'enemy_1027_mob_2')
+        gifId = 'enemy_1027_mob';
+
     const avatarPath = paths.aceshipImageUrl + (type === 'operator' ? `/avatars/${id}.png` : `/enemy/${id}.png`);
     const avatar = new AttachmentBuilder(avatarPath);
     const authorField = buildAuthorField(char);
-    const gifFile = id + rand + '.gif';
+    const gifFile = gifId + rand + '.gif';
     const gifPath = join(__dirname, 'spine', gifFile);
     const gif = new AttachmentBuilder(gifPath);
 

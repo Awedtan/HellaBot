@@ -7,6 +7,9 @@ async function loadSkel(type, id) {
     try {
         const spinePath = paths.myAssetUrl + `/spine/${type}/${id}`;
 
+        if (id === 'enemy_1027_mob_2')
+            id = 'enemy_1027_mob';
+
         const assetManager = new spine.AssetManager();
         assetManager.loadBinary(path.join(spinePath, id + ".skel"));
 
