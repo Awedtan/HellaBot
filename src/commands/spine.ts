@@ -5,7 +5,7 @@ import { Command } from '../structures/Command';
 import { Enemy, Operator } from '../types';
 import { getEnemy, getOperator } from '../utils/Api';
 import { enemyAutocomplete, operatorAutocomplete } from '../utils/Autocomplete';
-import { buildSpineMessage } from '../utils/Build';
+import { buildSpineMessage, fileExists } from '../utils/Build';
 import * as SpineHelper from '../utils/SpineHelper';
 
 export default class SpineCommand implements Command {
@@ -60,7 +60,7 @@ export default class SpineCommand implements Command {
         const skelData = await SpineHelper.loadSkel(type, id);
 
         if (!skelData)
-            return await interaction.reply({ content: 'That operator does\'t have any spine data!', ephemeral: true });
+            return await interaction.reply({ content: 'There was an error while loading the spine data!', ephemeral: true });
 
         const animArr = [];
         for (const animation of skelData.animations) {
@@ -80,10 +80,13 @@ export default class SpineCommand implements Command {
                 const spineEmbed = await buildSpineMessage(char, animArr, animArr[0], rand);
                 await interaction.followUp(spineEmbed);
 
-                if (id === 'enemy_1027_mob_2')
-                    id = 'enemy_1027_mob';
-                
-                unlinkSync(join(__dirname, '..', 'utils', 'spine', id + rand + '.gif'));
+                id = id.split('zomsbr').join('zomsabr');
+
+                let gifPath = join(__dirname, '..', 'utils', 'spine', id + rand + '.gif');
+                if (!await fileExists(gifPath)) {
+                    gifPath = gifPath.split('_2').join('');
+                }
+                unlinkSync(gifPath);
             }
         }).on('pageerror', async ({ message }) => {
             console.error(`Spine error for ${id}: ` + message);

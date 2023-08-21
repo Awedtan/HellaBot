@@ -29,12 +29,10 @@
 
     const spineType = vars.get('type');
     let charName = vars.get('name');
+    charName = charName.split('zomsbr').join('zomsabr');
     const animType = vars.get('anim');
     const randomInt = vars.get('rand');
     const assetPath = `https://raw.githubusercontent.com/Awedtan/HellaBot-Assets/main/spine/${spineType}/${charName}/`;
-
-    if (charName === 'enemy_1027_mob_2')
-        charName = 'enemy_1027_mob';
 
     let frameDelay = 20;
     const maxFrames = 2000;
@@ -94,7 +92,7 @@
     // MY STUFF ABOVE HERE
 
 
-    function init() {
+    async function init() {
         // Setup canvas and WebGL context. We pass alpha: false to canvas.getContext() so we don't use premultiplied alpha when
         // loading textures. That is handled separately by PolygonBatcher.
         canvas = document.getElementById("canvas");
@@ -124,6 +122,11 @@
 
         // Tell AssetManager to load the resources for each model, including the exported .skel file, the .atlas file and the .png
         // file for the atlas. We then wait until all resources are loaded in the load() method.
+        const urlExists = async url => (await fetch(url)).status === 200;
+        if (!await urlExists(assetPath + charName + ".skel")) {
+            charName = charName.split('_2').join('');
+        }
+
         assetManager.loadBinary(assetPath + charName + ".skel");
         console.log(assetPath + charName + ".atlas")
         assetManager.loadTextureAtlas(assetPath + charName + ".atlas");

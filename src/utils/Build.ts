@@ -1,11 +1,13 @@
 import { ActionRowBuilder, AttachmentBuilder, BaseMessageOptions, ButtonBuilder, ButtonStyle, EmbedAuthorOptions, EmbedBuilder, EmbedField, StringSelectMenuBuilder, StringSelectMenuOptionBuilder } from 'discord.js';
 import { join } from 'path';
-import type { Blackboard, CCStage, Definition, Enemy, GameEvent, GridRange, Item, LevelUpCost, Operator, Paradox, RogueRelic, RogueStage, RogueTheme, RogueVariation, Stage, StageData } from "../types";
+import type { Blackboard, CCStage, Definition, Enemy, GameEvent, GridRange, Item, LevelUpCost, Operator, Paradox, RogueRelic, RogueStage, RogueVariation, Stage, StageData } from "../types";
 import { getAllDefinitions, getAllEvents, getEnemy, getItem, getOperator, getRange, getRogueTheme, getStageArr, getToughStageArr } from './Api';
 const nodefetch = require('node-fetch');
+const fs = require('fs');
 const { embedColour, paths, gameConsts } = require('../constants');
 
 const cleanFilename = (text: string) => text.split(/%|[#\+]|&|\[|\]/).join(''); // Remove special characters that discord doesn't like (%, #, etc.)
+export const fileExists = async (path: string) => !!(await fs.promises.stat(path).catch(e => false));
 export const urlExists = async (url: string) => (await nodefetch(url)).status === 200;
 function removeStyleTags(text: string) {
     if (!text) text = '';
@@ -1074,15 +1076,19 @@ export async function buildSpineMessage(char: Enemy | Operator, animArr: string[
     const type = (char as Operator).id ? 'operator' : 'enemy';
     const id = type === 'operator' ? (char as Operator).id : (char as Enemy).excel.enemyId;
 
-    let gifId = id;
-    if (gifId === 'enemy_1027_mob_2')
-        gifId = 'enemy_1027_mob';
+    let gifId = id.split('zomsbr').join('zomsabr');
 
     const avatarPath = paths.aceshipImageUrl + (type === 'operator' ? `/avatars/${id}.png` : `/enemy/${id}.png`);
     const avatar = new AttachmentBuilder(avatarPath);
     const authorField = buildAuthorField(char);
-    const gifFile = gifId + rand + '.gif';
-    const gifPath = join(__dirname, 'spine', gifFile);
+    let gifFile = gifId + rand + '.gif';
+    let gifPath = join(__dirname, 'spine', gifFile);
+
+    if (!await fileExists(gifPath)) {
+        gifFile = gifFile.split('_2').join('');
+        gifPath = join(__dirname, 'spine', gifFile);
+    }
+
     const gif = new AttachmentBuilder(gifPath);
 
     const animSelector = new StringSelectMenuBuilder()

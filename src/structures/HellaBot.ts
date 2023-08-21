@@ -254,7 +254,7 @@ export default class HellaBot {
                     }
                     case 'spine': {
                         const type = idArr[1];
-                        const id = idArr[2];
+                        let id = idArr[2];
                         const anim = interaction.values[0];
 
                         await interaction.editReply({ content: `Generating \`${anim}\` gif...`, components: [] })
@@ -277,7 +277,13 @@ export default class HellaBot {
 
                                 const spineEmbed = await Build.buildSpineMessage(char, animArr, anim, rand);
                                 await interaction.editReply(spineEmbed);
-                                unlinkSync(join(__dirname, '..', 'utils', 'spine', id + rand + '.gif'));
+                                id = id.split('zomsbr').join('zomsabr');
+
+                                let gifPath = join(__dirname, '..', 'utils', 'spine', id + rand + '.gif');
+                                if (!await Build.fileExists(gifPath)) {
+                                    gifPath = gifPath.split('_2').join('');
+                                }
+                                unlinkSync(gifPath);
                             }
                         }).on('pageerror', async ({ message }) => {
                             console.error(`Spine error for ${id}: ` + message);

@@ -1,27 +1,44 @@
 const { paths } = require('../constants');
+const nodefetch = require('node-fetch');
 const path = require('path');
 const puppeteer = require('puppeteer');
 const XMLHttpRequest = require('w3c-xmlhttprequest').XMLHttpRequest;
+const urlExists = async url => (await nodefetch(url)).status === 200;
 
 async function loadSkel(type, id) {
     try {
+        id = id.split('zomsbr').join('zomsabr');
         const spinePath = paths.myAssetUrl + `/spine/${type}/${id}`;
-
-        if (id === 'enemy_1027_mob_2')
-            id = 'enemy_1027_mob';
-
         const assetManager = new spine.AssetManager();
-        assetManager.loadBinary(path.join(spinePath, id + ".skel"));
+        let skelPath = path.join(spinePath, id + ".skel");
 
-        while (!assetManager.isLoadingComplete())
+        if (await urlExists(skelPath)) {
+            assetManager.loadBinary(skelPath);
+        }
+
+        skelPath = skelPath.split('_2').join('');
+
+        if (await urlExists(skelPath)) {
+            assetManager.loadBinary(skelPath);
+        }
+        else {
+            throw new Error('Skel file doesn\'t exist.');
+        }
+
+        let loadCount = 0;
+        while (!assetManager.isLoadingComplete()) {
             await new Promise(resolve => setTimeout(resolve, 100));
+            loadCount++;
+            if (loadCount >= 20)
+                throw new Error('Skel file load timeout.');
+        }
 
         const skelBin = new spine.SkeletonBinary();
-        const skelData = skelBin.readSkeletonData(assetManager.get(path.join(spinePath, id + ".skel")));
-
+        const skelData = skelBin.readSkeletonData(assetManager.get(skelPath));
         return skelData;
     } catch (e) {
         console.error(e);
+        return null;
     }
 }
 
@@ -2260,6 +2277,7 @@ module.exports = { loadSkel, launchPage };
                         success(new Uint8Array(request.response));
                     }
                     else {
+                        console.error(url);
                         error(request.status, request.responseText);
                     }
                 };
