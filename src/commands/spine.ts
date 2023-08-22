@@ -80,15 +80,24 @@ export default class SpineCommand implements Command {
                 const spineEmbed = await buildSpineMessage(char, animArr, animArr[0], rand);
                 await interaction.followUp(spineEmbed);
 
-                id = id.split('zomsbr').join('zomsabr');
-
-                let gifPath = join(__dirname, '..', 'utils', 'spine', id + rand + '.gif');
-                if (!await fileExists(gifPath)) {
-                    gifPath = gifPath.split('_2').join('');
+                let gifFile = id + rand + '.gif';
+                let gifPath = join(__dirname, '..', 'utils', 'spine', gifFile);
+                if (await fileExists(gifPath)) {
                 }
+                else if (await fileExists(join(__dirname, '..', 'utils', 'spine', gifFile.split('_2').join('')))) {
+                    gifPath = join(__dirname, '..', 'utils', 'spine', gifFile.split('_2').join(''));
+                }
+                else if (await fileExists(join(__dirname, '..', 'utils', 'spine', gifFile.split('sbr').join('sabr')))) {
+                    gifPath = join(__dirname, '..', 'utils', 'spine', gifFile.split('sbr').join('sabr'));
+                }
+                else if (await fileExists(join(__dirname, '..', 'utils', 'spine', gifFile.split('_2').join('').split('sbr').join('sabr')))) {
+                    gifPath = join(__dirname, '..', 'utils', 'spine', gifFile.split('_2').join('').split('sbr').join('sabr'));
+                }
+
                 unlinkSync(gifPath);
             }
         }).on('pageerror', async ({ message }) => {
+            await browser.close();
             console.error(`Spine error for ${id}: ` + message);
             return await interaction.editReply({ content: 'There was an error while generating the animation!' });
         });

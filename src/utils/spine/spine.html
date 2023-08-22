@@ -29,10 +29,10 @@
 
     const spineType = vars.get('type');
     let charName = vars.get('name');
-    charName = charName.split('zomsbr').join('zomsabr');
     const animType = vars.get('anim');
     const randomInt = vars.get('rand');
-    const assetPath = `https://raw.githubusercontent.com/Awedtan/HellaBot-Assets/main/spine/${spineType}/${charName}/`;
+    let assetPath = `https://raw.githubusercontent.com/Awedtan/HellaBot-Assets/main/spine/${spineType}`;
+    let spinePath;
 
     let frameDelay = 20;
     const maxFrames = 2000;
@@ -123,13 +123,25 @@
         // Tell AssetManager to load the resources for each model, including the exported .skel file, the .atlas file and the .png
         // file for the atlas. We then wait until all resources are loaded in the load() method.
         const urlExists = async url => (await fetch(url)).status === 200;
-        if (!await urlExists(assetPath + charName + ".skel")) {
-            charName = charName.split('_2').join('');
+
+        spinePath = assetPath + `/${charName}/${charName}`;
+        if (await urlExists(spinePath)) {
+        }
+        else if (await urlExists(assetPath + `/${charName}/${charName.split('_2').join('')}` + '.skel')) {
+            spinePath = assetPath + `/${charName}/${charName.split('_2').join('')}`;
+        }
+        else if (await urlExists(assetPath + `/${charName}/${charName}`.split('sbr').join('sabr') + '.skel')) {
+            spinePath = assetPath + `/${charName}/${charName}`.split('sbr').join('sabr');
+        }
+        else if (await urlExists(assetPath + `/${charName}/${charName.split('_2').join('')}`.split('sbr').join('sabr') + '.skel')) {
+            spinePath = assetPath + `/${charName}/${charName.split('_2').join('')}`.split('sbr').join('sabr');
+        }
+        else {
+            throw new Error('Skel file can\'t be found.');
         }
 
-        assetManager.loadBinary(assetPath + charName + ".skel");
-        console.log(assetPath + charName + ".atlas")
-        assetManager.loadTextureAtlas(assetPath + charName + ".atlas");
+        assetManager.loadBinary(spinePath + ".skel");
+        assetManager.loadTextureAtlas(spinePath + ".atlas");
         requestAnimationFrame(load);
     }
 
@@ -144,10 +156,10 @@
     }
 
     function loadSkeleton(name, initialAnimation, premultipliedAlpha, skin) {
-        atlas = assetManager.get(assetPath + charName + ".atlas");
+        atlas = assetManager.get(spinePath + ".atlas");
         atlasLoader = new spine.AtlasAttachmentLoader(atlas);
         var skeletonBinary = new spine.SkeletonBinary(atlasLoader);
-        var skeletonData = skeletonBinary.readSkeletonData(assetManager.get(assetPath + charName + ".skel"));
+        var skeletonData = skeletonBinary.readSkeletonData(assetManager.get(spinePath + ".skel"));
         var skeleton = new spine.Skeleton(skeletonData);
         if (!skin) skin = skeleton.data.skins[0].name;
         skeleton.setSkinByName(skin);

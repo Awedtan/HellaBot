@@ -1076,17 +1076,22 @@ export async function buildSpineMessage(char: Enemy | Operator, animArr: string[
     const type = (char as Operator).id ? 'operator' : 'enemy';
     const id = type === 'operator' ? (char as Operator).id : (char as Enemy).excel.enemyId;
 
-    let gifId = id.split('zomsbr').join('zomsabr');
-
     const avatarPath = paths.aceshipImageUrl + (type === 'operator' ? `/avatars/${id}.png` : `/enemy/${id}.png`);
     const avatar = new AttachmentBuilder(avatarPath);
     const authorField = buildAuthorField(char);
-    let gifFile = gifId + rand + '.gif';
-    let gifPath = join(__dirname, 'spine', gifFile);
 
-    if (!await fileExists(gifPath)) {
-        gifFile = gifFile.split('_2').join('');
-        gifPath = join(__dirname, 'spine', gifFile);
+    let gifFile = id + rand + '.gif';
+    let gifPath = join(__dirname, 'spine', gifFile);
+    if (await fileExists(gifPath)) {
+    }
+    else if (await fileExists(join(__dirname, 'spine', gifFile.split('_2').join('')))) {
+        gifPath = join(__dirname, 'spine', gifFile.split('_2').join(''));
+    }
+    else if (await fileExists(join(__dirname, 'spine', gifFile.split('sbr').join('sabr')))) {
+        gifPath = join(__dirname, 'spine', gifFile.split('sbr').join('sabr'));
+    }
+    else if (await fileExists(join(__dirname, 'spine', gifFile.split('_2').join('').split('sbr').join('sabr')))) {
+        gifPath = join(__dirname, 'spine', gifFile.split('_2').join('').split('sbr').join('sabr'));
     }
 
     const gif = new AttachmentBuilder(gifPath);

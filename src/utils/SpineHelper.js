@@ -7,23 +7,27 @@ const urlExists = async url => (await nodefetch(url)).status === 200;
 
 async function loadSkel(type, id) {
     try {
-        id = id.split('zomsbr').join('zomsabr');
-        const spinePath = paths.myAssetUrl + `/spine/${type}/${id}`;
         const assetManager = new spine.AssetManager();
-        let skelPath = path.join(spinePath, id + ".skel");
+        const spinePath = path.join(paths.myAssetUrl, 'spine', type, id);
+        let skelFile = id + ".skel";
+        let skelPath = path.join(spinePath, skelFile);
 
         if (await urlExists(skelPath)) {
-            assetManager.loadBinary(skelPath);
         }
-
-        skelPath = skelPath.split('_2').join('');
-
-        if (await urlExists(skelPath)) {
-            assetManager.loadBinary(skelPath);
+        else if (await urlExists(path.join(spinePath, skelFile.split('_2').join('')))) {
+            skelPath = path.join(spinePath, skelFile.split('_2').join(''));
+        }
+        else if (await urlExists(path.join(spinePath, skelFile).split('sbr').join('sabr'))) {
+            skelPath = path.join(spinePath, skelFile).split('sbr').join('sabr');
+        }
+        else if (await urlExists(path.join(spinePath, skelFile.split('_2').join('')).split('sbr').join('sabr'))) {
+            skelPath = path.join(spinePath, skelFile.split('_2').join('')).split('sbr').join('sabr');
         }
         else {
-            throw new Error('Skel file doesn\'t exist.');
+            throw new Error('Skel file can\'t be found.');
         }
+
+        assetManager.loadBinary(skelPath);
 
         let loadCount = 0;
         while (!assetManager.isLoadingComplete()) {

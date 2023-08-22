@@ -277,12 +277,21 @@ export default class HellaBot {
 
                                 const spineEmbed = await Build.buildSpineMessage(char, animArr, anim, rand);
                                 await interaction.editReply(spineEmbed);
-                                id = id.split('zomsbr').join('zomsabr');
 
-                                let gifPath = join(__dirname, '..', 'utils', 'spine', id + rand + '.gif');
-                                if (!await Build.fileExists(gifPath)) {
-                                    gifPath = gifPath.split('_2').join('');
+                                let gifFile = id + rand + '.gif';
+                                let gifPath = join(__dirname, '..', 'utils', 'spine', gifFile);
+                                if (await Build.fileExists(gifPath)) {
                                 }
+                                else if (await Build.fileExists(join(__dirname, '..', 'utils', 'spine', gifFile.split('_2').join('')))) {
+                                    gifPath = join(__dirname, '..', 'utils', 'spine', gifFile.split('_2').join(''));
+                                }
+                                else if (await Build.fileExists(join(__dirname, '..', 'utils', 'spine', gifFile.split('sbr').join('sabr')))) {
+                                    gifPath = join(__dirname, '..', 'utils', 'spine', gifFile.split('sbr').join('sabr'));
+                                }
+                                else if (await Build.fileExists(join(__dirname, '..', 'utils', 'spine', gifFile.split('_2').join('').split('sbr').join('sabr')))) {
+                                    gifPath = join(__dirname, '..', 'utils', 'spine', gifFile.split('_2').join('').split('sbr').join('sabr'));
+                                }
+
                                 unlinkSync(gifPath);
                             }
                         }).on('pageerror', async ({ message }) => {
