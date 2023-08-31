@@ -11,7 +11,7 @@ export const fileExists = async (path: string) => !!(await fs.promises.stat(path
 export const urlExists = async (url: string) => (await nodefetch(url)).status === 200;
 function removeStyleTags(text: string) {
     if (!text) text = '';
-    const regex = /<.[a-z]{2,5}?\.[^<]+>|<\/[^<]*>/;
+    const regex = /<.[a-z]{2,5}?\.[^<]+>|<\/[^<]*>|<color=[^>]+>/;
     text = text.split(regex).join('');
     return text;
 }
