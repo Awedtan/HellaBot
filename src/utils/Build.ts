@@ -1161,10 +1161,11 @@ export async function buildStageMessage(stage: Stage, page: number): Promise<Bas
     const enemyFields = await buildStageEnemyFields(stageData);
     embed.addFields(enemyFields);
 
-    let stageIndex = (await getStageArr({ query: stage.excel.code.toLowerCase() })).findIndex(x => x.excel.stageId = stage.excel.stageId);
-    if (isChallenge) {
-        stageIndex = (await getToughStageArr({ query: stage.excel.code.toLowerCase() })).findIndex(x => x.excel.stageId = stage.excel.stageId);
-    }
+    let stageIndex;
+    if (isChallenge)
+        stageIndex = (await getToughStageArr({ query: stage.excel.code.toLowerCase() })).findIndex(x => x.excel.stageId === stage.excel.stageId);
+    else
+        stageIndex = (await getStageArr({ query: stage.excel.code.toLowerCase() })).findIndex(x => x.excel.stageId === stage.excel.stageId)
 
     const imageButton = new ButtonBuilder()
         .setCustomId(`stageඞ${stage.excel.code.toLowerCase()}ඞ${stageIndex}ඞ${isChallenge}ඞ0`)
