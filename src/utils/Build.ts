@@ -1,6 +1,6 @@
 import { ActionRowBuilder, AttachmentBuilder, BaseMessageOptions, ButtonBuilder, ButtonStyle, EmbedAuthorOptions, EmbedBuilder, EmbedField, StringSelectMenuBuilder, StringSelectMenuOptionBuilder } from 'discord.js';
 import { join } from 'path';
-import type { Blackboard, CCStage, Definition, Enemy, GameEvent, GridRange, Item, LevelUpCost, Operator, Paradox, RogueRelic, RogueStage, RogueVariation, Stage, StageData } from "../types";
+import type { Blackboard, CCStage, Definition, Enemy, GameEvent, GridRange, Item, LevelUpCost, Operator, Paradox, RogueRelic, RogueStage, RogueVariation, SandboxStage, Stage, StageData } from "../types";
 import { getAllDefinitions, getAllEvents, getEnemy, getItem, getOperator, getRange, getRogueTheme, getStageArr, getToughStageArr } from './Api';
 const nodefetch = require('node-fetch');
 const fs = require('fs');
@@ -916,11 +916,11 @@ export async function buildRogueStageMessage(theme: number, stage: RogueStage, p
     embed.addFields(enemyFields);
 
     const imageButton = new ButtonBuilder()
-        .setCustomId(`rogueඞstageඞ${theme}ඞ${stage.excel.name.toLowerCase()}ඞ${isChallenge}ඞ0`)
+        .setCustomId(`rogueඞstageඞ${theme}ඞ${stageInfo.name.toLowerCase()}ඞ${isChallenge}ඞ0`)
         .setLabel('Preview')
         .setStyle(ButtonStyle.Primary);
     const diagramButton = new ButtonBuilder()
-        .setCustomId(`rogueඞstageඞ${theme}ඞ${stage.excel.name.toLowerCase()}ඞ${isChallenge}ඞ1`)
+        .setCustomId(`rogueඞstageඞ${theme}ඞ${stageInfo.name.toLowerCase()}ඞ${isChallenge}ඞ1`)
         .setLabel('Diagram')
         .setStyle(ButtonStyle.Primary);
     const buttonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(imageButton, diagramButton);
@@ -978,6 +978,26 @@ export async function buildRogueVariationListMessage(theme: number): Promise<Bas
         .setColor(embedColour)
         .setTitle(`*${rogueTheme.name}* Floor Effects`)
         .setDescription(description);
+
+    return { embeds: [embed] };
+}
+export async function buildSandboxStageMessage(stage: SandboxStage) {
+    const stageInfo = stage.excel;
+    const stageData = stage.levels;
+
+    const title = `${stageInfo.code} - ${stageInfo.name}`;
+    const description = removeStyleTags(stageInfo.description);
+
+    const embed = new EmbedBuilder()
+        .setColor(embedColour)
+        .setTitle(title)
+        .setDescription(description);
+
+    const enemyFields = await buildStageEnemyFields(stageData);
+    embed.addFields(enemyFields);
+
+    const diagramFields = buildStageDiagramFields(stageData);
+    embed.addFields(diagramFields);
 
     return { embeds: [embed] };
 }

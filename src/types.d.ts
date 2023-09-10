@@ -590,6 +590,24 @@ type RogueVariation = {
     sound: string;
 };
 
+type SandboxAct = {
+    stageDict: { [key: string]: SandboxStage };
+}
+
+type SandboxStage = {
+    excel: {
+        stageId: string;
+        levelId: string;
+        code: string;
+        name: string;
+        loadingPicId: string;
+        description: string;
+        actionCost: number;
+        powerCost: number;
+    };
+    levels: StageData;
+}
+
 type Skill = {
     skillId: string;
     iconId: string;

@@ -1,4 +1,4 @@
-import { Base, CCStage, Definition, Enemy, GameEvent, GridRange, Item, Module, Operator, Paradox, RogueTheme, Skill, Skin, Stage } from "../types";
+import { Base, CCStage, Definition, Enemy, GameEvent, GridRange, Item, Module, Operator, Paradox, RogueTheme, SandboxAct, Skill, Skin, Stage } from "../types";
 const fetch = require('node-fetch');
 
 const apiUrl = 'https:/hellabotapi.cyclic.app';
@@ -118,6 +118,15 @@ export async function getRogueTheme({ query, include, exclude }: SingleParams): 
 }
 export async function getAllRogueThemes({ include, exclude }: AllParams = {}): Promise<RogueTheme[]> {
     const data = await GET({ route: 'rogue', query: '', include: include, exclude: exclude });
+    return data.map(datum => datum.value);
+}
+
+export async function getSandboxAct({ query, include, exclude }: SingleParams): Promise<SandboxAct> {
+    const data = await GET({ route: 'sandbox', query: query, include: include, exclude: exclude });
+    return data.value;
+}
+export async function getAllSandboxActs({ include, exclude }: AllParams = {}): Promise<SandboxAct[]> {
+    const data = await GET({ route: 'sandbox', query: '', include: include, exclude: exclude });
     return data.map(datum => datum.value);
 }
 
