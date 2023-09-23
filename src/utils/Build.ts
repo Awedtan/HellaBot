@@ -338,7 +338,7 @@ export async function buildEnemyMessage(enemy: Enemy, level: number): Promise<Ba
     const res = enemyData.attributes.magicResistance.m_defined ? enemyData.attributes.magicResistance.m_value.toString() :
         baseData.attributes.magicResistance.m_defined ? baseData.attributes.magicResistance.m_value.toString() : '0';
     const weight = enemyData.attributes.massLevel.m_defined ? enemyData.attributes.massLevel.m_value.toString() :
-        baseData.attributes.massLevel.m_defined ? baseData.attributes.massLevel.m_value.toString() : '1';
+        baseData.attributes.massLevel.m_defined ? baseData.attributes.massLevel.m_value.toString() : '0';
     const life = enemyData.lifePointReduce.m_defined ? enemyData.lifePointReduce.m_value.toString() :
         baseData.lifePointReduce.m_defined ? baseData.lifePointReduce.m_value.toString() : '1';
     const silence = enemyData.attributes.silenceImmune.m_defined ? enemyData.attributes.silenceImmune.m_value :
