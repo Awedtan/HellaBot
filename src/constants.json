@@ -132,6 +132,16 @@
                 "Sandsea Remnants",
                 "Shangshu Trails",
                 "Tundra Mines"
+            ],
+            "12": [
+                "Nameless Shelter",
+                "County Hillock Depot",
+                "Londinium Outskirts",
+                "Misty Warzone",
+                "Sal Viento Karst",
+                "Shangshu Trails",
+                "Tundra Mines",
+                "Under-Construction Beachside"
             ]
         },
         "ccStages": [
@@ -302,6 +312,18 @@
                 "location": "Ursus",
                 "name": "Tundra Mines",
                 "description": "The desolate conditions of Ursus's tundra mines have forced the miners to flee simply to survive. Under conditions of anonymity, a Rhodes Island detachment was given authorization to rescue these miners and provide a means of escape.\n<Static Roadblock> Blocks the movement of Ursus Civilians and Talulah, the Fighter; Can be destroyed by your units.\n<Ursus Civilian> Life Points will be deducted by 1 when killed by an enemy."
+            },
+            {
+                "code": "level_rune_14-01",
+                "location": "Barrenlands",
+                "name": "Nameless Shelter",
+                "description": "TBD"
+            },
+            {
+                "code": "level_rune_14-02",
+                "location": "Victoria",
+                "name": "Misty Warzone",
+                "description": "TBD"
             }
         ],
         "eliteLevels": [
@@ -312,30 +334,30 @@
         ],
         "evolveGoldCost": [
             [
-              -1,
-              -1
+                -1,
+                -1
             ],
             [
-              -1,
-              -1
+                -1,
+                -1
             ],
             [
-              10000,
-              -1
+                10000,
+                -1
             ],
             [
-              15000,
-              60000
+                15000,
+                60000
             ],
             [
-              20000,
-              120000
+                20000,
+                120000
             ],
             [
-              30000,
-              180000
+                30000,
+                180000
             ]
-          ],
+        ],
         "itemDropRarities": {
             "SOMETIMES": "Very Rare",
             "OFTEN": "Rare",
