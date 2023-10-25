@@ -325,12 +325,12 @@
                 "description": "TBD"
             }
         ],
-        "eliteLevels": [
-            "E0",
-            "E1",
-            "E2",
-            "E3"
-        ],
+        "eliteLevels": {
+            "PHASE_0": "E0",
+            "PHASE_1": "E1",
+            "PHASE_2": "E2",
+            "PHASE_3": "E3"
+        },
         "evolveGoldCost": [
             [
                 -1,
@@ -378,6 +378,14 @@
             "starter": 0,
             "senior": 4,
             "top": 5
+        },
+        "rarity": {
+            "TIER_1": 0,
+            "TIER_2": 1,
+            "TIER_3": 2,
+            "TIER_4": 3,
+            "TIER_5": 4,
+            "TIER_6": 5
         },
         "recruitPool": [
             "char_285_medic2",
@@ -508,22 +516,17 @@
             "M2",
             "M3"
         ],
-        "skillTypes": [
-            "Passive",
-            "Manual Trigger",
-            "Auto Trigger"
-        ],
-        "spTypes": [
-            null,
-            "Per Second",
-            "Offensive",
-            null,
-            "Defensive",
-            null,
-            null,
-            null,
-            "Passive"
-        ],
+        "skillTypes": {
+            "AUTO": "Auto Trigger",
+            "MANUAL": "Manual Trigger",
+            "PASSIVE": "Passive"
+        },
+        "spTypes": {
+            "INCREASE_WHEN_ATTACK": "Offensive",
+            "INCREASE_WHEN_TAKEN_DAMAGE": "Defensive",
+            "INCREASE_WITH_TIME": "Per Second",
+            "8": "Passive"
+        },
         "tagValues": {
             "melee": 2,
             "ranged": 3,

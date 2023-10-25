@@ -4,6 +4,7 @@ import { Operator } from '../types';
 import { getOperator } from '../utils/Api';
 import { operatorAutocomplete } from '../utils/Autocomplete';
 import { buildCostMessage } from '../utils/Build';
+const { gameConsts } = require('../constants');
 
 export default class CostCommand implements Command {
     data = new SlashCommandBuilder()
@@ -27,7 +28,7 @@ export default class CostCommand implements Command {
         );
     async autocomplete(interaction: AutocompleteInteraction) {
         const value = interaction.options.getFocused().toLowerCase();
-        const callback = (op: Operator) => op.data.rarity > 1;
+        const callback = (op: Operator) => gameConsts.rarity[op.data.rarity] > 1;
         const arr = await operatorAutocomplete({ query: value, include: ['data.name', 'data.rarity'] }, callback);
         return await interaction.respond(arr);
     }
@@ -38,7 +39,7 @@ export default class CostCommand implements Command {
 
         if (!op)
             return await interaction.reply({ content: 'That operator doesn\'t exist!', ephemeral: true });
-        if (op.data.rarity <= 1)
+        if (gameConsts.rarity[op.data.rarity] <= 1)
             return await interaction.reply({ content: 'That operator has no upgrades!', ephemeral: true });
 
         await interaction.deferReply();

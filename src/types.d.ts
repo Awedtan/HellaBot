@@ -433,7 +433,7 @@ type Operator = {
         isNotObtainable: boolean;
         isSpChar: boolean;
         maxPotentialLevel: number;
-        rarity: number;
+        rarity: string;
         profession: string;
         subProfessionId: string;
         trait: {
@@ -501,7 +501,7 @@ type Operator = {
 };
 
 type OperatorUnlockCond = {
-    phase: number;
+    phase: string;
     level: number;
 };
 
@@ -616,10 +616,10 @@ type Skill = {
         name: string;
         rangeId: string;
         description: string;
-        skillType: number;
+        skillType: string;
         durationType: number;
         spData: {
-            spType: number;
+            spType: string;
             levelUpCost: null;
             maxChargeTime: number;
             spCost: number;

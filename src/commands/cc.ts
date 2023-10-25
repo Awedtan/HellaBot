@@ -57,7 +57,7 @@ export default class CCCommand implements Command {
                 const name = interaction.options.getString('name').toLowerCase();
                 const stage = await getCCStage({ query: name });
 
-                if (!stage.const || !stage.levels)
+                if (!stage || !stage.const || !stage.levels)
                     return await interaction.reply({ content: 'That stage data doesn\'t exist!', ephemeral: true });
 
                 await interaction.deferReply();

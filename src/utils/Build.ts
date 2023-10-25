@@ -10,7 +10,7 @@ const cleanFilename = (text: string) => text.split(/%|[#\+]|&|\[|\]/).join(''); 
 export const fileExists = async (path: string) => !!(await fs.promises.stat(path).catch(e => false));
 export const urlExists = async (url: string) => (await nodefetch(url)).status === 200;
 function removeStyleTags(text: string) {
-    if (!text) text = '';
+    if (!text) return '';
     const regex = /<.[a-z]{2,5}?\.[^<]+>|<\/[^<]*>|<color=[^>]+>/;
     text = text.split(regex).join('');
     return text;
@@ -243,7 +243,7 @@ export async function buildCostMessage(op: Operator, page: number): Promise<Base
         skillButton.setStyle(ButtonStyle.Secondary);
         skillButton.setDisabled(true);
     }
-    if (op.data.rarity <= 2) {
+    if (gameConsts.rarity[op.data.rarity] <= 2) {
         masteryButton.setStyle(ButtonStyle.Secondary);
         masteryButton.setDisabled(true);
     }
@@ -513,7 +513,7 @@ export async function buildOperatorMessage(op: Operator): Promise<BaseMessageOpt
 
     const authorField = buildAuthorField(op);
     let title = `${op.data.name} - `;
-    for (let i = 0; i <= op.data.rarity; i++) {
+    for (let i = 0; i <= gameConsts.rarity[op.data.rarity]; i++) {
         title += '★';
     }
 
@@ -805,19 +805,19 @@ export async function buildRecruitMessage(qual: string, value: number, tag: stri
         for (const opId of Object.values(gameConsts.recruitPool)) {
             const op = await getOperator({ query: String(opId) });
             if (op.recruit % value !== 0) continue;
-            if (qual !== null && qual !== 'null' && op.data.rarity !== gameConsts.qualifications[qual]) continue;
+            if (qual !== null && qual !== 'null' && gameConsts.rarity[op.data.rarity] !== gameConsts.qualifications[qual]) continue;
 
             opArr.push(op);
         }
     }
 
-    opArr.sort(function (a, b) { return b.data.rarity - a.data.rarity });
+    opArr.sort(function (a, b) { return gameConsts.rarity[b.data.rarity] - gameConsts.rarity[a.data.rarity] });
 
     let opCount = 0;
 
     for (const op of opArr) {
         let rarity = '';
-        for (let i = 0; i <= op.data.rarity; i++) {
+        for (let i = 0; i <= gameConsts.rarity[op.data.rarity]; i++) {
             rarity += '★';
         }
         if (opCount <= 23) {
@@ -1315,7 +1315,7 @@ export async function buildInfoMessage(op: Operator, type: number, page: number,
         baseButton.setStyle(ButtonStyle.Secondary);
         baseButton.setDisabled(true);
     }
-    if (op.data.rarity <= 1) {
+    if (gameConsts.rarity[op.data.rarity] <= 1) {
         costButton.setStyle(ButtonStyle.Secondary);
         costButton.setDisabled(true);
     }
@@ -1664,7 +1664,7 @@ export async function buildInfoCostMessage(op: Operator, type: number, page: num
         skillButton.setStyle(ButtonStyle.Secondary);
         skillButton.setDisabled(true);
     }
-    if (op.data.rarity <= 2) {
+    if (gameConsts.rarity[op.data.rarity] <= 2) {
         masteryButton.setStyle(ButtonStyle.Secondary);
         masteryButton.setDisabled(true);
     }
@@ -1922,7 +1922,7 @@ async function buildSkillEmbed(op: Operator, page: number, level: number): Promi
     const title = `${skillLevel.name} - ${gameConsts.skillLevels[level]}`;
     const spType = gameConsts.spTypes[skillLevel.spData.spType];
     const skillType = gameConsts.skillTypes[skillLevel.skillType];
-    let description = `**${spType} - ${skillType}**\n***Cost:* ${skillLevel.spData.spCost} SP - *Initial:* ${skillLevel.spData.initSp} SP`;
+    let description = `**${spType} - ${skillType}**\n***Initial:* ${skillLevel.spData.initSp} SP - *Cost:* ${skillLevel.spData.spCost} SP`;
     if (skillLevel.duration > 0) {
         description += ` - *Duration:* ${skillLevel.duration} sec`;
     }
@@ -1964,7 +1964,7 @@ async function buildCostEmbed(op: Operator, page: number): Promise<{ embed: Embe
                 if (phase.evolveCost === null) continue;
 
                 let phaseDescription = await buildCostString(phase.evolveCost);
-                phaseDescription += `LMD **x${gameConsts.evolveGoldCost[op.data.rarity][i - 1]}**\n`;
+                phaseDescription += `LMD **x${gameConsts.evolveGoldCost[gameConsts.rarity[op.data.rarity]][i - 1]}**\n`;
                 embed.addFields({ name: `Elite ${i}`, value: phaseDescription, inline: true });
             }
             break;
