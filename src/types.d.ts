@@ -47,7 +47,7 @@ type Base = {
 
 type CCStage = {
     const: {
-        code: string;
+        levelId: string;
         location: string;
         name: string;
         description: string;

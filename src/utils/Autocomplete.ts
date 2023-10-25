@@ -5,7 +5,7 @@ const { gameConsts } = require('../constants');
 const limit = 6;
 
 export async function ccAutocomplete(query: string, callback: (e: CCStage['const']) => boolean = () => true) {
-    const matchQuery = (stage: CCStage['const']) => stage.name.toLowerCase().includes(query) || stage.location.toLowerCase().includes(query) || stage.code.toLowerCase().includes(query);
+    const matchQuery = (stage: CCStage['const']) => stage.name.toLowerCase().includes(query) || stage.location.toLowerCase().includes(query) || stage.levelId.split('/')[2].toLowerCase().includes(query);
 
     const arr: CCStage['const'][] = [];
     let i = 0;
@@ -17,7 +17,7 @@ export async function ccAutocomplete(query: string, callback: (e: CCStage['const
         i++;
     }
 
-    const mappedArr = arr.map(stage => ({ name: `${stage.location} - ${stage.name}`, value: stage.code }));
+    const mappedArr = arr.map(stage => ({ name: `${stage.location} - ${stage.name}`, value: stage.levelId.split('/')[2] }));
 
     return mappedArr;
 }

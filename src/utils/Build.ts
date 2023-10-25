@@ -152,6 +152,7 @@ export async function buildCcMessage(stage: CCStage, page: number): Promise<Base
     const embed = new EmbedBuilder()
         .setColor(embedColour)
         .setTitle(title)
+        .setURL(`https://awedtan.github.io?level=${stage.const.levelId.toLowerCase()}`)
         .setDescription(description);
 
     const enemyFields = await buildStageEnemyFields(stageData);
@@ -177,10 +178,10 @@ export async function buildCcMessage(stage: CCStage, page: number): Promise<Base
     }
 
     if (page === 0) {
-        const imagePath = paths.myAssetUrl + `/stages/${stageInfo.code}.png`;
+        const imagePath = paths.myAssetUrl + `/stages/${stageInfo.levelId.split('/')[2]}.png`;
         if (await urlExists(imagePath)) {
             const image = new AttachmentBuilder(imagePath);
-            embed.setImage(`attachment://${stageInfo.code}.png`)
+            embed.setImage(`attachment://${stageInfo.levelId.split('/')[2]}.png`)
 
             return { content: '', embeds: [embed], files: [image], components: [buttonRow] };
         }
