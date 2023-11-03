@@ -2,7 +2,8 @@
     "embedColour": 15452768,
     "paths": {
         "aceshipImageUrl": "https://raw.githubusercontent.com/Aceship/Arknight-Images/main",
-        "myAssetUrl": "https://raw.githubusercontent.com/Awedtan/HellaBot-Assets/main"
+        "myAssetUrl": "https://raw.githubusercontent.com/Awedtan/HellaBot-Assets/main",
+        "stageViewerUrl": "https://awedtan.github.io/stage-viewer"
     },
     "gameConsts": {
         "ccSeasons": {

@@ -152,7 +152,7 @@ export async function buildCcMessage(stage: CCStage, page: number): Promise<Base
     const embed = new EmbedBuilder()
         .setColor(embedColour)
         .setTitle(title)
-        .setURL(`https://awedtan.github.io?level=${stage.const.levelId.toLowerCase()}`)
+        .setURL(`${paths.stageViewerUrl}?level=${stage.const.levelId.toLowerCase()}`)
         .setDescription(description);
 
     const enemyFields = await buildStageEnemyFields(stageData);
@@ -911,7 +911,7 @@ export async function buildRogueStageMessage(theme: number, stage: RogueStage, p
     const embed = new EmbedBuilder()
         .setColor(embedColour)
         .setTitle(title)
-        .setURL(`https://awedtan.github.io?level=${stage.excel.id.toLowerCase()}`)
+        .setURL(`${paths.stageViewerUrl}?level=${stage.excel.id.toLowerCase()}`)
         .setDescription(description);
 
     const enemyFields = await buildStageEnemyFields(stageData);
@@ -993,7 +993,7 @@ export async function buildSandboxStageMessage(stage: SandboxStage) {
     const embed = new EmbedBuilder()
         .setColor(embedColour)
         .setTitle(title)
-        .setURL(`https://awedtan.github.io?level=${stage.excel.stageId.toLowerCase()}`)
+        .setURL(`${paths.stageViewerUrl}?level=${stage.excel.stageId.toLowerCase()}`)
         .setDescription(description);
 
     const enemyFields = await buildStageEnemyFields(stageData);
@@ -1151,7 +1151,7 @@ export async function buildStageMessage(stage: Stage, page: number): Promise<Bas
     const embed = new EmbedBuilder()
         .setColor(embedColour)
         .setTitle(title)
-        .setURL(`https://awedtan.github.io?level=${stage.excel.stageId.toLowerCase()}`)
+        .setURL(`${paths.stageViewerUrl}?level=${stage.excel.stageId.toLowerCase()}`)
         .setDescription(description);
 
     const stageDropInfo = stageInfo.stageDropInfo;
