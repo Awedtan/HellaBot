@@ -254,13 +254,14 @@ export default class HellaBot {
                     }
                     case 'spine': {
                         const type = idArr[1];
-                        let id = idArr[2];
+                        const id = idArr[2];
+                        const direction = idArr[3];
                         const anim = interaction.values[0];
 
                         await interaction.editReply({ content: `Generating \`${anim}\` gif...`, components: [] })
 
                         const char = type === 'operator' ? await getOperator({ query: id, include: ['id', 'data'] }) : await getEnemy({ query: id, include: ['excel'] });
-                        const skelData = await SpineHelper.loadSkel(type, id);
+                        const skelData = await SpineHelper.loadSkel(type, id, direction);
 
                         const animArr = [];
                         for (const animation of skelData.animations) {
@@ -268,14 +269,14 @@ export default class HellaBot {
                             animArr.push(animation.name);
                         }
 
-                        const { page, browser, rand } = await SpineHelper.launchPage(type, id, anim);
+                        const { page, browser, rand } = await SpineHelper.launchPage(type, id, direction, anim);
 
                         page.on('console', async message => {
                             if (message.text() === 'done') {
                                 await new Promise(r => setTimeout(r, 1000));
                                 await browser.close();
 
-                                const spineEmbed = await Build.buildSpineMessage(char, animArr, anim, rand);
+                                const spineEmbed = await Build.buildSpineMessage(char, direction, animArr, anim, rand);
                                 await interaction.editReply(spineEmbed);
 
                                 let gifFile = id + rand + '.gif';

@@ -1,7 +1,7 @@
 import { ActionRowBuilder, AttachmentBuilder, BaseMessageOptions, ButtonBuilder, ButtonStyle, EmbedAuthorOptions, EmbedBuilder, EmbedField, StringSelectMenuBuilder, StringSelectMenuOptionBuilder } from 'discord.js';
 import { join } from 'path';
 import type { Blackboard, CCStage, Definition, Enemy, GameEvent, GridRange, Item, LevelUpCost, Operator, Paradox, RogueRelic, RogueStage, RogueVariation, SandboxStage, Stage, StageData } from "../types";
-import { getAllDefinitions, getAllEvents, getEnemy, getItem, getOperator, getRange, getRogueTheme, getStageArr, getToughStageArr } from './Api';
+import { getAllDefinitions, getAllEvents, getAllOperators, getEnemy, getItem, getOperator, getRange, getRogueTheme, getStageArr, getToughStageArr } from './Api';
 const nodefetch = require('node-fetch');
 const fs = require('fs');
 const { embedColour, paths, gameConsts } = require('../constants');
@@ -802,8 +802,9 @@ export async function buildRecruitMessage(qual: string, value: number, tag: stri
     const opArr: Operator[] = [];
 
     if (selectedButtons.length >= 1) {
-        for (const opId of Object.values(gameConsts.recruitPool)) {
-            const op = await getOperator({ query: String(opId) });
+        const opList = await getAllOperators({ include: ['id', 'recruit', 'data.rarity', 'data.name'] });
+        for (const op of opList) {
+            if (!gameConsts.recruitPool.includes(op.id)) continue;
             if (op.recruit % value !== 0) continue;
             if (qual !== null && qual !== 'null' && gameConsts.rarity[op.data.rarity] !== gameConsts.qualifications[qual]) continue;
 
@@ -1095,7 +1096,7 @@ export async function buildSkillMessage(op: Operator, page: number, level: numbe
 
     return { embeds: [embed], files: [avatar, thumbnail], components: [rowOne, rowTwo] };
 }
-export async function buildSpineMessage(char: Enemy | Operator, animArr: string[], anim: string, rand: number): Promise<BaseMessageOptions> {
+export async function buildSpineMessage(char: Enemy | Operator, direction: string, animArr: string[], anim: string, rand: number): Promise<BaseMessageOptions> {
     const type = (char as Operator).id ? 'operator' : 'enemy';
     const id = type === 'operator' ? (char as Operator).id : (char as Enemy).excel.enemyId;
 
@@ -1103,24 +1104,12 @@ export async function buildSpineMessage(char: Enemy | Operator, animArr: string[
     const avatar = new AttachmentBuilder(avatarPath);
     const authorField = buildAuthorField(char);
 
-    let gifFile = id + rand + '.gif';
-    let gifPath = join(__dirname, 'spine', gifFile);
-    if (await fileExists(gifPath)) {
-    }
-    else if (await fileExists(join(__dirname, 'spine', gifFile.split('_2').join('')))) {
-        gifPath = join(__dirname, 'spine', gifFile.split('_2').join(''));
-    }
-    else if (await fileExists(join(__dirname, 'spine', gifFile.split('sbr').join('sabr')))) {
-        gifPath = join(__dirname, 'spine', gifFile.split('sbr').join('sabr'));
-    }
-    else if (await fileExists(join(__dirname, 'spine', gifFile.split('_2').join('').split('sbr').join('sabr')))) {
-        gifPath = join(__dirname, 'spine', gifFile.split('_2').join('').split('sbr').join('sabr'));
-    }
-
+    const gifFile = gameConsts.enemySpineIdOverride[id] ?? id + rand + '.gif';
+    const gifPath = join(__dirname, 'spine', gifFile);
     const gif = new AttachmentBuilder(gifPath);
 
     const animSelector = new StringSelectMenuBuilder()
-        .setCustomId(`spineඞ${type}ඞ${id}`)
+        .setCustomId(`spineඞ${type}ඞ${id}ඞ${direction}`)
         .setPlaceholder(anim);
     const componentRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(animSelector);
 

@@ -332,6 +332,11 @@
             "PHASE_2": "E2",
             "PHASE_3": "E3"
         },
+        "enemySpineIdOverride": {
+            "enemy_1037_lunsbr": "enemy_1037_lunsabr",
+            "enemy_1043_zomsbr": "enemy_1043_zomsabr",
+            "enemy_1043_zomsbr_2": "enemy_1043_zomsabr_2'"
+        },
         "evolveGoldCost": [
             [
                 -1,

@@ -3,9 +3,10 @@ import { SingleParams, getAllDefinitions, getAllEnemies, getAllItems, getAllOper
 const { gameConsts } = require('../constants');
 
 const limit = 6;
+const splitMatch = (str: string, query: string) => str.toLowerCase().includes(query) || str.toLowerCase().split('\'').join('').includes(query);
 
 export async function ccAutocomplete(query: string, callback: (e: CCStage['const']) => boolean = () => true) {
-    const matchQuery = (stage: CCStage['const']) => stage.name.toLowerCase().includes(query) || stage.location.toLowerCase().includes(query) || stage.levelId.split('/')[2].toLowerCase().includes(query);
+    const matchQuery = (stage: CCStage['const']) => splitMatch(stage.name, query) || splitMatch(stage.location, query) || splitMatch(stage.levelId.split('/')[2], query);
 
     const arr: CCStage['const'][] = [];
     let i = 0;
@@ -28,7 +29,7 @@ export async function defineAutocomplete({ query, include, exclude }: SinglePara
     const definitionArr = await getAllDefinitions({ include, exclude });
     for (const define of definitionArr) {
         if (i >= limit) break;
-        if (arr.includes(define) || !define.termName.toLowerCase().includes(query) || !callback(define)) continue;
+        if (arr.includes(define) || !splitMatch(define.termName, query) || !callback(define)) continue;
         arr.push(define);
         i++;
     }
@@ -38,7 +39,7 @@ export async function defineAutocomplete({ query, include, exclude }: SinglePara
 }
 
 export async function enemyAutocomplete({ query, include, exclude }: SingleParams, callback: (e: Enemy) => boolean = () => true) {
-    const matchQuery = (enemy: Enemy) => enemy.excel.name.toLowerCase().includes(query) || enemy.excel.enemyIndex.toLowerCase().includes(query);
+    const matchQuery = (enemy: Enemy) => splitMatch(enemy.excel.name, query) || splitMatch(enemy.excel.enemyIndex, query);
 
     const arr: Enemy[] = [];
     let i = 0;
@@ -60,7 +61,7 @@ export async function rogueRelicAutocomplete(theme: number, { query, include, ex
     const rogueTheme = await getRogueTheme({ query: theme.toString(), include, exclude });
     for (const relic of Object.values(rogueTheme.relicDict)) {
         if (i >= limit) break;
-        if (arr.includes(relic) || !relic.name.toLowerCase().includes(query) || !callback(relic)) continue;
+        if (arr.includes(relic) || !splitMatch(relic.name, query) || !callback(relic)) continue;
         arr.push(relic);
         i++;
     }
@@ -70,7 +71,7 @@ export async function rogueRelicAutocomplete(theme: number, { query, include, ex
 }
 
 export async function rogueStageAutocomplete(theme: number, { query, include, exclude }: SingleParams, callback: (e: RogueStage) => boolean = () => true) {
-    const matchQuery = (stage: RogueStage) => stage.excel.name.toLowerCase().includes(query) || stage.excel.code.toLowerCase().includes(query);
+    const matchQuery = (stage: RogueStage) => splitMatch(stage.excel.name, query) || splitMatch(stage.excel.code, query);
 
     const arr: RogueStage[] = [];
     let i = 0;
@@ -87,7 +88,7 @@ export async function rogueStageAutocomplete(theme: number, { query, include, ex
 }
 
 export async function rogueToughStageAutocomplete(theme: number, { query, include, exclude }: SingleParams, callback: (e: RogueStage) => boolean = () => true) {
-    const matchQuery = (stage: RogueStage) => stage.excel.name.toLowerCase().includes(query) || stage.excel.code.toLowerCase().includes(query);
+    const matchQuery = (stage: RogueStage) => splitMatch(stage.excel.name, query) || splitMatch(stage.excel.code, query);
 
     const arr: RogueStage[] = [];
     let i = 0;
@@ -109,7 +110,7 @@ export async function rogueVariationAutocomplete(theme: number, { query, include
     const rogueTheme = await getRogueTheme({ query: theme.toString(), include, exclude });
     for (const variation of Object.values(rogueTheme.variationDict)) {
         if (i >= limit) break;
-        if (arr.includes(variation) || !variation.outerName.toLowerCase().includes(query) || !callback(variation)) continue;
+        if (arr.includes(variation) || !splitMatch(variation.outerName, query) || !callback(variation)) continue;
         arr.push(variation);
         i++;
     }
@@ -119,7 +120,7 @@ export async function rogueVariationAutocomplete(theme: number, { query, include
 }
 
 export async function sandboxStageAutocomplete(act: number, { query, include, exclude }: SingleParams, callback: (e: SandboxStage) => boolean = () => true) {
-    const matchQuery = (stage: SandboxStage) => stage.excel.name.toLowerCase().includes(query) || stage.excel.code.toLowerCase().includes(query);
+    const matchQuery = (stage: SandboxStage) => splitMatch(stage.excel.name, query) || splitMatch(stage.excel.code, query);
 
     const arr: SandboxStage[] = [];
     let i = 0;
@@ -141,7 +142,7 @@ export async function itemAutocomplete({ query, include, exclude }: SingleParams
     const itemArr = await getAllItems({ include, exclude });
     for (const item of itemArr) {
         if (i >= limit) break;
-        if (arr.includes(item) || !item.data.name.toLowerCase().includes(query) || !callback(item)) continue;
+        if (arr.includes(item) || !splitMatch(item.data.name, query) || !callback(item)) continue;
         arr.push(item);
         i++;
     }
@@ -156,7 +157,7 @@ export async function operatorAutocomplete({ query, include, exclude }: SinglePa
     const operatorArr = await getAllOperators({ include, exclude });
     for (const op of operatorArr) {
         if (i >= limit) break;
-        if (arr.includes(op) || !op.data.name.toLowerCase().includes(query) || !callback(op)) continue;
+        if (arr.includes(op) || !splitMatch(op.data.name, query) || !callback(op)) continue;
         arr.push(op);
         i++;
     }
@@ -166,7 +167,7 @@ export async function operatorAutocomplete({ query, include, exclude }: SinglePa
 }
 
 export async function stageAutocomplete({ query, include, exclude }: SingleParams, callback: (e: Stage) => boolean = () => true) {
-    const matchQuery = (stage: Stage) => stage.excel.name.toLowerCase().includes(query) || stage.excel.code.toLowerCase().includes(query);
+    const matchQuery = (stage: Stage) => splitMatch(stage.excel.name, query) || splitMatch(stage.excel.code, query);
 
     const arr: Stage[] = [];
     let i = 0;
@@ -185,7 +186,7 @@ export async function stageAutocomplete({ query, include, exclude }: SingleParam
 }
 
 export async function toughStageAutocomplete({ query, include, exclude }: SingleParams, callback: (e: Stage) => boolean = () => true) {
-    const matchQuery = (stage: Stage) => stage.excel.name.toLowerCase().includes(query) || stage.excel.code.toLowerCase().includes(query);
+    const matchQuery = (stage: Stage) => splitMatch(stage.excel.name, query) || splitMatch(stage.excel.code, query);
 
     const arr: Stage[] = [];
     let i = 0;

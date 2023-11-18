@@ -7,24 +7,33 @@ import { getEnemy, getOperator } from '../utils/Api';
 import { enemyAutocomplete, operatorAutocomplete } from '../utils/Autocomplete';
 import { buildSpineMessage, fileExists } from '../utils/Build';
 import * as SpineHelper from '../utils/SpineHelper';
+const { gameConsts } = require('../constants');
 
 export default class SpineCommand implements Command {
     data = new SlashCommandBuilder()
         .setName('spine')
-        .setDescription('Show spine animations')
+        .setDescription('Render spine animations')
         .addSubcommand(subcommand =>
             subcommand.setName('operator')
-                .setDescription('Show an operator\'s spine animations')
+                .setDescription('Render an operator\'s spine animations')
                 .addStringOption(option =>
                     option.setName('name')
                         .setDescription('Operator name')
                         .setRequired(true)
                         .setAutocomplete(true)
                 )
+                .addStringOption(option =>
+                    option.setName('direction')
+                        .setDescription('Spine direction')
+                        .addChoices(
+                            { name: 'front', value: 'front' },
+                            { name: 'back', value: 'back' }
+                        )
+                )
         )
         .addSubcommand(subcommand =>
             subcommand.setName('enemy')
-                .setDescription('Show an enemy\'s spine animations')
+                .setDescription('Render an enemy\'s spine animations')
                 .addStringOption(option =>
                     option.setName('name')
                         .setDescription('Enemy name')
@@ -50,14 +59,15 @@ export default class SpineCommand implements Command {
     async execute(interaction: ChatInputCommandInteraction) {
         const type = interaction.options.getSubcommand();
         const name = interaction.options.getString('name').toLowerCase();
+        const direction = (interaction.options.getString('direction') ?? 'front').toLowerCase();
 
         const char = type === 'operator' ? await getOperator({ query: name, include: ['id', 'data'] }) : await getEnemy({ query: name, include: ['excel'] });
 
         if (!char)
             return await interaction.reply({ content: `That ${type} doesn\'t exist!`, ephemeral: true });
 
-        let id = type === 'operator' ? (char as Operator).id : (char as Enemy).excel.enemyId;
-        const skelData = await SpineHelper.loadSkel(type, id);
+        const id = type === 'operator' ? (char as Operator).id : (char as Enemy).excel.enemyId;
+        const skelData = await SpineHelper.loadSkel(type, id, direction);
 
         if (!skelData)
             return await interaction.reply({ content: 'There was an error while loading the spine data!', ephemeral: true });
@@ -70,31 +80,21 @@ export default class SpineCommand implements Command {
 
         await interaction.deferReply();
 
-        const { page, browser, rand } = await SpineHelper.launchPage(type, id, animArr[0]);
+        const { page, browser, rand } = await SpineHelper.launchPage(type, id, direction, animArr[0]);
 
         page.on('console', async message => {
             if (message.text() === 'done') {
                 await new Promise(r => setTimeout(r, 1000));
                 await browser.close();
 
-                const spineEmbed = await buildSpineMessage(char, animArr, animArr[0], rand);
+                const spineEmbed = await buildSpineMessage(char, direction, animArr, animArr[0], rand);
                 await interaction.followUp(spineEmbed);
 
-                let gifFile = id + rand + '.gif';
-                let gifPath = join(__dirname, '..', 'utils', 'spine', gifFile);
-                if (await fileExists(gifPath)) {
+                let gifPath = join(__dirname, '..', 'utils', 'spine', id + rand + '.gif');
+                if (gameConsts.enemySpineIdOverride[id]) {
+                    gifPath = join(__dirname, '..', 'utils', 'spine', gameConsts.enemySpineIdOverride[id] + rand + '.gif');
                 }
-                else if (await fileExists(join(__dirname, '..', 'utils', 'spine', gifFile.split('_2').join('')))) {
-                    gifPath = join(__dirname, '..', 'utils', 'spine', gifFile.split('_2').join(''));
-                }
-                else if (await fileExists(join(__dirname, '..', 'utils', 'spine', gifFile.split('sbr').join('sabr')))) {
-                    gifPath = join(__dirname, '..', 'utils', 'spine', gifFile.split('sbr').join('sabr'));
-                }
-                else if (await fileExists(join(__dirname, '..', 'utils', 'spine', gifFile.split('_2').join('').split('sbr').join('sabr')))) {
-                    gifPath = join(__dirname, '..', 'utils', 'spine', gifFile.split('_2').join('').split('sbr').join('sabr'));
-                }
-
-                unlinkSync(gifPath);
+                if (await fileExists(gifPath)) unlinkSync(gifPath);
             }
         }).on('pageerror', async ({ message }) => {
             await browser.close();
