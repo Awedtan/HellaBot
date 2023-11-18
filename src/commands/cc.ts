@@ -1,8 +1,8 @@
 import { AutocompleteInteraction, ButtonInteraction, CacheType, ChatInputCommandInteraction, SlashCommandBuilder, StringSelectMenuInteraction } from 'discord.js';
 import { Command } from '../structures/Command';
-import { getCCStage } from '../utils/Api';
-import { buildCcMessage, buildCcSelectMessage } from '../utils/Build';
-import { ccAutocomplete } from '../utils/Autocomplete';
+import { getCCStage } from '../utils/api';
+import { buildCcMessage, buildCcSelectMessage } from '../utils/build';
+import { ccAutocomplete } from '../utils/autocomplete';
 const { gameConsts } = require('../constants');
 
 export default class CCCommand implements Command {

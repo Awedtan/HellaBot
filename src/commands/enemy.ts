@@ -1,8 +1,8 @@
 import { AutocompleteInteraction, ButtonInteraction, CacheType, ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
 import { Command } from '../structures/Command';
-import { getEnemy } from '../utils/Api';
-import { enemyAutocomplete } from '../utils/Autocomplete';
-import { buildEnemyMessage } from '../utils/Build';
+import { getEnemy } from '../utils/api';
+import { enemyAutocomplete } from '../utils/autocomplete';
+import { buildEnemyMessage } from '../utils/build';
 
 export default class EnemyCommand implements Command {
     data = new SlashCommandBuilder()

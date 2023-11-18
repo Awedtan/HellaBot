@@ -1,7 +1,7 @@
 import { ActionRowBuilder, AttachmentBuilder, BaseMessageOptions, ButtonBuilder, ButtonStyle, EmbedAuthorOptions, EmbedBuilder, EmbedField, StringSelectMenuBuilder, StringSelectMenuOptionBuilder } from 'discord.js';
 import { join } from 'path';
 import type { Blackboard, CCStage, Definition, Enemy, GameEvent, GridRange, Item, LevelUpCost, Operator, Paradox, RogueRelic, RogueStage, RogueVariation, SandboxStage, Stage, StageData } from "../types";
-import { getAllDefinitions, getAllEvents, getAllOperators, getEnemy, getItem, getOperator, getRange, getRogueTheme, getStageArr, getToughStageArr } from './Api';
+import { getAllDefinitions, getAllEvents, getAllOperators, getEnemy, getItem, getOperator, getRange, getRogueTheme, getStageArr, getToughStageArr } from './api';
 const nodefetch = require('node-fetch');
 const fs = require('fs');
 const { embedColour, paths, gameConsts } = require('../constants');

@@ -1,8 +1,8 @@
 import { AutocompleteInteraction, ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
 import { Command } from '../structures/Command';
-import { getSandboxAct } from '../utils/Api';
-import { sandboxStageAutocomplete } from '../utils/Autocomplete';
-import { buildSandboxStageMessage } from '../utils/Build';
+import { getSandboxAct } from '../utils/api';
+import { sandboxStageAutocomplete } from '../utils/autocomplete';
+import { buildSandboxStageMessage } from '../utils/build';
 
 const actIndex = 0;
 

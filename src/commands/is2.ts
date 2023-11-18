@@ -1,8 +1,8 @@
 import { AutocompleteInteraction, ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
 import { Command } from '../structures/Command';
-import { getRogueTheme } from '../utils/Api';
-import { rogueRelicAutocomplete, rogueStageAutocomplete, rogueToughStageAutocomplete, rogueVariationAutocomplete } from '../utils/Autocomplete';
-import { buildRogueRelicListMessage, buildRogueRelicMessage, buildRogueStageMessage, buildRogueVariationListMessage, buildRogueVariationMessage } from '../utils/Build';
+import { getRogueTheme } from '../utils/api';
+import { rogueRelicAutocomplete, rogueStageAutocomplete, rogueToughStageAutocomplete, rogueVariationAutocomplete } from '../utils/autocomplete';
+import { buildRogueRelicListMessage, buildRogueRelicMessage, buildRogueStageMessage, buildRogueVariationListMessage, buildRogueVariationMessage } from '../utils/build';
 
 const innerIndex = 0;
 const outerIndex = innerIndex + 2;

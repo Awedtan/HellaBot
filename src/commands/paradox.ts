@@ -1,9 +1,9 @@
 import { AutocompleteInteraction, ButtonInteraction, CacheType, ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
 import { Command } from '../structures/Command';
 import { Operator } from '../types';
-import { getOperator, getParadox } from '../utils/Api';
-import { operatorAutocomplete } from '../utils/Autocomplete';
-import { buildParadoxMessage } from '../utils/Build';
+import { getOperator, getParadox } from '../utils/api';
+import { operatorAutocomplete } from '../utils/autocomplete';
+import { buildParadoxMessage } from '../utils/build';
 
 export default class ParadoxCommand implements Command {
     data = new SlashCommandBuilder()

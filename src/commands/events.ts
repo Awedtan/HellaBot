@@ -1,6 +1,6 @@
 import { ButtonInteraction, CacheType, ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
 import { Command } from '../structures/Command';
-import { buildEventListMessage } from '../utils/Build';
+import { buildEventListMessage } from '../utils/build';
 
 export default class EventCommand implements Command {
     data = new SlashCommandBuilder()

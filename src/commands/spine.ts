@@ -3,10 +3,10 @@ import { unlinkSync } from 'fs';
 import { join } from 'path';
 import { Command } from '../structures/Command';
 import { Enemy, Operator } from '../types';
-import { getEnemy, getOperator } from '../utils/Api';
-import { enemyAutocomplete, operatorAutocomplete } from '../utils/Autocomplete';
-import { buildSpineMessage, fileExists } from '../utils/Build';
-import * as SpineHelper from '../utils/SpineHelper';
+import { getEnemy, getOperator } from '../utils/api';
+import { enemyAutocomplete, operatorAutocomplete } from '../utils/autocomplete';
+import { buildSpineMessage, fileExists } from '../utils/build';
+import * as spineHelper from '../utils/spineHelper';
 const { gameConsts } = require('../constants');
 
 export default class SpineCommand implements Command {
@@ -67,7 +67,7 @@ export default class SpineCommand implements Command {
             return await interaction.reply({ content: `That ${type} doesn\'t exist!`, ephemeral: true });
 
         const id = type === 'operator' ? (char as Operator).id : (char as Enemy).excel.enemyId;
-        const skelData = await SpineHelper.loadSkel(type, id, direction);
+        const skelData = await spineHelper.loadSkel(type, id, direction);
 
         if (!skelData)
             return await interaction.reply({ content: 'There was an error while loading the spine data!', ephemeral: true });
@@ -80,7 +80,7 @@ export default class SpineCommand implements Command {
 
         await interaction.deferReply();
 
-        const { page, browser, rand } = await SpineHelper.launchPage(type, id, direction, animArr[0]);
+        const { page, browser, rand } = await spineHelper.launchPage(type, id, direction, animArr[0]);
 
         page.on('console', async message => {
             if (message.text() === 'done') {
@@ -111,14 +111,14 @@ export default class SpineCommand implements Command {
         await interaction.editReply({ content: `Generating \`${anim}\` gif...`, components: [] })
 
         const char = type === 'operator' ? await getOperator({ query: id, include: ['id', 'data'] }) : await getEnemy({ query: id, include: ['excel'] });
-        const skelData = await SpineHelper.loadSkel(type, id, direction);
+        const skelData = await spineHelper.loadSkel(type, id, direction);
         const animArr = [];
         for (const animation of skelData.animations) {
             if (animation.name === 'Default') continue;
             animArr.push(animation.name);
         }
 
-        const { page, browser, rand } = await SpineHelper.launchPage(type, id, direction, anim);
+        const { page, browser, rand } = await spineHelper.launchPage(type, id, direction, anim);
 
         page.on('console', async message => {
             if (message.text() === 'done') {
