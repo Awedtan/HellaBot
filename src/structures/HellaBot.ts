@@ -56,125 +56,38 @@ export default class HellaBot {
             });
         }
 
-        // Initial slash command interaction handling
         this.client.on(Events.InteractionCreate, async interaction => {
-            if (!interaction.isChatInputCommand()) return;
-            const command = this.commands.get(interaction.commandName);
-            if (!command) return console.error(`No command matching ${interaction.commandName} was found.`);
-            try {
-                await command.execute(interaction);
-            } catch (err) {
-                console.error(err);
-                if (interaction.replied || interaction.deferred) {
-                    await interaction.followUp({ content: 'There was an error while executing this command!', ephemeral: true });
-                }
-                else {
-                    await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
-                }
-            }
-        });
+            if (interaction.isChatInputCommand()) {
 
-        // Autocomplete interaction handling
-        // thanks to this guy for revealing autocomplete is a thing that exists => https://www.youtube.com/watch?v=znTvzGChzVE
-        this.client.on(Events.InteractionCreate, async interaction => {
-            if (!interaction.isAutocomplete()) return;
-
-            try {
                 const command = this.commands.get(interaction.commandName);
-                await command.autocomplete(interaction);
-            } catch (err) {
-                console.log(err);
+                if (!command) return console.error(`No command matching ${interaction.commandName} was found.`);
+                try {
+                    await command.execute(interaction);
+                } catch (err) {
+                    console.error(err);
+                    if (interaction.replied || interaction.deferred) {
+                        await interaction.followUp({ content: 'There was an error while executing this command!', ephemeral: true });
+                    }
+                    else {
+                        await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
+                    }
+                }
             }
-        });
+            else if (interaction.isAutocomplete()) {
+                try {
+                    const command = this.commands.get(interaction.commandName);
+                    await command.autocomplete(interaction);
+                } catch (err) {
+                    console.error(err);
+                }
+            }
+            else if (interaction.isButton()) {
+                try {
+                    const idArr: string[] = interaction.customId.split('ඞ');
 
-        // Button interaction handling
-        this.client.on(Events.InteractionCreate, async interaction => {
-            if (!interaction.isButton()) return;
+                    if (idArr[0] === 'rogue') {
+                        await interaction.deferUpdate();
 
-            try {
-                const idArr: string[] = interaction.customId.split('ඞ');
-
-                await interaction.deferUpdate();
-
-                switch (idArr[0]) {
-                    case 'cc': {
-                        const stage = await getCCStage({ query: idArr[1] })
-                        const page = parseInt(idArr[2]);
-
-                        const ccEmbed = await Build.buildCcMessage(stage, page);
-                        await interaction.editReply(ccEmbed);
-
-                        break;
-                    }
-                    case 'cost': {
-                        const op = await getOperator({ query: idArr[1] });
-                        const page = parseInt(idArr[2]);
-
-                        const costEmbed = await Build.buildCostMessage(op, page);
-                        await interaction.editReply(costEmbed);
-
-                        break;
-                    }
-                    case 'enemy': {
-                        const enemy = await getEnemy({ query: idArr[1] });
-                        const level = parseInt(idArr[2]);
-
-                        const enemyEmbed = await Build.buildEnemyMessage(enemy, level);
-                        await interaction.editReply(enemyEmbed);
-
-                        break;
-                    }
-                    case 'events': {
-                        const index = parseInt(idArr[1]);
-
-                        const eventListEmbed = await Build.buildEventListMessage(index);
-                        await interaction.editReply(eventListEmbed);
-
-                        break;
-                    }
-                    case 'info': {
-                        const op = await getOperator({ query: idArr[1] });
-                        const type = parseInt(idArr[2]);
-                        const page = parseInt(idArr[3]);
-                        const level = parseInt(idArr[4]);
-
-                        const infoEmbed = await Build.buildInfoMessage(op, type, page, level);
-                        await interaction.editReply(infoEmbed);
-
-                        break;
-                    }
-                    case 'module': {
-                        const op = await getOperator({ query: idArr[1] });
-                        const page = parseInt(idArr[2]);
-                        const level = parseInt(idArr[3]);
-
-                        const moduleEmbed = await Build.buildModuleMessage(op, page, level);
-                        await interaction.editReply(moduleEmbed);
-
-                        break;
-                    }
-                    case 'paradox': {
-                        const op = await getOperator({ query: idArr[1] });
-                        const paradox = await getParadox({ query: op.id });
-                        const page = parseInt(idArr[2]);
-
-                        const paradoxEmbed = await Build.buildParadoxMessage(paradox, page);
-                        await interaction.editReply(paradoxEmbed);
-
-                        break;
-                    }
-                    case 'recruit': {
-                        const qual = idArr[1];
-                        const value = parseInt(idArr[2]);
-                        const tag = idArr[3];
-                        const select = idArr[4] === 'select';
-
-                        const recruitEmbed = await Build.buildRecruitMessage(qual, value, tag, select);
-                        await interaction.editReply(recruitEmbed);
-
-                        break;
-                    }
-                    case 'rogue': {
                         switch (idArr[1]) {
                             case 'relic': {
                                 const theme = parseInt(idArr[2]);
@@ -198,121 +111,25 @@ export default class HellaBot {
                                 break;
                             }
                         }
-
-                        break;
                     }
-                    case 'skill': {
-                        const op = await getOperator({ query: idArr[1] });
-                        const page = parseInt(idArr[2]);
-                        const level = parseInt(idArr[3]);
-
-                        const skillEmbed = await Build.buildSkillMessage(op, page, level);
-                        await interaction.editReply(skillEmbed);
-
-                        break;
+                    else {
+                        const command = this.commands.get(interaction.customId.split('ඞ')[0]);
+                        await interaction.deferUpdate();
+                        await command.buttonResponse(interaction, idArr);
                     }
-                    case 'skin': {
-                        const op = await getOperator({ query: idArr[1] });
-                        const page = parseInt(idArr[2]);
-                        const skinEmbed = await Build.buildArtMessage(op, page);
-
-                        await interaction.editReply(skinEmbed);
-                        break;
-                    }
-                    case 'stage': {
-                        const stage = idArr[3] === 'true' ? (await getToughStageArr({ query: idArr[1] }))[parseInt(idArr[2])] : (await getStageArr({ query: idArr[1] }))[parseInt(idArr[2])];
-                        const page = parseInt(idArr[4]);
-
-                        const stageEmbed = await Build.buildStageMessage(stage, page);
-                        await interaction.editReply(stageEmbed);
-
-                        break;
-                    }
+                } catch (err) {
+                    console.error(err);
                 }
-            } catch (err) {
-                console.error(err);
             }
-        });
-
-        // Select menu interaction handling
-        this.client.on(Events.InteractionCreate, async interaction => {
-            if (!interaction.isStringSelectMenu()) return;
-
-            try {
-                const idArr: string[] = interaction.customId.split('ඞ');
-
-                await interaction.deferUpdate();
-
-                switch (idArr[0]) {
-                    case 'cc': {
-                        const stage = await getCCStage({ query: interaction.values[0] })
-
-                        const ccEmbed = await Build.buildCcMessage(stage, 0);
-                        await interaction.editReply(ccEmbed);
-
-                        break;
-                    }
-                    case 'spine': {
-                        const type = idArr[1];
-                        const id = idArr[2];
-                        const direction = idArr[3];
-                        const anim = interaction.values[0];
-
-                        await interaction.editReply({ content: `Generating \`${anim}\` gif...`, components: [] })
-
-                        const char = type === 'operator' ? await getOperator({ query: id, include: ['id', 'data'] }) : await getEnemy({ query: id, include: ['excel'] });
-                        const skelData = await SpineHelper.loadSkel(type, id, direction);
-
-                        const animArr = [];
-                        for (const animation of skelData.animations) {
-                            if (animation.name === 'Default') continue;
-                            animArr.push(animation.name);
-                        }
-
-                        const { page, browser, rand } = await SpineHelper.launchPage(type, id, direction, anim);
-
-                        page.on('console', async message => {
-                            if (message.text() === 'done') {
-                                await new Promise(r => setTimeout(r, 1000));
-                                await browser.close();
-
-                                const spineEmbed = await Build.buildSpineMessage(char, direction, animArr, anim, rand);
-                                await interaction.editReply(spineEmbed);
-
-                                let gifFile = id + rand + '.gif';
-                                let gifPath = join(__dirname, '..', 'utils', 'spine', gifFile);
-                                if (await Build.fileExists(gifPath)) {
-                                }
-                                else if (await Build.fileExists(join(__dirname, '..', 'utils', 'spine', gifFile.split('_2').join('')))) {
-                                    gifPath = join(__dirname, '..', 'utils', 'spine', gifFile.split('_2').join(''));
-                                }
-                                else if (await Build.fileExists(join(__dirname, '..', 'utils', 'spine', gifFile.split('sbr').join('sabr')))) {
-                                    gifPath = join(__dirname, '..', 'utils', 'spine', gifFile.split('sbr').join('sabr'));
-                                }
-                                else if (await Build.fileExists(join(__dirname, '..', 'utils', 'spine', gifFile.split('_2').join('').split('sbr').join('sabr')))) {
-                                    gifPath = join(__dirname, '..', 'utils', 'spine', gifFile.split('_2').join('').split('sbr').join('sabr'));
-                                }
-
-                                unlinkSync(gifPath);
-                            }
-                        }).on('pageerror', async ({ message }) => {
-                            console.error(`Spine error for ${id}: ` + message);
-                            return await interaction.editReply({ content: 'There was an error while generating the animation!' });
-                        });
-
-                        break;
-                    }
-                    case 'stage': {
-                        const stage = (await getStageArr({ query: idArr[2] }))[interaction.values[0]];
-
-                        const stageEmbed = await Build.buildStageMessage(stage, 0);
-                        await interaction.editReply(stageEmbed);
-
-                        break;
-                    }
+            else if (interaction.isStringSelectMenu()) {
+                try {
+                    const idArr: string[] = interaction.customId.split('ඞ');
+                    const command = this.commands.get(interaction.customId.split('ඞ')[0]);
+                    await interaction.deferUpdate();
+                    await command.selectResponse(interaction, idArr);
+                } catch (err) {
+                    console.error(err);
                 }
-            } catch (err) {
-                console.error(err);
             }
         });
     }

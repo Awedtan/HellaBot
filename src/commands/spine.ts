@@ -1,4 +1,4 @@
-import { AutocompleteInteraction, ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
+import { AutocompleteInteraction, CacheType, ChatInputCommandInteraction, SlashCommandBuilder, StringSelectMenuInteraction } from 'discord.js';
 import { unlinkSync } from 'fs';
 import { join } from 'path';
 import { Command } from '../structures/Command';
@@ -89,6 +89,44 @@ export default class SpineCommand implements Command {
 
                 const spineEmbed = await buildSpineMessage(char, direction, animArr, animArr[0], rand);
                 await interaction.followUp(spineEmbed);
+
+                let gifPath = join(__dirname, '..', 'utils', 'spine', id + rand + '.gif');
+                if (gameConsts.enemySpineIdOverride[id]) {
+                    gifPath = join(__dirname, '..', 'utils', 'spine', gameConsts.enemySpineIdOverride[id] + rand + '.gif');
+                }
+                if (await fileExists(gifPath)) unlinkSync(gifPath);
+            }
+        }).on('pageerror', async ({ message }) => {
+            await browser.close();
+            console.error(`Spine error for ${id}: ` + message);
+            return await interaction.editReply({ content: 'There was an error while generating the animation!' });
+        });
+    }
+    async selectResponse(interaction: StringSelectMenuInteraction<CacheType>, idArr: string[]) {
+        const type = idArr[1];
+        const id = idArr[2];
+        const direction = idArr[3];
+        const anim = interaction.values[0];
+
+        await interaction.editReply({ content: `Generating \`${anim}\` gif...`, components: [] })
+
+        const char = type === 'operator' ? await getOperator({ query: id, include: ['id', 'data'] }) : await getEnemy({ query: id, include: ['excel'] });
+        const skelData = await SpineHelper.loadSkel(type, id, direction);
+        const animArr = [];
+        for (const animation of skelData.animations) {
+            if (animation.name === 'Default') continue;
+            animArr.push(animation.name);
+        }
+
+        const { page, browser, rand } = await SpineHelper.launchPage(type, id, direction, anim);
+
+        page.on('console', async message => {
+            if (message.text() === 'done') {
+                await new Promise(r => setTimeout(r, 1000));
+                await browser.close();
+
+                const spineEmbed = await buildSpineMessage(char, direction, animArr, anim, rand);
+                await interaction.editReply(spineEmbed);
 
                 let gifPath = join(__dirname, '..', 'utils', 'spine', id + rand + '.gif');
                 if (gameConsts.enemySpineIdOverride[id]) {

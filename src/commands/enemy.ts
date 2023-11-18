@@ -1,4 +1,4 @@
-import { AutocompleteInteraction, ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
+import { AutocompleteInteraction, ButtonInteraction, CacheType, ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
 import { Command } from '../structures/Command';
 import { getEnemy } from '../utils/Api';
 import { enemyAutocomplete } from '../utils/Autocomplete';
@@ -30,5 +30,12 @@ export default class EnemyCommand implements Command {
 
         const enemyEmbed = await buildEnemyMessage(enemy, 0);
         return await interaction.editReply(enemyEmbed);
+    }
+    async buttonResponse(interaction: ButtonInteraction<CacheType>, idArr: string[]) {
+        const enemy = await getEnemy({ query: idArr[1] });
+        const level = parseInt(idArr[2]);
+
+        const enemyEmbed = await buildEnemyMessage(enemy, level);
+        await interaction.editReply(enemyEmbed);
     }
 }

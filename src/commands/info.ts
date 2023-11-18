@@ -1,4 +1,4 @@
-import { AutocompleteInteraction, ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
+import { AutocompleteInteraction, ButtonInteraction, CacheType, ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
 import { Command } from '../structures/Command';
 import { getOperator } from '../utils/Api';
 import { operatorAutocomplete } from '../utils/Autocomplete';
@@ -30,5 +30,14 @@ export default class InfoCommand implements Command {
 
         const operatorEmbed = await buildInfoMessage(op, 0, 0, 0);
         return await interaction.editReply(operatorEmbed);
+    }
+    async buttonResponse(interaction: ButtonInteraction<CacheType>, idArr: string[]) {
+        const op = await getOperator({ query: idArr[1] });
+        const type = parseInt(idArr[2]);
+        const page = parseInt(idArr[3]);
+        const level = parseInt(idArr[4]);
+
+        const infoEmbed = await buildInfoMessage(op, type, page, level);
+        await interaction.editReply(infoEmbed);
     }
 }

@@ -1,7 +1,7 @@
-import { AutocompleteInteraction, ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
+import { AutocompleteInteraction, ButtonInteraction, CacheType, ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
 import { Command } from '../structures/Command';
 import { Operator } from '../types';
-import { getOperator } from '../utils/Api';
+import { getOperator, getParadox } from '../utils/Api';
 import { operatorAutocomplete } from '../utils/Autocomplete';
 import { buildParadoxMessage } from '../utils/Build';
 
@@ -34,5 +34,13 @@ export default class ParadoxCommand implements Command {
 
         const paradoxEmbed = await buildParadoxMessage(op.paradox, 0);
         return await interaction.editReply(paradoxEmbed);
+    }
+    async buttonResponse(interaction: ButtonInteraction<CacheType>, idArr: string[]) {
+        const op = await getOperator({ query: idArr[1] });
+        const paradox = await getParadox({ query: op.id });
+        const page = parseInt(idArr[2]);
+
+        const paradoxEmbed = await buildParadoxMessage(paradox, page);
+        await interaction.editReply(paradoxEmbed);
     }
 }

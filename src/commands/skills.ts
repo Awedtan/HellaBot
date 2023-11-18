@@ -1,4 +1,4 @@
-import { AutocompleteInteraction, ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
+import { AutocompleteInteraction, ButtonInteraction, CacheType, ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
 import { Command } from '../structures/Command';
 import { Operator } from '../types';
 import { getOperator } from '../utils/Api';
@@ -55,5 +55,13 @@ export default class SkillCommand implements Command {
                 await interaction.followUp(skillEmbed);
             }
         }
+    }
+    async buttonResponse(interaction: ButtonInteraction<CacheType>, idArr: string[]) {
+        const op = await getOperator({ query: idArr[1] });
+        const page = parseInt(idArr[2]);
+        const level = parseInt(idArr[3]);
+
+        const skillEmbed = await buildSkillMessage(op, page, level);
+        await interaction.editReply(skillEmbed);
     }
 }

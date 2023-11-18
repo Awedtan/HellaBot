@@ -1,4 +1,4 @@
-import { AutocompleteInteraction, ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
+import { AutocompleteInteraction, ButtonInteraction, CacheType, ChatInputCommandInteraction, SlashCommandBuilder, StringSelectMenuInteraction } from 'discord.js';
 import { Command } from '../structures/Command';
 import { getStageArr, getToughStageArr } from '../utils/Api';
 import { stageAutocomplete, toughStageAutocomplete } from '../utils/Autocomplete';
@@ -94,5 +94,18 @@ export default class StageCommand implements Command {
                 }
             }
         }
+    }
+    async buttonResponse(interaction: ButtonInteraction<CacheType>, idArr: string[]) {
+        const stage = idArr[3] === 'true' ? (await getToughStageArr({ query: idArr[1] }))[parseInt(idArr[2])] : (await getStageArr({ query: idArr[1] }))[parseInt(idArr[2])];
+        const page = parseInt(idArr[4]);
+
+        const stageEmbed = await buildStageMessage(stage, page);
+        await interaction.editReply(stageEmbed);
+    }
+    async selectResponse(interaction: StringSelectMenuInteraction<CacheType>, idArr: string[]) {
+        const stage = (await getStageArr({ query: idArr[2] }))[interaction.values[0]];
+
+        const stageEmbed = await buildStageMessage(stage, 0);
+        await interaction.editReply(stageEmbed);
     }
 };

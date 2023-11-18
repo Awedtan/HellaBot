@@ -1,4 +1,4 @@
-import { AutocompleteInteraction, ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
+import { AutocompleteInteraction, ButtonInteraction, CacheType, ChatInputCommandInteraction, SlashCommandBuilder, StringSelectMenuInteraction } from 'discord.js';
 import { Command } from '../structures/Command';
 import { getCCStage } from '../utils/Api';
 import { buildCcMessage, buildCcSelectMessage } from '../utils/Build';
@@ -77,5 +77,18 @@ export default class CCCommand implements Command {
                 return await interaction.editReply(ccSelectEmbed);
             }
         }
+    }
+    async buttonResponse(interaction: ButtonInteraction<CacheType>, idArr: string[]) {
+        const stage = await getCCStage({ query: idArr[1] })
+        const page = parseInt(idArr[2]);
+
+        const ccEmbed = await buildCcMessage(stage, page);
+        await interaction.editReply(ccEmbed);
+    }
+    async selectResponse(interaction: StringSelectMenuInteraction<CacheType>, idArr: string[]) {
+        const stage = await getCCStage({ query: interaction.values[0] })
+
+        const ccEmbed = await buildCcMessage(stage, 0);
+        await interaction.editReply(ccEmbed);
     }
 }

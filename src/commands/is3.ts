@@ -10,7 +10,7 @@ const outerIndex = innerIndex + 2;
 export default class IS3Command implements Command {
     data = new SlashCommandBuilder()
         .setName(`is${outerIndex}`)
-        .setDescription(`Show information on IS${outerIndex} (Mizuki & Caerula Arbor))`)
+        .setDescription(`Show information on IS${outerIndex} (Mizuki & Caerula Arbor)`)
         .addSubcommandGroup(subcommandGroup =>
             subcommandGroup.setName('stage')
                 .setDescription(`Show information on an IS${outerIndex} stage`)
