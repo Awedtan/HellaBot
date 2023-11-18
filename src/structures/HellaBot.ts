@@ -1,9 +1,8 @@
 import { ActivityType, Client, Collection, Events, GatewayIntentBits, REST, Routes } from 'discord.js';
-import { readdirSync, unlinkSync } from 'fs';
+import { readdirSync } from 'fs';
 import { join } from 'path';
-import { getCCStage, getEnemy, getOperator, getParadox, getRogueTheme, getStageArr, getToughStageArr } from '../utils/api';
+import { getRogueTheme } from '../utils/api';
 import * as Build from '../utils/build';
-import * as spineHelper from '../utils/spineHelper';
 import { Command } from './Command';
 
 export default class HellaBot {

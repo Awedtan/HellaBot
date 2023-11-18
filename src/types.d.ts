@@ -731,13 +731,13 @@ type Stage = {
             displayRewards: {
                 type: string;
                 id: string;
-                dropType: number;
+                dropType: string;
             }[];
             displayDetailRewards: {
                 occPercent: number;
                 type: string;
                 id: string;
-                dropType: number;
+                dropType: string;
             }[];
         };
         startButtonOverrideId: string;

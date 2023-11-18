@@ -1,7 +1,7 @@
 import { ActionRowBuilder, AttachmentBuilder, BaseMessageOptions, ButtonBuilder, ButtonStyle, EmbedAuthorOptions, EmbedBuilder, EmbedField, StringSelectMenuBuilder, StringSelectMenuOptionBuilder } from 'discord.js';
 import { join } from 'path';
 import type { Blackboard, CCStage, Definition, Enemy, GameEvent, GridRange, Item, LevelUpCost, Operator, Paradox, RogueRelic, RogueStage, RogueVariation, SandboxStage, Stage, StageData } from "../types";
-import { getAllDefinitions, getAllEvents, getAllOperators, getEnemy, getItem, getOperator, getRange, getRogueTheme, getStageArr, getToughStageArr } from './api';
+import { getAllDefinitions, getAllEnemies, getAllEvents, getAllItems, getAllOperators, getItem, getOperator, getRange, getRogueTheme, getStageArr, getToughStageArr } from './api';
 const nodefetch = require('node-fetch');
 const fs = require('fs');
 const { embedColour, paths, gameConsts } = require('../constants');
@@ -637,14 +637,14 @@ export async function buildItemMessage(item: Item): Promise<BaseMessageOptions> 
         const stageId = stageDrop.stageId;
         if (!stageId.includes('main') && !stageId.includes('sub')) continue;
 
-        const stage = await getStageArr({ query: stageId })[0];
+        const stage = (await getStageArr({ query: stageId, include: ['excel.code'] }))[0];
         stageString += `${stage.excel.code} - ${gameConsts.itemDropRarities[stageDrop.occPer]}\n`;
     }
     if (stageString !== '') {
         embed.addFields({ name: 'Drop Stages', value: stageString, inline: true });
     }
     if (item.formula !== null && item.formula.costs.length > 0) {
-        const formulaString = await buildCostString(item.formula.costs);
+        const formulaString = await buildCostString(item.formula.costs, await getAllItems({ include: ['data'] }));
         embed.addFields({ name: 'Crafting Formula', value: formulaString, inline: true });
     }
 
@@ -1251,27 +1251,17 @@ export async function buildStageMessage(stage: Stage, page: number): Promise<Bas
         .setURL(`${paths.stageViewerUrl}?level=${stage.excel.stageId.toLowerCase()}`)
         .setDescription(description);
 
-    const stageDropInfo = stageInfo.stageDropInfo;
     let regularString = '', specialString = '';
-
-    for (const item of stageDropInfo.displayDetailRewards) {
-        if (item.dropType === 1 || item.dropType === 8) continue; // Skip chars and furniture cause idc
-        // 1: character/furniture
-        // 2: regular drop
-        // 3: special drop
-        // 4: extra drop
-        // 5-7: not used
-        // 8: yellow rock
+    for (const item of stageInfo.stageDropInfo.displayDetailRewards) {
         switch (item.dropType) {
-            case 2:
+            case 'NORMAL':
                 regularString += `${(await getItem({ query: item.id })).data.name}\n`;
                 break;
-            case 3:
+            case 'SPECIAL':
                 specialString += `${(await getItem({ query: item.id })).data.name}\n`;
                 break;
         }
     }
-
     if (regularString !== '') {
         embed.addFields({ name: 'Regular Drops', value: regularString });
     }
@@ -1615,10 +1605,10 @@ function buildAuthorField(char: Enemy | Operator): EmbedAuthorOptions {
     }
     return null;
 }
-async function buildCostString(costs: LevelUpCost[]): Promise<string> {
+async function buildCostString(costs: LevelUpCost[], itemArr: Item[]): Promise<string> {
     let description = '';
     for (const cost of costs) {
-        const item = await getItem({ query: cost.id });
+        const item = itemArr.find(e => e.data.itemId === cost.id);
         description += `${item.data.name} **x${cost.count}**\n`;
     }
     return description;
@@ -1710,9 +1700,10 @@ async function buildStageEnemyFields(stageData: StageData): Promise<EmbedField[]
         }
     }
 
+    const enemyArr = await getAllEnemies();
     let enemyString = '', eliteString = '', bossString = '';
     for (const enemyRef of stageData.enemyDbRefs) {
-        const enemy = await getEnemy({ query: enemyRef.id });
+        const enemy = enemyArr.find(e => e.excel.enemyId === enemyRef.id);
 
         if (!enemy) continue;
 
@@ -1934,6 +1925,7 @@ async function buildCostEmbed(op: Operator, page: number): Promise<{ embed: Embe
         .setColor(embedColour)
         .setAuthor(authorField);
 
+    const itemArr = await getAllItems({ include: ['data'] });
     let thumbnail;
     switch (page) {
         default:
@@ -1948,7 +1940,7 @@ async function buildCostEmbed(op: Operator, page: number): Promise<{ embed: Embe
                 const phase = op.data.phases[i];
                 if (phase.evolveCost === null) continue;
 
-                let phaseDescription = await buildCostString(phase.evolveCost);
+                let phaseDescription = await buildCostString(phase.evolveCost, itemArr);
                 phaseDescription += `LMD **x${gameConsts.evolveGoldCost[gameConsts.rarity[op.data.rarity]][i - 1]}**\n`;
                 embed.addFields({ name: `Elite ${i}`, value: phaseDescription, inline: true });
             }
@@ -1962,7 +1954,7 @@ async function buildCostEmbed(op: Operator, page: number): Promise<{ embed: Embe
                 .setTitle('Skill Upgrade Costs');
 
             for (let i = 0; i < op.data.allSkillLvlup.length; i++) {
-                const skillDescription = await buildCostString(op.data.allSkillLvlup[i].lvlUpCost);
+                const skillDescription = await buildCostString(op.data.allSkillLvlup[i].lvlUpCost, itemArr);
                 if (skillDescription === '') continue;
 
                 embed.addFields({ name: `Level ${i + 2}`, value: skillDescription, inline: true });
@@ -1983,7 +1975,7 @@ async function buildCostEmbed(op: Operator, page: number): Promise<{ embed: Embe
                 embed.addFields({ name: '\u200B', value: `**Skill ${i + 1} - ${skill.levels[0].name}**` });
 
                 for (let i = 0; i < opSkill.levelUpCostCond.length; i++) {
-                    const masteryDescription = await buildCostString(opSkill.levelUpCostCond[i].levelUpCost);
+                    const masteryDescription = await buildCostString(opSkill.levelUpCostCond[i].levelUpCost, itemArr);
                     embed.addFields({ name: `Mastery ${i + 1}`, value: masteryDescription, inline: true });
                 }
             }
@@ -2002,7 +1994,7 @@ async function buildCostEmbed(op: Operator, page: number): Promise<{ embed: Embe
                 embed.addFields({ name: '\u200B', value: `**${module.info.typeIcon.toUpperCase()} - ${module.info.uniEquipName}**` });
 
                 for (const key of Object.keys(module.info.itemCost)) {
-                    const moduleDescription = await buildCostString(module.info.itemCost[key]);
+                    const moduleDescription = await buildCostString(module.info.itemCost[key], itemArr);
                     embed.addFields({ name: `Level ${key}`, value: moduleDescription, inline: true });
                 }
             }
