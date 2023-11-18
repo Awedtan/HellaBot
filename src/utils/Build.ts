@@ -1113,7 +1113,7 @@ export async function buildSpineMessage(char: Enemy | Operator, direction: strin
         .setPlaceholder(anim);
     const componentRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(animSelector);
 
-    for (let i = 0; i < animArr.length; i++) {
+    for (let i = 0; i < Math.min(animArr.length, 25); i++) {
         // Default animations are a single frame that lasts forever, they do not work and should not be shown
         if (animArr[i] === 'Default') continue;
 
