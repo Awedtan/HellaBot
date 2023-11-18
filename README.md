@@ -1,6 +1,8 @@
 # HellaBot
 
-An Arknights Discord bot that provides information on operators, enemies, stages, and more! An under construction fun personal project.
+An Arknights Discord bot that provides information on operators, enemies, stages, and more! 
+
+A work-in-progress personal project. Game data is fetched from [HellaAPI.](https://github.com/Awedtan/HellaAPI)
 
 <img src="https://raw.githubusercontent.com/Awedtan/HellaBot-Assets/main/readme/demo.gif" height="600"/>
 
@@ -17,7 +19,7 @@ git clone https://github.com/Awedtan/HellaBot.git
 ```sh
 cd HellaBot
 ```
-4. Install the node dependencies
+4. Install Node.js dependencies
 ```sh
 npm install
 ```
@@ -58,18 +60,20 @@ HellaBot uses event-driven interactions, so buttons and other interactables shou
 | art     | Display an operator's artwork                                    |
 | base    | Show an operator's base skills                                   |
 | cc      | Show information on a Contingency Contract stage or season       |
-| cost    | Show an operator's elite, skill, mastery, and module costs       |
+| costs   | Show an operator's elite, skill, mastery, and module costs       |
 | define  | Show definitions for in-game terms                               |
 | enemy   | Show an enemy's information and abilities                        |
 | events  | Display a list of in-game events                                 |
 | info    | Show an operator's information and attributes                    |
-| is      | Show information on Integrated Strategies                        |
+| is2     | Show information on IS2 (Phantom & Crimson Solitaire)            |
+| is3     | Show information on IS3 (Mizuki & Caerula Arbor)                 |
 | item    | Show information on an item                                      |
 | modules | Show an operator's modules                                       |
 | paradox | Show an operator's Paradox Simulation stage                      |
+| ra      | Show information on a Reclamation Algorithm stage                |
 | recruit | Find recruitable operators from recruitment tags (experimental)  |
 | skills  | Show an operator's skills                                        |
-| spine   | Render and display an operator's spine animations (experimental) |
+| spine   | Render and display spine animations (experimental)               |
 | stage   | Show information on a stage                                      |
 
 ## Acknowledgements
@@ -80,24 +84,12 @@ Thanks to [MrJAwesome](https://www.youtube.com/@MrJAwesomeYT) for making extensi
 
 ## todo:
 
-make sure spine stuff works
-
-separate events from constructor
-
-revamp is commands
-
 add help command and better command descriptions
-
-document datamining procedures for more consistent results
-
-maintain bot and api
-
-### maybe:
 
 improve recruit command
 
-add material sanity costs, stage efficiencies
+local data support
 
-krooster stuff
+maintain bot and api
 
-add story and operator lore
+krooster
