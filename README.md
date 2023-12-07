@@ -42,7 +42,7 @@ HellaBot/
 ├── src/
 └── tsconfig.json
 ```
-7. Run the bot!
+6. Run the bot!
 ```sh
 npm start
 ```
