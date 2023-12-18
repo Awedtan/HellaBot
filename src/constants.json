@@ -391,7 +391,8 @@
             "TIER_3": 2,
             "TIER_4": 3,
             "TIER_5": 4,
-            "TIER_6": 5
+            "TIER_6": 5,
+            "4": 4
         },
         "recruitPool": [
             "char_285_medic2",
@@ -508,7 +509,14 @@
             "char_401_elysm",
             "char_343_tknogi",
             "char_378_asbest",
-            "char_400_weedy"
+            "char_400_weedy",
+            "char_197_poca",
+            "char_373_lionhd",
+            "char_258_podego",
+            "char_358_lisa",
+            "char_294_ayer",
+            "char_328_cammou",
+            "char_4093_frston"
         ],
         "skillLevels": [
             "Lv1",
@@ -534,6 +542,7 @@
             "8": "Passive"
         },
         "tagValues": {
+            "": 1,
             "melee": 2,
             "ranged": 3,
             "guard": 5,
@@ -560,8 +569,14 @@
             "dp-recovery": 89,
             "robot": 97,
             "starter": 101,
-            "senior operator": 103,
-            "top operator": 107
+            "senior": 103,
+            "top": 107,
+            "TIER_1": 1,
+            "TIER_2": 101,
+            "TIER_3": 1,
+            "TIER_4": 1,
+            "TIER_5": 103,
+            "TIER_6": 107
         },
         "tileDict": {
             "unknown": {
