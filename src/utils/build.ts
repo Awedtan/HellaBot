@@ -1197,7 +1197,8 @@ export async function buildSpineMessage(char: Enemy | Operator, direction: strin
 
     const embed = new EmbedBuilder()
         .setAuthor(authorField)
-        .setImage(`attachment://${gifFile}`);
+        .setImage(`attachment://${gifFile}`)
+        .setColor(embedColour);
 
     return { content: '', embeds: [embed], files: [avatar, gif], components: [componentRow] };
 }

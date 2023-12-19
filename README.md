@@ -71,7 +71,7 @@ HellaBot uses event-driven interactions, so buttons and other interactables shou
 | modules | Show an operator's modules                                       |
 | paradox | Show an operator's Paradox Simulation stage                      |
 | ra      | Show information on a Reclamation Algorithm stage                |
-| recruit | Find recruitable operators from recruitment tags (experimental)  |
+| recruit | Find recruitable operators from recruitment tags                 |
 | skills  | Show an operator's skills                                        |
 | spine   | Render and display spine animations (experimental)               |
 | stage   | Show information on a stage                                      |
@@ -85,8 +85,6 @@ Thanks to [MrJAwesome](https://www.youtube.com/@MrJAwesomeYT) for making extensi
 ## todo:
 
 add help command and better command descriptions
-
-improve recruit command
 
 local data support
 
