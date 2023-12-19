@@ -5,31 +5,30 @@ import { buildRecruitMessage } from '../utils/build';
 export default class RecruitCommand implements Command {
     data = new SlashCommandBuilder()
         .setName('recruit')
-        .setDescription('Find recruitable operators from recruitment tags')
-        .addStringOption(option =>
-            option.setName('qualification')
-                .setDescription('Qualification tag')
-                .addChoices(
-                    { name: 'starter', value: 'starter' },
-                    { name: 'senior', value: 'senior' },
-                    { name: 'top', value: 'top' }
-                )
-        );
+        .setDescription('Find recruitable operators from recruitment tags');
     async execute(interaction: ChatInputCommandInteraction) {
-        const qual = interaction.options.getString('qualification');
-
         await interaction.deferReply();
 
-        const recruitEmbed = await buildRecruitMessage(qual, 1, '', true);
-        return await interaction.editReply(recruitEmbed);
+        const placeholders = [
+            await interaction.editReply('Loading...'),
+            await interaction.followUp('Loading...'),
+            await interaction.followUp('Loading...')
+        ];
+        const recruitEmbed = await buildRecruitMessage(1, '', true, placeholders.map(x => x.id));
+        for (let i = 0; i < placeholders.length; i++) {
+            await placeholders[i].edit(recruitEmbed[i]);
+        }
     }
     async buttonResponse(interaction: ButtonInteraction<CacheType>, idArr: string[]) {
-        const qual = idArr[1];
-        const value = parseInt(idArr[2]);
-        const tag = idArr[3];
-        const select = idArr[4] === 'select';
+        const value = parseInt(idArr[1]);
+        const tag = idArr[2];
+        const select = idArr[3] === 'select';
+        const snowflakes = idArr.slice(4);
 
-        const recruitEmbed = await buildRecruitMessage(qual, value, tag, select);
-        await interaction.editReply(recruitEmbed);
+        const recruitEmbed = await buildRecruitMessage(value, tag, select, snowflakes);
+        const placeholders = await Promise.all(snowflakes.map(async x => await interaction.channel.messages.fetch(x)));
+        for (let i = 0; i < placeholders.length; i++) {
+            await placeholders[i].edit(recruitEmbed[i]);
+        }
     }
 }

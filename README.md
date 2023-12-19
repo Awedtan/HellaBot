@@ -2,7 +2,7 @@
 
 An Arknights Discord bot that provides information on operators, enemies, stages, and more! 
 
-A work-in-progress personal project. Game data is fetched from [HellaAPI.](https://github.com/Awedtan/HellaAPI)
+A work-in-progress personal project. Game data is fetched from [HellaAPI](https://github.com/Awedtan/HellaAPI).
 
 <img src="https://raw.githubusercontent.com/Awedtan/HellaBot-Assets/main/readme/demo.gif" height="600"/>
 

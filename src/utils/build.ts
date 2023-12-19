@@ -755,191 +755,155 @@ export async function buildParadoxMessage(paradox: Paradox, page: number): Promi
         return { embeds: [embed], files: [avatar], components: [buttonRow] };
     }
 }
-export async function buildRecruitMessage(qual: string, value: number, tag: string, select: boolean): Promise<BaseMessageOptions> {
-    if (tag !== '') {
-        if (select) {
-            value *= gameConsts.tagValues[tag];
-        }
-        else {
-            value /= gameConsts.tagValues[tag];
-        }
+export async function buildRecruitMessage(value: number, tag: string, select: boolean, snowflakes: string[]): Promise<BaseMessageOptions[]> {
+    if (select) {
+        value *= gameConsts.tagValues[tag];
+    }
+    else {
+        value /= gameConsts.tagValues[tag];
     }
 
-    const buttonConstId = `recruitඞ${qual}ඞ${value}`;
+    const button = (id: string, label: string) => {
+        return new ButtonBuilder()
+            .setCustomId(`recruitඞ${value}ඞ${id}ඞselectඞ${snowflakes.join('ඞ')}`)
+            .setLabel(label)
+            .setStyle(ButtonStyle.Secondary);
+    }
+    const starterButton = button('starter', 'Starter');
+    const seniorButton = button('senior', 'Senior Operator');
+    const topButton = button('top', 'Top Operator');
+    const meleeButton = button('melee', 'Melee');
+    const rangedButton = button('ranged', 'Ranged');
+    const guardButton = button('guard', 'Guard');
+    const medicButton = button('medic', 'Medic');
+    const vanguardButton = button('vanguard', 'Vanguard');
+    const casterButton = button('caster', 'Caster');
+    const sniperButton = button('sniper', 'Sniper');
+    const defenderButton = button('defender', 'Defender');
+    const supporterButton = button('supporter', 'Supporter');
+    const specialistButton = button('specialist', 'Specialist');
+    const healingButton = button('healing', 'Healing');
+    const supportButton = button('support', 'Support');
+    const dpsButton = button('dps', 'DPS');
+    const aoeButton = button('aoe', 'AOE');
+    const slowButton = button('slow', 'Slow');
+    const survivalButton = button('survival', 'Survival');
+    const defenseButton = button('defense', 'Defense');
+    const debuffButton = button('debuff', 'Debuff');
+    const shiftButton = button('shift', 'Shift');
+    const crowdControlButton = button('crowd-control', 'Crowd Control');
+    const nukerButton = button('nuker', 'Nuker');
+    const summonButton = button('summon', 'Summon');
+    const fastRedeployButton = button('fast-redeploy', 'Fast-Redeploy');
+    const dpRecoveryButton = button('dp-recovery', 'DP-Recovery');
+    const robotButton = button('robot', 'Robot');
 
-    const meleeButton = new ButtonBuilder()
-        .setCustomId(`${buttonConstId}ඞmeleeඞselect`)
-        .setLabel('Melee')
-        .setStyle(ButtonStyle.Secondary);
-    const rangedButton = new ButtonBuilder()
-        .setCustomId(`${buttonConstId}ඞrangedඞselect`)
-        .setLabel('Ranged')
-        .setStyle(ButtonStyle.Secondary);
-    const guardButton = new ButtonBuilder()
-        .setCustomId(`${buttonConstId}ඞguardඞselect`)
-        .setLabel('Guard')
-        .setStyle(ButtonStyle.Secondary);
-    const medicButton = new ButtonBuilder()
-        .setCustomId(`${buttonConstId}ඞmedicඞselect`)
-        .setLabel('Medic')
-        .setStyle(ButtonStyle.Secondary);
-    const vanguardButton = new ButtonBuilder()
-        .setCustomId(`${buttonConstId}ඞvanguardඞselect`)
-        .setLabel('Vanguard')
-        .setStyle(ButtonStyle.Secondary);
-    const casterButton = new ButtonBuilder()
-        .setCustomId(`${buttonConstId}ඞcasterඞselect`)
-        .setLabel('Caster')
-        .setStyle(ButtonStyle.Secondary);
-    const sniperButton = new ButtonBuilder()
-        .setCustomId(`${buttonConstId}ඞsniperඞselect`)
-        .setLabel('Sniper')
-        .setStyle(ButtonStyle.Secondary);
-    const defenderButton = new ButtonBuilder()
-        .setCustomId(`${buttonConstId}ඞdefenderඞselect`)
-        .setLabel('Defender')
-        .setStyle(ButtonStyle.Secondary);
-    const supporterButton = new ButtonBuilder()
-        .setCustomId(`${buttonConstId}ඞsupporterඞselect`)
-        .setLabel('Supporter')
-        .setStyle(ButtonStyle.Secondary);
-    const specialistButton = new ButtonBuilder()
-        .setCustomId(`${buttonConstId}ඞspecialistඞselect`)
-        .setLabel('Specialist')
-        .setStyle(ButtonStyle.Secondary);
-    const healingButton = new ButtonBuilder()
-        .setCustomId(`${buttonConstId}ඞhealingඞselect`)
-        .setLabel('Healing')
-        .setStyle(ButtonStyle.Secondary);
-    const supportButton = new ButtonBuilder()
-        .setCustomId(`${buttonConstId}ඞsupportඞselect`)
-        .setLabel('Support')
-        .setStyle(ButtonStyle.Secondary);
-    const dpsButton = new ButtonBuilder()
-        .setCustomId(`${buttonConstId}ඞdpsඞselect`)
-        .setLabel('DPS')
-        .setStyle(ButtonStyle.Secondary);
-    const aoeButton = new ButtonBuilder()
-        .setCustomId(`${buttonConstId}ඞaoeඞselect`)
-        .setLabel('AOE')
-        .setStyle(ButtonStyle.Secondary);
-    const slowButton = new ButtonBuilder()
-        .setCustomId(`${buttonConstId}ඞslowඞselect`)
-        .setLabel('Slow')
-        .setStyle(ButtonStyle.Secondary);
-    const survivalButton = new ButtonBuilder()
-        .setCustomId(`${buttonConstId}ඞsurvivalඞselect`)
-        .setLabel('Survival')
-        .setStyle(ButtonStyle.Secondary);
-    const defenseButton = new ButtonBuilder()
-        .setCustomId(`${buttonConstId}ඞdefenseඞselect`)
-        .setLabel('Defense')
-        .setStyle(ButtonStyle.Secondary);
-    const debuffButton = new ButtonBuilder()
-        .setCustomId(`${buttonConstId}ඞdebuffඞselect`)
-        .setLabel('Debuff')
-        .setStyle(ButtonStyle.Secondary);
-    const shiftButton = new ButtonBuilder()
-        .setCustomId(`${buttonConstId}ඞshiftඞselect`)
-        .setLabel('Shift')
-        .setStyle(ButtonStyle.Secondary);
-    const crowdControlButton = new ButtonBuilder()
-        .setCustomId(`${buttonConstId}ඞcrowd-controlඞselect`)
-        .setLabel('Crowd Control')
-        .setStyle(ButtonStyle.Secondary);
-    const nukerButton = new ButtonBuilder()
-        .setCustomId(`${buttonConstId}ඞnukerඞselect`)
-        .setLabel('Nuker')
-        .setStyle(ButtonStyle.Secondary);
-    const summonButton = new ButtonBuilder()
-        .setCustomId(`${buttonConstId}ඞsummonඞselect`)
-        .setLabel('Summon')
-        .setStyle(ButtonStyle.Secondary);
-    const fastRedeployButton = new ButtonBuilder()
-        .setCustomId(`${buttonConstId}ඞfast-redeployඞselect`)
-        .setLabel('Fast-Redeploy')
-        .setStyle(ButtonStyle.Secondary);
-    const dpRecoveryButton = new ButtonBuilder()
-        .setCustomId(`${buttonConstId}ඞdp-recoveryඞselect`)
-        .setLabel('DP-Recovery')
-        .setStyle(ButtonStyle.Secondary);
-    const robotButton = new ButtonBuilder()
-        .setCustomId(`${buttonConstId}ඞrobotඞselect`)
-        .setLabel('Robot')
-        .setStyle(ButtonStyle.Secondary);
+    const qualComponents = [
+        new ActionRowBuilder<ButtonBuilder>().addComponents(starterButton, seniorButton, topButton),
+        new ActionRowBuilder<ButtonBuilder>().addComponents(meleeButton, rangedButton),
+        new ActionRowBuilder<ButtonBuilder>().addComponents(guardButton, medicButton, vanguardButton, casterButton, sniperButton),
+        new ActionRowBuilder<ButtonBuilder>().addComponents(defenderButton, supporterButton, specialistButton)
+    ];
+    const tagComponents = [
+        new ActionRowBuilder<ButtonBuilder>().addComponents(healingButton, supportButton, dpsButton, aoeButton, slowButton),
+        new ActionRowBuilder<ButtonBuilder>().addComponents(survivalButton, defenseButton, debuffButton, shiftButton, crowdControlButton),
+        new ActionRowBuilder<ButtonBuilder>().addComponents(nukerButton, summonButton, fastRedeployButton, dpRecoveryButton, robotButton)
+    ];
 
-    const components = [];
-    components.push(new ActionRowBuilder<ButtonBuilder>().addComponents(meleeButton, rangedButton, guardButton, medicButton, vanguardButton));
-    components.push(new ActionRowBuilder<ButtonBuilder>().addComponents(casterButton, sniperButton, defenderButton, supporterButton, specialistButton));
-    components.push(new ActionRowBuilder<ButtonBuilder>().addComponents(healingButton, supportButton, dpsButton, aoeButton, slowButton));
-    components.push(new ActionRowBuilder<ButtonBuilder>().addComponents(survivalButton, defenseButton, debuffButton, shiftButton, crowdControlButton));
-    components.push(new ActionRowBuilder<ButtonBuilder>().addComponents(nukerButton, summonButton, fastRedeployButton, dpRecoveryButton, robotButton));
-
+    const components = []; components.push(...qualComponents, ...tagComponents);
     const selectedButtons = [];
-
     for (const actionRow of components) {
         for (const button of actionRow.components) {
-            const buttonTag = button.data.custom_id.split('ඞ')[3];
+            const buttonTag = button.data.custom_id.split('ඞ')[2];
             const buttonValue = gameConsts.tagValues[buttonTag];
-
             if (value % buttonValue !== 0) continue;
-
             selectedButtons.push(button);
         }
     }
-
     for (const button of selectedButtons) {
         button.setCustomId(button.data.custom_id.replace('select', 'deselect'));
         button.setStyle(ButtonStyle.Primary);
     }
-
     if (selectedButtons.length >= 5) {
         for (const actionRow of components) {
             for (const button of actionRow.components) {
                 if (selectedButtons.includes(button)) continue;
-
                 button.setDisabled(true);
             }
         }
     }
 
-    const embed = new EmbedBuilder()
+    const qualEmbed = new EmbedBuilder()
+        .setColor(embedColour)
+        .setTitle('Recruitment Calculator')
+        .setDescription('Qualification/Position/Class');
+    const tagEmbed = new EmbedBuilder()
+        .setColor(embedColour)
+        .setTitle('Recruitment Calculator')
+        .setDescription('Tags');
+    const recruitEmbed = new EmbedBuilder()
         .setColor(embedColour)
         .setTitle('Recruitment Calculator');
 
-    const opArr: Operator[] = [];
-
-    if (selectedButtons.length >= 1) {
-        const opList = await getAllOperators({ include: ['id', 'recruit', 'data.rarity', 'data.name'] });
+    // chatgpt prompt: in javascript, i have an array of 1-5 unique prime numbers. write a function to get all possible distinct combinations of prime numbers, where a combination of numbers is their product
+    function getPrimeCombinations(primes: number[], currentCombination = [], index = 0, result = []): number[] {
+        if (currentCombination.length > 0) {
+            const product = currentCombination.reduce((acc, prime) => acc * prime, 1);
+            result.push(product);
+        }
+        for (let i = index; i < primes.length; i++) {
+            if (!currentCombination.includes(primes[i])) {
+                getPrimeCombinations(primes, [...currentCombination, primes[i]], i, result);
+            }
+        }
+        return result;
+    }
+    const primeArray = selectedButtons.map(x => gameConsts.tagValues[x.data.custom_id.split('ඞ')[2]]);
+    const opMap: { [key: number]: Operator[] } = getPrimeCombinations(primeArray).reduce((acc, combination) => { acc[combination] = []; return acc; }, {});
+    const opList = await getAllOperators({ include: ['id', 'recruit', 'data.rarity', 'data.name'] });
+    for (const key of Object.keys(opMap)) {
         for (const op of opList) {
             if (!gameConsts.recruitPool.includes(op.id)) continue;
-            if (op.recruit % value !== 0) continue;
-            if (qual !== null && qual !== 'null' && gameConsts.rarity[op.data.rarity] !== gameConsts.qualifications[qual]) continue;
+            if (op.recruit % parseInt(key) !== 0) continue;
+            if (op.recruit % gameConsts.tagValues['top'] === 0 && parseInt(key) % gameConsts.tagValues['top'] !== 0) continue;
 
-            opArr.push(op);
+            opMap[key].push(op);
         }
     }
-
-    opArr.sort(function (a, b) { return gameConsts.rarity[b.data.rarity] - gameConsts.rarity[a.data.rarity] });
-
-    let opCount = 0;
-
-    for (const op of opArr) {
-        let rarity = '';
-        for (let i = 0; i <= gameConsts.rarity[op.data.rarity]; i++) {
-            rarity += '★';
-        }
-        if (opCount <= 23) {
-            embed.addFields({ name: op.data.name, value: rarity, inline: true });
-        }
-        opCount++;
+    for (const value of Object.values(opMap)) {
+        value.sort(function (a, b) { return gameConsts.rarity[b.data.rarity] - gameConsts.rarity[a.data.rarity] });
     }
 
-    if (opCount >= 25) {
-        embed.addFields({ name: '\u200B', value: `${opCount - 24} more...`, inline: true });
+    let sortArr = [];
+    for (const key of Object.keys(opMap)) {
+        const temp = Object.keys(gameConsts.tagValues).filter((x) => x !== '' && x.slice(0, 4) !== 'TIER' && parseInt(key) % gameConsts.tagValues[x] === 0);
+        const tags = selectedButtons.filter(x => temp.includes(x.data.custom_id.split('ඞ')[2])).map(x => x.data.label);
+        if (opMap[key].length === 0) continue;
+        sortArr.push([tags.join(' + '), opMap[key]]);
+    }
+    sortArr.sort(function (a, b) {
+        const rarity = gameConsts.rarity[b[1][b[1].length - 1].data.rarity] - gameConsts.rarity[a[1][a[1].length - 1].data.rarity];
+        if (rarity) return rarity;
+        return a[1].length - b[1].length;
+    });
+
+    let combCount = 0;
+    for (const opArr of sortArr) {
+        let opCount = 0, opString = '';
+        for (const op of opArr[1]) {
+            if (opCount < 12) {
+                opString += `${gameConsts.rarity[op.data.rarity] + 1}★ ${op.data.name}\n`;
+            }
+            opCount++;
+        }
+        if (combCount < 6) {
+            opString = opCount >= 13 ? `${opString}${opCount - 12} more...` : opString;
+            recruitEmbed.addFields({ name: opArr[0], value: opString, inline: true });
+        }
+        combCount++;
     }
 
-    return { embeds: [embed], components: components };
+    return [{ content: '', embeds: [qualEmbed], components: qualComponents }, { content: '', embeds: [tagEmbed], components: tagComponents }, { content: '', embeds: [recruitEmbed] }];
 }
 export async function buildRogueRelicMessage(relic: RogueRelic): Promise<BaseMessageOptions> {
     const description = `***Cost:* ${relic.value}▲**\n${relic.description !== null ? `${relic.usage}\n\n${relic.description}` : relic.usage}`;
