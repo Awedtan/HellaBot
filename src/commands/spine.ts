@@ -2,7 +2,7 @@ import { AutocompleteInteraction, CacheType, ChatInputCommandInteraction, SlashC
 import { unlinkSync } from 'fs';
 import { join } from 'path';
 import { Command } from '../structures/Command';
-import { Enemy, Operator } from '../types';
+import { Enemy, Operator } from 'hella-types';
 import { getEnemy, getOperator } from '../utils/api';
 import { enemyAutocomplete, operatorAutocomplete } from '../utils/autocomplete';
 import { buildSpineMessage, fileExists } from '../utils/build';

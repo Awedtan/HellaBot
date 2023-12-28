@@ -1,4 +1,4 @@
-import { Base, CCStage, Definition, Enemy, GameEvent, GridRange, Item, Module, Operator, Paradox, RogueTheme, SandboxAct, Skill, Skin, Stage } from "../types";
+import { Base, CCStage, Definition, Enemy, GameEvent, GridRange, Item, Module, Operator, Paradox, RogueTheme, SandboxAct, Skill, Skin, Stage } from "hella-types";
 const fetch = require('node-fetch');
 
 const apiUrl = 'https:/hellabotapi.cyclic.app';

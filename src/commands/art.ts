@@ -1,6 +1,6 @@
 import { AutocompleteInteraction, ButtonInteraction, CacheType, ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
 import { Command } from '../structures/Command';
-import { Operator } from '../types';
+import { Operator } from 'hella-types';
 import { getOperator } from '../utils/api';
 import { operatorAutocomplete } from '../utils/autocomplete';
 import { buildArtMessage } from '../utils/build';
