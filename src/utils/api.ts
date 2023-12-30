@@ -1,7 +1,5 @@
 import { Base, CCStage, Definition, Enemy, GameEvent, GridRange, Item, Module, Operator, Paradox, RogueTheme, SandboxAct, Skill, Skin, Stage } from "hella-types";
-const fetch = require('node-fetch');
-
-const apiUrl = 'https:/hellabotapi.cyclic.app';
+const { paths } = require('../constants.json');
 
 export type SingleParams = {
     query: string;
@@ -167,6 +165,7 @@ export async function getAllToughStageArrs({ include, exclude }: AllParams = {})
 }
 
 async function GET({ route, query, include, exclude }: { route: string, query: string, include?: string[], exclude?: string[] }) {
+    const apiUrl = paths.apiUrl;
     let path = `${apiUrl}/${route}/${query}`
     if (include) {
         path += `?include=${include[0]}`;
@@ -180,9 +179,7 @@ async function GET({ route, query, include, exclude }: { route: string, query: s
             path += `&exclude=${exclude[i]}`;
         }
     }
-    // console.log(path);
     let response = await fetch(path);
-
     if (!response.ok) return { value: null };
     return await response.json();
 }

@@ -2,13 +2,12 @@ import { ActionRowBuilder, AttachmentBuilder, BaseMessageOptions, ButtonBuilder,
 import { join } from 'path';
 import type { Blackboard, CCStage, Definition, Enemy, GameEvent, GridRange, Item, LevelUpCost, Operator, Paradox, RogueRelic, RogueStage, RogueVariation, SandboxStage, Stage, StageData } from "hella-types";
 import { getAllDefinitions, getAllEnemies, getAllEvents, getAllItems, getAllOperators, getItem, getOperator, getRange, getRogueTheme, getStageArr, getToughStageArr } from './api';
-const nodefetch = require('node-fetch');
 const fs = require('fs');
 const { embedColour, paths, gameConsts } = require('../constants');
 
 const cleanFilename = (text: string) => text.split(/%|[#\+]|&|\[|\]/).join(''); // Remove special characters that discord doesn't like (%, #, etc.)
 export const fileExists = async (path: string) => !!(await fs.promises.stat(path).catch(e => false));
-export const urlExists = async (url: string) => (await nodefetch(url)).status === 200;
+export const urlExists = async (url: string) => (await fetch(url)).status === 200;
 function removeStyleTags(text: string) {
     if (!text) return '';
     const regex = /<.[a-z]{2,5}?\.[^<]+>|<\/[^<]*>|<color=[^>]+>/;
@@ -1649,7 +1648,9 @@ async function buildStageEnemyFields(stageData: StageData): Promise<EmbedField[]
     for (const wave of stageData.waves) { // Count number of enemies in stage, store results in waveDict
         for (const fragment of wave.fragments) {
             for (const action of fragment.actions) {
-                if (action.actionType !== 0) continue;
+                if (typeof action.actionType === 'string' && action.actionType === 'SPAWN' || typeof action.actionType === 'number' && action.actionType === 0)
+                    waveDict[action.key] = (waveDict[action.key] ?? 0) + action.count;
+                // legacy number types:
                 // 0: spawn
                 // 1: skip??
                 // 2: tutorial/story popup
@@ -1660,7 +1661,6 @@ async function buildStageEnemyFields(stageData: StageData): Promise<EmbedField[]
                 // 7: stage effect (rumble)
                 // 8: environmental effect (blizzards)
                 // 9: some sss tutorial thing idk
-                waveDict[action.key] = waveDict[action.key] ? waveDict[action.key] + action.count : action.count;
             }
         }
     }

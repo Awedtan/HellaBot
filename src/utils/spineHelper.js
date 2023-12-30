@@ -1,9 +1,8 @@
 const { gameConsts, paths } = require('../constants');
-const nodefetch = require('node-fetch');
 const path = require('path');
 const puppeteer = require('puppeteer');
 const XMLHttpRequest = require('w3c-xmlhttprequest').XMLHttpRequest;
-const urlExists = async url => (await nodefetch(url)).status === 200;
+const urlExists = async url => (await fetch(url)).status === 200;
 
 async function loadSkel(type, id, direction) {
     try {
