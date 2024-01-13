@@ -327,7 +327,22 @@ export async function buildEnemyMessage(enemy: Enemy, level: number): Promise<Ba
     const thumbnail = new AttachmentBuilder(thumbnailPath);
 
     const title = `${enemyInfo.enemyIndex} - ${enemyInfo.name}`;
-    const description = `${removeStyleTags(enemyInfo.description)}\n\n${removeStyleTags(enemyInfo.ability)}`;
+    const description = removeStyleTags(enemyInfo.description)
+        .concat(
+            enemyInfo.abilityList.map((ability) => {
+                const abilityText = removeStyleTags(ability.text);
+                switch (ability.textFormat) {
+                    case 'NORMAL':
+                        return `\n\n${abilityText}`;
+                    case 'SILENCE':
+                        return `\n\n${abilityText} (Silenceable)`;
+                    case 'TITLE':
+                        return `\n\n**${abilityText}**`;
+                    default:
+                        return '';
+                }
+            }).join('')
+        );
 
     const hp = enemyData.attributes.maxHp.m_defined ? enemyData.attributes.maxHp.m_value.toString() :
         baseData.attributes.maxHp.m_defined ? baseData.attributes.maxHp.m_value.toString() : '0';
