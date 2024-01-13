@@ -11,12 +11,13 @@
     "dependencies": {
         "discord.js": "^14.14.1",
         "dotenv": "^16.3.1",
-        "hella-types": "^0.0.7",
+        "hella-types": "^0.0.8",
         "nodemon": "^3.0.2",
-        "puppeteer": "^21.6.1",
+        "puppeteer": "^21.7.0",
         "simple-git": "^3.22.0",
         "ts-node": "^10.9.2",
         "typescript": "^5.3.3",
-        "w3c-xmlhttprequest": "^3.0.4"
+        "w3c-xmlhttprequest": "^3.0.4",
+        "zod": "^3.22.4"
     }
 }
