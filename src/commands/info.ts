@@ -1,7 +1,7 @@
 import { AutocompleteInteraction, ButtonInteraction, CacheType, ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
 import { Command } from '../structures/Command';
 import { getOperator } from '../utils/api';
-import { operatorAutocomplete } from '../utils/autocomplete';
+import { autocompleteOperator } from '../utils/autocomplete';
 import { buildInfoMessage } from '../utils/build';
 
 export default class InfoCommand implements Command {
@@ -16,7 +16,7 @@ export default class InfoCommand implements Command {
         );
     async autocomplete(interaction: AutocompleteInteraction) {
         const value = interaction.options.getFocused().toLowerCase();
-        const arr = await operatorAutocomplete({ query: value, include: ['data.name'] });
+        const arr = await autocompleteOperator({ query: value });
         return await interaction.respond(arr);
     }
     async execute(interaction: ChatInputCommandInteraction) {

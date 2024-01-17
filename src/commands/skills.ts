@@ -2,7 +2,7 @@ import { AutocompleteInteraction, ButtonInteraction, CacheType, ChatInputCommand
 import { Command } from '../structures/Command';
 import { Operator } from 'hella-types';
 import { getOperator } from '../utils/api';
-import { operatorAutocomplete } from '../utils/autocomplete';
+import { autocompleteOperator } from '../utils/autocomplete';
 import { buildSkillMessage } from '../utils/build';
 
 export default class SkillCommand implements Command {
@@ -24,7 +24,7 @@ export default class SkillCommand implements Command {
     async autocomplete(interaction: AutocompleteInteraction) {
         const value = interaction.options.getFocused().toLowerCase();
         const callback = (op: Operator) => op.skills.length !== 0;
-        const arr = await operatorAutocomplete({ query: value, include: ['data.name', 'skills.skillId'] }, callback);
+        const arr = await autocompleteOperator({ query: value, include: ['skills.skillId'] }, callback);
         return await interaction.respond(arr);
     }
     async execute(interaction: ChatInputCommandInteraction) {

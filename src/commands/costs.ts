@@ -2,7 +2,7 @@ import { AutocompleteInteraction, ButtonInteraction, CacheType, ChatInputCommand
 import { Command } from '../structures/Command';
 import { Operator } from 'hella-types';
 import { getOperator } from '../utils/api';
-import { operatorAutocomplete } from '../utils/autocomplete';
+import { autocompleteOperator } from '../utils/autocomplete';
 import { buildCostMessage } from '../utils/build';
 const { gameConsts } = require('../constants');
 
@@ -29,7 +29,7 @@ export default class CostCommand implements Command {
     async autocomplete(interaction: AutocompleteInteraction) {
         const value = interaction.options.getFocused().toLowerCase();
         const callback = (op: Operator) => gameConsts.rarity[op.data.rarity] > 1;
-        const arr = await operatorAutocomplete({ query: value, include: ['data.name', 'data.rarity'] }, callback);
+        const arr = await autocompleteOperator({ query: value, include: ['data.rarity'] }, callback);
         return await interaction.respond(arr);
     }
     async execute(interaction: ChatInputCommandInteraction) {

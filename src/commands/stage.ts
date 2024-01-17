@@ -1,7 +1,7 @@
 import { AutocompleteInteraction, ButtonInteraction, CacheType, ChatInputCommandInteraction, SlashCommandBuilder, StringSelectMenuInteraction } from 'discord.js';
 import { Command } from '../structures/Command';
 import { getStageArr, getToughStageArr } from '../utils/api';
-import { stageAutocomplete, toughStageAutocomplete } from '../utils/autocomplete';
+import { autocompleteStage, autocompleteToughStage } from '../utils/autocomplete';
 import { buildStageMessage, buildStageSelectMessage } from '../utils/build';
 
 export default class StageCommand implements Command {
@@ -33,11 +33,11 @@ export default class StageCommand implements Command {
         const value = interaction.options.getFocused().toLowerCase();
         switch (type) {
             case 'normal': {
-                const arr = await stageAutocomplete({ query: value, include: ['excel.name', 'excel.code', 'excel.stageId'] });
+                const arr = await autocompleteStage({ query: value });
                 return await interaction.respond(arr);
             }
             case 'challenge': {
-                const arr = await toughStageAutocomplete({ query: value, include: ['excel.name', 'excel.code', 'excel.stageId'] });
+                const arr = await autocompleteToughStage({ query: value });
                 return await interaction.respond(arr);
             }
         }

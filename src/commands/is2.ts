@@ -1,7 +1,7 @@
 import { AutocompleteInteraction, ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
 import { Command } from '../structures/Command';
 import { getRogueTheme } from '../utils/api';
-import { rogueRelicAutocomplete, rogueStageAutocomplete, rogueToughStageAutocomplete, rogueVariationAutocomplete } from '../utils/autocomplete';
+import { autocompleteRogueRelic, autocompleteRogueStage, autocompleteRogueToughStage, autocompleteRogueVariation } from '../utils/autocomplete';
 import { buildRogueRelicListMessage, buildRogueRelicMessage, buildRogueStageMessage, buildRogueVariationListMessage, buildRogueVariationMessage } from '../utils/build';
 
 const innerIndex = 0;
@@ -60,20 +60,20 @@ export default class IS2Command implements Command {
         const value = interaction.options.getFocused().toLowerCase();
         switch (type) {
             case 'normal': {
-                const arr = await rogueStageAutocomplete(innerIndex, { query: value, include: ['stageDict'] });
+                const arr = await autocompleteRogueStage(innerIndex, { query: value });
                 return await interaction.respond(arr);
             }
             case 'emergency': {
-                const arr = await rogueToughStageAutocomplete(innerIndex, { query: value, include: ['toughStageDict'] });
+                const arr = await autocompleteRogueToughStage(innerIndex, { query: value });
                 return await interaction.respond(arr);
             }
             case 'relic': {
-                const arr = await rogueRelicAutocomplete(innerIndex, { query: value, include: ['relicDict'] });
+                const arr = await autocompleteRogueRelic(innerIndex, { query: value });
                 arr.push({ name: 'List All', value: 'list' });
                 return await interaction.respond(arr);
             }
             case 'variation': {
-                const arr = await rogueVariationAutocomplete(innerIndex, { query: value, include: ['variationDict'] });
+                const arr = await autocompleteRogueVariation(innerIndex, { query: value });
                 arr.push({ name: 'List All', value: 'list' });
                 return await interaction.respond(arr);
             }

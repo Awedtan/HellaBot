@@ -2,7 +2,7 @@ import { AutocompleteInteraction, ButtonInteraction, CacheType, ChatInputCommand
 import { Command } from '../structures/Command';
 import { Operator } from 'hella-types';
 import { getOperator, getParadox } from '../utils/api';
-import { operatorAutocomplete } from '../utils/autocomplete';
+import { autocompleteOperator } from '../utils/autocomplete';
 import { buildParadoxMessage } from '../utils/build';
 
 export default class ParadoxCommand implements Command {
@@ -17,8 +17,8 @@ export default class ParadoxCommand implements Command {
         );
     async autocomplete(interaction: AutocompleteInteraction) {
         const value = interaction.options.getFocused().toLowerCase();
-        const callback = (op: Operator) => !!op.paradox;
-        const arr = await operatorAutocomplete({ query: value, include: ['data.name', 'paradox.excel.charId'] }, callback);
+        const callback = (op: Operator) => !!op.paradox; // !! gets truth value
+        const arr = await autocompleteOperator({ query: value, include: ['paradox.excel.charId'] }, callback);
         return await interaction.respond(arr);
     }
     async execute(interaction: ChatInputCommandInteraction) {

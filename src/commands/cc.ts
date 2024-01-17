@@ -1,8 +1,8 @@
 import { AutocompleteInteraction, ButtonInteraction, CacheType, ChatInputCommandInteraction, SlashCommandBuilder, StringSelectMenuInteraction } from 'discord.js';
 import { Command } from '../structures/Command';
-import { getCCStage } from '../utils/api';
+import { getCc } from '../utils/api';
 import { buildCcMessage, buildCcSelectMessage } from '../utils/build';
-import { ccAutocomplete } from '../utils/autocomplete';
+import { autocompleteCc } from '../utils/autocomplete';
 const { gameConsts } = require('../constants');
 
 export default class CCCommand implements Command {
@@ -46,7 +46,7 @@ export default class CCCommand implements Command {
         );
     async autocomplete(interaction: AutocompleteInteraction) {
         const value = interaction.options.getFocused().toLowerCase();
-        const arr = await ccAutocomplete(value);
+        const arr = await autocompleteCc(value);
         return await interaction.respond(arr);
     }
     async execute(interaction: ChatInputCommandInteraction) {
@@ -55,7 +55,7 @@ export default class CCCommand implements Command {
         switch (type) {
             case 'stage': {
                 const name = interaction.options.getString('name').toLowerCase();
-                const stage = await getCCStage({ query: name });
+                const stage = await getCc({ query: name });
 
                 if (!stage || !stage.const || !stage.levels)
                     return await interaction.reply({ content: 'That stage data doesn\'t exist!', ephemeral: true });
@@ -79,14 +79,14 @@ export default class CCCommand implements Command {
         }
     }
     async buttonResponse(interaction: ButtonInteraction<CacheType>, idArr: string[]) {
-        const stage = await getCCStage({ query: idArr[1] })
+        const stage = await getCc({ query: idArr[1] })
         const page = parseInt(idArr[2]);
 
         const ccEmbed = await buildCcMessage(stage, page);
         await interaction.editReply(ccEmbed);
     }
     async selectResponse(interaction: StringSelectMenuInteraction<CacheType>, idArr: string[]) {
-        const stage = await getCCStage({ query: interaction.values[0] })
+        const stage = await getCc({ query: interaction.values[0] })
 
         const ccEmbed = await buildCcMessage(stage, 0);
         await interaction.editReply(ccEmbed);

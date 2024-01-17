@@ -1,7 +1,7 @@
 import { AutocompleteInteraction, ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
 import { Command } from '../structures/Command';
 import { getSandboxAct } from '../utils/api';
-import { sandboxStageAutocomplete } from '../utils/autocomplete';
+import { autocompleteSandboxStage } from '../utils/autocomplete';
 import { buildSandboxStageMessage } from '../utils/build';
 
 const actIndex = 0;
@@ -25,7 +25,7 @@ export default class RACommand implements Command {
         const value = interaction.options.getFocused().toLowerCase();
         switch (type) {
             case 'stage': {
-                const arr = await sandboxStageAutocomplete(actIndex, { query: value, include: ['stageDict'] });
+                const arr = await autocompleteSandboxStage(actIndex, { query: value });
                 return await interaction.respond(arr);
             }
         }

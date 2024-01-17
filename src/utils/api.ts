@@ -29,11 +29,11 @@ export async function getAllBases({ include, exclude }: AllParams = {}): Promise
     return data.map(datum => datum.value);
 }
 
-export async function getCCStage({ query, include, exclude }: SingleParams): Promise<CCStage> {
+export async function getCc({ query, include, exclude }: SingleParams): Promise<CCStage> {
     const data = await GET({ route: 'cc', query: query, include: include, exclude: exclude });
     return data.value;
 }
-export async function getAllCCStages({ include, exclude }: AllParams = {}): Promise<CCStage[]> {
+export async function getAllCc({ include, exclude }: AllParams = {}): Promise<CCStage[]> {
     const data = await GET({ route: 'cc', query: '', include: include, exclude: exclude });
     return data.map(datum => datum.value);
 }
@@ -179,7 +179,7 @@ async function GET({ route, query, include, exclude }: { route: string, query: s
             path += `&exclude=${exclude[i]}`;
         }
     }
-    let response = await fetch(path);
+    const response = await fetch(path);
     if (!response.ok) return { value: null };
     return await response.json();
 }

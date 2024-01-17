@@ -4,7 +4,7 @@ import { join } from 'path';
 import { Command } from '../structures/Command';
 import { Enemy, Operator } from 'hella-types';
 import { getEnemy, getOperator } from '../utils/api';
-import { enemyAutocomplete, operatorAutocomplete } from '../utils/autocomplete';
+import { autocompleteEnemy, autocompleteOperator } from '../utils/autocomplete';
 import { buildSpineMessage, fileExists } from '../utils/build';
 import * as spineHelper from '../utils/spineHelper';
 const { gameConsts } = require('../constants');
@@ -46,12 +46,12 @@ export default class SpineCommand implements Command {
         switch (type) {
             case 'operator': {
                 const value = interaction.options.getFocused().toLowerCase();
-                const arr = await operatorAutocomplete({ query: value, include: ['data.name'] });
+                const arr = await autocompleteOperator({ query: value });
                 return await interaction.respond(arr);
             }
             case 'enemy': {
                 const value = interaction.options.getFocused().toLowerCase();
-                const arr = await enemyAutocomplete({ query: value, include: ['excel'] });
+                const arr = await autocompleteEnemy({ query: value });
                 return await interaction.respond(arr);
             }
         }

@@ -1680,7 +1680,7 @@ async function buildStageEnemyFields(stageData: StageData): Promise<EmbedField[]
         }
     }
 
-    const enemyArr = await getAllEnemies();
+    const enemyArr = await getAllEnemies({ include: ['excel.enemyId', 'excel.enemyIndex', 'excel.name', 'excel.enemyLevel', 'levels.Value.level'] });
     let enemyString = '', eliteString = '', bossString = '';
     for (const enemyRef of stageData.enemyDbRefs) {
         const enemy = enemyArr.find(e => e.excel.enemyId === enemyRef.id);

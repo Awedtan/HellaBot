@@ -1,7 +1,7 @@
 import { AutocompleteInteraction, ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
 import { Command } from '../structures/Command';
 import { getItem } from '../utils/api';
-import { itemAutocomplete } from '../utils/autocomplete';
+import { autocompleteItem } from '../utils/autocomplete';
 import { buildItemMessage } from '../utils/build';
 
 export default class ItemCommand implements Command {
@@ -16,7 +16,7 @@ export default class ItemCommand implements Command {
         );
     async autocomplete(interaction: AutocompleteInteraction) {
         const value = interaction.options.getFocused().toLowerCase();
-        const arr = await itemAutocomplete({ query: value, include: ['data.name'] });
+        const arr = await autocompleteItem({ query: value });
         return await interaction.respond(arr);
     }
     async execute(interaction: ChatInputCommandInteraction) {

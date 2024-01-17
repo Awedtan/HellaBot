@@ -2,7 +2,7 @@ import { AutocompleteInteraction, ButtonInteraction, CacheType, ChatInputCommand
 import { Command } from '../structures/Command';
 import { Operator } from 'hella-types';
 import { getOperator } from '../utils/api';
-import { operatorAutocomplete } from '../utils/autocomplete';
+import { autocompleteOperator } from '../utils/autocomplete';
 import { buildModuleMessage } from '../utils/build';
 
 export default class ModuleCommand implements Command {
@@ -18,7 +18,7 @@ export default class ModuleCommand implements Command {
     async autocomplete(interaction: AutocompleteInteraction) {
         const value = interaction.options.getFocused().toLowerCase();
         const callback = (op: Operator) => op.modules.length !== 0;
-        const arr = await operatorAutocomplete({ query: value, include: ['data.name', 'modules.info.uniEquipId'] }, callback);
+        const arr = await autocompleteOperator({ query: value, include: ['modules.info.uniEquipId'] }, callback);
         return await interaction.respond(arr);
     }
     async execute(interaction: ChatInputCommandInteraction) {

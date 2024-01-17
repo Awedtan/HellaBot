@@ -1,7 +1,7 @@
 import { AutocompleteInteraction, ButtonInteraction, CacheType, ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
 import { Command } from '../structures/Command';
 import { getEnemy } from '../utils/api';
-import { enemyAutocomplete } from '../utils/autocomplete';
+import { autocompleteEnemy } from '../utils/autocomplete';
 import { buildEnemyMessage } from '../utils/build';
 
 export default class EnemyCommand implements Command {
@@ -16,7 +16,7 @@ export default class EnemyCommand implements Command {
         );
     async autocomplete(interaction: AutocompleteInteraction) {
         const value = interaction.options.getFocused().toLowerCase();
-        const arr = await enemyAutocomplete({ query: value, include: ['excel'] });
+        const arr = await autocompleteEnemy({ query: value });
         return await interaction.respond(arr);
     };
     async execute(interaction: ChatInputCommandInteraction) {
