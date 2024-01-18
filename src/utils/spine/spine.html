@@ -28,11 +28,12 @@
     const vars = new URL(window.location.href).searchParams;
 
     const spineType = vars.get('type');
-    let charName = vars.get('name');
-    const direction = vars.get('direction');
+    const battleType = 'battle';
+    let charName = encodeURIComponent(vars.get('name'));
+    const style = vars.get('style');
     const animType = vars.get('anim');
     const randomInt = vars.get('rand');
-    const assetPath = `https://raw.githubusercontent.com/Awedtan/HellaBot-Assets/main/spine/${spineType}`;
+    const assetPath = `https://raw.githubusercontent.com/Awedtan/HellaAssets/main/spine/${spineType}${spineType === 'operator' ? `/${battleType}` : ''}`;
     let spinePath;
 
     let frameDelay = 20;
@@ -132,7 +133,7 @@
         const urlExists = async url => (await fetch(url)).status === 200;
 
         if (spineType === 'operator') {
-            spinePath = assetPath + `/${charName}/${direction}/${charName}`;
+            spinePath = assetPath + `/${charName}/${style}/${charName}`;
         }
         else if (spineType === 'enemy') {
             charName = enemySpineIdOverride[charName] ?? charName;
@@ -143,7 +144,7 @@
         }
 
         if (!await urlExists(spinePath + '.skel'))
-            throw new Error('Skel file can\'t be found.' + spinePath);
+            throw new Error('Skel file can\'t be found: ' + spinePath);
 
         assetManager.loadBinary(spinePath + ".skel");
         assetManager.loadTextureAtlas(spinePath + ".atlas");

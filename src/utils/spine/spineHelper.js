@@ -1,4 +1,4 @@
-const { gameConsts, paths } = require('../constants');
+const { gameConsts, paths } = require('../../constants');
 const path = require('path');
 const puppeteer = require('puppeteer');
 const XMLHttpRequest = require('w3c-xmlhttprequest').XMLHttpRequest;
@@ -6,10 +6,11 @@ const urlExists = async url => (await fetch(url)).status === 200;
 
 async function loadSkel(type, id, direction) {
     try {
+        id = encodeURIComponent(id);
         const assetManager = new spine.AssetManager();
         let spinePath;
         if (type === 'operator') {
-            spinePath = path.join(paths.myAssetUrl, 'spine', type, id, direction, id + ".skel");
+            spinePath = path.join(paths.myAssetUrl, 'spine', type, 'battle', id, direction, id + ".skel");
         }
         else if (type === 'enemy') {
             id = gameConsts.enemySpineIdOverride[id] ?? id;
@@ -20,7 +21,7 @@ async function loadSkel(type, id, direction) {
         }
 
         if (!await urlExists(spinePath))
-            throw new Error('Skel file can\'t be found.');
+            throw new Error('Skel file can\'t be found: ' + spinePath);
 
         assetManager.loadBinary(spinePath);
 
@@ -29,7 +30,7 @@ async function loadSkel(type, id, direction) {
             await new Promise(resolve => setTimeout(resolve, 100));
             loadCount++;
             if (loadCount >= 20)
-                throw new Error('Skel file load timeout.');
+                throw new Error('Skel file load timeout: ' + spinePath);
         }
 
         const skelBin = new spine.SkeletonBinary();
@@ -41,19 +42,19 @@ async function loadSkel(type, id, direction) {
     }
 }
 
-async function launchPage(type, id, direction, anim) {
+async function launchPage(type, id, style, anim) {
+    id = encodeURIComponent(id);
     const browser = await puppeteer.launch({ headless: 'new', args: ["--no-sandbox", "--disabled-setupid-sandbox"] });
     const page = await browser.newPage();
     const rand = Math.floor(Math.random() * 1000000);
     await page.setViewport({ width: 200, height: 200 });
 
-    const spineFolder = path.join(__dirname, 'spine');
-    await page.goto("file://" + path.join(spineFolder, `spine.html?type=${type}&name=${id}&direction=${direction}&anim=${anim}&rand=${rand}`));
+    await page.goto("file://" + path.join(__dirname, `spine.html?type=${type}&name=${id}&style=${style}&anim=${anim}&rand=${rand}`));
 
     const client = await page.target().createCDPSession();
     await client.send('Page.setDownloadBehavior', {
         behavior: 'allow',
-        downloadPath: spineFolder,
+        downloadPath: __dirname,
     });
 
     return { page, browser, rand };

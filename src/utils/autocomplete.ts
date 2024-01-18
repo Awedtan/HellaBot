@@ -1,9 +1,10 @@
-import { CCStage, Definition, Enemy, Item, Operator, RogueRelic, RogueStage, RogueVariation, SandboxStage, Stage } from "hella-types";
-import { SingleParams, getAllDefinitions, getAllEnemies, getAllItems, getAllOperators, getAllStageArrs, getAllToughStageArrs, getRogueTheme, getSandboxAct } from "./api";
+import { CCStage, Definition, Enemy, Item, Operator, RogueRelic, RogueStage, RogueVariation, SandboxStage, Skin, Stage } from "hella-types";
+import { SingleParams, getAllDefinitions, getAllEnemies, getAllItems, getAllOperators, getAllStageArrs, getAllToughStageArrs, getRogueTheme, getSandboxAct, getSkinArr } from "./api";
 const { gameConsts } = require('../constants');
 
+type AutocompleteParams = Omit<SingleParams, 'exclude'>;
 const limit = 6;
-const splitMatch = (str: string, query: string) => str.toLowerCase().includes(query) || str.toLowerCase().split('\'').join('').includes(query);
+const splitMatch = (str: string, query: string) => str.toLowerCase().includes(query.toLowerCase()) || str.toLowerCase().split('\'').join('').includes(query.toLowerCase());
 
 export async function autocompleteCc(query: string, callback: (e: CCStage['const']) => boolean = () => true) {
     const matchQuery = (stage: CCStage['const']) => splitMatch(stage.name, query) || splitMatch(stage.location, query) || splitMatch(stage.levelId.split('/')[2], query);
@@ -22,7 +23,7 @@ export async function autocompleteCc(query: string, callback: (e: CCStage['const
 
     return mappedArr;
 }
-export async function autocompleteDefine({ query, include = [] }: SingleParams, callback: (e: Definition) => boolean = () => true) {
+export async function autocompleteDefine({ query, include = [] }: AutocompleteParams, callback: (e: Definition) => boolean = () => true) {
     const matchQuery = (define: Definition) => splitMatch(define.termName, query);
     const requiredInclude = ['termName'];
 
@@ -39,7 +40,7 @@ export async function autocompleteDefine({ query, include = [] }: SingleParams, 
 
     return mappedArr;
 }
-export async function autocompleteEnemy({ query, include = [] }: SingleParams, callback: (e: Enemy) => boolean = () => true) {
+export async function autocompleteEnemy({ query, include = [] }: AutocompleteParams, callback: (e: Enemy) => boolean = () => true) {
     const matchQuery = (enemy: Enemy) => splitMatch(enemy.excel.name, query) || splitMatch(enemy.excel.enemyIndex, query);
     const requiredInclude = ['excel.name', 'excel.enemyIndex', 'excel.enemyId'];
 
@@ -56,7 +57,7 @@ export async function autocompleteEnemy({ query, include = [] }: SingleParams, c
 
     return mappedArr;
 }
-export async function autocompleteRogueRelic(theme: number, { query, include = [] }: SingleParams, callback: (e: RogueRelic) => boolean = () => true) {
+export async function autocompleteRogueRelic(theme: number, { query, include = [] }: AutocompleteParams, callback: (e: RogueRelic) => boolean = () => true) {
     const matchQuery = (relic: RogueRelic) => splitMatch(relic.name, query);
     const requiredInclude = ['relicDict'];
 
@@ -73,7 +74,7 @@ export async function autocompleteRogueRelic(theme: number, { query, include = [
 
     return mappedArr;
 }
-export async function autocompleteRogueStage(theme: number, { query, include = [] }: SingleParams, callback: (e: RogueStage) => boolean = () => true) {
+export async function autocompleteRogueStage(theme: number, { query, include = [] }: AutocompleteParams, callback: (e: RogueStage) => boolean = () => true) {
     const matchQuery = (stage: RogueStage) => splitMatch(stage.excel.name, query) || splitMatch(stage.excel.code, query);
     const requiredInclude = ['stageDict'];
 
@@ -90,7 +91,7 @@ export async function autocompleteRogueStage(theme: number, { query, include = [
 
     return mappedArr;
 }
-export async function autocompleteRogueToughStage(theme: number, { query, include = [] }: SingleParams, callback: (e: RogueStage) => boolean = () => true) {
+export async function autocompleteRogueToughStage(theme: number, { query, include = [] }: AutocompleteParams, callback: (e: RogueStage) => boolean = () => true) {
     const matchQuery = (stage: RogueStage) => splitMatch(stage.excel.name, query) || splitMatch(stage.excel.code, query);
     const requiredInclude = ['toughStageDict'];
 
@@ -107,7 +108,7 @@ export async function autocompleteRogueToughStage(theme: number, { query, includ
 
     return mappedArr;
 }
-export async function autocompleteRogueVariation(theme: number, { query, include = [] }: SingleParams, callback: (e: RogueVariation) => boolean = () => true) {
+export async function autocompleteRogueVariation(theme: number, { query, include = [] }: AutocompleteParams, callback: (e: RogueVariation) => boolean = () => true) {
     const matchQuery = (variation: RogueVariation) => splitMatch(variation.outerName, query);
     const requiredInclude = ['variationDict'];
 
@@ -124,7 +125,7 @@ export async function autocompleteRogueVariation(theme: number, { query, include
 
     return mappedArr;
 }
-export async function autocompleteSandboxStage(act: number, { query, include = [] }: SingleParams, callback: (e: SandboxStage) => boolean = () => true) {
+export async function autocompleteSandboxStage(act: number, { query, include = [] }: AutocompleteParams, callback: (e: SandboxStage) => boolean = () => true) {
     const matchQuery = (stage: SandboxStage) => splitMatch(stage.excel.name, query) || splitMatch(stage.excel.code, query);
     const requiredInclude = ['stageDict'];
 
@@ -141,7 +142,25 @@ export async function autocompleteSandboxStage(act: number, { query, include = [
 
     return mappedArr;
 }
-export async function autocompleteItem({ query, include = [] }: SingleParams, callback: (e: Item) => boolean = () => true) {
+export async function autocompleteSkin(op: Operator, { query, include = [] }: AutocompleteParams, callback: (e: Skin) => boolean = () => true) {
+    const matchQuery = (skin: Skin) => splitMatch(skin.displaySkin.skinName ?? 'default', query);
+    const requiredInclude = ['displaySkin.skinName', 'skinId'];
+
+    const skinArr = await getSkinArr({ query: op.id, include: requiredInclude.concat(include) });
+    if (!skinArr || skinArr.length === 0) return [];
+    const filteredArr: Skin[] = [];
+    let i = 0;
+    for (const skin of skinArr) {
+        if (i >= limit) break;
+        if (filteredArr.some(s => s.displaySkin.skinName === skin.displaySkin.skinName) || !matchQuery(skin) || !callback(skin)) continue;
+        filteredArr.push(skin);
+        i++;
+    }
+    const mappedArr = filteredArr.map(skin => ({ name: skin.displaySkin.skinName ?? 'Default', value: skin.displaySkin.skinName ? skin.skinId.split('@').join('_') : 'default' }));
+
+    return mappedArr;
+}
+export async function autocompleteItem({ query, include = [] }: AutocompleteParams, callback: (e: Item) => boolean = () => true) {
     const matchQuery = (item: Item) => splitMatch(item.data.name, query);
     const requiredInclude = ['data.name'];
 
@@ -158,7 +177,7 @@ export async function autocompleteItem({ query, include = [] }: SingleParams, ca
 
     return mappedArr;
 }
-export async function autocompleteOperator({ query, include = [] }: SingleParams, callback: (e: Operator) => Boolean = () => true) {
+export async function autocompleteOperator({ query, include = [] }: AutocompleteParams, callback: (e: Operator) => Boolean = () => true) {
     const matchQuery = (op: Operator) => splitMatch(op.data.name, query);
     const requiredInclude = ['data.name'];
 
@@ -175,7 +194,7 @@ export async function autocompleteOperator({ query, include = [] }: SingleParams
 
     return mappedArr;
 }
-export async function autocompleteStage({ query, include = [] }: SingleParams, callback: (e: Stage) => boolean = () => true) {
+export async function autocompleteStage({ query, include = [] }: AutocompleteParams, callback: (e: Stage) => boolean = () => true) {
     const matchQuery = (stage: Stage) => splitMatch(stage.excel.name, query) || splitMatch(stage.excel.code, query);
     const requiredInclude = ['excel.name', 'excel.code', 'excel.stageId'];
 
@@ -194,7 +213,7 @@ export async function autocompleteStage({ query, include = [] }: SingleParams, c
 
     return mappedArr;
 }
-export async function autocompleteToughStage({ query, include = [] }: SingleParams, callback: (e: Stage) => boolean = () => true) {
+export async function autocompleteToughStage({ query, include = [] }: AutocompleteParams, callback: (e: Stage) => boolean = () => true) {
     const matchQuery = (stage: Stage) => splitMatch(stage.excel.name, query) || splitMatch(stage.excel.code, query);
     const requiredInclude = ['excel.name', 'excel.code', 'excel.stageId'];
 

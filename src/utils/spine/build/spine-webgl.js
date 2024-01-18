@@ -2290,7 +2290,7 @@ var spine;
 				path = this.rawDataUris[path];
 			img.src = path;
 		};
-		AssetManager.prototype.loadTextureAtlas = function (path, success, error) {
+		AssetManager.prototype.loadTextureAtlas = function (path, success, error) { // this function is modified!
 			var _this = this;
 			if (success === void 0) { success = null; }
 			if (error === void 0) { error = null; }
@@ -2302,6 +2302,7 @@ var spine;
 				var atlasPages = new Array();
 				try {
 					var atlas = new spine.TextureAtlas(atlasData, function (path) {
+						path = encodeURIComponent(path);
 						atlasPages.push(parent == "" ? path : parent + "/" + path);
 						var image = document.createElement("img");
 						image.width = 16;
@@ -2316,6 +2317,7 @@ var spine;
 						error(path, "Couldn't load texture atlas " + path + ": " + ex.message);
 					_this.toLoad--;
 					_this.loaded++;
+					console.log('woops')
 					return;
 				}
 				var _loop_1 = function (atlasPage) {
@@ -2326,6 +2328,7 @@ var spine;
 							if (!pageLoadError) {
 								try {
 									var atlas = new spine.TextureAtlas(atlasData, function (path) {
+										path = encodeURIComponent(path);
 										return _this.get(parent == "" ? path : parent + "/" + path);
 									});
 									_this.assets[path] = atlas;
@@ -2341,6 +2344,7 @@ var spine;
 										error(path, "Couldn't load texture atlas " + path + ": " + ex.message);
 									_this.toLoad--;
 									_this.loaded++;
+									console.log('woops1')
 								}
 							}
 							else {
@@ -2349,6 +2353,7 @@ var spine;
 									error(path, "Couldn't load texture atlas page " + imagePath + " of atlas " + path);
 								_this.toLoad--;
 								_this.loaded++;
+								console.log('woops2')
 							}
 						}
 					}, function (imagePath, errorMessage) {
@@ -2360,6 +2365,7 @@ var spine;
 								error(path, "Couldn't load texture atlas page " + imagePath + " of atlas " + path);
 							_this.toLoad--;
 							_this.loaded++;
+							console.log('woops3')
 						}
 					});
 				};
@@ -2373,6 +2379,7 @@ var spine;
 					error(path, "Couldn't load texture atlas " + path + ": status " + status + ", " + responseText);
 				_this.toLoad--;
 				_this.loaded++;
+				console.log('woops4')
 			});
 		};
 		AssetManager.prototype.get = function (path) {
@@ -3238,7 +3245,7 @@ var spine;
 						this.addAfterPosition(p - pathLength_1, world, 0, out, o);
 						continue;
 					}
-					for (;; curve++) {
+					for (; ; curve++) {
 						var length_5 = lengths[curve];
 						if (p > length_5)
 							continue;
@@ -3340,7 +3347,7 @@ var spine;
 					this.addAfterPosition(p - pathLength, world, verticesLength - 4, out, o);
 					continue;
 				}
-				for (;; curve++) {
+				for (; ; curve++) {
 					var length_6 = curves[curve];
 					if (p > length_6)
 						continue;
@@ -3392,7 +3399,7 @@ var spine;
 					segment = 0;
 				}
 				p *= curveLength;
-				for (;; segment++) {
+				for (; ; segment++) {
 					var length_7 = segments[segment];
 					if (p > length_7)
 						continue;
@@ -5268,7 +5275,7 @@ var spine;
 			output.length = 0;
 			var clippingVertices = clippingArea;
 			var clippingVerticesLast = clippingArea.length - 4;
-			for (var i = 0;; i += 2) {
+			for (var i = 0; ; i += 2) {
 				var edgeX = clippingVertices[i], edgeY = clippingVertices[i + 1];
 				var edgeX2 = clippingVertices[i + 2], edgeY2 = clippingVertices[i + 3];
 				var deltaX = edgeX - edgeX2, deltaY = edgeY - edgeY2;

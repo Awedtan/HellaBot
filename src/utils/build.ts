@@ -1,6 +1,6 @@
-import { ActionRowBuilder, AttachmentBuilder, BaseMessageOptions, ButtonBuilder, ButtonStyle, EmbedAuthorOptions, EmbedBuilder, EmbedField, StringSelectMenuBuilder, StringSelectMenuOptionBuilder } from 'discord.js';
+import { ActionRowBuilder, AttachmentBuilder, Base, BaseMessageOptions, ButtonBuilder, ButtonStyle, EmbedAuthorOptions, EmbedBuilder, EmbedField, StringSelectMenuBuilder, StringSelectMenuOptionBuilder } from 'discord.js';
 import { join } from 'path';
-import type { Blackboard, CCStage, Definition, Enemy, GameEvent, GridRange, Item, LevelUpCost, Operator, Paradox, RogueRelic, RogueStage, RogueVariation, SandboxStage, Stage, StageData } from "hella-types";
+import type { Blackboard, CCStage, Definition, Enemy, GameEvent, GridRange, Item, LevelUpCost, Operator, Paradox, RogueRelic, RogueStage, RogueVariation, SandboxStage, Skin, Stage, StageData } from "hella-types";
 import { getAllDefinitions, getAllEnemies, getAllEvents, getAllItems, getAllOperators, getItem, getOperator, getRange, getRogueTheme, getStageArr, getToughStageArr } from './api';
 const fs = require('fs');
 const { embedColour, paths, gameConsts } = require('../constants');
@@ -1182,26 +1182,23 @@ export async function buildSkillMessage(op: Operator, page: number, level: numbe
 
     return { embeds: [embed], files: [avatar, thumbnail], components: [rowOne, rowTwo] };
 }
-export async function buildSpineMessage(char: Enemy | Operator, direction: string, animArr: string[], anim: string, rand: number): Promise<BaseMessageOptions> {
-    const type = (char as Operator).id ? 'operator' : 'enemy';
-    const id = type === 'operator' ? (char as Operator).id : (char as Enemy).excel.enemyId;
+export async function buildSpineEnemyMessage(gifFile: string, enemy: Enemy, animArr: string[], anim: string, rand: number): Promise<BaseMessageOptions> {
+    const id = enemy.excel.enemyId;
 
-    const avatarPath = paths.aceshipImageUrl + (type === 'operator' ? `/avatars/${id}.png` : `/enemy/${id}.png`);
+    const avatarPath = paths.aceshipImageUrl + `/enemy/${id}.png`;
     const avatar = new AttachmentBuilder(avatarPath);
-    const authorField = buildAuthorField(char);
+    const authorField = buildAuthorField(enemy);
 
-    const gifFile = gameConsts.enemySpineIdOverride[id] ?? id + rand + '.gif';
     const gifPath = join(__dirname, 'spine', gifFile);
     const gif = new AttachmentBuilder(gifPath);
 
     const animSelector = new StringSelectMenuBuilder()
-        .setCustomId(`spineඞ${type}ඞ${id}ඞ${direction}`)
+        .setCustomId(`spineඞenemyඞ${id}ඞnullඞnull`)
         .setPlaceholder(anim);
     const componentRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(animSelector);
 
     for (let i = 0; i < Math.min(animArr.length, 25); i++) {
-        // Default animations are a single frame that lasts forever, they do not work and should not be shown
-        if (animArr[i] === 'Default') continue;
+        if (animArr[i] === 'Default') continue; // Default animations are a single frame that lasts forever, they do not work and should not be shown
 
         animSelector.addOptions(new StringSelectMenuOptionBuilder()
             .setLabel(animArr[i])
@@ -1211,7 +1208,38 @@ export async function buildSpineMessage(char: Enemy | Operator, direction: strin
 
     const embed = new EmbedBuilder()
         .setAuthor(authorField)
-        .setImage(`attachment://${gifFile}`)
+        .setImage(`attachment://${cleanFilename(gifFile)}`)
+        .setColor(embedColour);
+
+    return { content: '', embeds: [embed], files: [avatar, gif], components: [componentRow] };
+}
+export async function buildSpineOperatorMessage(gifFile: string, op: Operator, skin: string, direction: string, animArr: string[], anim: string, rand: number): Promise<BaseMessageOptions> {
+    const id = op.id;
+
+    const avatarPath = paths.aceshipImageUrl + `/avatars/${id}.png`;
+    const avatar = new AttachmentBuilder(avatarPath);
+    const authorField = buildAuthorField(op);
+
+    const gifPath = join(__dirname, 'spine', gifFile);
+    const gif = new AttachmentBuilder(gifPath);
+
+    const animSelector = new StringSelectMenuBuilder()
+        .setCustomId(`spineඞoperatorඞ${id}ඞ${skin}ඞ${direction}`)
+        .setPlaceholder(anim);
+    const componentRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(animSelector);
+
+    for (let i = 0; i < Math.min(animArr.length, 25); i++) {
+        if (animArr[i] === 'Default') continue; // Default animations are a single frame that lasts forever, they do not work and should not be shown
+
+        animSelector.addOptions(new StringSelectMenuOptionBuilder()
+            .setLabel(animArr[i])
+            .setValue(animArr[i])
+        );
+    }
+
+    const embed = new EmbedBuilder()
+        .setAuthor(authorField)
+        .setImage(`attachment://${cleanFilename(gifFile)}`)
         .setColor(embedColour);
 
     return { content: '', embeds: [embed], files: [avatar, gif], components: [componentRow] };
