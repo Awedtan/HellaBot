@@ -1213,7 +1213,7 @@ export async function buildSpineEnemyMessage(gifFile: string, enemy: Enemy, anim
 
     return { content: '', embeds: [embed], files: [avatar, gif], components: [componentRow] };
 }
-export async function buildSpineOperatorMessage(gifFile: string, op: Operator, skin: string, direction: string, animArr: string[], anim: string, rand: number): Promise<BaseMessageOptions> {
+export async function buildSpineOperatorMessage(gifFile: string, op: Operator, skin: string, set: string, direction: string, animArr: string[], anim: string, rand: number): Promise<BaseMessageOptions> {
     const id = op.id;
 
     const avatarPath = paths.aceshipImageUrl + `/avatars/${id}.png`;
@@ -1224,7 +1224,7 @@ export async function buildSpineOperatorMessage(gifFile: string, op: Operator, s
     const gif = new AttachmentBuilder(gifPath);
 
     const animSelector = new StringSelectMenuBuilder()
-        .setCustomId(`spineඞoperatorඞ${id}ඞ${skin}ඞ${direction}`)
+        .setCustomId(`spineඞoperatorඞ${id}ඞ${skin}ඞ${set}ඞ${direction}`)
         .setPlaceholder(anim);
     const componentRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(animSelector);
 

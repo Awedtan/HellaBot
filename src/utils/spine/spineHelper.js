@@ -1,40 +1,22 @@
-const { gameConsts, paths } = require('../../constants');
+const { getSpineUrl } = require('./spine');
 const path = require('path');
 const puppeteer = require('puppeteer');
 const XMLHttpRequest = require('w3c-xmlhttprequest').XMLHttpRequest;
-const urlExists = async url => (await fetch(url)).status === 200;
 
-async function loadSkel(type, id, direction) {
+async function loadSkel(type, id, set, direction) {
     try {
-        id = encodeURIComponent(id);
+        const skelPath = await getSpineUrl(type, id, set, direction) + '.skel';
         const assetManager = new spine.AssetManager();
-        let spinePath;
-        if (type === 'operator') {
-            spinePath = path.join(paths.myAssetUrl, 'spine', type, 'battle', id, direction, id + ".skel");
-        }
-        else if (type === 'enemy') {
-            id = gameConsts.enemySpineIdOverride[id] ?? id;
-            spinePath = path.join(paths.myAssetUrl, 'spine', type, id, id + ".skel")
-            if (!await urlExists(spinePath)) {
-                spinePath = path.join(paths.myAssetUrl, 'spine', type, id.split(/_[^_]+$/).join(''), id.split(/_[^_]+$/).join('') + ".skel")
-            }
-        }
-
-        if (!await urlExists(spinePath))
-            throw new Error('Skel file can\'t be found: ' + spinePath);
-
-        assetManager.loadBinary(spinePath);
-
+        assetManager.loadBinary(skelPath);
         let loadCount = 0;
         while (!assetManager.isLoadingComplete()) {
             await new Promise(resolve => setTimeout(resolve, 100));
             loadCount++;
             if (loadCount >= 20)
-                throw new Error('Skel file load timeout: ' + spinePath);
+                throw new Error('Skel file load timeout: ' + skelPath);
         }
-
         const skelBin = new spine.SkeletonBinary();
-        const skelData = skelBin.readSkeletonData(assetManager.get(spinePath));
+        const skelData = skelBin.readSkeletonData(assetManager.get(skelPath));
         return skelData;
     } catch (e) {
         console.error(e);
@@ -42,14 +24,19 @@ async function loadSkel(type, id, direction) {
     }
 }
 
-async function launchPage(type, id, style, anim) {
-    id = encodeURIComponent(id);
+async function launchPage(type, id, set, direction, animation) {
+    const random = Math.floor(Math.random() * 1000000);
+
+    let options = `?type=${type}&id=${encodeURIComponent(id)}&random=${random}`;
+    if (set) options += `&set=${set}`;
+    if (direction) options += `&direction=${direction}`;
+    if (animation) options += `&animation=${animation}`;
+
     const browser = await puppeteer.launch({ headless: 'new', args: ["--no-sandbox", "--disabled-setupid-sandbox"] });
     const page = await browser.newPage();
-    const rand = Math.floor(Math.random() * 1000000);
     await page.setViewport({ width: 200, height: 200 });
 
-    await page.goto("file://" + path.join(__dirname, `spine.html?type=${type}&name=${id}&style=${style}&anim=${anim}&rand=${rand}`));
+    await page.goto("file://" + path.join(__dirname, 'spine.html' + options));
 
     const client = await page.target().createCDPSession();
     await client.send('Page.setDownloadBehavior', {
@@ -57,7 +44,7 @@ async function launchPage(type, id, style, anim) {
         downloadPath: __dirname,
     });
 
-    return { page, browser, rand };
+    return { page, browser, random };
 }
 
 module.exports = { loadSkel, launchPage };
