@@ -8,6 +8,7 @@ const { embedColour, paths, gameConsts } = require('../constants');
 const cleanFilename = (text: string) => text.split(/%|[#\+]|&|\[|\]/).join(''); // Remove special characters that discord doesn't like (%, #, etc.)
 export const fileExists = async (path: string) => !!(await fs.promises.stat(path).catch(e => false));
 export const urlExists = async (url: string) => (await fetch(url)).status === 200;
+const createCustomId = (...args: (string | number | boolean)[]): string => args.join('ඞ').toLowerCase();
 function removeStyleTags(text: string) {
     if (!text) return '';
     const regex = /<.[a-z]{2,5}?\.[^<]+>|<\/[^<]*>|<color=[^>]+>/;
@@ -99,7 +100,7 @@ export async function buildArtMessage(op: Operator, page: number): Promise<BaseM
         const skinGroup = skins[i].displaySkin.skinGroupName;
 
         const skillButton = new ButtonBuilder()
-            .setCustomId(`artඞ${op.id}ඞ${i}`)
+            .setCustomId(createCustomId('art', op.id, i))
             .setLabel(skinGroup)
             .setStyle(ButtonStyle.Primary);
 
@@ -158,11 +159,11 @@ export async function buildCcMessage(stage: CCStage, page: number): Promise<Base
     embed.addFields(enemyFields);
 
     const imageButton = new ButtonBuilder()
-        .setCustomId(`ccඞ${stage.const.name.toLowerCase()}ඞ0`)
+        .setCustomId(createCustomId('cc', stage.const.name.toLowerCase(), 0))
         .setLabel('Preview')
         .setStyle(ButtonStyle.Primary);
     const diagramButton = new ButtonBuilder()
-        .setCustomId(`ccඞ${stage.const.name.toLowerCase()}ඞ1`)
+        .setCustomId(createCustomId('cc', stage.const.name.toLowerCase(), 1))
         .setLabel('Diagram')
         .setStyle(ButtonStyle.Primary);
     const buttonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(imageButton, diagramButton);
@@ -200,7 +201,7 @@ export async function buildCcMessage(stage: CCStage, page: number): Promise<Base
 }
 export async function buildCcSelectMessage(season: string): Promise<BaseMessageOptions> {
     const ccSelector = new StringSelectMenuBuilder()
-        .setCustomId(`ccඞselect`)
+        .setCustomId(createCustomId('cc', 'select'))
         .setPlaceholder('Select a stage!');
     const componentRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(ccSelector);
 
@@ -221,19 +222,19 @@ export async function buildCostMessage(op: Operator, page: number): Promise<Base
     const { embed, thumbnail } = await buildCostEmbed(op, page);
 
     const eliteButton = new ButtonBuilder()
-        .setCustomId(`costsඞ${op.id}ඞ0`)
+        .setCustomId(createCustomId('costs', op.id, 0))
         .setLabel('Promotions')
         .setStyle(ButtonStyle.Primary);
     const skillButton = new ButtonBuilder()
-        .setCustomId(`costsඞ${op.id}ඞ1`)
+        .setCustomId(createCustomId('costs', op.id, 1))
         .setLabel('Skills')
         .setStyle(ButtonStyle.Primary);
     const masteryButton = new ButtonBuilder()
-        .setCustomId(`costsඞ${op.id}ඞ2`)
+        .setCustomId(createCustomId('costs', op.id, 2))
         .setLabel('Masteries')
         .setStyle(ButtonStyle.Primary);
     const moduleButton = new ButtonBuilder()
-        .setCustomId(`costsඞ${op.id}ඞ3`)
+        .setCustomId(createCustomId('costs', op.id, 3))
         .setLabel('Modules')
         .setStyle(ButtonStyle.Primary);
     const buttonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(eliteButton, skillButton, masteryButton, moduleButton);
@@ -393,7 +394,7 @@ export async function buildEnemyMessage(enemy: Enemy, level: number): Promise<Ba
     const buttonRow = new ActionRowBuilder<ButtonBuilder>();
     for (let i = 0; i < enemyLevels; i++) {
         buttonRow.addComponents(new ButtonBuilder()
-            .setCustomId(`enemyඞ${enemy.excel.enemyId}ඞ${i}`)
+            .setCustomId(createCustomId('enemy', enemy.excel.enemyId, i))
             .setLabel(`Level ${i + 1}`)
             .setStyle(ButtonStyle.Primary)
         )
@@ -430,11 +431,11 @@ export async function buildEventListMessage(index: number): Promise<BaseMessageO
     }
 
     const prevButton = new ButtonBuilder()
-        .setCustomId(`eventsඞ${index - 1}`)
+        .setCustomId(createCustomId('events', index - 1))
         .setLabel('Newer')
         .setStyle(ButtonStyle.Primary);
     const nextButton = new ButtonBuilder()
-        .setCustomId(`eventsඞ${index + 1}`)
+        .setCustomId(createCustomId('events', index + 1))
         .setLabel('Older')
         .setStyle(ButtonStyle.Primary);
     const componentRow = new ActionRowBuilder<ButtonBuilder>().addComponents(prevButton, nextButton);
@@ -458,23 +459,23 @@ export async function buildInfoMessage(op: Operator, type: number, page: number,
     fileArr.push(operatorEmbed.thumbnail);
 
     const skillButton = new ButtonBuilder()
-        .setCustomId(`infoඞ${op.id}ඞ1ඞ0ඞ0`)
+        .setCustomId(createCustomId('info', op.id, 1, 0, 0))
         .setLabel('Skills')
         .setStyle(ButtonStyle.Success);
     const moduleButton = new ButtonBuilder()
-        .setCustomId(`infoඞ${op.id}ඞ2ඞ0ඞ0`)
+        .setCustomId(createCustomId('info', op.id, 2, 0, 0))
         .setLabel('Modules')
         .setStyle(ButtonStyle.Success);
     const artButton = new ButtonBuilder()
-        .setCustomId(`infoඞ${op.id}ඞ3ඞ0ඞ0`)
+        .setCustomId(createCustomId('info', op.id, 3, 0, 0))
         .setLabel('Art')
         .setStyle(ButtonStyle.Success);
     const baseButton = new ButtonBuilder()
-        .setCustomId(`infoඞ${op.id}ඞ4ඞ0ඞ0`)
+        .setCustomId(createCustomId('info', op.id, 4, 0, 0))
         .setLabel('Base Skills')
         .setStyle(ButtonStyle.Success);
     const costButton = new ButtonBuilder()
-        .setCustomId(`infoඞ${op.id}ඞ5ඞ0ඞ0`)
+        .setCustomId(createCustomId('info', op.id, 5, 0, 0))
         .setLabel('Costs')
         .setStyle(ButtonStyle.Success);
     const typeRow = new ActionRowBuilder<ButtonBuilder>().addComponents(skillButton, moduleButton, artButton, baseButton, costButton);
@@ -539,7 +540,7 @@ export async function buildInfoMessage(op: Operator, type: number, page: number,
             for (let i = 0; i < op.data.skills.length; i++) {
                 skillArr[i].setStyle(ButtonStyle.Primary);
                 if (i !== page) {
-                    skillArr[i].setCustomId(`infoඞ${op.id}ඞ${type}ඞ${i}ඞ${level}ඞskill`)
+                    skillArr[i].setCustomId(createCustomId('info', op.id, type, i, level))
                     skillArr[i].setDisabled(false);
                 }
                 else {
@@ -579,7 +580,7 @@ export async function buildInfoMessage(op: Operator, type: number, page: number,
             for (let i = 0; i < op.modules.length; i++) {
                 moduleArr[i].setStyle(ButtonStyle.Primary);
                 if (i !== page) {
-                    moduleArr[i].setCustomId(`infoඞ${op.id}ඞ${type}ඞ${i}ඞ${level}ඞmodule`)
+                    moduleArr[i].setCustomId(createCustomId('info', op.id, type, i, level))
                     moduleArr[i].setDisabled(false);
                 }
                 else {
@@ -680,15 +681,15 @@ export async function buildModuleMessage(op: Operator, page: number, level: numb
     const { embed, thumbnail } = await buildModuleEmbed(op, page, level);
 
     const lOne = new ButtonBuilder()
-        .setCustomId(`modulesඞ${op.id}ඞ${page}ඞ0`)
+        .setCustomId(createCustomId('modules', op.id, page, 0))
         .setLabel('Lv1')
         .setStyle(ButtonStyle.Secondary);
     const lTwo = new ButtonBuilder()
-        .setCustomId(`modulesඞ${op.id}ඞ${page}ඞ1`)
+        .setCustomId(createCustomId('modules', op.id, page, 1))
         .setLabel('Lv2')
         .setStyle(ButtonStyle.Secondary);
     const lThree = new ButtonBuilder()
-        .setCustomId(`modulesඞ${op.id}ඞ${page}ඞ2`)
+        .setCustomId(createCustomId('modules', op.id, page, 2))
         .setLabel('Lv3')
         .setStyle(ButtonStyle.Secondary);
     const rowOne = new ActionRowBuilder<ButtonBuilder>().addComponents(lOne, lTwo, lThree);
@@ -729,11 +730,11 @@ export async function buildParadoxMessage(paradox: Paradox, page: number): Promi
     embed.addFields(enemyFields);
 
     const imageButton = new ButtonBuilder()
-        .setCustomId(`paradoxඞ${stageInfo.charId}ඞ0`)
+        .setCustomId(createCustomId('paradox', stageInfo.charId, 0))
         .setLabel('Preview')
         .setStyle(ButtonStyle.Primary);
     const diagramButton = new ButtonBuilder()
-        .setCustomId(`paradoxඞ${stageInfo.charId}ඞ1`)
+        .setCustomId(createCustomId('paradox', stageInfo.charId, 1))
         .setLabel('Diagram')
         .setStyle(ButtonStyle.Primary);
     const buttonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(imageButton, diagramButton);
@@ -779,7 +780,7 @@ export async function buildRecruitMessage(value: number, tag: string, select: bo
 
     const button = (id: string, label: string) => {
         return new ButtonBuilder()
-            .setCustomId(`recruitඞ${value}ඞ${id}ඞselectඞ${snowflakes.join('ඞ')}`)
+            .setCustomId(createCustomId('recruit', value, id, 'select', ...snowflakes))
             .setLabel(label)
             .setStyle(ButtonStyle.Secondary);
     }
@@ -967,11 +968,11 @@ export async function buildRogueRelicListMessage(theme: number, index: number): 
     }
 
     const prevButton = new ButtonBuilder()
-        .setCustomId(`rogueඞrelicඞ${theme}ඞ${index - 1}`)
+        .setCustomId(createCustomId('rogue', 'relic', theme, index - 1))
         .setLabel('Previous')
         .setStyle(ButtonStyle.Primary);
     const nextButton = new ButtonBuilder()
-        .setCustomId(`rogueඞrelicඞ${theme}ඞ${index + 1}`)
+        .setCustomId(createCustomId('rogue', 'relic', theme, index + 1))
         .setLabel('Next')
         .setStyle(ButtonStyle.Primary);
     const componentRow = new ActionRowBuilder<ButtonBuilder>().addComponents(prevButton, nextButton);
@@ -1005,11 +1006,11 @@ export async function buildRogueStageMessage(theme: number, stage: RogueStage, p
     embed.addFields(enemyFields);
 
     const imageButton = new ButtonBuilder()
-        .setCustomId(`rogueඞstageඞ${theme}ඞ${stageInfo.name.toLowerCase()}ඞ${isChallenge}ඞ0`)
+        .setCustomId(createCustomId('rogue', 'stage', theme, stageInfo.name, isChallenge, 0))
         .setLabel('Preview')
         .setStyle(ButtonStyle.Primary);
     const diagramButton = new ButtonBuilder()
-        .setCustomId(`rogueඞstageඞ${theme}ඞ${stageInfo.name.toLowerCase()}ඞ${isChallenge}ඞ1`)
+        .setCustomId(createCustomId('rogue', 'stage', theme, stageInfo.name, isChallenge, 1))
         .setLabel('Diagram')
         .setStyle(ButtonStyle.Primary);
     const buttonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(imageButton, diagramButton);
@@ -1098,43 +1099,43 @@ export async function buildSkillMessage(op: Operator, page: number, level: numbe
     const { embed, thumbnail } = await buildSkillEmbed(op, page, level);
 
     const lOne = new ButtonBuilder()
-        .setCustomId(`skillsඞ${op.id}ඞ${page}ඞ0`)
+        .setCustomId(createCustomId('skills', op.id, page, 0))
         .setLabel('Lv1')
         .setStyle(ButtonStyle.Secondary);
     const lTwo = new ButtonBuilder()
-        .setCustomId(`skillsඞ${op.id}ඞ${page}ඞ1`)
+        .setCustomId(createCustomId('skills', op.id, page, 1))
         .setLabel('Lv2')
         .setStyle(ButtonStyle.Secondary);
     const lThree = new ButtonBuilder()
-        .setCustomId(`skillsඞ${op.id}ඞ${page}ඞ2`)
+        .setCustomId(createCustomId('skills', op.id, page, 2))
         .setLabel('Lv3')
         .setStyle(ButtonStyle.Secondary);
     const lFour = new ButtonBuilder()
-        .setCustomId(`skillsඞ${op.id}ඞ${page}ඞ3`)
+        .setCustomId(createCustomId('skills', op.id, page, 3))
         .setLabel('Lv4')
         .setStyle(ButtonStyle.Secondary);
     const lFive = new ButtonBuilder()
-        .setCustomId(`skillsඞ${op.id}ඞ${page}ඞ4`)
+        .setCustomId(createCustomId('skills', op.id, page, 4))
         .setLabel('Lv5')
         .setStyle(ButtonStyle.Secondary);
     const lSix = new ButtonBuilder()
-        .setCustomId(`skillsඞ${op.id}ඞ${page}ඞ5`)
+        .setCustomId(createCustomId('skills', op.id, page, 5))
         .setLabel('Lv6')
         .setStyle(ButtonStyle.Secondary);
     const lSeven = new ButtonBuilder()
-        .setCustomId(`skillsඞ${op.id}ඞ${page}ඞ6`)
+        .setCustomId(createCustomId('skills', op.id, page, 6))
         .setLabel('Lv7')
         .setStyle(ButtonStyle.Secondary);
     const mOne = new ButtonBuilder()
-        .setCustomId(`skillsඞ${op.id}ඞ${page}ඞ7`)
+        .setCustomId(createCustomId('skills', op.id, page, 7))
         .setLabel('M1')
         .setStyle(ButtonStyle.Danger);
     const mTwo = new ButtonBuilder()
-        .setCustomId(`skillsඞ${op.id}ඞ${page}ඞ8`)
+        .setCustomId(createCustomId('skills', op.id, page, 8))
         .setLabel('M2')
         .setStyle(ButtonStyle.Danger);
     const mThree = new ButtonBuilder()
-        .setCustomId(`skillsඞ${op.id}ඞ${page}ඞ9`)
+        .setCustomId(createCustomId('skills', op.id, page, 9))
         .setLabel('M3')
         .setStyle(ButtonStyle.Danger);
     const rowOne = new ActionRowBuilder<ButtonBuilder>().addComponents(lOne, lTwo, lThree, lFour, lFive);
@@ -1193,7 +1194,7 @@ export async function buildSpineEnemyMessage(gifFile: string, enemy: Enemy, anim
     const gif = new AttachmentBuilder(gifPath);
 
     const animSelector = new StringSelectMenuBuilder()
-        .setCustomId(`spineඞenemyඞ${id}ඞnullඞnull`)
+        .setCustomId(createCustomId('spine', 'enemy', id, null, null))
         .setPlaceholder(anim);
     const componentRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(animSelector);
 
@@ -1224,7 +1225,7 @@ export async function buildSpineOperatorMessage(gifFile: string, op: Operator, s
     const gif = new AttachmentBuilder(gifPath);
 
     const animSelector = new StringSelectMenuBuilder()
-        .setCustomId(`spineඞoperatorඞ${id}ඞ${skin}ඞ${set}ඞ${direction}`)
+        .setCustomId(createCustomId('spine', 'operator', id, skin, set, direction))
         .setPlaceholder(anim);
     const componentRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(animSelector);
 
@@ -1286,11 +1287,11 @@ export async function buildStageMessage(stage: Stage, page: number): Promise<Bas
         stageIndex = (await getStageArr({ query: stage.excel.code.toLowerCase() })).findIndex(x => x.excel.stageId === stage.excel.stageId)
 
     const imageButton = new ButtonBuilder()
-        .setCustomId(`stageඞ${stage.excel.code.toLowerCase()}ඞ${stageIndex}ඞ${isChallenge}ඞ0`)
+        .setCustomId(createCustomId('stage', stage.excel.code, stageIndex, isChallenge, 0))
         .setLabel('Preview')
         .setStyle(ButtonStyle.Primary);
     const diagramButton = new ButtonBuilder()
-        .setCustomId(`stageඞ${stage.excel.code.toLowerCase()}ඞ${stageIndex}ඞ${isChallenge}ඞ1`)
+        .setCustomId(createCustomId('stage', stage.excel.code, stageIndex, isChallenge, 1))
         .setLabel('Diagram')
         .setStyle(ButtonStyle.Primary);
     const buttonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(imageButton, diagramButton);
@@ -1343,7 +1344,7 @@ export async function buildStageMessage(stage: Stage, page: number): Promise<Bas
 }
 export async function buildStageSelectMessage(stageArr: Stage[] | RogueStage[]): Promise<BaseMessageOptions> {
     const stageSelector = new StringSelectMenuBuilder()
-        .setCustomId(`stageඞselectඞ${stageArr[0].excel.code.toLowerCase()}`)
+        .setCustomId(createCustomId('stage', 'select', stageArr[0].excel.code))
         .setPlaceholder('Select a stage!');
     const componentRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(stageSelector);
 
@@ -1367,43 +1368,43 @@ async function buildInfoSkillMessage(op: Operator, type: number, page: number, l
     const { embed, thumbnail } = await buildSkillEmbed(op, page, level);
 
     const lOne = new ButtonBuilder()
-        .setCustomId(`infoඞ${op.id}ඞ${type}ඞ${page}ඞ0ඞskill`)
+        .setCustomId(createCustomId('info', op.id, type, page, 0, 'skill'))
         .setLabel('Lv1')
         .setStyle(ButtonStyle.Secondary);
     const lTwo = new ButtonBuilder()
-        .setCustomId(`infoඞ${op.id}ඞ${type}ඞ${page}ඞ1ඞskill`)
+        .setCustomId(createCustomId('info', op.id, type, page, 1, 'skill'))
         .setLabel('Lv2')
         .setStyle(ButtonStyle.Secondary);
     const lThree = new ButtonBuilder()
-        .setCustomId(`infoඞ${op.id}ඞ${type}ඞ${page}ඞ2ඞskill`)
+        .setCustomId(createCustomId('info', op.id, type, page, 2, 'skill'))
         .setLabel('Lv3')
         .setStyle(ButtonStyle.Secondary);
     const lFour = new ButtonBuilder()
-        .setCustomId(`infoඞ${op.id}ඞ${type}ඞ${page}ඞ3ඞskill`)
+        .setCustomId(createCustomId('info', op.id, type, page, 3, 'skill'))
         .setLabel('Lv4')
         .setStyle(ButtonStyle.Secondary);
     const lFive = new ButtonBuilder()
-        .setCustomId(`infoඞ${op.id}ඞ${type}ඞ${page}ඞ4ඞskill`)
+        .setCustomId(createCustomId('info', op.id, type, page, 4, 'skill'))
         .setLabel('Lv5')
         .setStyle(ButtonStyle.Secondary);
     const lSix = new ButtonBuilder()
-        .setCustomId(`infoඞ${op.id}ඞ${type}ඞ${page}ඞ5ඞskill`)
+        .setCustomId(createCustomId('info', op.id, type, page, 5, 'skill'))
         .setLabel('Lv6')
         .setStyle(ButtonStyle.Secondary);
     const lSeven = new ButtonBuilder()
-        .setCustomId(`infoඞ${op.id}ඞ${type}ඞ${page}ඞ6ඞskill`)
+        .setCustomId(createCustomId('info', op.id, type, page, 6, 'skill'))
         .setLabel('Lv7')
         .setStyle(ButtonStyle.Secondary);
     const mOne = new ButtonBuilder()
-        .setCustomId(`infoඞ${op.id}ඞ${type}ඞ${page}ඞ7ඞskill`)
+        .setCustomId(createCustomId('info', op.id, type, page, 7, 'skill'))
         .setLabel('M1')
         .setStyle(ButtonStyle.Danger);
     const mTwo = new ButtonBuilder()
-        .setCustomId(`infoඞ${op.id}ඞ${type}ඞ${page}ඞ8ඞskill`)
+        .setCustomId(createCustomId('info', op.id, type, page, 8, 'skill'))
         .setLabel('M2')
         .setStyle(ButtonStyle.Danger);
     const mThree = new ButtonBuilder()
-        .setCustomId(`infoඞ${op.id}ඞ${type}ඞ${page}ඞ9ඞskill`)
+        .setCustomId(createCustomId('info', op.id, type, page, 9, 'skill'))
         .setLabel('M3')
         .setStyle(ButtonStyle.Danger);
     const rowOne = new ActionRowBuilder<ButtonBuilder>().addComponents(lOne, lTwo, lThree, lFour, lFive);
@@ -1468,15 +1469,15 @@ async function buildInfoModuleMessage(op: Operator, type: number, page: number, 
     const { embed, thumbnail } = await buildModuleEmbed(op, page, level);
 
     const lOne = new ButtonBuilder()
-        .setCustomId(`infoඞ${op.id}ඞ${type}ඞ${page}ඞ0ඞmodule`)
+        .setCustomId(createCustomId('info', op.id, type, page, 0, 'module'))
         .setLabel('Lv1')
         .setStyle(ButtonStyle.Secondary);
     const lTwo = new ButtonBuilder()
-        .setCustomId(`infoඞ${op.id}ඞ${type}ඞ${page}ඞ1ඞmodule`)
+        .setCustomId(createCustomId('info', op.id, type, page, 1, 'module'))
         .setLabel('Lv2')
         .setStyle(ButtonStyle.Secondary);
     const lThree = new ButtonBuilder()
-        .setCustomId(`infoඞ${op.id}ඞ${type}ඞ${page}ඞ2ඞmodule`)
+        .setCustomId(createCustomId('info', op.id, type, page, 2, 'module'))
         .setLabel('Lv3')
         .setStyle(ButtonStyle.Secondary);
     const rowOne = new ActionRowBuilder<ButtonBuilder>().addComponents(lOne, lTwo, lThree);
@@ -1517,7 +1518,7 @@ async function buildInfoArtMessage(op: Operator, type: number, page: number, lev
         const skinGroup = skins[i].displaySkin.skinGroupName;
 
         const skinButton = new ButtonBuilder()
-            .setCustomId(`infoඞ${op.id}ඞ${type}ඞ${i}ඞ${level}ඞskin`)
+            .setCustomId(createCustomId('info', op.id, type, i, level, 'skin'))
             .setLabel(skinGroup)
             .setStyle(ButtonStyle.Primary);
 
@@ -1545,19 +1546,19 @@ async function buildInfoCostMessage(op: Operator, type: number, page: number, le
     const { embed, thumbnail } = await buildCostEmbed(op, page);
 
     const eliteButton = new ButtonBuilder()
-        .setCustomId(`infoඞ${op.id}ඞ${type}ඞ0ඞ${level}ඞcost`)
+        .setCustomId(createCustomId('info', op.id, type, 0, level, 'cost'))
         .setLabel('Promotions')
         .setStyle(ButtonStyle.Primary);
     const skillButton = new ButtonBuilder()
-        .setCustomId(`infoඞ${op.id}ඞ${type}ඞ1ඞ${level}ඞcost`)
+        .setCustomId(createCustomId('info', op.id, type, 1, level, 'cost'))
         .setLabel('Skills')
         .setStyle(ButtonStyle.Primary);
     const masteryButton = new ButtonBuilder()
-        .setCustomId(`infoඞ${op.id}ඞ${type}ඞ2ඞ${level}ඞcost`)
+        .setCustomId(createCustomId('info', op.id, type, 2, level, 'cost'))
         .setLabel('Masteries')
         .setStyle(ButtonStyle.Primary);
     const moduleButton = new ButtonBuilder()
-        .setCustomId(`infoඞ${op.id}ඞ${type}ඞ3ඞ${level}ඞcost`)
+        .setCustomId(createCustomId('info', op.id, type, 3, level, 'cost'))
         .setLabel('Modules')
         .setStyle(ButtonStyle.Primary);
     const buttonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(eliteButton, skillButton, masteryButton, moduleButton);

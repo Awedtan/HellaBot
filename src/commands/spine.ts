@@ -8,6 +8,30 @@ import { buildSpineEnemyMessage, buildSpineOperatorMessage, fileExists } from '.
 import * as spineHelper from '../utils/spine/spineHelper';
 const { gameConsts } = require('../constants');
 
+const getSkelAnims = skelData => skelData.animations.filter(animation => animation.name !== 'Default').map(animation => animation.name);
+async function enemyPageClose(browser, interaction, enemy, animArr, anim, random) {
+    await new Promise(r => setTimeout(r, 1000));
+    await browser.close();
+
+    const gifFile = join((gameConsts.enemySpineIdOverride[enemy.excel.enemyId] ?? enemy.excel.enemyId) + random + '.gif');
+    const gifPath = join(__dirname, '..', 'utils', 'spine', gifFile);
+    const spineEmbed = await buildSpineEnemyMessage(gifFile, enemy, animArr, anim, random);
+    await interaction.editReply(spineEmbed);
+
+    if (await fileExists(gifPath)) unlinkSync(gifPath);
+}
+async function operatorPageClose(browser, interaction, op, skin, set, direction, animArr, anim, random) {
+    await new Promise(r => setTimeout(r, 1000));
+    await browser.close();
+
+    const gifFile = join(skin + random + '.gif');
+    const gifPath = join(__dirname, '..', 'utils', 'spine', gifFile);
+    const spineEmbed = await buildSpineOperatorMessage(gifFile, op, skin, set, direction, animArr, anim, random);
+    await interaction.editReply(spineEmbed);
+
+    if (await fileExists(gifPath)) unlinkSync(gifPath);
+}
+
 export default class SpineCommand implements Command {
     data = new SlashCommandBuilder()
         .setName('spine')
@@ -87,7 +111,6 @@ export default class SpineCommand implements Command {
                 const skin = interaction.options.getString('skin')?.toLowerCase() ?? 'default';
                 const set = interaction.options.getString('set')?.toLowerCase() ?? 'battle';
                 let direction = interaction.options.getString('direction')?.toLowerCase() ?? 'front';
-
                 const op = await getOperator({ query: name, include: ['id', 'data', 'skins'] });
 
                 if (!op)
@@ -102,11 +125,7 @@ export default class SpineCommand implements Command {
                 if (!skelData)
                     return await interaction.reply({ content: 'There was an error while loading the spine data!', ephemeral: true });
 
-                const animArr = [];
-                for (const animation of skelData.animations) {
-                    if (animation.name === 'Default') continue;
-                    animArr.push(animation.name);
-                }
+                const animArr = getSkelAnims(skelData);
 
                 if (animArr.length === 0)
                     return await interaction.reply({ content: 'That operator has no animations!', ephemeral: true });
@@ -114,22 +133,10 @@ export default class SpineCommand implements Command {
                 await interaction.deferReply();
 
                 const { page, browser, random } = await spineHelper.launchPage(type, skinId, set, direction, animArr[0]);
-
                 page.on('console', async message => {
                     if (message.text() === 'done') {
-                        await new Promise(r => setTimeout(r, 1000));
-                        await browser.close();
-
-                        const gifFile = join((gameConsts.enemySpineIdOverride[skinId] ?? skinId) + random + '.gif');
-                        const gifPath = join(__dirname, '..', 'utils', 'spine', gifFile);
-                        const spineEmbed = await buildSpineOperatorMessage(gifFile, op, skin, set, direction, animArr, animArr[0], random);
-                        await interaction.followUp(spineEmbed);
-
-                        if (await fileExists(gifPath)) unlinkSync(gifPath);
+                        await operatorPageClose(browser, interaction, op, skinId, set, direction, animArr, animArr[0], random);
                     }
-                    // else {
-                    //     console.log(message.text());
-                    // }
                 }).on('pageerror', async ({ message }) => {
                     await browser.close();
                     console.error(`Spine error for ${skinId}: ` + message);
@@ -150,11 +157,7 @@ export default class SpineCommand implements Command {
                 if (!skelData)
                     return await interaction.reply({ content: 'There was an error while loading the spine data!', ephemeral: true });
 
-                const animArr = [];
-                for (const animation of skelData.animations) {
-                    if (animation.name === 'Default') continue;
-                    animArr.push(animation.name);
-                }
+                const animArr = getSkelAnims(skelData);
 
                 if (animArr.length === 0)
                     return await interaction.reply({ content: 'That enemy has no animations!', ephemeral: true });
@@ -162,18 +165,9 @@ export default class SpineCommand implements Command {
                 await interaction.deferReply();
 
                 const { page, browser, random } = await spineHelper.launchPage(type, id, null, null, animArr[0]);
-
                 page.on('console', async message => {
                     if (message.text() === 'done') {
-                        await new Promise(r => setTimeout(r, 1000));
-                        await browser.close();
-
-                        const gifFile = join((gameConsts.enemySpineIdOverride[id] ?? id) + random + '.gif');
-                        const gifPath = join(__dirname, '..', 'utils', 'spine', gifFile);
-                        const spineEmbed = await buildSpineEnemyMessage(gifFile, enemy, animArr, animArr[0], random);
-                        await interaction.followUp(spineEmbed);
-
-                        if (await fileExists(gifPath)) unlinkSync(gifPath);
+                        await enemyPageClose(browser, interaction, enemy, animArr, animArr[0], random);
                     }
                 }).on('pageerror', async ({ message }) => {
                     await browser.close();
@@ -198,28 +192,15 @@ export default class SpineCommand implements Command {
         switch (type) {
             case 'operator': {
                 const op = await getOperator({ query: id, include: ['id', 'data', 'skins'] });
-                const skinId = op.skins.find(s => s.battleSkin.skinOrPrefabId.toLowerCase() === skin || s.displaySkin.skinName?.toLowerCase() === skin)?.battleSkin.skinOrPrefabId.toLowerCase() ?? op.id;
-                const skelData = await spineHelper.loadSkel(type, skinId, set, direction);
-                const animArr = [];
-                for (const animation of skelData.animations) {
-                    if (animation.name === 'Default') continue;
-                    animArr.push(animation.name);
-                }
-
-                const { page, browser, random } = await spineHelper.launchPage(type, skinId, set, direction, anim);
+                const skelData = await spineHelper.loadSkel(type, skin, set, direction);
+                const animArr = getSkelAnims(skelData);
+                const { page, browser, random } = await spineHelper.launchPage(type, skin, set, direction, anim);
                 page.on('console', async message => {
                     if (message.text() === 'done') {
-                        await new Promise(r => setTimeout(r, 1000));
-                        await browser.close();
-
-                        const gifFile = join(skinId + random + '.gif');
-                        const gifPath = join(__dirname, '..', 'utils', 'spine', gifFile);
-                        const spineEmbed = await buildSpineOperatorMessage(gifFile, op, skin, set, direction, animArr, anim, random);
-                        await interaction.editReply(spineEmbed);
-
-                        if (await fileExists(gifPath)) unlinkSync(gifPath);
+                        await operatorPageClose(browser, interaction, op, skin, set, direction, animArr, anim, random)
                     }
-                }).on('pageerror', async ({ message }) => {
+                }
+                ).on('pageerror', async ({ message }) => {
                     await browser.close();
                     console.error(`Spine error for ${id}: ` + message);
                     return await interaction.editReply({ content: 'There was an error while generating the animation!' });
@@ -230,24 +211,11 @@ export default class SpineCommand implements Command {
             case 'enemy': {
                 const enemy = await getEnemy({ query: id, include: ['excel'] });
                 const skelData = await spineHelper.loadSkel(type, id, null, null);
-                const animArr = [];
-                for (const animation of skelData.animations) {
-                    if (animation.name === 'Default') continue;
-                    animArr.push(animation.name);
-                }
-
+                const animArr = getSkelAnims(skelData);
                 const { page, browser, random } = await spineHelper.launchPage(type, id, null, null, anim);
                 page.on('console', async message => {
                     if (message.text() === 'done') {
-                        await new Promise(r => setTimeout(r, 1000));
-                        await browser.close();
-
-                        const gifFile = join((gameConsts.enemySpineIdOverride[id] ?? id) + random + '.gif');
-                        const gifPath = join(__dirname, '..', 'utils', 'spine', gifFile);
-                        const spineEmbed = await buildSpineEnemyMessage(gifFile, enemy, animArr, anim, random);
-                        await interaction.editReply(spineEmbed);
-
-                        if (await fileExists(gifPath)) unlinkSync(gifPath);
+                        await enemyPageClose(browser, interaction, enemy, animArr, anim, random);
                     }
                 }).on('pageerror', async ({ message }) => {
                     await browser.close();
