@@ -184,7 +184,7 @@ export default class SpineCommand implements Command {
         const id = idArr[2];
         const skin = idArr[3];
         const set = idArr[4];
-        let direction = idArr[5];
+        const direction = idArr[5];
         const anim = interaction.values[0];
 
         await interaction.editReply({ content: `Generating \`${anim}\` gif...`, components: [] });
