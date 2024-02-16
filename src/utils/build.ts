@@ -164,18 +164,18 @@ export async function buildCcMessage(stage: CCStage, page: number): Promise<Base
         if (await urlExists(imagePath)) {
             embed.setImage(imagePath)
 
-            return { embeds: [embed], components: [buttonRow] };
+            return { content: '', embeds: [embed], components: [buttonRow] };
         }
         else {
             embed.addFields(buildStageDiagramFields(stageData));
 
-            return { embeds: [embed] };
+            return { content: '', embeds: [embed], components: [] };
         }
     }
     else {
         embed.addFields(buildStageDiagramFields(stageData));
 
-        return { embeds: [embed], components: [buttonRow] };
+        return { content: '', embeds: [embed], components: [buttonRow] };
     }
 }
 export async function buildCcSelectMessage(season: string): Promise<BaseMessageOptions> {
@@ -1093,28 +1093,28 @@ export async function buildStageMessage(stage: Stage, page: number): Promise<Bas
         if (await urlExists(imagePath)) {
             embed.setImage(imagePath)
 
-            return { embeds: [embed], components: [buttonRow] };
+            return { content: '', embeds: [embed], components: [buttonRow] };
         }
         else if (await urlExists(toughPath)) {
             embed.setImage(toughPath)
 
-            return { embeds: [embed], components: [buttonRow] };
+            return { content: '', embeds: [embed], components: [buttonRow] };
         }
         else if (await urlExists(newPath)) {
             embed.setImage(newPath)
 
-            return { embeds: [embed], components: [buttonRow] };
+            return { content: '', embeds: [embed], components: [buttonRow] };
         }
         else {
             embed.addFields(buildStageDiagramFields(stageData));
 
-            return { embeds: [embed] };
+            return { content: '', embeds: [embed], components: [] };
         }
     }
     else {
         embed.addFields(buildStageDiagramFields(stageData));
 
-        return { embeds: [embed], components: [buttonRow] };
+        return { content: '', embeds: [embed], components: [buttonRow] };
     }
 }
 export async function buildStageSelectMessage(stageArr: Stage[] | RogueStage[]): Promise<BaseMessageOptions> {
@@ -1204,7 +1204,7 @@ async function buildInfoArtMessage(op: Operator, type: number, page: number, lev
 async function buildInfoCostMessage(op: Operator, type: number, page: number, level: number): Promise<BaseMessageOptions> {
     const embed = await buildCostEmbed(op, page);
 
-    const costLabels = ['Elite', 'Skill', 'Mastery', 'Module'];
+    const costLabels = ['Promotions', 'Skills', 'Masteries', 'Modules'];
     const buttonRow = new ActionRowBuilder<ButtonBuilder>();
     for (let i = 0; i < 4; i++) {
         const button = new ButtonBuilder()
@@ -1508,7 +1508,7 @@ async function buildCostEmbed(op: Operator, page: number): Promise<EmbedBuilder>
     switch (page) {
         default:
         case 0: {
-            embed.setTitle('Elite Promotion Costs')
+            embed.setTitle('Promotion Costs')
                 .setThumbnail(paths.aceshipImageUrl + `/items/sprite_exp_card_t4.png`);
             for (let i = 0; i < op.data.phases.length; i++) {
                 if (op.data.phases[i].evolveCost === null) continue;
@@ -1532,9 +1532,9 @@ async function buildCostEmbed(op: Operator, page: number): Promise<EmbedBuilder>
                 .setThumbnail(paths.aceshipImageUrl + `/items/MTL_SKILL3.png`);
             for (let i = 0; i < op.data.skills.length; i++) {
                 embed.addFields({ name: '\u200B', value: `**Skill ${i + 1} - ${op.skills[i].levels[0].name}**` });
-                for (let i = 0; i < op.data.skills[i].levelUpCostCond.length; i++) {
-                    const description = await buildCostString(op.data.skills[i].levelUpCostCond[i].levelUpCost, itemArr);
-                    embed.addFields({ name: `Mastery ${i + 1}`, value: description, inline: true });
+                for (let j = 0; j < op.data.skills[i].levelUpCostCond.length; j++) {
+                    const description = await buildCostString(op.data.skills[i].levelUpCostCond[j].levelUpCost, itemArr);
+                    embed.addFields({ name: `Mastery ${j + 1}`, value: description, inline: true });
                 }
             }
             break;
