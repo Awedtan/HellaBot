@@ -27,16 +27,13 @@ export async function autocompleteDefine({ query, include = [] }: AutocompletePa
     const matchQuery = (define: Definition) => splitMatch(define.termName, query);
     const requiredInclude = ['termName'];
 
-    const definitionArr = await getAllDefinitions({ include: requiredInclude.concat(include) });
+    const definitionArr = await getAllDefinitions({ limit, include: requiredInclude.concat(include) });
     const filteredArr: Definition[] = [];
-    let i = 0;
     for (const define of definitionArr) {
-        if (i >= limit) break;
         if (filteredArr.includes(define) || !matchQuery(define) || !callback(define)) continue;
         filteredArr.push(define);
-        i++;
     }
-    const mappedArr = filteredArr.slice(0, limit).map(define => ({ name: define.termName, value: define.termName }));
+    const mappedArr = filteredArr.map(define => ({ name: define.termName, value: define.termName }));
 
     return mappedArr;
 }
@@ -44,14 +41,11 @@ export async function autocompleteEnemy({ query, include = [] }: AutocompletePar
     const matchQuery = (enemy: Enemy) => splitMatch(enemy.excel.name, query) || splitMatch(enemy.excel.enemyIndex, query);
     const requiredInclude = ['excel.name', 'excel.enemyIndex', 'excel.enemyId'];
 
-    const enemyArr = await getAllEnemies({ include: requiredInclude.concat(include) });
+    const enemyArr = await getAllEnemies({ limit, include: requiredInclude.concat(include) });
     const filteredArr: Enemy[] = [];
-    let i = 0;
     for (const enemy of enemyArr) {
-        if (i >= limit) break;
         if (filteredArr.includes(enemy) || !matchQuery(enemy) || !callback(enemy)) continue;
         filteredArr.push(enemy);
-        i++;
     }
     const mappedArr = filteredArr.map(enemy => ({ name: `${enemy.excel.enemyIndex} - ${enemy.excel.name}`, value: enemy.excel.enemyId }));
 
@@ -164,14 +158,11 @@ export async function autocompleteItem({ query, include = [] }: AutocompletePara
     const matchQuery = (item: Item) => splitMatch(item.data.name, query);
     const requiredInclude = ['data.name'];
 
-    const itemArr = await getAllItems({ include: requiredInclude.concat(include) });
+    const itemArr = await getAllItems({ limit, include: requiredInclude.concat(include) });
     const filteredArr: Item[] = [];
-    let i = 0;
     for (const item of itemArr) {
-        if (i >= limit) break;
         if (filteredArr.includes(item) || !matchQuery(item) || !callback(item)) continue;
         filteredArr.push(item);
-        i++;
     }
     const mappedArr = filteredArr.map(item => ({ name: item.data.name, value: item.data.name }));
 
@@ -181,14 +172,11 @@ export async function autocompleteOperator({ query, include = [] }: Autocomplete
     const matchQuery = (op: Operator) => splitMatch(op.data.name, query);
     const requiredInclude = ['data.name'];
 
-    const operatorArr = await getAllOperators({ include: requiredInclude.concat(include) });
+    const operatorArr = await getAllOperators({ limit, include: requiredInclude.concat(include) });
     const filteredArr: Operator[] = [];
-    let i = 0;
     for (const op of operatorArr) {
-        if (i >= limit) break;
         if (filteredArr.includes(op) || !matchQuery(op) || !callback(op)) continue;
         filteredArr.push(op);
-        i++;
     }
     const mappedArr = filteredArr.map(op => ({ name: op.data.name, value: op.data.name }));
 
@@ -198,15 +186,12 @@ export async function autocompleteStage({ query, include = [] }: AutocompletePar
     const matchQuery = (stage: Stage) => splitMatch(stage.excel.name, query) || splitMatch(stage.excel.code, query);
     const requiredInclude = ['excel.name', 'excel.code', 'excel.stageId'];
 
-    const stageArrArr = await getAllStageArrs({ include: requiredInclude.concat(include) });
+    const stageArrArr = await getAllStageArrs({ limit, include: requiredInclude.concat(include) });
     const filteredArr: Stage[] = [];
-    let i = 0;
     for (const stageArr of stageArrArr) {
         for (const stage of stageArr) {
-            if (i >= limit) break;
             if (filteredArr.some(s => s.excel.stageId === stage.excel.stageId) || !matchQuery(stage) || !callback(stage)) continue;
             filteredArr.push(stage);
-            i++;
         }
     }
     const mappedArr = filteredArr.map(stage => ({ name: `${stage.excel.code} - ${stage.excel.name}`, value: stage.excel.stageId }));
@@ -217,15 +202,12 @@ export async function autocompleteToughStage({ query, include = [] }: Autocomple
     const matchQuery = (stage: Stage) => splitMatch(stage.excel.name, query) || splitMatch(stage.excel.code, query);
     const requiredInclude = ['excel.name', 'excel.code', 'excel.stageId'];
 
-    const stageArrArr = await getAllToughStageArrs({ include: requiredInclude.concat(include) });
+    const stageArrArr = await getAllToughStageArrs({ limit, include: requiredInclude.concat(include) });
     const filteredArr: Stage[] = [];
-    let i = 0;
     for (const stageArr of stageArrArr) {
         for (const stage of stageArr) {
-            if (i >= limit) break;
             if (filteredArr.some(s => s.excel.stageId === stage.excel.stageId) || !matchQuery(stage) || !callback(stage)) continue;
             filteredArr.push(stage);
-            i++;
         }
     }
     const mappedArr = filteredArr.map(stage => ({ name: `${stage.excel.code} - ${stage.excel.name}`, value: stage.excel.stageId }));

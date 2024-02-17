@@ -6,164 +6,161 @@ export type SingleParams = {
     include?: string[];
     exclude?: string[];
 };
-export type AllParams = {
+type AllParams = {
+    limit?: number;
     include?: string[];
     exclude?: string[];
 };
 
-async function GET({ route, query, include, exclude }: { route: string, query: string, include?: string[], exclude?: string[] }) {
-    const apiUrl = paths.apiUrl;
-    let path = `${apiUrl}/${route}/${query}`
-    if (include) {
-        path += `?include=${include[0]}`;
-        for (let i = 1; i < include.length; i++) {
-            path += `&include=${include[i]}`;
+class PathBuilder {
+    private path: string;
+    private queried = false;
+    constructor() {
+        this.path = paths.apiUrl;
+    }
+    public route(route: string) {
+        this.path += `/${route}`;
+        return this;
+    }
+    private query(query: string) {
+        if (!this.queried) {
+            this.path += `?${query}`;
+            this.queried = true;
+        }
+        else {
+            this.path += `&${query}`;
         }
     }
-    else if (exclude) {
-        path += `?exclude=${exclude[0]}`;
-        for (let i = 1; i < exclude.length; i++) {
-            path += `&exclude=${exclude[i]}`;
-        }
+    public include(include: string[]) {
+        include?.forEach(inc => this.query(`include=${inc}`));
+        return this;
     }
+    public exclude(exclude: string[]) {
+        exclude?.forEach(exc => this.query(`exclude=${exc}`));
+        return this;
+    }
+    public limit(limit: number) {
+        this.query(`limit=${limit}`);
+        return this;
+    }
+    public toString() {
+        return this.path;
+    }
+}
+
+async function GET({ route, query, limit, include, exclude }: { route: string, query: string, limit?: number, include?: string[], exclude?: string[] }) {
+    const path = new PathBuilder().route(route).route(query).include(include).exclude(exclude).limit(limit).toString();
     const response = await fetch(path);
     if (!response.ok) return { value: null };
     return await response.json();
 }
+async function getSingleResource({ route, query, include, exclude }) {
+    return (await GET({ route, query, include, exclude })).value;
+}
+async function getMultiResource({ route, limit, include, exclude }) {
+    return (await GET({ route, query: '', limit, include, exclude })).map(datum => datum.value);
+}
 
 export async function getArchetype({ query, include, exclude }: SingleParams): Promise<string> {
-    const data = await GET({ route: 'archetype', query: query, include: include, exclude: exclude });
-    return data.value;
+    return await getSingleResource({ route: 'archetype', query, include, exclude });
 }
-export async function getAllArchetypes({ include, exclude }: AllParams = {}): Promise<string[]> {
-    const data = await GET({ route: 'archetype', query: '', include: include, exclude: exclude });
-    return data.map(datum => datum.value);
+export async function getAllArchetypes({ limit, include, exclude }: AllParams = {}): Promise<string[]> {
+    return await getMultiResource({ route: 'archetype', limit, include, exclude });
 }
 export async function getBase({ query, include, exclude }: SingleParams): Promise<Base> {
-    const data = await GET({ route: 'base', query: query, include: include, exclude: exclude });
-    return data.value;
+    return await getSingleResource({ route: 'base', query, include, exclude });
 }
-export async function getAllBases({ include, exclude }: AllParams = {}): Promise<Base[]> {
-    const data = await GET({ route: 'base', query: '', include: include, exclude: exclude });
-    return data.map(datum => datum.value);
+export async function getAllBases({ limit, include, exclude }: AllParams = {}): Promise<Base[]> {
+    return await getMultiResource({ route: 'base', limit, include, exclude });
 }
 export async function getCc({ query, include, exclude }: SingleParams): Promise<CCStage> {
-    const data = await GET({ route: 'cc', query: query, include: include, exclude: exclude });
-    return data.value;
+    return await getSingleResource({ route: 'cc', query, include, exclude });
 }
-export async function getAllCc({ include, exclude }: AllParams = {}): Promise<CCStage[]> {
-    const data = await GET({ route: 'cc', query: '', include: include, exclude: exclude });
-    return data.map(datum => datum.value);
+export async function getAllCc({ limit, include, exclude }: AllParams = {}): Promise<CCStage[]> {
+    return await getMultiResource({ route: 'cc', limit, include, exclude });
 }
 export async function getDefinition({ query, include, exclude }: SingleParams): Promise<Definition> {
-    const data = await GET({ route: 'define', query: query, include: include, exclude: exclude });
-    return data.value;
+    return await getSingleResource({ route: 'define', query, include, exclude });
 }
-export async function getAllDefinitions({ include, exclude }: AllParams = {}): Promise<Definition[]> {
-    const data = await GET({ route: 'define', query: '', include: include, exclude: exclude });
-    return data.map(datum => datum.value);
+export async function getAllDefinitions({ limit, include, exclude }: AllParams = {}): Promise<Definition[]> {
+    return await getMultiResource({ route: 'define', limit, include, exclude });
 }
 export async function getEnemy({ query, include, exclude }: SingleParams): Promise<Enemy> {
-    const data = await GET({ route: 'enemy', query: query, include: include, exclude: exclude });
-    return data.value;
+    return await getSingleResource({ route: 'enemy', query, include, exclude });
 }
-export async function getAllEnemies({ include, exclude }: AllParams = {}): Promise<Enemy[]> {
-    const data = await GET({ route: 'enemy', query: '', include: include, exclude: exclude });
-    return data.map(datum => datum.value);
+export async function getAllEnemies({ limit, include, exclude }: AllParams = {}): Promise<Enemy[]> {
+    return await getMultiResource({ route: 'enemy', limit, include, exclude });
 }
 export async function getEvent({ query, include, exclude }: SingleParams): Promise<GameEvent> {
-    const data = await GET({ route: 'event', query: query, include: include, exclude: exclude });
-    return data.value;
+    return await getSingleResource({ route: 'event', query, include, exclude });
 }
-export async function getAllEvents({ include, exclude }: AllParams = {}): Promise<GameEvent[]> {
-    const data = await GET({ route: 'event', query: '', include: include, exclude: exclude });
-    return data.map(datum => datum.value);
+export async function getAllEvents({ limit, include, exclude }: AllParams = {}): Promise<GameEvent[]> {
+    return await getMultiResource({ route: 'event', limit, include, exclude });
 }
 export async function getItem({ query, include, exclude }: SingleParams): Promise<Item> {
-    const data = await GET({ route: 'item', query: query, include: include, exclude: exclude });
-    return data.value;
+    return await getSingleResource({ route: 'item', query, include, exclude });
 }
-export async function getAllItems({ include, exclude }: AllParams = {}): Promise<Item[]> {
-    const data = await GET({ route: 'item', query: '', include: include, exclude: exclude });
-    return data.map(datum => datum.value);
+export async function getAllItems({ limit, include, exclude }: AllParams = {}): Promise<Item[]> {
+    return await getMultiResource({ route: 'item', limit, include, exclude });
 }
 export async function getModule({ query, include, exclude }: SingleParams): Promise<Module> {
-    const data = await GET({ route: 'module', query: query, include: include, exclude: exclude });
-    return data.value;
+    return await getSingleResource({ route: 'module', query, include, exclude });
 }
-export async function getAllModules({ include, exclude }: AllParams = {}): Promise<Module[]> {
-    const data = await GET({ route: 'module', query: '', include: include, exclude: exclude });
-    return data.map(datum => datum.value);
+export async function getAllModules({ limit, include, exclude }: AllParams = {}): Promise<Module[]> {
+    return await getMultiResource({ route: 'module', limit, include, exclude });
 }
 export async function getOperator({ query, include, exclude }: SingleParams): Promise<Operator> {
-    const data = await GET({ route: 'operator', query: query, include: include, exclude: exclude });
-    return data.value;
+    return await getSingleResource({ route: 'operator', query, include, exclude });
 }
-export async function getAllOperators({ include, exclude }: AllParams = {}): Promise<Operator[]> {
-    const data = await GET({ route: 'operator', query: '', include: include, exclude: exclude });
-    return data.map(datum => datum.value);
+export async function getAllOperators({ limit, include, exclude }: AllParams = {}): Promise<Operator[]> {
+    return await getMultiResource({ route: 'operator', limit, include, exclude });
 }
 export async function getParadox({ query, include, exclude }: SingleParams): Promise<Paradox> {
-    const data = await GET({ route: 'paradox', query: query, include: include, exclude: exclude });
-    return data.value;
+    return await getSingleResource({ route: 'paradox', query, include, exclude });
 }
-export async function getAllParadoxes({ include, exclude }: AllParams = {}): Promise<Paradox[]> {
-    const data = await GET({ route: 'paradox', query: '', include: include, exclude: exclude });
-    return data.map(datum => datum.value);
+export async function getAllParadoxes({ limit, include, exclude }: AllParams = {}): Promise<Paradox[]> {
+    return await getMultiResource({ route: 'paradox', limit, include, exclude });
 }
 export async function getRange({ query, include, exclude }: SingleParams): Promise<GridRange> {
-    const data = await GET({ route: 'range', query: query, include: include, exclude: exclude });
-    return data.value;
+    return await getSingleResource({ route: 'range', query, include, exclude });
 }
-export async function getAllRanges({ include, exclude }: AllParams = {}): Promise<GridRange[]> {
-    const data = await GET({ route: 'range', query: '', include: include, exclude: exclude });
-    return data.map(datum => datum.value);
+export async function getAllRanges({ limit, include, exclude }: AllParams = {}): Promise<GridRange[]> {
+    return await getMultiResource({ route: 'range', limit, include, exclude });
 }
 export async function getRogueTheme({ query, include, exclude }: SingleParams): Promise<RogueTheme> {
-    const data = await GET({ route: 'rogue', query: query, include: include, exclude: exclude });
-    return data.value;
+    return await getSingleResource({ route: 'rogue', query, include, exclude });
 }
-export async function getAllRogueThemes({ include, exclude }: AllParams = {}): Promise<RogueTheme[]> {
-    const data = await GET({ route: 'rogue', query: '', include: include, exclude: exclude });
-    return data.map(datum => datum.value);
+export async function getAllRogueThemes({ limit, include, exclude }: AllParams = {}): Promise<RogueTheme[]> {
+    return await getMultiResource({ route: 'rogue', limit, include, exclude });
 }
 export async function getSandboxAct({ query, include, exclude }: SingleParams): Promise<SandboxAct> {
-    const data = await GET({ route: 'sandbox', query: query, include: include, exclude: exclude });
-    return data.value;
+    return await getSingleResource({ route: 'sandbox', query, include, exclude });
 }
-export async function getAllSandboxActs({ include, exclude }: AllParams = {}): Promise<SandboxAct[]> {
-    const data = await GET({ route: 'sandbox', query: '', include: include, exclude: exclude });
-    return data.map(datum => datum.value);
+export async function getAllSandboxActs({ limit, include, exclude }: AllParams = {}): Promise<SandboxAct[]> {
+    return await getMultiResource({ route: 'sandbox', limit, include, exclude });
 }
 export async function getSkill({ query, include, exclude }: SingleParams): Promise<Skill> {
-    const data = await GET({ route: 'skill', query: query, include: include, exclude: exclude });
-    return data.value;
+    return await getSingleResource({ route: 'skill', query, include, exclude });
 }
-export async function getAllSkills({ include, exclude }: AllParams = {}): Promise<Skill[]> {
-    const data = await GET({ route: 'skill', query: '', include: include, exclude: exclude });
-    return data.map(datum => datum.value);
+export async function getAllSkills({ limit, include, exclude }: AllParams = {}): Promise<Skill[]> {
+    return await getMultiResource({ route: 'skill', limit, include, exclude });
 }
 export async function getSkinArr({ query, include, exclude }: SingleParams): Promise<Skin[]> {
-    const data = await GET({ route: 'skin', query: query, include: include, exclude: exclude });
-    return data.value;
+    return await getSingleResource({ route: 'skin', query, include, exclude });
 }
-export async function getAllSkinArrs({ include, exclude }: AllParams = {}): Promise<Skin[][]> {
-    const data = await GET({ route: 'skin', query: '', include: include, exclude: exclude });
-    return data.map(datum => datum.value);
+export async function getAllSkinArrs({ limit, include, exclude }: AllParams = {}): Promise<Skin[][]> {
+    return await getMultiResource({ route: 'skin', limit, include, exclude });
 }
 export async function getStageArr({ query, include, exclude }: SingleParams): Promise<Stage[]> {
-    const data = await GET({ route: 'stage', query: query, include: include, exclude: exclude });
-    return data.value;
+    return await getSingleResource({ route: 'stage', query, include, exclude });
 }
-export async function getAllStageArrs({ include, exclude }: AllParams = {}): Promise<Stage[][]> {
-    const data = await GET({ route: 'stage', query: '', include: include, exclude: exclude });
-    return data.map(datum => datum.value);
+export async function getAllStageArrs({ limit, include, exclude }: AllParams = {}): Promise<Stage[][]> {
+    return await getMultiResource({ route: 'stage', limit, include, exclude });
 }
 export async function getToughStageArr({ query, include, exclude }: SingleParams): Promise<Stage[]> {
-    const data = await GET({ route: 'toughstage', query: query.split('#').join(''), include: include, exclude: exclude });
-    return data.value;
+    query = query.split('#').join('');
+    return await getSingleResource({ route: 'toughstage', query, include, exclude });
 }
-export async function getAllToughStageArrs({ include, exclude }: AllParams = {}): Promise<Stage[][]> {
-    const data = await GET({ route: 'toughstage', query: '', include: include, exclude: exclude });
-    return data.map(datum => datum.value);
+export async function getAllToughStageArrs({ limit, include, exclude }: AllParams = {}): Promise<Stage[][]> {
+    return await getMultiResource({ route: 'toughstage', limit, include, exclude });
 }
