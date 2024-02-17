@@ -1,8 +1,6 @@
 import { ActivityType, Client, Collection, Events, GatewayIntentBits, REST, Routes } from 'discord.js';
 import { readdirSync } from 'fs';
 import { join } from 'path';
-import { getRogueTheme } from '../utils/api';
-import * as Build from '../utils/build';
 import { Command } from './Command';
 
 export default class HellaBot {
@@ -57,9 +55,10 @@ export default class HellaBot {
 
         this.client.on(Events.InteractionCreate, async interaction => {
             if (interaction.isChatInputCommand()) {
-
                 const command = this.commands.get(interaction.commandName);
+
                 if (!command) return console.error(`No command matching ${interaction.commandName} was found.`);
+
                 try {
                     await command.execute(interaction);
                 } catch (err) {
@@ -82,49 +81,19 @@ export default class HellaBot {
             }
             else if (interaction.isButton()) {
                 try {
+                    await interaction.deferUpdate();
                     const idArr: string[] = interaction.customId.split('ඞ');
-
-                    if (idArr[0] === 'rogue') {
-                        await interaction.deferUpdate();
-
-                        switch (idArr[1]) {
-                            case 'relic': {
-                                const theme = parseInt(idArr[2]);
-                                const index = parseInt(idArr[3]);
-
-                                const relicListEmbed = await Build.buildRogueRelicListMessage(theme, index);
-                                await interaction.editReply(relicListEmbed);
-
-                                break;
-                            }
-                            case 'stage': {
-                                const theme = parseInt(idArr[2]);
-                                const rogueTheme = await getRogueTheme({ query: theme.toString() })
-                                const stages = idArr[4] === 'true' ? rogueTheme.toughStageDict : rogueTheme.stageDict;
-                                const stage = stages[idArr[3]];
-                                const page = parseInt(idArr[5]);
-
-                                const stageEmbed = await Build.buildRogueStageMessage(theme, stage, page);
-                                await interaction.editReply(stageEmbed);
-
-                                break;
-                            }
-                        }
-                    }
-                    else {
-                        const command = this.commands.get(interaction.customId.split('ඞ')[0]);
-                        await interaction.deferUpdate();
-                        await command.buttonResponse(interaction, idArr);
-                    }
+                    const command = this.commands.get(idArr[0]);
+                    await command.buttonResponse(interaction, idArr);
                 } catch (err) {
                     console.error(err);
                 }
             }
             else if (interaction.isStringSelectMenu()) {
                 try {
-                    const idArr: string[] = interaction.customId.split('ඞ');
-                    const command = this.commands.get(interaction.customId.split('ඞ')[0]);
                     await interaction.deferUpdate();
+                    const idArr: string[] = interaction.customId.split('ඞ');
+                    const command = this.commands.get(idArr[0]);
                     await command.selectResponse(interaction, idArr);
                 } catch (err) {
                     console.error(err);

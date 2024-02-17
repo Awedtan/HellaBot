@@ -1,4 +1,4 @@
-import { AutocompleteInteraction, ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
+import { AutocompleteInteraction, ButtonInteraction, CacheType, ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
 import { Command } from '../structures/Command';
 import { getRogueTheme } from '../utils/api';
 import { autocompleteRogueRelic, autocompleteRogueStage, autocompleteRogueToughStage, autocompleteRogueVariation } from '../utils/autocomplete';
@@ -149,6 +149,32 @@ export default class IS3Command implements Command {
                 const variation = variationDict[name];
                 const variationEmbed = await buildRogueVariationMessage(variation);
                 return await interaction.editReply(variationEmbed);
+            }
+        }
+    }
+    async buttonResponse(interaction: ButtonInteraction<CacheType>, idArr: string[]) {
+        switch (idArr[1]) {
+            case 'relic': {
+                const index = parseInt(idArr[2]);
+
+                const relicListEmbed = await buildRogueRelicListMessage(innerIndex, index);
+                await interaction.editReply(relicListEmbed);
+
+                break;
+            }
+            case 'stage': {
+                const stages = (
+                    idArr[2] === 'true'
+                        ? (await getRogueTheme({ query: `${innerIndex}`, include: ['toughStageDict'] })).toughStageDict
+                        : (await getRogueTheme({ query: `${innerIndex}`, include: ['stageDict'] })).stageDict
+                );
+                const stage = stages[idArr[3]];
+                const page = parseInt(idArr[4]);
+
+                const stageEmbed = await buildRogueStageMessage(innerIndex, stage, page);
+                await interaction.editReply(stageEmbed);
+
+                break;
             }
         }
     }

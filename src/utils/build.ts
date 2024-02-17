@@ -831,11 +831,11 @@ export async function buildRogueRelicListMessage(theme: number, index: number): 
     }
 
     const prevButton = new ButtonBuilder()
-        .setCustomId(createCustomId('rogue', 'relic', theme, index - 1))
+        .setCustomId(createCustomId(`is${theme + 2}`, 'relic', index - 1))
         .setLabel('Previous')
         .setStyle(ButtonStyle.Primary);
     const nextButton = new ButtonBuilder()
-        .setCustomId(createCustomId('rogue', 'relic', theme, index + 1))
+        .setCustomId(createCustomId(`is${theme + 2}`, 'relic', index + 1))
         .setLabel('Next')
         .setStyle(ButtonStyle.Primary);
     const componentRow = new ActionRowBuilder<ButtonBuilder>().addComponents(prevButton, nextButton);
@@ -868,11 +868,11 @@ export async function buildRogueStageMessage(theme: number, stage: RogueStage, p
     embed.addFields(await buildStageEnemyFields(stageData));
 
     const imageButton = new ButtonBuilder()
-        .setCustomId(createCustomId('rogue', 'stage', theme, stageInfo.name, isChallenge, 0))
+        .setCustomId(createCustomId(`is${theme + 2}`, 'stage', isChallenge, stageInfo.name, 0))
         .setLabel('Preview')
         .setStyle(ButtonStyle.Primary);
     const diagramButton = new ButtonBuilder()
-        .setCustomId(createCustomId('rogue', 'stage', theme, stageInfo.name, isChallenge, 1))
+        .setCustomId(createCustomId(`is${theme + 2}`, 'stage', isChallenge, stageInfo.name, 1))
         .setLabel('Diagram')
         .setStyle(ButtonStyle.Primary);
     const buttonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(imageButton, diagramButton);
