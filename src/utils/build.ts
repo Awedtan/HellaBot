@@ -72,6 +72,8 @@ function insertBlackboard(text: string, blackboard: Blackboard[]) {
 
     const textArr = removeStyleTags(text.trim()).split(/{|}/);
 
+    if (textArr.join('') === '') return null;
+
     for (let i = 0; i < textArr.length; i++) {
         if (chunkIsVariable(textArr[i], blackboard)) {
             textArr[i] = formatVariable(textArr[i], blackboard);
@@ -1580,7 +1582,7 @@ async function buildModuleEmbed(op: Operator, page: number, level: number): Prom
         if (part.addOrOverrideTalentDataBundle.candidates) {
             const candidate = part.addOrOverrideTalentDataBundle.candidates[part.addOrOverrideTalentDataBundle.candidates.length - 1];
             talentName = candidate.name ?? talentName;
-            talentDescription = `${insertBlackboard(candidate.upgradeDescription, candidate.blackboard)}` ?? talentDescription;
+            talentDescription = insertBlackboard(candidate.upgradeDescription, candidate.blackboard) ?? talentDescription;
         }
     }
     embed.setDescription(description);
