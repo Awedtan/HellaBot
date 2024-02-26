@@ -19,22 +19,22 @@ git clone https://github.com/Awedtan/HellaBot.git
 ```sh
 cd HellaBot
 ```
-4. Install Node.js dependencies
+4. Install the project dependencies
 ```sh
 npm install
 ```
-5. Create a `config.json` file in the project folder, and copy your Discord bot token and application ID into it. You can put in an optional text channel ID, and the bot will log some messages to that channel.
+5. Create a `config.json` file in the project folder, and copy your Discord bot token and application ID into it.
 ```json
 {
     "token": "your_bot_token_here",
-    "clientId": "your_application_id_here",
-    "channelId": "your_text_channel_id_here"
+    "clientId": "your_application_id_here"
 }
 ```
 The project directory should now look something like this:
 ```sh
 HellaBot/
 ├── config.json
+├── LICENSE
 ├── node_modules/
 ├── package-lock.json
 ├── package.json
@@ -49,9 +49,9 @@ npm start
 
 ## Usage
 
-HellaBot supports slash commands. To use a command, just type: `/commandname`
+HellaBot uses slash commands. To use a command, just type: `/command`
 
-HellaBot uses event-driven interactions, so buttons and other interactables should (theoretically) never expire!
+All command interactions are event-driven, so buttons and other interactables will never expire!
 
 ### Command List
 
@@ -64,9 +64,10 @@ HellaBot uses event-driven interactions, so buttons and other interactables shou
 | define  | Show definitions for in-game terms                               |
 | enemy   | Show an enemy's information and abilities                        |
 | events  | Display a list of in-game events                                 |
+| help    | Show help info on commands                                       |
 | info    | Show an operator's information and attributes                    |
-| is2     | Show information on IS2 (Phantom & Crimson Solitaire)            |
-| is3     | Show information on IS3 (Mizuki & Caerula Arbor)                 |
+| is2     | Show information on IS2: Phantom & Crimson Solitaire             |
+| is3     | Show information on IS3: Mizuki & Caerula Arbor                  |
 | item    | Show information on an item                                      |
 | modules | Show an operator's modules                                       |
 | paradox | Show an operator's Paradox Simulation stage                      |
@@ -83,8 +84,6 @@ Huge thanks to [Kengxxiao/ArknightsGameData](https://github.com/Kengxxiao/Arknig
 Thanks to [MrJAwesome](https://www.youtube.com/@MrJAwesomeYT) for making extensive videos on Discord.js so I can preview features without going through all the drudgery myself.
 
 ## todo:
-
-add help command and better command descriptions
 
 local data support
 
