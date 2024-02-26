@@ -3,15 +3,17 @@ import { readdirSync } from 'fs';
 import { join } from 'path';
 import { Command } from './Command';
 
+export const globalCommands: { [key: string]: Command } = {};
+
 export default class HellaBot {
     client: Client;
     commands = new Collection<string, Command>();
 
-    public constructor(token: string, clientId: string, channelId: string, intents: { intents: GatewayIntentBits[] }) {
+    public constructor(token: string, clientId: string, intents: { intents: GatewayIntentBits[] }) {
         this.client = new Client(intents);
         this.client.login(token);
         this.loadCommands(token, clientId);
-        this.handleInteractions(channelId);
+        this.handleInteractions();
 
         this.client.once(Events.ClientReady, client => {
             console.log(`Ready! Logged in as ${client.user.tag}`);
@@ -24,6 +26,10 @@ export default class HellaBot {
         const commandFiles = readdirSync(join(__dirname, '..', 'commands')).filter(file => file.endsWith('.ts'));
         for (const file of commandFiles) {
             const command = new (await import(join(__dirname, '..', 'commands', file))).default();
+            globalCommands[command.data.name] = command; // MUST be loaded first for help command options to work
+        }
+        for (const file of commandFiles) {
+            const command = new (await import(join(__dirname, '..', 'commands', file))).default();
             this.commands.set(command.data.name, command);
             commandArr.push(command.data.toJSON());
         }
@@ -31,28 +37,7 @@ export default class HellaBot {
         await rest.put(Routes.applicationCommands(clientId), { body: commandArr },);
     }
 
-    async handleInteractions(channelId: string) {
-        if (channelId && channelId !== '') {
-            this.client.on(Events.GuildCreate, async guild => {
-                const channel = await this.client.channels.fetch(channelId);
-                const name = guild.name;
-                const memberCount = guild.memberCount;
-                const owner = (await this.client.users.fetch(guild.ownerId)).username;
-                if (channel.isTextBased()) {
-                    channel.send(`Joined server \`${name}\`, owned by \`${owner}\`, with \`${memberCount}\` members.`);
-                }
-            });
-            this.client.on(Events.GuildDelete, async guild => {
-                const channel = await this.client.channels.fetch(channelId);
-                const name = guild.name;
-                const memberCount = guild.memberCount;
-                const owner = (await this.client.users.fetch(guild.ownerId)).username;
-                if (channel.isTextBased()) {
-                    channel.send(`Left server \`${name}\`, owned by \`${owner}\`, with \`${memberCount}\` members.`);
-                }
-            });
-        }
-
+    async handleInteractions() {
         this.client.on(Events.InteractionCreate, async interaction => {
             if (interaction.isChatInputCommand()) {
                 const command = this.commands.get(interaction.commandName);

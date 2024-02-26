@@ -19,7 +19,12 @@ export default class RACommand implements Command {
                         .setRequired(true)
                         .setAutocomplete(true)
                 )
-        );
+        ) as SlashCommandBuilder;
+    name = 'RA';
+    description = ['Show the enemy list, image preview, and stage diagram for a Reclamation Algorithm stage.'];
+    usage = [
+        '`/ra [stage]`'
+    ];
     async autocomplete(interaction: AutocompleteInteraction) {
         const type = interaction.options.getSubcommand();
         const value = interaction.options.getFocused().toLowerCase();

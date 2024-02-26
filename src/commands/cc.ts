@@ -43,7 +43,17 @@ export default class CCCommand implements Command {
                             { name: '12', value: '12' }
                         )
                 )
-        );
+        ) as SlashCommandBuilder;
+    name = 'CC';
+    description = [
+        'Show information on a Contingency Contract stage.',
+        '`stage`: show the enemy list, image preview, and stage diagram for a stage.',
+        '`season`: show the list of stages for a season.'
+    ];
+    usage = [
+        '`/cc stage [stage]`',
+        '`/cc season [season]`'
+    ]
     async autocomplete(interaction: AutocompleteInteraction) {
         const value = interaction.options.getFocused().toLowerCase();
         const arr = await autocompleteCc(value);

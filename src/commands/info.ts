@@ -13,7 +13,12 @@ export default class InfoCommand implements Command {
                 .setDescription('Operator name')
                 .setRequired(true)
                 .setAutocomplete(true)
-        );
+        ) as SlashCommandBuilder;
+    name = 'Info';
+    description = ['Show information on an operator, including talents, potentials, stats, skills, and trust bonus. Further information on skills, modules, art, base skills, and material costs can be viewed by clicking their respective buttons.'];
+    usage = [
+        '`/info [operator]`'
+    ];
     async autocomplete(interaction: AutocompleteInteraction) {
         const value = interaction.options.getFocused().toLowerCase();
         const arr = await autocompleteOperator({ query: value });

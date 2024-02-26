@@ -7,13 +7,18 @@ import { buildDefineListMessage, buildDefineMessage } from '../utils/build';
 export default class DefineCommand implements Command {
     data = new SlashCommandBuilder()
         .setName('define')
-        .setDescription('Show definitions for in-game terms')
+        .setDescription('Show the definition for an in-game term')
         .addStringOption(option =>
             option.setName('term')
                 .setDescription('Term')
                 .setRequired(true)
                 .setAutocomplete(true)
-        );
+        ) as SlashCommandBuilder;
+    name = 'Define';
+    description = ['Show the definition for an in-game term.'];
+    usage = [
+        '`/define [term]`'
+    ];
     async autocomplete(interaction: AutocompleteInteraction) {
         const value = interaction.options.getFocused().toLowerCase();
         const arr = await autocompleteDefine({ query: value });

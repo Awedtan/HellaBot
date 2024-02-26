@@ -25,7 +25,13 @@ export default class CostCommand implements Command {
                     { name: 'masteries', value: '2' },
                     { name: 'modules', value: '3' }
                 )
-        );
+        ) as SlashCommandBuilder;
+    name = 'Costs';
+    description = ['Show the material cost for an operator\'s elite promotions, skill levels, mastery levels, and module levels.'];
+    usage = [
+        '`/costs [operator]`',
+        '`/costs [operator] [type]`'
+    ];
     async autocomplete(interaction: AutocompleteInteraction) {
         const value = interaction.options.getFocused().toLowerCase();
         const callback = (op: Operator) => gameConsts.rarity[op.data.rarity] > 1;

@@ -6,11 +6,12 @@ import { buildRogueRelicListMessage, buildRogueRelicMessage, buildRogueStageMess
 
 const innerIndex = 0;
 const outerIndex = innerIndex + 2;
+const outerName = 'Phantom & Crimson Solitaire';
 
 export default class IS2Command implements Command {
     data = new SlashCommandBuilder()
         .setName(`is${outerIndex}`)
-        .setDescription(`Show information on IS${outerIndex} (Phantom & Crimson Solitaire)`)
+        .setDescription(`Show information on IS${outerIndex} (${outerName})`)
         .addSubcommandGroup(subcommandGroup =>
             subcommandGroup.setName('stage')
                 .setDescription(`Show information on an IS${outerIndex} stage`)
@@ -54,7 +55,21 @@ export default class IS2Command implements Command {
                         .setRequired(true)
                         .setAutocomplete(true)
                 )
-        );
+        ) as SlashCommandBuilder;
+    name = 'IS2';
+    description = [
+        `Show information on IS${outerIndex}: ${outerName}.`,
+        '`stage normal`: show the enemy list, image preview, and stage diagram for a stage.',
+        '`stage emergency`: show the enemy list, image preview, and stage diagram for the emergency version of a stage.',
+        '`relic`: show the cost and description of a relic.',
+        '`variation`: show the description of a floor effect.'
+    ];
+    usage = [
+        `\`/is${outerIndex} stage normal [stage]\``,
+        `\`/is${outerIndex} stage emergency [stage]\``,
+        `\`/is${outerIndex} relic [relic]\``,
+        `\`/is${outerIndex} variation [effect]\``
+    ];
     async autocomplete(interaction: AutocompleteInteraction) {
         const type = interaction.options.getSubcommand();
         const value = interaction.options.getFocused().toLowerCase();

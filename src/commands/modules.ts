@@ -14,7 +14,12 @@ export default class ModuleCommand implements Command {
                 .setDescription('Operator name')
                 .setRequired(true)
                 .setAutocomplete(true)
-        );
+        ) as SlashCommandBuilder;
+    name = 'Modules';
+    description = ['Show information on an operator\'s modules, including descriptions, talents, and stats.'];
+    usage = [
+        '`/modules [operator]`'
+    ];
     async autocomplete(interaction: AutocompleteInteraction) {
         const value = interaction.options.getFocused().toLowerCase();
         const callback = (op: Operator) => op.modules.length !== 0;

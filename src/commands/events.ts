@@ -6,6 +6,11 @@ export default class EventCommand implements Command {
     data = new SlashCommandBuilder()
         .setName('events')
         .setDescription('Display a list of in-game events');
+    name = 'Events';
+    description = ['Display a list of in-game events, including start and end dates.'];
+    usage = [
+        '`/events`'
+    ];
     async execute(interaction: ChatInputCommandInteraction) {
         await interaction.deferReply();
 

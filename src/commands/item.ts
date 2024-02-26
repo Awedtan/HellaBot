@@ -13,7 +13,12 @@ export default class ItemCommand implements Command {
                 .setDescription('Item name')
                 .setRequired(true)
                 .setAutocomplete(true)
-        );
+        ) as SlashCommandBuilder;
+    name = 'Item';
+    description = ['Show an item\'s description, crafting recipe, and droppable stages.'];
+    usage = [
+        '`/item [item]`'
+    ];
     async autocomplete(interaction: AutocompleteInteraction) {
         const value = interaction.options.getFocused().toLowerCase();
         const arr = await autocompleteItem({ query: value });

@@ -20,7 +20,13 @@ export default class SkillCommand implements Command {
                 .setDescription('Skill #')
                 .setMinValue(1)
                 .setMaxValue(3)
-        );
+        ) as SlashCommandBuilder;
+    name = 'Skills';
+    description = ['Show information on an operator\'s skills, including SP type, SP cost, duration, effects, and range.'];
+    usage = [
+        '`/skills [operator]`',
+        '`/skills [operator] [index]`'
+    ];
     async autocomplete(interaction: AutocompleteInteraction) {
         const value = interaction.options.getFocused().toLowerCase();
         const callback = (op: Operator) => op.skills.length !== 0;

@@ -14,7 +14,12 @@ export default class ArtCommand implements Command {
                 .setDescription('Operator name')
                 .setRequired(true)
                 .setAutocomplete(true)
-        );
+        ) as SlashCommandBuilder;
+    name = 'Art';
+    description = ['Show an operator\'s artworks and artist(s), including default and alternate outfits.'];
+    usage = [
+        '`/art [operator]`'
+    ];
     async autocomplete(interaction: AutocompleteInteraction) {
         const value = interaction.options.getFocused().toLowerCase();
         const callback = (op: Operator) => op.skins.length !== 0;

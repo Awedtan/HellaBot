@@ -2,11 +2,12 @@ import { ActionRowBuilder, AttachmentBuilder, BaseMessageOptions, ButtonBuilder,
 import type { Blackboard, CCStage, Definition, Enemy, GameEvent, GridRange, Item, LevelUpCost, Operator, Paradox, RogueRelic, RogueStage, RogueVariation, SandboxStage, Stage, StageData } from "hella-types";
 import { join } from 'path';
 import { getAllDefinitions, getAllEnemies, getAllEvents, getAllItems, getAllOperators, getItem, getOperator, getRange, getRogueTheme, getStageArr, getToughStageArr } from './api';
-const fs = require('fs');
+import { promises, readdirSync } from 'fs';
+import { globalCommands } from '../structures/HellaBot';
 const { embedColour, paths, gameConsts } = require('../constants');
 
 const cleanFilename = (text: string) => text.split(/%|[#\+]|&|\[|\]/).join(''); // Remove special characters that discord doesn't like (%, #, etc.)
-export const fileExists = async (path: string) => !!(await fs.promises.stat(path).catch(e => false));
+export const fileExists = async (path: string) => !!(await promises.stat(path).catch(e => false));
 export const urlExists = async (url: string) => (await fetch(url)).status === 200;
 const createCustomId = (...args: (string | number | boolean)[]): string => args.join('ඞ').toLowerCase();
 function removeStyleTags(text: string) {
@@ -82,6 +83,7 @@ function insertBlackboard(text: string, blackboard: Blackboard[]) {
 
     return textArr.join('').split('-`').join('`-').split('+`').join('`+');
 }
+const blankChar = '\u200B';
 
 export async function buildArtMessage(op: Operator, page: number): Promise<BaseMessageOptions> {
     const embed = await buildArtEmbed(op, page);
@@ -425,6 +427,26 @@ export async function buildEventListMessage(index: number): Promise<BaseMessageO
     }
 
     return { embeds: [embed], components: [componentRow] };
+}
+export async function buildHelpMessage(name: string): Promise<BaseMessageOptions> {
+    const command = globalCommands[name];
+
+    const embed = new EmbedBuilder()
+        .setColor(embedColour)
+        .setTitle(command.name)
+        .setDescription(command.description.join('\n\n'))
+        .addFields({ name: 'Usage', value: command.usage.join('\n') });
+
+    return { embeds: [embed] };
+}
+export async function buildHelpListMessage(): Promise<BaseMessageOptions> {
+    const embed = new EmbedBuilder()
+        .setColor(embedColour)
+        .setTitle('Help Menu');
+    embed.addFields({ name: 'Command List', value: Object.values(globalCommands).map(command => `\`${command.data.name}\``).join(', ') });
+    embed.addFields({ name: blankChar, value: 'For more information on a specific command, use `/help [command]`' });
+
+    return { embeds: [embed] };
 }
 export async function buildInfoMessage(op: Operator, type: number, page: number, level: number): Promise<BaseMessageOptions> {
     const embedArr = [], fileArr = [], rowArr = [];
@@ -829,7 +851,7 @@ export async function buildRogueRelicListMessage(theme: number, index: number): 
         .setDescription(`**Page ${index + 1} of ${Math.ceil(descriptionArr.length / columnCount)}**`);
 
     for (let i = index * columnCount; i < index * columnCount + columnCount && i < descriptionArr.length; i++) {
-        embed.addFields({ name: '\u200B', value: descriptionArr[i].string, inline: true });
+        embed.addFields({ name: blankChar, value: descriptionArr[i].string, inline: true });
     }
 
     const prevButton = new ButtonBuilder()
@@ -908,7 +930,7 @@ export async function buildRogueStageMessage(theme: number, stage: RogueStage, p
     }
 }
 export async function buildRogueVariationMessage(variation: RogueVariation): Promise<BaseMessageOptions> {
-    const description = `${variation.desc}\n\n${variation.functionDesc}`;
+    const description = `${variation.functionDesc}\n\n${variation.desc}`;
 
     const embed = new EmbedBuilder()
         .setColor(embedColour)
@@ -1403,7 +1425,7 @@ async function buildOperatorEmbed(op: Operator): Promise<EmbedBuilder> {
     if (op.data.talents) {
         for (const talent of op.data.talents) {
             const candidate = talent.candidates[talent.candidates.length - 1];
-            embed.addFields({ name: candidate.name, value: removeStyleTags(candidate.description) });
+            embed.addFields({ name: `*${candidate.name}*`, value: removeStyleTags(candidate.description) });
         }
     }
     if (op.data.potentialRanks && op.data.potentialRanks.length > 0) {
@@ -1428,7 +1450,7 @@ async function buildOperatorEmbed(op: Operator): Promise<EmbedBuilder> {
     const redeploy = maxStats.respawnTime.toString();
     const atkInterval = maxStats.baseAttackTime.toString();
     embed.addFields(
-        { name: '\u200B', value: '**Max Stats**' },
+        { name: blankChar, value: '**Max Stats**' },
         { name: '❤️ HP', value: hp, inline: true },
         { name: '⚔️ ATK', value: atk, inline: true },
         { name: '🛡️ DEF', value: def, inline: true },
@@ -1524,6 +1546,8 @@ async function buildCostEmbed(op: Operator, page: number): Promise<EmbedBuilder>
             embed.setTitle('Skill Upgrade Costs')
                 .setThumbnail(paths.aceshipImageUrl + `/items/MTL_SKILL2.png`);
             for (let i = 0; i < op.data.allSkillLvlup.length; i++) {
+                if (op.data.allSkillLvlup[i].lvlUpCost === null) continue;
+
                 const description = await buildCostString(op.data.allSkillLvlup[i].lvlUpCost, itemArr);
                 embed.addFields({ name: `Level ${i + 2}`, value: description, inline: true });
             }
@@ -1533,8 +1557,10 @@ async function buildCostEmbed(op: Operator, page: number): Promise<EmbedBuilder>
             embed.setTitle('Skill Mastery Costs')
                 .setThumbnail(paths.aceshipImageUrl + `/items/MTL_SKILL3.png`);
             for (let i = 0; i < op.data.skills.length; i++) {
-                embed.addFields({ name: '\u200B', value: `**Skill ${i + 1} - ${op.skills[i].levels[0].name}**` });
+                embed.addFields({ name: blankChar, value: `**Skill ${i + 1} - ${op.skills[i].levels[0].name}**` });
                 for (let j = 0; j < op.data.skills[i].levelUpCostCond.length; j++) {
+                    if (op.data.skills[i].levelUpCostCond[j].levelUpCost === null) continue;
+
                     const description = await buildCostString(op.data.skills[i].levelUpCostCond[j].levelUpCost, itemArr);
                     embed.addFields({ name: `Mastery ${j + 1}`, value: description, inline: true });
                 }
@@ -1547,7 +1573,7 @@ async function buildCostEmbed(op: Operator, page: number): Promise<EmbedBuilder>
             for (const module of op.modules) {
                 if (module.info.uniEquipId.includes('uniequip_001')) continue;
 
-                embed.addFields({ name: '\u200B', value: `**${module.info.typeIcon.toUpperCase()} - ${module.info.uniEquipName}**` });
+                embed.addFields({ name: blankChar, value: `**${module.info.typeIcon.toUpperCase()} - ${module.info.uniEquipName}**` });
                 for (const key of Object.keys(module.info.itemCost)) {
                     const description = await buildCostString(module.info.itemCost[key], itemArr);
                     embed.addFields({ name: `Level ${key}`, value: description, inline: true });

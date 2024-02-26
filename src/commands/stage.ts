@@ -27,7 +27,17 @@ export default class StageCommand implements Command {
                         .setRequired(true)
                         .setAutocomplete(true)
                 )
-        );
+        ) as SlashCommandBuilder;
+    name = 'Stage';
+    description = [
+        'Show the enemy list, image preview, and stage diagram for a stage.',
+        '`normal`: show the enemy list, image preview, and stage diagram for a stage.',
+        '`challenge`: show the enemy list, image preview, and stage diagram for the challenge version of a stage.',
+    ];
+    usage = [
+        '`/stage normal [stage]`',
+        '`/stage challenge [stage]`'
+    ];
     async autocomplete(interaction: AutocompleteInteraction) {
         const type = interaction.options.getSubcommand();
         const value = interaction.options.getFocused().toLowerCase();

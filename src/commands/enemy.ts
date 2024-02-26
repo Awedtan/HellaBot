@@ -13,7 +13,12 @@ export default class EnemyCommand implements Command {
                 .setDescription('Enemy name')
                 .setRequired(true)
                 .setAutocomplete(true)
-        );
+        ) as SlashCommandBuilder;
+    name = 'Enemy';
+    description = ['Show an enemy\'s description, abilities, stats, and immunities.'];
+    usage = [
+        '`/enemy [enemy]`'
+    ];
     async autocomplete(interaction: AutocompleteInteraction) {
         const value = interaction.options.getFocused().toLowerCase();
         const arr = await autocompleteEnemy({ query: value });

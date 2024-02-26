@@ -76,7 +76,18 @@ export default class SpineCommand implements Command {
                         .setRequired(true)
                         .setAutocomplete(true)
                 )
-        );
+        ) as SlashCommandBuilder;
+    name = 'Spine';
+    description = [
+        'Render an operator or enemy\'s spine animations and send it as a GIF.',
+        '`operator`: render an operator\'s spine animations. The `[skin]`, `[set]`, and `[direction]` fields are all optional. If not specified, `default`, `battle`, and `front` will be used.',
+        '`enemy`: render an enemy\'s spine animations.'
+    ];
+    usage = [
+        '`/spine operator [operator]`',
+        '`/spine operator [operator] [skin] [set] [direction]`',
+        '`/spine enemy [enemy]`'
+    ];
     async autocomplete(interaction: AutocompleteInteraction) {
         const type = interaction.options.getSubcommand();
         switch (type) {

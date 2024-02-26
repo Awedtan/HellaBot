@@ -14,7 +14,12 @@ export default class ParadoxCommand implements Command {
                 .setDescription('Operator name')
                 .setRequired(true)
                 .setAutocomplete(true)
-        );
+        ) as SlashCommandBuilder;
+    name = 'Paradox';
+    description = ['Show the enemy list, image preview, and stage diagram for an operator\'s Paradox Simulation stage.'];
+    usage = [
+        '`/paradox [operator]`'
+    ];
     async autocomplete(interaction: AutocompleteInteraction) {
         const value = interaction.options.getFocused().toLowerCase();
         const callback = (op: Operator) => !!op.paradox; // !! gets truth value

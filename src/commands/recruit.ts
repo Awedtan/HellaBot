@@ -6,6 +6,11 @@ export default class RecruitCommand implements Command {
     data = new SlashCommandBuilder()
         .setName('recruit')
         .setDescription('Find recruitable operators from recruitment tags');
+    name = 'Recruit';
+    description = ['Show an interactive recruitment tag calculator. Use the buttons to select/deselect their respective tags.'];
+    usage = [
+        '`/recruit`'
+    ];
     async execute(interaction: ChatInputCommandInteraction) {
         await interaction.deferReply();
 
