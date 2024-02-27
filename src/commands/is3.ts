@@ -56,7 +56,7 @@ export default class IS3Command implements Command {
                         .setAutocomplete(true)
                 )
         ) as SlashCommandBuilder;
-    name = 'IS3';
+    name = `IS${outerIndex}`;
     description = [
         `Show information on IS${outerIndex}: ${outerName}.`,
         '`stage normal`: show the enemy list, image preview, and stage diagram for a stage.',

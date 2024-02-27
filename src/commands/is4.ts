@@ -4,11 +4,11 @@ import { getRogueTheme } from '../utils/api';
 import { autocompleteRogueRelic, autocompleteRogueStage, autocompleteRogueToughStage, autocompleteRogueVariation } from '../utils/autocomplete';
 import { buildRogueRelicListMessage, buildRogueRelicMessage, buildRogueStageMessage, buildRogueVariationListMessage, buildRogueVariationMessage } from '../utils/build';
 
-const innerIndex = 0;
+const innerIndex = 2;
 const outerIndex = innerIndex + 2;
-const outerName = 'Phantom & Crimson Solitaire';
+const outerName = 'Expeditioner\'s Jǫklumarkar';
 
-export default class IS2Command implements Command {
+export default class IS4Command implements Command {
     data = new SlashCommandBuilder()
         .setName(`is${outerIndex}`)
         .setDescription(`Show information on IS${outerIndex} (${outerName})`)
