@@ -830,20 +830,69 @@ export async function buildRogueRelicListMessage(theme: number, index: number): 
     const rogueTheme = await getRogueTheme({ query: theme.toString(), include: ['name', 'relicDict'] });
     const descriptionLengthLimit = 24;
     const columnCount = 2;
+    let descIndex = -1;
+    const descriptionArr = [], ticketArr = [], toolArr = [], totemArr = [], relicArr = [], defaultArr = [];
 
-    let descriptionArr = [], i = 0;
-    for (const relic of Object.values(rogueTheme.relicDict)) {
-        if (!descriptionArr[i]) {
-            descriptionArr[i] = { string: '', length: 0 };
-        }
-        if (descriptionArr[i].length > descriptionLengthLimit) {
-            i++;
-            descriptionArr[i] = { string: '', length: 0 };
+    const pushDescription = (string: string) => {
+        if (!descriptionArr[descIndex]) {
+            descriptionArr[descIndex] = { string: '', length: 0 };
         }
 
-        descriptionArr[i].string += `${relic.name}\n`
-        descriptionArr[i].length++;
+        descriptionArr[descIndex].string += string;
+        descriptionArr[descIndex].length++;
+
+        if (descriptionArr[descIndex].length > descriptionLengthLimit) {
+            descIndex++;
+            descriptionArr[descIndex] = { string: '', length: 0 };
+        }
     }
+
+    for (const relic of Object.values(rogueTheme.relicDict)) {
+        switch (relic.type) {
+            case 'RECRUIT_TICKET':
+            case 'UPGRADE_TICKET':
+                ticketArr.push(relic.name);
+                break;
+            case 'ACTIVE_TOOL':
+                toolArr.push(relic.name);
+                break;
+            case 'TOTEM':
+                totemArr.push(relic.name);
+                break;
+            case 'RELIC':
+                relicArr.push(relic.name);
+                break;
+            default:
+                defaultArr.push(relic.name);
+                break;
+        }
+    }
+
+    if (ticketArr.length > 0) {
+        descIndex++;
+        pushDescription('**Operator Vouchers**\n\n');
+    }
+    ticketArr.forEach(relic => pushDescription(`${relic}\n`));
+    if (toolArr.length > 0) {
+        descIndex++;
+        pushDescription('**Tactical Props**\n\n');
+    }
+    toolArr.forEach(relic => pushDescription(`${relic}\n`));
+    if (totemArr.length > 0) {
+        descIndex++;
+        pushDescription('**Foldartals**\n\n');
+    }
+    totemArr.forEach(relic => pushDescription(`${relic}\n`));
+    if (relicArr.length > 0) {
+        descIndex++;
+        pushDescription('**Relics**\n\n');
+    }
+    relicArr.forEach(relic => pushDescription(`${relic}\n`));
+    if (defaultArr.length > 0) {
+        descIndex++;
+        pushDescription('**Miscellaneous**\n\n');
+    }
+    defaultArr.forEach(relic => pushDescription(`${relic}\n`));
 
     const embed = new EmbedBuilder()
         .setColor(embedColour)
