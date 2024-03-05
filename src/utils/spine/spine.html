@@ -1,5 +1,5 @@
 <html>
-<script src="./spine.js"></script>
+<script src="./getSpineUrl.js"></script>
 <script src="./build/gif.js"></script>
 <script src="./build/spine-webgl.js"></script>
 <script src="https://code.jquery.com/jquery-3.1.0.min.js"></script>
@@ -108,7 +108,7 @@
         canvas = document.getElementById("canvas");
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
-        var config = { alpha: false };
+        var config = { alpha: false, willReadFrequently: true };
         gl = canvas.getContext("webgl", config) || canvas.getContext("experimental-webgl", config);
         if (!gl) {
             alert('WebGL is unavailable.');
@@ -188,7 +188,7 @@
                             link.click();
                             console.log('done');
                         });
-                        console.log('renderin')
+                        console.log('renderin');
                         gif.render();
                     });
                 }

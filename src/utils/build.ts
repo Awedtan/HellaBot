@@ -334,6 +334,12 @@ export async function buildEnemyMessage(enemy: Enemy, level: number): Promise<Ba
         baseData.attributes.massLevel.m_defined ? baseData.attributes.massLevel.m_value.toString() : '0';
     const life = enemyData.lifePointReduce.m_defined ? enemyData.lifePointReduce.m_value.toString() :
         baseData.lifePointReduce.m_defined ? baseData.lifePointReduce.m_value.toString() : '1';
+    const elemDamageRes = enemyData.attributes.epDamageResistance.m_defined ? enemyData.attributes.epDamageResistance.m_value.toString() :
+        baseData.attributes.epDamageResistance.m_defined ? baseData.attributes.epDamageResistance.m_value.toString() : '0';
+    const elemRes = enemyData.attributes.epResistance.m_defined ? enemyData.attributes.epResistance.m_value.toString() :
+        baseData.attributes.epResistance.m_defined ? baseData.attributes.epResistance.m_value.toString() : '0';
+    const move = enemyData.attributes.moveSpeed.m_defined ? enemyData.attributes.moveSpeed.m_value.toString() :
+        baseData.attributes.moveSpeed.m_defined ? baseData.attributes.moveSpeed.m_value.toString() : '0';
     const silence = enemyData.attributes.silenceImmune.m_defined ? enemyData.attributes.silenceImmune.m_value :
         baseData.attributes.silenceImmune.m_defined ? baseData.attributes.silenceImmune.m_value.toString() : false;
     const stun = enemyData.attributes.stunImmune.m_defined ? enemyData.attributes.stunImmune.m_value :
@@ -357,6 +363,9 @@ export async function buildEnemyMessage(enemy: Enemy, level: number): Promise<Ba
             { name: '✨ RES', value: res, inline: true },
             { name: '⚖️ Weight', value: weight, inline: true },
             { name: '💔 Life Points', value: life, inline: true },
+            { name: '❤️‍🔥  Elemental RES', value: elemDamageRes, inline: true },
+            { name: '🧿 Elemental Resistance', value: elemRes, inline: true },
+            { name: '👟 Move Speed', value: move, inline: true, },
             { name: 'Silence', value: silence ? '❌' : '✅', inline: true },
             { name: 'Stun', value: stun ? '❌' : '✅', inline: true },
             { name: 'Sleep', value: sleep ? '❌' : '✅', inline: true },
