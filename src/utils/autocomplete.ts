@@ -1,8 +1,11 @@
 import { CCStage, Definition, Enemy, Item, Operator, RogueRelic, RogueStage, RogueVariation, SandboxStage, Skin, Stage } from "hella-types";
-import { SingleParams, getAllDefinitions, getAllEnemies, getAllItems, getAllOperators, getAllStageArrs, getAllToughStageArrs, getRogueTheme, getSandboxAct, getSkinArr } from "./api";
+import { getAllDefinitions, getAllEnemies, getAllItems, getAllOperators, getAllStageArrs, getAllToughStageArrs, getRogueTheme, getSandboxAct, getSkinArr, matchDefinition, matchEnemy, matchItem, matchOperator, matchStageArr } from "./api";
 const { gameConsts } = require('../constants');
 
-type AutocompleteParams = Omit<SingleParams, 'exclude'>;
+type AutocompleteParams = {
+    query: string;
+    include?: string[];
+};
 const limit = 6;
 const splitMatch = (str: string, query: string) => str.toLowerCase().includes(query.toLowerCase()) || str.toLowerCase().split('\'').join('').includes(query.toLowerCase());
 
@@ -24,15 +27,14 @@ export async function autocompleteCc(query: string, callback: (e: CCStage['const
     return mappedArr;
 }
 export async function autocompleteDefine({ query, include = [] }: AutocompleteParams, callback: (e: Definition) => boolean = () => true) {
-    const matchQuery = (define: Definition) => splitMatch(define.termName, query);
     const requiredInclude = ['termName'];
 
-    const definitionArr = await getAllDefinitions({ include: requiredInclude.concat(include) });
+    const definitionArr = await matchDefinition({ query, include: requiredInclude.concat(include) });
     const filteredArr: Definition[] = [];
     let i = 0;
     for (const define of definitionArr) {
         if (i >= limit) break;
-        if (filteredArr.includes(define) || !matchQuery(define) || !callback(define)) continue;
+        if (filteredArr.includes(define) || !callback(define)) continue;
         filteredArr.push(define);
         i++;
     }
@@ -41,15 +43,14 @@ export async function autocompleteDefine({ query, include = [] }: AutocompletePa
     return mappedArr;
 }
 export async function autocompleteEnemy({ query, include = [] }: AutocompleteParams, callback: (e: Enemy) => boolean = () => true) {
-    const matchQuery = (enemy: Enemy) => splitMatch(enemy.excel.name, query) || splitMatch(enemy.excel.enemyIndex, query);
     const requiredInclude = ['excel.name', 'excel.enemyIndex', 'excel.enemyId'];
 
-    const enemyArr = await getAllEnemies({ include: requiredInclude.concat(include) });
+    const enemyArr = await matchEnemy({ query, include: requiredInclude.concat(include) });
     const filteredArr: Enemy[] = [];
     let i = 0;
     for (const enemy of enemyArr) {
         if (i >= limit) break;
-        if (filteredArr.includes(enemy) || !matchQuery(enemy) || !callback(enemy)) continue;
+        if (filteredArr.includes(enemy) || !callback(enemy)) continue;
         filteredArr.push(enemy);
         i++;
     }
@@ -161,15 +162,14 @@ export async function autocompleteSkin(op: Operator, { query, include = [] }: Au
     return mappedArr;
 }
 export async function autocompleteItem({ query, include = [] }: AutocompleteParams, callback: (e: Item) => boolean = () => true) {
-    const matchQuery = (item: Item) => splitMatch(item.data.name, query);
     const requiredInclude = ['data.name'];
 
-    const itemArr = await getAllItems({ include: requiredInclude.concat(include) });
+    const itemArr = await matchItem({ query, include: requiredInclude.concat(include) });
     const filteredArr: Item[] = [];
     let i = 0;
     for (const item of itemArr) {
         if (i >= limit) break;
-        if (filteredArr.includes(item) || !matchQuery(item) || !callback(item)) continue;
+        if (filteredArr.includes(item) || !callback(item)) continue;
         filteredArr.push(item);
         i++;
     }
@@ -178,15 +178,14 @@ export async function autocompleteItem({ query, include = [] }: AutocompletePara
     return mappedArr;
 }
 export async function autocompleteOperator({ query, include = [] }: AutocompleteParams, callback: (e: Operator) => Boolean = () => true) {
-    const matchQuery = (op: Operator) => splitMatch(op.data.name, query);
     const requiredInclude = ['data.name'];
 
-    const operatorArr = await getAllOperators({ include: requiredInclude.concat(include) });
+    const operatorArr = await matchOperator({ query, include: requiredInclude.concat(include) });
     const filteredArr: Operator[] = [];
     let i = 0;
     for (const op of operatorArr) {
         if (i >= limit) break;
-        if (filteredArr.includes(op) || !matchQuery(op) || !callback(op)) continue;
+        if (filteredArr.includes(op) || !callback(op)) continue;
         filteredArr.push(op);
         i++;
     }
@@ -195,16 +194,15 @@ export async function autocompleteOperator({ query, include = [] }: Autocomplete
     return mappedArr;
 }
 export async function autocompleteStage({ query, include = [] }: AutocompleteParams, callback: (e: Stage) => boolean = () => true) {
-    const matchQuery = (stage: Stage) => splitMatch(stage.excel.name, query) || splitMatch(stage.excel.code, query);
     const requiredInclude = ['excel.name', 'excel.code', 'excel.stageId'];
 
-    const stageArrArr = await getAllStageArrs({ include: requiredInclude.concat(include) });
+    const stageArrArr = await matchStageArr({ query, include: requiredInclude.concat(include) });
     const filteredArr: Stage[] = [];
     let i = 0;
     for (const stageArr of stageArrArr) {
         for (const stage of stageArr) {
             if (i >= limit) break;
-            if (filteredArr.some(s => s.excel.stageId === stage.excel.stageId) || !matchQuery(stage) || !callback(stage)) continue;
+            if (filteredArr.some(s => s.excel.stageId === stage.excel.stageId) || !callback(stage)) continue;
             filteredArr.push(stage);
             i++;
         }
@@ -214,16 +212,15 @@ export async function autocompleteStage({ query, include = [] }: AutocompletePar
     return mappedArr;
 }
 export async function autocompleteToughStage({ query, include = [] }: AutocompleteParams, callback: (e: Stage) => boolean = () => true) {
-    const matchQuery = (stage: Stage) => splitMatch(stage.excel.name, query) || splitMatch(stage.excel.code, query);
     const requiredInclude = ['excel.name', 'excel.code', 'excel.stageId'];
 
-    const stageArrArr = await getAllToughStageArrs({ include: requiredInclude.concat(include) });
+    const stageArrArr = await matchStageArr({ query, include: requiredInclude.concat(include) });
     const filteredArr: Stage[] = [];
     let i = 0;
     for (const stageArr of stageArrArr) {
         for (const stage of stageArr) {
             if (i >= limit) break;
-            if (filteredArr.some(s => s.excel.stageId === stage.excel.stageId) || !matchQuery(stage) || !callback(stage)) continue;
+            if (filteredArr.some(s => s.excel.stageId === stage.excel.stageId) || !callback(stage)) continue;
             filteredArr.push(stage);
             i++;
         }
