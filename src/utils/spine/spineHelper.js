@@ -32,7 +32,7 @@ async function launchPage(type, id, set, direction, animation) {
     if (direction) options += `&direction=${direction}`;
     if (animation) options += `&animation=${animation}`;
 
-    const browser = await puppeteer.launch({ headless: false, args: ["--no-sandbox", "--disabled-setupid-sandbox"] });
+    const browser = await puppeteer.launch({ headless: 'new', args: ["--no-sandbox", "--disabled-setupid-sandbox"] });
     const page = await browser.newPage();
     await page.setViewport({ width: 200, height: 200 });
 
