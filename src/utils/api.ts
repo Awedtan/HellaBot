@@ -1,4 +1,4 @@
-import { Base, CCStage, Definition, Enemy, GameEvent, GridRange, Item, Module, Operator, Paradox, RogueTheme, SandboxAct, Skill, Skin, Stage } from "hella-types";
+import { Base, CCStage, Definition, Enemy, GameEvent, GridRange, Item, Module, Operator, Paradox, RogueStage, RogueTheme, SandboxAct, Skill, Skin, Stage } from "hella-types";
 const { paths } = require('../constants.json');
 
 type SingleParams = {
@@ -179,6 +179,24 @@ export async function getAllRogueThemes({ limit, include, exclude }: AllParams =
 }
 export async function matchRogueTheme({ query, limit, include, exclude }: MatchParams): Promise<RogueTheme[]> {
     return await getMatch({ route: 'rogue', query, limit, include, exclude });
+}
+export async function getRogueStage(theme: number, { query, include, exclude }: SingleParams): Promise<RogueStage> {
+    return await getSingle({ route: `roguestage/${theme}`, query, include, exclude });
+}
+export async function getAllRogueStages(theme: number, { limit, include, exclude }: AllParams = {}): Promise<RogueStage[]> {
+    return await getMulti({ route: `roguestage/${theme}`, limit, include, exclude });
+}
+export async function matchRogueStage(theme: number, { query, limit, include, exclude }: MatchParams): Promise<RogueStage[]> {
+    return await getMatch({ route: `roguestage/${theme}`, query, limit, include, exclude });
+}
+export async function getRogueToughStage(theme: number, { query, include, exclude }: SingleParams): Promise<RogueStage> {
+    return await getSingle({ route: `roguetoughstage/${theme}`, query, include, exclude });
+}
+export async function getAllRogueToughStages(theme: number, { limit, include, exclude }: AllParams = {}): Promise<RogueStage[]> {
+    return await getMulti({ route: `roguetoughstage/${theme}`, limit, include, exclude });
+}
+export async function matchRogueToughStage(theme: number, { query, limit, include, exclude }: MatchParams): Promise<RogueStage[]> {
+    return await getMatch({ route: `roguetoughstage/${theme}`, query, limit, include, exclude });
 }
 export async function getSandboxAct({ query, include, exclude }: SingleParams): Promise<SandboxAct> {
     return await getSingle({ route: 'sandbox', query, include, exclude });
