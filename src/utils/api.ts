@@ -69,7 +69,7 @@ async function getMulti({ route, limit, include, exclude }) {
 async function getMatch({ route, query, limit, include, exclude }) {
     if (query === '') return [];
     const test = (await GET({ route: `${route}/match`, query, limit, include, exclude }));
-    return test.map(datum => datum.value);
+    return test?.map(datum => datum.value);
 }
 
 export async function getArchetype({ query, include, exclude }: SingleParams): Promise<string> {
