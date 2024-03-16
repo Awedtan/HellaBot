@@ -73,7 +73,9 @@ async function getMatch({ route, query, limit, include, exclude }) {
 }
 
 export async function getArchetype({ query, include, exclude }: SingleParams): Promise<string> {
-    return await getSingle({ route: 'archetype', query, include, exclude });
+    const res = await getSingle({ route: 'archetype', query, include, exclude });
+    if(res) return res;
+    return await getSingle({ route: 'cn/archetype', query, include, exclude });
 }
 export async function getAllArchetypes({ limit, include, exclude }: AllParams = {}): Promise<string[]> {
     return await getMulti({ route: 'archetype', limit, include, exclude });
@@ -145,7 +147,9 @@ export async function matchModule({ query, limit, include, exclude }: MatchParam
     return await getMatch({ route: 'module', query, limit, include, exclude });
 }
 export async function getOperator({ query, include, exclude }: SingleParams): Promise<Operator> {
-    return await getSingle({ route: 'operator', query, include, exclude });
+    const res = await getSingle({ route: 'operator', query, include, exclude });
+    if (res) return res;
+    return await getSingle({ route: 'cn/operator', query, include, exclude });
 }
 export async function getAllOperators({ limit, include, exclude }: AllParams = {}): Promise<Operator[]> {
     return await getMulti({ route: 'operator', limit, include, exclude });

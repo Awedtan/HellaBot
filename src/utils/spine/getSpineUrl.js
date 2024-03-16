@@ -7,6 +7,7 @@ async function getSpineUrl(type, id, set, direction) {
         "enemy_1043_zomsbr_2": "enemy_1043_zomsabr_2'"
     };
 
+    let spinePath = null;
     id = encodeURIComponent(id);
 
     if (type === 'operator') {

@@ -100,7 +100,7 @@ export async function buildArtMessage(op: Operator, page: number): Promise<BaseM
             .setStyle(ButtonStyle.Primary);
         if (i === page)
             button.setDisabled(true);
-        if (skinGroup === 'Default Outfit') {
+        if (op.skins[i].battleSkin.skinOrPrefabId === 'DefaultSkin') {
             rowOne.addComponents(button);
             components[0] = rowOne;
         }
@@ -1271,7 +1271,7 @@ async function buildInfoArtMessage(op: Operator, type: number, page: number, lev
         if (i === page)
             button.setCustomId(`info_page_current`)
                 .setDisabled(true);
-        if (skinGroup === 'Default Outfit') {
+        if (op.skins[i].battleSkin.skinOrPrefabId === 'DefaultSkin') {
             rowOne.addComponents(button);
             components[0] = rowOne;
         }
