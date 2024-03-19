@@ -30,8 +30,10 @@ export default class RecruitCommand implements Command {
         const select = idArr[3] === 'select';
         const snowflakes = idArr.slice(4);
 
-        const recruitEmbed = await buildRecruitMessage(value, tag, select, snowflakes);
         const placeholders = await Promise.all(snowflakes.map(async x => await interaction.channel.messages.fetch(x)));
+        const recruitEmbed = tag === 'delete'
+            ? await buildRecruitMessage(1, '', true, snowflakes)
+            : await buildRecruitMessage(value, tag, select, snowflakes);
         for (let i = 0; i < placeholders.length; i++) {
             await placeholders[i].edit(recruitEmbed[i]);
         }

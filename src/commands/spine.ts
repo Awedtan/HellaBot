@@ -1,14 +1,16 @@
 import { AutocompleteInteraction, CacheType, ChatInputCommandInteraction, SlashCommandBuilder, StringSelectMenuInteraction } from 'discord.js';
-import { unlinkSync } from 'fs';
+import { promises, unlinkSync } from 'fs';
 import { join } from 'path';
 import { Command } from '../structures/Command';
 import { getEnemy, getOperator } from '../utils/api';
 import { autocompleteEnemy, autocompleteOperator, autocompleteSkin } from '../utils/autocomplete';
-import { buildSpineEnemyMessage, buildSpineOperatorMessage, fileExists } from '../utils/build';
+import { buildSpineEnemyMessage, buildSpineOperatorMessage } from '../utils/build';
 import * as spineHelper from '../utils/spine/spineHelper';
 const { gameConsts } = require('../constants');
 
+const fileExists = async (path: string) => !!(await promises.stat(path).catch(e => false));
 const getSkelAnims = skelData => skelData.animations.filter(animation => animation.name !== 'Default').map(animation => animation.name);
+
 async function enemyPageClose(browser, interaction, enemy, animArr, anim, random) {
     await new Promise(r => setTimeout(r, 1000));
     await browser.close();

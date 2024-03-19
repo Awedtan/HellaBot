@@ -49,7 +49,7 @@ npm start
 
 ## Usage
 
-HellaBot uses slash commands. To use a command, just type: `/command`
+HellaBot uses slash commands. To use a command, just type: `/[command]`
 
 All command interactions are event-driven, so buttons and other interactables will never expire!
 
@@ -68,6 +68,7 @@ All command interactions are event-driven, so buttons and other interactables wi
 | info    | Show an operator's information and attributes                    |
 | is2     | Show information on IS2: Phantom & Crimson Solitaire             |
 | is3     | Show information on IS3: Mizuki & Caerula Arbor                  |
+| is4     | Show information on IS4: Expeditioner's Jǫklumarkar              |
 | item    | Show information on an item                                      |
 | modules | Show an operator's modules                                       |
 | paradox | Show an operator's Paradox Simulation stage                      |
@@ -82,11 +83,3 @@ All command interactions are event-driven, so buttons and other interactables wi
 Huge thanks to [Kengxxiao/ArknightsGameData](https://github.com/Kengxxiao/ArknightsGameData) and [Aceship/Arknight-Images](https://github.com/Aceship/Arknight-Images) for compiling and providing game resources that this project depends on.
 
 Thanks to [MrJAwesome](https://www.youtube.com/@MrJAwesomeYT) for making extensive videos on Discord.js so I can preview features without going through all the drudgery myself.
-
-## todo:
-
-local data support
-
-maintain bot and api
-
-krooster

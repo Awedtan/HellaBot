@@ -1,5 +1,5 @@
 import { CCStage, Definition, Enemy, Item, Operator, RogueRelic, RogueStage, RogueVariation, SandboxStage, Skin, Stage } from "hella-types";
-import { getAllDefinitions, getAllEnemies, getAllItems, getAllOperators, getAllStageArrs, getAllToughStageArrs, getRogueTheme, getSandboxAct, getSkinArr, matchDefinition, matchEnemy, matchItem, matchOperator, matchRogueStage, matchRogueToughStage, matchStageArr } from "./api";
+import { getRogueTheme, getSandboxAct, getSkinArr, matchDefinition, matchEnemy, matchItem, matchOperator, matchRogueStage, matchRogueToughStage, matchStageArr } from "./api";
 const { gameConsts } = require('../constants');
 
 type AutocompleteParams = {
@@ -77,8 +77,8 @@ export async function autocompleteRogueRelic(theme: number, { query, include = [
 }
 export async function autocompleteRogueStage(theme: number, { query, include = [] }: AutocompleteParams, callback: (e: RogueStage) => boolean = () => true) {
     const requiredInclude = ['excel.id', 'excel.code', 'excel.name'];
-    
-    const stageArr = await matchRogueStage(theme, { query, include: requiredInclude.concat(include)});
+
+    const stageArr = await matchRogueStage(theme, { query, include: requiredInclude.concat(include) });
     const filteredArr: RogueStage[] = [];
     let i = 0;
     for (const stage of stageArr) {
@@ -93,8 +93,8 @@ export async function autocompleteRogueStage(theme: number, { query, include = [
 }
 export async function autocompleteRogueToughStage(theme: number, { query, include = [] }: AutocompleteParams, callback: (e: RogueStage) => boolean = () => true) {
     const requiredInclude = ['excel.id', 'excel.code', 'excel.name'];
-    
-    const stageArr = await matchRogueToughStage(theme, { query, include: requiredInclude.concat(include)});
+
+    const stageArr = await matchRogueToughStage(theme, { query, include: requiredInclude.concat(include) });
     const filteredArr: RogueStage[] = [];
     let i = 0;
     for (const stage of stageArr) {

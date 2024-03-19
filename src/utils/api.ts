@@ -74,7 +74,7 @@ async function getMatch({ route, query, limit, include, exclude }) {
 
 export async function getArchetype({ query, include, exclude }: SingleParams): Promise<string> {
     const res = await getSingle({ route: 'archetype', query, include, exclude });
-    if(res) return res;
+    if (res) return res;
     return await getSingle({ route: 'cn/archetype', query, include, exclude });
 }
 export async function getAllArchetypes({ limit, include, exclude }: AllParams = {}): Promise<string[]> {

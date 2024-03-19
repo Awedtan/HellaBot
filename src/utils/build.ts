@@ -1,14 +1,12 @@
 import { ActionRowBuilder, AttachmentBuilder, BaseMessageOptions, ButtonBuilder, ButtonStyle, EmbedAuthorOptions, EmbedBuilder, EmbedField, StringSelectMenuBuilder, StringSelectMenuOptionBuilder } from 'discord.js';
 import type { Blackboard, CCStage, Definition, Enemy, GameEvent, GridRange, Item, LevelUpCost, Operator, Paradox, RogueRelic, RogueStage, RogueVariation, SandboxStage, Stage, StageData } from "hella-types";
 import { join } from 'path';
-import { getAllDefinitions, getAllEnemies, getAllEvents, getAllItems, getAllOperators, getItem, getOperator, getRange, getRogueTheme, getStageArr, getToughStageArr } from './api';
-import { promises, readdirSync } from 'fs';
 import { globalCommands } from '../structures/HellaBot';
+import { getAllDefinitions, getAllEnemies, getAllEvents, getAllItems, getAllOperators, getItem, getOperator, getRange, getRogueTheme, getStageArr, getToughStageArr } from './api';
 const { embedColour, paths, gameConsts } = require('../constants');
 
 const cleanFilename = (text: string) => text.split(/%|[#\+]|&|\[|\]/).join(''); // Remove special characters that discord doesn't like (%, #, etc.)
-export const fileExists = async (path: string) => !!(await promises.stat(path).catch(e => false));
-export const urlExists = async (url: string) => (await fetch(url)).status === 200;
+const urlExists = async (url: string) => (await fetch(url)).status === 200;
 const createCustomId = (...args: (string | number | boolean)[]): string => args.join('ඞ').toLowerCase();
 function removeStyleTags(text: string) {
     if (!text) return '';
@@ -86,7 +84,7 @@ function insertBlackboard(text: string, blackboard: Blackboard[]) {
 const blankChar = '\u200B';
 
 export async function buildArtMessage(op: Operator, page: number): Promise<BaseMessageOptions> {
-    const embed = await buildArtEmbed(op, page);
+    const embed = buildArtEmbed(op, page);
 
     const rowOne = new ActionRowBuilder();
     const rowTwo = new ActionRowBuilder();
@@ -465,7 +463,7 @@ export async function buildInfoMessage(op: Operator, type: number, page: number,
         if (message.components) rowArr.push(...message.components);
     };
 
-    const embed = await buildOperatorEmbed(op);
+    const embed = buildOperatorEmbed(op);
     embedArr.push(embed);
 
     const typeLabels = ['Skills', 'Modules', 'Art', 'Base Skills', 'Costs'];
@@ -518,7 +516,7 @@ export async function buildInfoMessage(op: Operator, type: number, page: number,
             break;
         }
         case 2: {
-            getMessageComponents(await buildInfoModuleMessage(op, type, page, level));
+            getMessageComponents(buildInfoModuleMessage(op, type, page, level));
 
             if (op.modules.length <= 1) break;
 
@@ -537,7 +535,7 @@ export async function buildInfoMessage(op: Operator, type: number, page: number,
             break;
         }
         case 3: {
-            getMessageComponents(await buildInfoArtMessage(op, type, page, level));
+            getMessageComponents(buildInfoArtMessage(op, type, page, level));
             break;
         }
         case 4: {
@@ -576,7 +574,7 @@ export async function buildItemMessage(item: Item): Promise<BaseMessageOptions> 
         embed.addFields({ name: 'Drop Stages', value: stageString, inline: true });
     }
     if (item.formula !== null && item.formula.costs.length > 0) {
-        const formulaString = await buildCostString(item.formula.costs, await getAllItems({ include: ['data'] }));
+        const formulaString = buildCostString(item.formula.costs, await getAllItems({ include: ['data'] }));
         embed.addFields({ name: 'Crafting Formula', value: formulaString, inline: true });
     }
     const imagePath = paths.aceshipImageUrl + `/items/${item.data.iconId}.png`;
@@ -586,7 +584,7 @@ export async function buildItemMessage(item: Item): Promise<BaseMessageOptions> 
     return { embeds: [embed] };
 }
 export async function buildModuleMessage(op: Operator, page: number, level: number): Promise<BaseMessageOptions> {
-    const embed = await buildModuleEmbed(op, page, level);
+    const embed = buildModuleEmbed(op, page, level);
 
     const lOne = new ButtonBuilder()
         .setCustomId(createCustomId('modules', op.id, page, 0))
@@ -707,12 +705,15 @@ export async function buildRecruitMessage(value: number, tag: string, select: bo
     const defenseButton = button('defense', 'Defense');
     const debuffButton = button('debuff', 'Debuff');
     const shiftButton = button('shift', 'Shift');
-    const crowdControlButton = button('crowd-control', 'Crowd Control');
+    const crowdControlButton = button('crowd-control', 'Crowd-Control');
     const nukerButton = button('nuker', 'Nuker');
     const summonButton = button('summon', 'Summon');
     const fastRedeployButton = button('fast-redeploy', 'Fast-Redeploy');
     const dpRecoveryButton = button('dp-recovery', 'DP-Recovery');
     const robotButton = button('robot', 'Robot');
+    const deleteButton = button('delete', '🗑️ Clear Tags')
+        .setDisabled(true)
+        .setStyle(ButtonStyle.Danger);
 
     const qualComponents = [
         new ActionRowBuilder<ButtonBuilder>().addComponents(starterButton, seniorButton, topButton),
@@ -724,6 +725,9 @@ export async function buildRecruitMessage(value: number, tag: string, select: bo
         new ActionRowBuilder<ButtonBuilder>().addComponents(healingButton, supportButton, dpsButton, aoeButton, slowButton),
         new ActionRowBuilder<ButtonBuilder>().addComponents(survivalButton, defenseButton, debuffButton, shiftButton, crowdControlButton),
         new ActionRowBuilder<ButtonBuilder>().addComponents(nukerButton, summonButton, fastRedeployButton, dpRecoveryButton, robotButton)
+    ];
+    const utilComponents = [
+        new ActionRowBuilder<ButtonBuilder>().addComponents(deleteButton)
     ];
 
     const components = []; components.push(...qualComponents, ...tagComponents);
@@ -737,6 +741,7 @@ export async function buildRecruitMessage(value: number, tag: string, select: bo
         }
     }
     for (const button of selectedButtons) {
+        deleteButton.setDisabled(false);
         button.setCustomId(button.data.custom_id.replace('select', 'deselect'));
         button.setStyle(ButtonStyle.Primary);
     }
@@ -751,12 +756,10 @@ export async function buildRecruitMessage(value: number, tag: string, select: bo
 
     const qualEmbed = new EmbedBuilder()
         .setColor(embedColour)
-        .setTitle('Recruitment Calculator')
-        .setDescription('Qualification/Position/Class');
+        .setTitle('Qualification/Position/Class')
     const tagEmbed = new EmbedBuilder()
         .setColor(embedColour)
-        .setTitle('Recruitment Calculator')
-        .setDescription('Tags');
+        .setTitle('Tags')
     const recruitEmbed = new EmbedBuilder()
         .setColor(embedColour)
         .setTitle('Recruitment Calculator');
@@ -787,7 +790,7 @@ export async function buildRecruitMessage(value: number, tag: string, select: bo
         }
     }
     for (const value of Object.values(opMap)) {
-        value.sort(function (a, b) { return gameConsts.rarity[b.data.rarity] - gameConsts.rarity[a.data.rarity] });
+        value.sort((a, b) => { return gameConsts.rarity[b.data.rarity] - gameConsts.rarity[a.data.rarity] });
     }
 
     let sortArr = [];
@@ -797,7 +800,7 @@ export async function buildRecruitMessage(value: number, tag: string, select: bo
         if (opMap[key].length === 0) continue;
         sortArr.push([tags.join(' + '), opMap[key]]);
     }
-    sortArr.sort(function (a, b) {
+    sortArr.sort((a, b) => { // sort tag combos by highest rarity
         const rarity = gameConsts.rarity[b[1][b[1].length - 1].data.rarity] - gameConsts.rarity[a[1][a[1].length - 1].data.rarity];
         if (rarity) return rarity;
         return a[1].length - b[1].length;
@@ -819,7 +822,7 @@ export async function buildRecruitMessage(value: number, tag: string, select: bo
         combCount++;
     }
 
-    return [{ content: '', embeds: [qualEmbed], components: qualComponents }, { content: '', embeds: [tagEmbed], components: tagComponents }, { content: '', embeds: [recruitEmbed] }];
+    return [{ content: '', embeds: [qualEmbed], components: qualComponents }, { content: '', embeds: [tagEmbed], components: tagComponents }, { content: '', embeds: [recruitEmbed], components: utilComponents }];
 }
 export async function buildRogueRelicMessage(relic: RogueRelic): Promise<BaseMessageOptions> {
     const description = `***Cost:* ${relic.value}▲**\n${relic.description !== null ? `${relic.usage}\n\n${relic.description}` : relic.usage}`;
@@ -1218,45 +1221,8 @@ export async function buildStageSelectMessage(stageArr: Stage[] | RogueStage[]):
     return { content: 'Multiple stages with that code were found, please select a stage below:', components: [componentRow] };
 }
 
-async function buildInfoSkillMessage(op: Operator, type: number, page: number, level: number): Promise<BaseMessageOptions> {
-    const embed = await buildSkillEmbed(op, page, level);
-
-    const rowOne = new ActionRowBuilder<ButtonBuilder>();
-    const rowTwo = new ActionRowBuilder<ButtonBuilder>();
-
-    for (let i = 0; i < op.skills[page].levels.length; i++) {
-        const button = new ButtonBuilder()
-            .setCustomId(createCustomId('info', op.id, type, page, i, 'skill'))
-            .setLabel(gameConsts.skillLevels[i])
-            .setStyle(i < 7 ? ButtonStyle.Secondary : ButtonStyle.Danger);
-        if (i === level)
-            button.setCustomId('info_level_current')
-                .setDisabled(true);
-        i < 5 ? rowOne.addComponents(button) : rowTwo.addComponents(button);
-    }
-
-    return { embeds: [embed], components: [rowOne, rowTwo] };
-}
-async function buildInfoModuleMessage(op: Operator, type: number, page: number, level: number): Promise<BaseMessageOptions> {
-    const embed = await buildModuleEmbed(op, page, level);
-
-    const buttonRow = new ActionRowBuilder<ButtonBuilder>();
-
-    for (let i = 0; i < 3; i++) {
-        const button = new ButtonBuilder()
-            .setCustomId(createCustomId('info', op.id, type, page, i, 'module'))
-            .setLabel(gameConsts.skillLevels[i])
-            .setStyle(ButtonStyle.Secondary);
-        if (i === level)
-            button.setCustomId('info_level_current')
-                .setDisabled(true);
-        buttonRow.addComponents(button);
-    }
-
-    return { embeds: [embed], components: [buttonRow] };
-}
-async function buildInfoArtMessage(op: Operator, type: number, page: number, level: number): Promise<BaseMessageOptions> {
-    const embed = await buildArtEmbed(op, page);
+function buildInfoArtMessage(op: Operator, type: number, page: number, level: number): BaseMessageOptions {
+    const embed = buildArtEmbed(op, page);
 
     const rowOne = new ActionRowBuilder<ButtonBuilder>();
     const rowTwo = new ActionRowBuilder<ButtonBuilder>();
@@ -1310,6 +1276,44 @@ async function buildInfoCostMessage(op: Operator, type: number, page: number, le
 
     return { embeds: [embed], components: [buttonRow] };
 }
+function buildInfoModuleMessage(op: Operator, type: number, page: number, level: number): BaseMessageOptions {
+    const embed = buildModuleEmbed(op, page, level);
+
+    const buttonRow = new ActionRowBuilder<ButtonBuilder>();
+
+    for (let i = 0; i < 3; i++) {
+        const button = new ButtonBuilder()
+            .setCustomId(createCustomId('info', op.id, type, page, i, 'module'))
+            .setLabel(gameConsts.skillLevels[i])
+            .setStyle(ButtonStyle.Secondary);
+        if (i === level)
+            button.setCustomId('info_level_current')
+                .setDisabled(true);
+        buttonRow.addComponents(button);
+    }
+
+    return { embeds: [embed], components: [buttonRow] };
+}
+async function buildInfoSkillMessage(op: Operator, type: number, page: number, level: number): Promise<BaseMessageOptions> {
+    const embed = await buildSkillEmbed(op, page, level);
+
+    const rowOne = new ActionRowBuilder<ButtonBuilder>();
+
+    for (let i = 0; i < op.skills[page].levels.length; i++) {
+        if (i >= 1 && i <= 5) continue;
+
+        const button = new ButtonBuilder()
+            .setCustomId(createCustomId('info', op.id, type, page, i, 'skill'))
+            .setLabel(gameConsts.skillLevels[i])
+            .setStyle(i < 7 ? ButtonStyle.Secondary : ButtonStyle.Danger);
+        if (i === level)
+            button.setCustomId('info_level_current')
+                .setDisabled(true);
+        rowOne.addComponents(button)
+    }
+
+    return { embeds: [embed], components: [rowOne] };
+}
 
 function buildAuthorField(char: Enemy | Operator): EmbedAuthorOptions {
     if ((char as Operator).id && (char as Operator).data) {
@@ -1325,7 +1329,7 @@ function buildAuthorField(char: Enemy | Operator): EmbedAuthorOptions {
     }
     return null;
 }
-async function buildCostString(costs: LevelUpCost[], itemArr: Item[]): Promise<string> {
+function buildCostString(costs: LevelUpCost[], itemArr: Item[]): string {
     let description = '';
     for (const cost of costs) {
         const item = itemArr.find(e => e.data.itemId === cost.id);
@@ -1333,9 +1337,7 @@ async function buildCostString(costs: LevelUpCost[], itemArr: Item[]): Promise<s
     }
     return description;
 }
-async function buildRangeField({ range, rangeId }: { range?: GridRange, rangeId?: string }): Promise<EmbedField> {
-    if (!range) range = await getRange({ query: rangeId });
-
+function buildRangeField(range: GridRange): EmbedField {
     let left = 0, right = 0, top = 0, bottom = 0;
     for (const square of range.grids) {
         if (square.col < left)
@@ -1464,7 +1466,144 @@ async function buildStageEnemyFields(stageData: StageData): Promise<EmbedField[]
     return fieldArr;
 }
 
-async function buildOperatorEmbed(op: Operator): Promise<EmbedBuilder> {
+function buildArtEmbed(op: Operator, page: number): EmbedBuilder {
+    const displaySkin = op.skins[page].displaySkin;
+
+    const embed = new EmbedBuilder()
+        .setColor(embedColour)
+        .setAuthor(buildAuthorField(op))
+        .setTitle(`${displaySkin.skinGroupName}${displaySkin.skinName ? ` - ${displaySkin.skinName}` : ''}`)
+        .setImage(paths.aceshipImageUrl + `/characters/${encodeURIComponent(op.skins[page].portraitId)}.png`);
+
+    switch (displaySkin.skinGroupId) {
+        case 'ILLUST_0': {
+            embed.setThumbnail(paths.aceshipImageUrl + `/ui/elite/0.png`);
+            break;
+        }
+        case 'ILLUST_1': {
+            embed.setThumbnail(paths.aceshipImageUrl + `/ui/elite/1.png`);
+            break;
+        }
+        case 'ILLUST_2': {
+            embed.setThumbnail(paths.aceshipImageUrl + `/ui/elite/2.png`);
+            break;
+        }
+        case 'ILLUST_3': {
+            embed.setThumbnail(paths.aceshipImageUrl + `/ui/elite/3.png`);
+            break;
+        }
+        default: {
+            embed.setThumbnail(paths.myAssetUrl + `/skingroups/${encodeURIComponent(displaySkin.skinGroupId.split('#')[1])}.png`);
+            break;
+        }
+    }
+
+    if (displaySkin.drawerList && displaySkin.drawerList.length > 0) {
+        const artistString = displaySkin.drawerList.join('\n');
+        embed.addFields({ name: displaySkin.drawerList.length > 1 ? 'Artists' : 'Artist', value: artistString });
+    }
+
+    return embed;
+}
+async function buildCostEmbed(op: Operator, page: number): Promise<EmbedBuilder> {
+    const embed = new EmbedBuilder()
+        .setColor(embedColour)
+        .setAuthor(buildAuthorField(op));
+
+    const itemArr = await getAllItems({ include: ['data'] });
+    switch (page) {
+        default:
+        case 0: {
+            embed.setTitle('Promotion Costs')
+                .setThumbnail(paths.aceshipImageUrl + `/items/sprite_exp_card_t4.png`);
+            for (let i = 0; i < op.data.phases.length; i++) {
+                if (op.data.phases[i].evolveCost === null) continue;
+
+                const description = buildCostString(op.data.phases[i].evolveCost, itemArr) + `LMD **x${gameConsts.evolveGoldCost[gameConsts.rarity[op.data.rarity]][i - 1]}**\n`;
+                embed.addFields({ name: `Elite ${i}`, value: description, inline: true });
+            }
+            break;
+        }
+        case 1: {
+            embed.setTitle('Skill Upgrade Costs')
+                .setThumbnail(paths.aceshipImageUrl + `/items/MTL_SKILL2.png`);
+            for (let i = 0; i < op.data.allSkillLvlup.length; i++) {
+                if (op.data.allSkillLvlup[i].lvlUpCost === null) continue;
+
+                const description = buildCostString(op.data.allSkillLvlup[i].lvlUpCost, itemArr);
+                embed.addFields({ name: `Level ${i + 2}`, value: description, inline: true });
+            }
+            break;
+        }
+        case 2: {
+            embed.setTitle('Skill Mastery Costs')
+                .setThumbnail(paths.aceshipImageUrl + `/items/MTL_SKILL3.png`);
+            for (let i = 0; i < op.data.skills.length; i++) {
+                embed.addFields({ name: blankChar, value: `**Skill ${i + 1} - ${op.skills[i].levels[0].name}**` });
+                for (let j = 0; j < op.data.skills[i].levelUpCostCond.length; j++) {
+                    if (op.data.skills[i].levelUpCostCond[j].levelUpCost === null) continue;
+
+                    const description = buildCostString(op.data.skills[i].levelUpCostCond[j].levelUpCost, itemArr);
+                    embed.addFields({ name: `Mastery ${j + 1}`, value: description, inline: true });
+                }
+            }
+            break;
+        }
+        case 3: {
+            embed.setTitle('Module Upgrade Costs')
+                .setThumbnail(paths.aceshipImageUrl + `/items/mod_unlock_token.png`);
+            for (const module of op.modules) {
+                if (module.info.uniEquipId.includes('uniequip_001')) continue;
+
+                embed.addFields({ name: blankChar, value: `**${module.info.typeIcon.toUpperCase()} - ${module.info.uniEquipName}**` });
+                for (const key of Object.keys(module.info.itemCost)) {
+                    const description = buildCostString(module.info.itemCost[key], itemArr);
+                    embed.addFields({ name: `Level ${key}`, value: description, inline: true });
+                }
+            }
+            break;
+        }
+    }
+
+    return embed;
+}
+function buildModuleEmbed(op: Operator, page: number, level: number): EmbedBuilder {
+    const module = op.modules[page];
+
+    const embed = new EmbedBuilder()
+        .setColor(embedColour)
+        .setAuthor(buildAuthorField(op))
+        .setTitle(`${module.info.typeIcon.toUpperCase()} ${module.info.uniEquipName} - Lv${level + 1}`)
+        .setThumbnail(paths.aceshipImageUrl + `/equip/icon/${module.info.uniEquipId}.png`);
+
+    let description = '', talentName = null, talentDescription = null;
+    for (const part of module.data.phases[level].parts) {
+        if (part.overrideTraitDataBundle.candidates) {
+            const candidate = part.overrideTraitDataBundle.candidates[part.overrideTraitDataBundle.candidates.length - 1];
+            if (candidate.additionalDescription) {
+                description += `${insertBlackboard(candidate.additionalDescription, candidate.blackboard)}\n`;
+            }
+            if (candidate.overrideDescripton) {
+                description += `${insertBlackboard(candidate.overrideDescripton, candidate.blackboard)}\n`;
+            }
+        }
+        if (part.addOrOverrideTalentDataBundle.candidates) {
+            const candidate = part.addOrOverrideTalentDataBundle.candidates[part.addOrOverrideTalentDataBundle.candidates.length - 1];
+            talentName = candidate.name ?? talentName;
+            talentDescription = insertBlackboard(candidate.upgradeDescription, candidate.blackboard) ?? talentDescription;
+        }
+    }
+    embed.setDescription(description);
+    if (talentName && talentDescription) {
+        embed.addFields({ name: talentName, value: talentDescription });
+    }
+
+    const statDescription = module.data.phases[level].attributeBlackboard.map(attribute => `${attribute.key.toUpperCase()} ${attribute.value > 0 ? '+' : ''}${attribute.value}`).join('\n');
+    embed.addFields({ name: `Stats`, value: statDescription });
+
+    return embed;
+}
+function buildOperatorEmbed(op: Operator): EmbedBuilder {
     const embed = new EmbedBuilder()
         .setColor(embedColour)
         .setTitle(`${op.data.name} - ${'★'.repeat(gameConsts.rarity[op.data.rarity] + 1)}`)
@@ -1479,7 +1618,7 @@ async function buildOperatorEmbed(op: Operator): Promise<EmbedBuilder> {
         }
     }
     embed.addFields({ name: `${gameConsts.professions[op.data.profession]} - ${op.archetype}`, value: description });
-    embed.addFields(await buildRangeField({ range: op.range }));
+    embed.addFields(buildRangeField(op.range));
     if (op.data.talents) {
         for (const talent of op.data.talents) {
             const candidate = talent.candidates[talent.candidates.length - 1];
@@ -1521,45 +1660,6 @@ async function buildOperatorEmbed(op: Operator): Promise<EmbedBuilder> {
 
     return embed;
 }
-async function buildArtEmbed(op: Operator, page: number): Promise<EmbedBuilder> {
-    const displaySkin = op.skins[page].displaySkin;
-
-    const embed = new EmbedBuilder()
-        .setColor(embedColour)
-        .setAuthor(buildAuthorField(op))
-        .setTitle(`${displaySkin.skinGroupName}${displaySkin.skinName ? ` - ${displaySkin.skinName}` : ''}`)
-        .setImage(paths.aceshipImageUrl + `/characters/${encodeURIComponent(op.skins[page].portraitId)}.png`);
-
-    switch (displaySkin.skinGroupId) {
-        case 'ILLUST_0': {
-            embed.setThumbnail(paths.aceshipImageUrl + `/ui/elite/0.png`);
-            break;
-        }
-        case 'ILLUST_1': {
-            embed.setThumbnail(paths.aceshipImageUrl + `/ui/elite/1.png`);
-            break;
-        }
-        case 'ILLUST_2': {
-            embed.setThumbnail(paths.aceshipImageUrl + `/ui/elite/2.png`);
-            break;
-        }
-        case 'ILLUST_3': {
-            embed.setThumbnail(paths.aceshipImageUrl + `/ui/elite/3.png`);
-            break;
-        }
-        default: {
-            embed.setThumbnail(paths.myAssetUrl + `/skingroups/${encodeURIComponent(displaySkin.skinGroupId.split('#')[1])}.png`);
-            break;
-        }
-    }
-
-    if (displaySkin.drawerList && displaySkin.drawerList.length > 0) {
-        const artistString = displaySkin.drawerList.join('\n');
-        embed.addFields({ name: displaySkin.drawerList.length > 1 ? 'Artists' : 'Artist', value: artistString });
-    }
-
-    return embed;
-}
 async function buildSkillEmbed(op: Operator, page: number, level: number): Promise<EmbedBuilder> {
     const skill = op.skills[page];
     const skillLevel = skill.levels[level];
@@ -1576,106 +1676,9 @@ async function buildSkillEmbed(op: Operator, page: number, level: number): Promi
         .setDescription(description);
 
     if (skillLevel.rangeId) {
-        embed.addFields(await buildRangeField({ rangeId: skillLevel.rangeId }));
+        const range = await getRange({ query: skillLevel.rangeId });
+        embed.addFields(buildRangeField(range));
     }
-
-    return embed;
-}
-async function buildCostEmbed(op: Operator, page: number): Promise<EmbedBuilder> {
-    const embed = new EmbedBuilder()
-        .setColor(embedColour)
-        .setAuthor(buildAuthorField(op));
-
-    const itemArr = await getAllItems({ include: ['data'] });
-    switch (page) {
-        default:
-        case 0: {
-            embed.setTitle('Promotion Costs')
-                .setThumbnail(paths.aceshipImageUrl + `/items/sprite_exp_card_t4.png`);
-            for (let i = 0; i < op.data.phases.length; i++) {
-                if (op.data.phases[i].evolveCost === null) continue;
-
-                const description = await buildCostString(op.data.phases[i].evolveCost, itemArr) + `LMD **x${gameConsts.evolveGoldCost[gameConsts.rarity[op.data.rarity]][i - 1]}**\n`;
-                embed.addFields({ name: `Elite ${i}`, value: description, inline: true });
-            }
-            break;
-        }
-        case 1: {
-            embed.setTitle('Skill Upgrade Costs')
-                .setThumbnail(paths.aceshipImageUrl + `/items/MTL_SKILL2.png`);
-            for (let i = 0; i < op.data.allSkillLvlup.length; i++) {
-                if (op.data.allSkillLvlup[i].lvlUpCost === null) continue;
-
-                const description = await buildCostString(op.data.allSkillLvlup[i].lvlUpCost, itemArr);
-                embed.addFields({ name: `Level ${i + 2}`, value: description, inline: true });
-            }
-            break;
-        }
-        case 2: {
-            embed.setTitle('Skill Mastery Costs')
-                .setThumbnail(paths.aceshipImageUrl + `/items/MTL_SKILL3.png`);
-            for (let i = 0; i < op.data.skills.length; i++) {
-                embed.addFields({ name: blankChar, value: `**Skill ${i + 1} - ${op.skills[i].levels[0].name}**` });
-                for (let j = 0; j < op.data.skills[i].levelUpCostCond.length; j++) {
-                    if (op.data.skills[i].levelUpCostCond[j].levelUpCost === null) continue;
-
-                    const description = await buildCostString(op.data.skills[i].levelUpCostCond[j].levelUpCost, itemArr);
-                    embed.addFields({ name: `Mastery ${j + 1}`, value: description, inline: true });
-                }
-            }
-            break;
-        }
-        case 3: {
-            embed.setTitle('Module Upgrade Costs')
-                .setThumbnail(paths.aceshipImageUrl + `/items/mod_unlock_token.png`);
-            for (const module of op.modules) {
-                if (module.info.uniEquipId.includes('uniequip_001')) continue;
-
-                embed.addFields({ name: blankChar, value: `**${module.info.typeIcon.toUpperCase()} - ${module.info.uniEquipName}**` });
-                for (const key of Object.keys(module.info.itemCost)) {
-                    const description = await buildCostString(module.info.itemCost[key], itemArr);
-                    embed.addFields({ name: `Level ${key}`, value: description, inline: true });
-                }
-            }
-            break;
-        }
-    }
-
-    return embed;
-}
-async function buildModuleEmbed(op: Operator, page: number, level: number): Promise<EmbedBuilder> {
-    const module = op.modules[page];
-
-    const embed = new EmbedBuilder()
-        .setColor(embedColour)
-        .setAuthor(buildAuthorField(op))
-        .setTitle(`${module.info.typeIcon.toUpperCase()} ${module.info.uniEquipName} - Lv${level + 1}`)
-        .setThumbnail(paths.aceshipImageUrl + `/equip/icon/${module.info.uniEquipId}.png`);
-
-    let description = '', talentName = null, talentDescription = null;
-    for (const part of module.data.phases[level].parts) {
-        if (part.overrideTraitDataBundle.candidates) {
-            const candidate = part.overrideTraitDataBundle.candidates[part.overrideTraitDataBundle.candidates.length - 1];
-            if (candidate.additionalDescription) {
-                description += `${insertBlackboard(candidate.additionalDescription, candidate.blackboard)}\n`;
-            }
-            if (candidate.overrideDescripton) {
-                description += `${insertBlackboard(candidate.overrideDescripton, candidate.blackboard)}\n`;
-            }
-        }
-        if (part.addOrOverrideTalentDataBundle.candidates) {
-            const candidate = part.addOrOverrideTalentDataBundle.candidates[part.addOrOverrideTalentDataBundle.candidates.length - 1];
-            talentName = candidate.name ?? talentName;
-            talentDescription = insertBlackboard(candidate.upgradeDescription, candidate.blackboard) ?? talentDescription;
-        }
-    }
-    embed.setDescription(description);
-    if (talentName && talentDescription) {
-        embed.addFields({ name: talentName, value: talentDescription });
-    }
-
-    const statDescription = module.data.phases[level].attributeBlackboard.map(attribute => `${attribute.key.toUpperCase()} ${attribute.value > 0 ? '+' : ''}${attribute.value}`).join('\n');
-    embed.addFields({ name: `Stats`, value: statDescription });
 
     return embed;
 }
