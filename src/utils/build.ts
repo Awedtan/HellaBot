@@ -1665,8 +1665,8 @@ async function buildSkillEmbed(op: Operator, page: number, level: number): Promi
     const skillLevel = skill.levels[level];
 
     const description = `**${gameConsts.spTypes[skillLevel.spData.spType]} - ${gameConsts.skillTypes[skillLevel.skillType]}**` +
-        `\n***Initial:* ${skillLevel.spData.initSp} SP - *Cost:* ${skillLevel.spData.spCost} SP${(skillLevel.duration && skillLevel.duration > 0) ? ` - *Duration:* ${skillLevel.duration} sec` : ''}` +
-        `\n**${insertBlackboard(skillLevel.description, skillLevel.blackboard)}`;
+        `\n***Initial:* ${skillLevel.spData.initSp} SP - *Cost:* ${skillLevel.spData.spCost} SP${(skillLevel.duration && skillLevel.duration > 0) ? ` - *Duration:* ${skillLevel.duration} sec` : ''}**` +
+        `\n${insertBlackboard(skillLevel.description, skillLevel.blackboard.concat({ key: 'duration', value: skillLevel.duration }))}`;
 
     const embed = new EmbedBuilder()
         .setColor(embedColour)
