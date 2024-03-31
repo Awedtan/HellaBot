@@ -9,13 +9,13 @@
     "author": "",
     "dependencies": {
         "discord.js": "^14.14.1",
-        "dotenv": "^16.3.1",
-        "hella-types": "^0.0.10",
-        "nodemon": "^3.0.2",
-        "puppeteer": "^21.7.0",
-        "simple-git": "^3.22.0",
+        "dotenv": "^16.4.5",
+        "hella-types": "^0.0.13",
+        "nodemon": "^3.1.0",
+        "puppeteer": "^22.6.1",
+        "simple-git": "^3.24.0",
         "ts-node": "^10.9.2",
-        "typescript": "^5.3.3",
+        "typescript": "^5.4.3",
         "w3c-xmlhttprequest": "^3.0.4",
         "zod": "^3.22.4"
     }

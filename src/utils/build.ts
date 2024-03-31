@@ -2,7 +2,7 @@ import { ActionRowBuilder, AttachmentBuilder, BaseMessageOptions, ButtonBuilder,
 import type { Blackboard, CCStage, Definition, Enemy, GameEvent, GridRange, Item, LevelUpCost, Operator, Paradox, RogueRelic, RogueStage, RogueVariation, SandboxStage, Stage, StageData } from "hella-types";
 import { join } from 'path';
 import { globalCommands } from '../structures/HellaBot';
-import { getAllDefinitions, getAllEnemies, getAllEvents, getAllItems, getAllOperators, getItem, getOperator, getRange, getRogueTheme, getStageArr, getToughStageArr } from './api';
+import { getAbout, getAllDefinitions, getAllEnemies, getAllEvents, getAllItems, getAllOperators, getItem, getNew, getOperator, getRange, getRogueTheme, getStageArr, getToughStageArr } from './api';
 const { embedColour, paths, gameConsts } = require('../constants');
 
 const cleanFilename = (text: string) => text.split(/%|[#\+]|&|\[|\]/).join(''); // Remove special characters that discord doesn't like (%, #, etc.)
@@ -613,6 +613,81 @@ export async function buildModuleMessage(op: Operator, page: number, level: numb
     }
 
     return { embeds: [embed], components: [rowOne] };
+}
+export async function buildNewMessage() {
+    const opName = (op: Operator) => `${gameConsts.rarity[op.data.rarity] + 1}★ ${op.data.name}`;
+
+    const aboutInfo = await getAbout();
+    const date = new Date(aboutInfo.date);
+    const newInfo = await getNew();
+
+    const embed = new EmbedBuilder()
+        .setColor(embedColour)
+        .setTitle('Newly Updated Game Data')
+        .setDescription('Data fetched from: https://github.com/Kengxxiao/ArknightsGameData_YoStar\n' +
+            `Latest commit: \`${aboutInfo.updated}\`\n` +
+            `Last updated at: \`${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()} ${date.toTimeString().slice(0, 8)}\``);
+
+    const archetypeString = newInfo.archetype
+        ?.filter(archetype => archetype.meta.created === archetype.meta.updated)
+        .map(archetype => archetype.value)
+        .sort().reverse()
+        .join('\n');
+    if (archetypeString && archetypeString.length > 0)
+        embed.addFields({ name: 'New Archetypes', value: archetypeString });
+
+    const opString = newInfo.operator
+        ?.filter(op => op.meta.created === op.meta.updated)
+        .map(op => opName(op.value))
+        .sort().reverse()
+        .join('\n');
+    if (opString && opString.length > 0)
+        embed.addFields({ name: 'New Operators', value: opString });
+
+    const skinString = (await Promise.all(newInfo.skin
+        ?.filter(skin => skin.meta.created !== skin.meta.updated
+            && !newInfo.operator
+                ?.filter(op => op.meta.created === op.meta.updated)
+                .map(op => op.value.id)
+                .includes(skin.value[0].avatarId)
+            && skin.value[0].displaySkin.modelName
+        )
+        .map(async skin => {
+            const op = await getOperator({ query: skin.canon, include: ['data.rarity', 'data.name'] });
+            return `${opName(op)} - ${skin.value[skin.value.length - 1].displaySkin.skinName}`
+        })))
+        .sort().reverse()
+        .join('\n');
+    if (skinString && skinString.length > 0)
+        embed.addFields({ name: 'New Skins', value: skinString });
+
+    const moduleString = (await Promise.all(newInfo.module
+        ?.filter(module => module.meta.created === module.meta.updated
+            && module.value.data
+        )
+        .map(async module => {
+            const op = await getOperator({ query: module.value.info.charId, include: ['data.rarity', 'data.name'] });
+            return `${opName(op)} - ${module.value.info.uniEquipName}`
+        })))
+        .sort().reverse()
+        .join('\n');
+    if (moduleString && moduleString.length > 0)
+        embed.addFields({ name: 'New Modules', value: moduleString });
+
+    const paradoxString = (await Promise.all(newInfo.paradox
+        ?.filter(paradox => paradox.meta.created === paradox.meta.updated
+            && paradox.value.levels
+        )
+        .map(async paradox => {
+            const op = await getOperator({ query: paradox.value.excel.charId, include: ['data.rarity', 'data.name'] });
+            return `${opName(op)} - ${paradox.value.excel.name}`
+        })))
+        .sort().reverse()
+        .join('\n');
+    if (paradoxString && paradoxString.length > 0)
+        embed.addFields({ name: 'New Paradox Simulations', value: paradoxString });
+
+    return { embeds: [embed] };
 }
 export async function buildParadoxMessage(paradox: Paradox, page: number): Promise<BaseMessageOptions> {
     const stageInfo = paradox.excel;

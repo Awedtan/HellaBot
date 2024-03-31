@@ -72,6 +72,14 @@ async function getMatch({ route, query, limit, include, exclude }) {
     return test?.map(datum => datum.value);
 }
 
+export async function getAbout() {
+    const res = await GET({ route: 'about', query: '' });
+    return res[0];
+}
+export async function getNew() {
+    const res = await GET({ route: 'new', query: '' });
+    return res;
+}
 export async function getArchetype({ query, include, exclude }: SingleParams): Promise<string> {
     const res = await getSingle({ route: 'archetype', query, include, exclude });
     if (res) return res;
