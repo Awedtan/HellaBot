@@ -1,5 +1,5 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
-import { Command } from '../structures/Command';
+import Command from '../structures/Command';
 import { buildNewMessage } from '../utils/build';
 
 export default class NewCommand implements Command {
@@ -13,7 +13,7 @@ export default class NewCommand implements Command {
     ];
     async execute(interaction: ChatInputCommandInteraction) {
         await interaction.deferReply();
-        
+
         const newEmbed = await buildNewMessage();
         return await interaction.editReply(newEmbed);
     }

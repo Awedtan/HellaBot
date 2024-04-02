@@ -1,6 +1,6 @@
 import { AutocompleteInteraction, ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
-import { Command } from '../structures/Command';
-import { getDefinition } from '../utils/api';
+import Command from '../structures/Command';
+import * as api from '../utils/api';
 import { autocompleteDefine } from '../utils/autocomplete';
 import { buildDefineListMessage, buildDefineMessage } from '../utils/build';
 
@@ -35,7 +35,7 @@ export default class DefineCommand implements Command {
             return await interaction.editReply(defineListEmbed);
         }
         else {
-            const definition = await getDefinition({ query: term });
+            const definition = await api.single('define', { query: term });
 
             if (!definition)
                 return await interaction.reply({ content: 'That term doesn\'t exist!', ephemeral: true });

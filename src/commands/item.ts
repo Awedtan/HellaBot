@@ -1,6 +1,6 @@
 import { AutocompleteInteraction, ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
-import { Command } from '../structures/Command';
-import { getItem } from '../utils/api';
+import Command from '../structures/Command';
+import * as api from '../utils/api';
 import { autocompleteItem } from '../utils/autocomplete';
 import { buildItemMessage } from '../utils/build';
 
@@ -26,7 +26,7 @@ export default class ItemCommand implements Command {
     }
     async execute(interaction: ChatInputCommandInteraction) {
         const name = interaction.options.getString('name').toLowerCase();
-        const item = await getItem({ query: name });
+        const item = await api.single('item', { query: name });
 
         if (!item)
             return await interaction.reply({ content: 'That item doesn\'t exist!', ephemeral: true });

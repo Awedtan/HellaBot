@@ -1,6 +1,6 @@
 import { AutocompleteInteraction, ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
-import { Command } from '../structures/Command';
-import { getSandboxAct } from '../utils/api';
+import Command from '../structures/Command';
+import * as api from '../utils/api';
 import { autocompleteSandboxStage } from '../utils/autocomplete';
 import { buildSandboxStageMessage } from '../utils/build';
 
@@ -41,7 +41,7 @@ export default class RACommand implements Command {
 
         switch (type) {
             case 'stage': {
-                const stageDict = (await getSandboxAct({ query: actIndex.toString(), include: ['stageDict'] })).stageDict;
+                const stageDict = (await api.single('sandbox', { query: actIndex.toString(), include: ['stageDict'] })).stageDict;
                 const stage = stageDict[name];
 
                 if (!stageDict.hasOwnProperty(name))

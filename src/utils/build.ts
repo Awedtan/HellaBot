@@ -1,8 +1,8 @@
-import { ActionRowBuilder, AttachmentBuilder, BaseMessageOptions, ButtonBuilder, ButtonStyle, EmbedAuthorOptions, EmbedBuilder, EmbedField, StringSelectMenuBuilder, StringSelectMenuOptionBuilder } from 'discord.js';
-import type { Blackboard, CCStage, Definition, Enemy, GameEvent, GridRange, Item, LevelUpCost, Operator, Paradox, RogueRelic, RogueStage, RogueVariation, SandboxStage, Stage, StageData } from "hella-types";
+import * as Djs from 'discord.js';
+import type * as T from "hella-types";
 import { join } from 'path';
 import { globalCommands } from '../structures/HellaBot';
-import { getAbout, getAllDefinitions, getAllEnemies, getAllEvents, getAllItems, getAllOperators, getItem, getNew, getOperator, getRange, getRogueTheme, getStageArr, getToughStageArr } from './api';
+import * as api from './api';
 const { embedColour, paths, gameConsts } = require('../constants');
 
 const cleanFilename = (text: string) => text.split(/%|[#\+]|&|\[|\]/).join(''); // Remove special characters that discord doesn't like (%, #, etc.)
@@ -14,7 +14,7 @@ function removeStyleTags(text: string) {
     text = text.split(regex).join('');
     return text;
 }
-function insertBlackboard(text: string, blackboard: Blackboard[]) {
+function insertBlackboard(text: string, blackboard: T.Blackboard[]) {
     // Note: check these every so often to see if their skills still display properly
     // silverash s2/s3
     // eyjafjalla s2
@@ -25,7 +25,7 @@ function insertBlackboard(text: string, blackboard: Blackboard[]) {
     // irene s1
     // utage s2
 
-    const chunkIsVariable = (chunk: string, blackboard: Blackboard[]) => {
+    const chunkIsVariable = (chunk: string, blackboard: T.Blackboard[]) => {
         chunk = chunk.toLowerCase();
         for (const variable of blackboard) {
             const key = variable.key;
@@ -36,7 +36,7 @@ function insertBlackboard(text: string, blackboard: Blackboard[]) {
         }
         return false;
     }
-    const formatVariable = (chunk: string, blackboard: Blackboard[]) => {
+    const formatVariable = (chunk: string, blackboard: T.Blackboard[]) => {
         // {tag} {tag:0} {tag:0%} {tag:0.0} {tag:0.0%}
         chunk = chunk.toLowerCase();
         let value;
@@ -83,19 +83,19 @@ function insertBlackboard(text: string, blackboard: Blackboard[]) {
 }
 const blankChar = '\u200B';
 
-export async function buildArtMessage(op: Operator, page: number): Promise<BaseMessageOptions> {
+export async function buildArtMessage(op: T.Operator, page: number): Promise<Djs.BaseMessageOptions> {
     const embed = buildArtEmbed(op, page);
 
-    const rowOne = new ActionRowBuilder();
-    const rowTwo = new ActionRowBuilder();
+    const rowOne = new Djs.ActionRowBuilder();
+    const rowTwo = new Djs.ActionRowBuilder();
     const components = [];
 
     for (let i = 0; i < op.skins.length; i++) {
         const skinGroup = op.skins[i].displaySkin.skinGroupName;
-        const button = new ButtonBuilder()
+        const button = new Djs.ButtonBuilder()
             .setCustomId(createCustomId('art', op.id, i))
             .setLabel(skinGroup)
-            .setStyle(ButtonStyle.Primary);
+            .setStyle(Djs.ButtonStyle.Primary);
         if (i === page)
             button.setDisabled(true);
         if (op.skins[i].battleSkin.skinOrPrefabId === 'DefaultSkin') {
@@ -110,7 +110,7 @@ export async function buildArtMessage(op: Operator, page: number): Promise<BaseM
 
     return { embeds: [embed], components: components };
 }
-export async function buildBaseMessage(op: Operator, page: number): Promise<BaseMessageOptions> {
+export async function buildBaseMessage(op: T.Operator, page: number): Promise<Djs.BaseMessageOptions> {
     const baseInfo = op.bases[page].condition;
     const base = op.bases[page].skill;
 
@@ -118,7 +118,7 @@ export async function buildBaseMessage(op: Operator, page: number): Promise<Base
     const title = `${base.buffName} - ${gameConsts.eliteLevels[baseInfo.cond.phase]} Lv${baseInfo.cond.level}`;
     const description = removeStyleTags(base.description);
 
-    const embed = new EmbedBuilder()
+    const embed = new Djs.EmbedBuilder()
         .setColor(embedColour)
         .setAuthor(authorField)
         .setTitle(title)
@@ -127,14 +127,14 @@ export async function buildBaseMessage(op: Operator, page: number): Promise<Base
 
     return { embeds: [embed] };
 }
-export async function buildCcMessage(stage: CCStage, page: number): Promise<BaseMessageOptions> {
+export async function buildCcMessage(stage: T.CCStage, page: number): Promise<Djs.BaseMessageOptions> {
     const stageInfo = stage.const;
     const stageData = stage.levels;
 
     const title = `${stageInfo.location} - ${stageInfo.name}`;
     const description = removeStyleTags(stageInfo.description);
 
-    const embed = new EmbedBuilder()
+    const embed = new Djs.EmbedBuilder()
         .setColor(embedColour)
         .setTitle(title)
         .setURL(`${paths.stageViewerUrl}?level=${stage.const.levelId.toLowerCase()}`)
@@ -142,15 +142,15 @@ export async function buildCcMessage(stage: CCStage, page: number): Promise<Base
 
     embed.addFields(await buildStageEnemyFields(stageData));
 
-    const imageButton = new ButtonBuilder()
+    const imageButton = new Djs.ButtonBuilder()
         .setCustomId(createCustomId('cc', stage.const.name.toLowerCase(), 0))
         .setLabel('Preview')
-        .setStyle(ButtonStyle.Primary);
-    const diagramButton = new ButtonBuilder()
+        .setStyle(Djs.ButtonStyle.Primary);
+    const diagramButton = new Djs.ButtonBuilder()
         .setCustomId(createCustomId('cc', stage.const.name.toLowerCase(), 1))
         .setLabel('Diagram')
-        .setStyle(ButtonStyle.Primary);
-    const buttonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(imageButton, diagramButton);
+        .setStyle(Djs.ButtonStyle.Primary);
+    const buttonRow = new Djs.ActionRowBuilder<Djs.ButtonBuilder>().addComponents(imageButton, diagramButton);
 
     switch (page) {
         case 0:
@@ -180,15 +180,15 @@ export async function buildCcMessage(stage: CCStage, page: number): Promise<Base
         return { content: '', embeds: [embed], components: [buttonRow] };
     }
 }
-export async function buildCcSelectMessage(season: string): Promise<BaseMessageOptions> {
-    const ccSelector = new StringSelectMenuBuilder()
+export async function buildCcSelectMessage(season: string): Promise<Djs.BaseMessageOptions> {
+    const ccSelector = new Djs.StringSelectMenuBuilder()
         .setCustomId(createCustomId('cc', 'select'))
         .setPlaceholder('Select a stage!');
-    const componentRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(ccSelector);
+    const componentRow = new Djs.ActionRowBuilder<Djs.StringSelectMenuBuilder>().addComponents(ccSelector);
 
     const names: string = gameConsts.ccSeasons[season];
     for (const name of names) {
-        ccSelector.addOptions(new StringSelectMenuOptionBuilder()
+        ccSelector.addOptions(new Djs.StringSelectMenuOptionBuilder()
             .setLabel(name)
             .setValue(name.toLowerCase())
         );
@@ -196,37 +196,37 @@ export async function buildCcSelectMessage(season: string): Promise<BaseMessageO
 
     return { content: `Please select a stage from CC#${season} below:`, components: [componentRow] };
 }
-export async function buildCostMessage(op: Operator, page: number): Promise<BaseMessageOptions> {
+export async function buildCostMessage(op: T.Operator, page: number): Promise<Djs.BaseMessageOptions> {
     const embed = await buildCostEmbed(op, page);
 
-    const eliteButton = new ButtonBuilder()
+    const eliteButton = new Djs.ButtonBuilder()
         .setCustomId(createCustomId('costs', op.id, 0))
         .setLabel('Promotions')
-        .setStyle(ButtonStyle.Primary);
-    const skillButton = new ButtonBuilder()
+        .setStyle(Djs.ButtonStyle.Primary);
+    const skillButton = new Djs.ButtonBuilder()
         .setCustomId(createCustomId('costs', op.id, 1))
         .setLabel('Skills')
-        .setStyle(ButtonStyle.Primary);
-    const masteryButton = new ButtonBuilder()
+        .setStyle(Djs.ButtonStyle.Primary);
+    const masteryButton = new Djs.ButtonBuilder()
         .setCustomId(createCustomId('costs', op.id, 2))
         .setLabel('Masteries')
-        .setStyle(ButtonStyle.Primary);
-    const moduleButton = new ButtonBuilder()
+        .setStyle(Djs.ButtonStyle.Primary);
+    const moduleButton = new Djs.ButtonBuilder()
         .setCustomId(createCustomId('costs', op.id, 3))
         .setLabel('Modules')
-        .setStyle(ButtonStyle.Primary);
-    const buttonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(eliteButton, skillButton, masteryButton, moduleButton);
+        .setStyle(Djs.ButtonStyle.Primary);
+    const buttonRow = new Djs.ActionRowBuilder<Djs.ButtonBuilder>().addComponents(eliteButton, skillButton, masteryButton, moduleButton);
 
     if (op.data.skills.length == 0) {
-        skillButton.setStyle(ButtonStyle.Secondary);
+        skillButton.setStyle(Djs.ButtonStyle.Secondary);
         skillButton.setDisabled(true);
     }
     if (gameConsts.rarity[op.data.rarity] <= 2) {
-        masteryButton.setStyle(ButtonStyle.Secondary);
+        masteryButton.setStyle(Djs.ButtonStyle.Secondary);
         masteryButton.setDisabled(true);
     }
     if (op.modules.length == 0) {
-        moduleButton.setStyle(ButtonStyle.Secondary);
+        moduleButton.setStyle(Djs.ButtonStyle.Secondary);
         moduleButton.setDisabled(true);
     }
 
@@ -252,17 +252,17 @@ export async function buildCostMessage(op: Operator, page: number): Promise<Base
 
     return { embeds: [embed], components: [buttonRow] };
 }
-export async function buildDefineMessage(definition: Definition): Promise<BaseMessageOptions> {
-    const embed = new EmbedBuilder()
+export async function buildDefineMessage(definition: T.Definition): Promise<Djs.BaseMessageOptions> {
+    const embed = new Djs.EmbedBuilder()
         .setColor(embedColour)
         .setTitle(definition.termName)
         .setDescription(removeStyleTags(definition.description));
 
     return { embeds: [embed] };
 }
-export async function buildDefineListMessage(): Promise<BaseMessageOptions> {
+export async function buildDefineListMessage(): Promise<Djs.BaseMessageOptions> {
     let statusDescription = '', effectDescription = '', groupDescription = '';
-    const dataArr = await getAllDefinitions();
+    const dataArr = await api.all('define');
     for (const term of dataArr) {
         const termName = term.termName;
         const termArr = term.termId.split('.');
@@ -286,7 +286,7 @@ export async function buildDefineListMessage(): Promise<BaseMessageOptions> {
         }
     }
 
-    const embed = new EmbedBuilder()
+    const embed = new Djs.EmbedBuilder()
         .setColor(embedColour)
         .setTitle('In-Game Terms and Groups')
         .addFields(
@@ -297,7 +297,7 @@ export async function buildDefineListMessage(): Promise<BaseMessageOptions> {
 
     return { embeds: [embed] };
 }
-export async function buildEnemyMessage(enemy: Enemy, level: number): Promise<BaseMessageOptions> {
+export async function buildEnemyMessage(enemy: T.Enemy, level: number): Promise<Djs.BaseMessageOptions> {
     const enemyInfo = enemy.excel;
     const enemyData = enemy.levels.Value[level].enemyData;
     const baseData = enemy.levels.Value[0].enemyData;
@@ -349,7 +349,7 @@ export async function buildEnemyMessage(enemy: Enemy, level: number): Promise<Ba
     const levitate = enemyData.attributes.levitateImmune.m_defined ? enemyData.attributes.levitateImmune.m_value :
         baseData.attributes.levitateImmune.m_defined ? baseData.attributes.levitateImmune.m_value.toString() : false;
 
-    const embed = new EmbedBuilder()
+    const embed = new Djs.EmbedBuilder()
         .setColor(embedColour)
         .setTitle(title)
         .setThumbnail(paths.aceshipImageUrl + `/enemy/${enemyInfo.enemyId}.png`)
@@ -375,12 +375,12 @@ export async function buildEnemyMessage(enemy: Enemy, level: number): Promise<Ba
     if (enemyLevels === 1)
         return { embeds: [embed] };
 
-    const buttonRow = new ActionRowBuilder<ButtonBuilder>();
+    const buttonRow = new Djs.ActionRowBuilder<Djs.ButtonBuilder>();
     for (let i = 0; i < enemyLevels; i++) {
-        buttonRow.addComponents(new ButtonBuilder()
+        buttonRow.addComponents(new Djs.ButtonBuilder()
             .setCustomId(createCustomId('enemy', enemy.excel.enemyId, i))
             .setLabel(`Level ${i + 1}`)
-            .setStyle(ButtonStyle.Primary)
+            .setStyle(Djs.ButtonStyle.Primary)
         )
         if (i === level) {
             buttonRow.components[i].setDisabled(true);
@@ -389,19 +389,19 @@ export async function buildEnemyMessage(enemy: Enemy, level: number): Promise<Ba
 
     return { embeds: [embed], components: [buttonRow] };
 }
-export async function buildEventListMessage(index: number): Promise<BaseMessageOptions> {
+export async function buildEventListMessage(index: number): Promise<Djs.BaseMessageOptions> {
     const eventCount = 6;
 
     let eventArr = [];
-    const dataArr = await getAllEvents();
+    const dataArr = await api.all('event');
     for (const event of dataArr) {
         const skipLoginArr = ['LOGIN_ONLY', 'CHECKIN_ONLY', 'FLOAT_PARADE', 'PRAY_ONLY', 'GRID_GACHA_V2', 'GRID_GACHA']; // Skip login events
         if (skipLoginArr.includes(event.type)) continue;
         eventArr.push(event);
     }
-    eventArr.sort((first: GameEvent, second: GameEvent) => second.startTime - first.startTime); // Sort by descending start time
+    eventArr.sort((first: T.GameEvent, second: T.GameEvent) => second.startTime - first.startTime); // Sort by descending start time
 
-    const embed = new EmbedBuilder()
+    const embed = new Djs.EmbedBuilder()
         .setColor(embedColour)
         .setTitle('In-Game Events')
         .setDescription(`**Page ${index + 1} of ${Math.ceil(eventArr.length / eventCount)}**`);
@@ -414,31 +414,31 @@ export async function buildEventListMessage(index: number): Promise<BaseMessageO
         embed.addFields({ name: event.name, value: `${months[startDate.getMonth()]} ${startDate.getDate()}, ${startDate.getFullYear()} - ${months[endDate.getMonth()]} ${endDate.getDate()}, ${endDate.getFullYear()}` })
     }
 
-    const prevButton = new ButtonBuilder()
+    const prevButton = new Djs.ButtonBuilder()
         .setCustomId(createCustomId('events', index - 1))
         .setLabel('Newer')
-        .setStyle(ButtonStyle.Primary);
-    const nextButton = new ButtonBuilder()
+        .setStyle(Djs.ButtonStyle.Primary);
+    const nextButton = new Djs.ButtonBuilder()
         .setCustomId(createCustomId('events', index + 1))
         .setLabel('Older')
-        .setStyle(ButtonStyle.Primary);
-    const componentRow = new ActionRowBuilder<ButtonBuilder>().addComponents(prevButton, nextButton);
+        .setStyle(Djs.ButtonStyle.Primary);
+    const componentRow = new Djs.ActionRowBuilder<Djs.ButtonBuilder>().addComponents(prevButton, nextButton);
 
     if (index === 0) {
         prevButton.setDisabled(true);
-        prevButton.setStyle(ButtonStyle.Secondary);
+        prevButton.setStyle(Djs.ButtonStyle.Secondary);
     }
     if (index * eventCount + eventCount >= eventArr.length) {
         nextButton.setDisabled(true);
-        nextButton.setStyle(ButtonStyle.Secondary);
+        nextButton.setStyle(Djs.ButtonStyle.Secondary);
     }
 
     return { embeds: [embed], components: [componentRow] };
 }
-export async function buildHelpMessage(name: string): Promise<BaseMessageOptions> {
+export async function buildHelpMessage(name: string): Promise<Djs.BaseMessageOptions> {
     const command = globalCommands[name];
 
-    const embed = new EmbedBuilder()
+    const embed = new Djs.EmbedBuilder()
         .setColor(embedColour)
         .setTitle(command.name)
         .setDescription(command.description.join('\n\n'))
@@ -446,8 +446,8 @@ export async function buildHelpMessage(name: string): Promise<BaseMessageOptions
 
     return { embeds: [embed] };
 }
-export async function buildHelpListMessage(): Promise<BaseMessageOptions> {
-    const embed = new EmbedBuilder()
+export async function buildHelpListMessage(): Promise<Djs.BaseMessageOptions> {
+    const embed = new Djs.EmbedBuilder()
         .setColor(embedColour)
         .setTitle('Help Menu');
     embed.addFields({ name: 'Command List', value: Object.values(globalCommands).map(command => `\`${command.data.name}\``).join(', ') });
@@ -455,9 +455,9 @@ export async function buildHelpListMessage(): Promise<BaseMessageOptions> {
 
     return { embeds: [embed] };
 }
-export async function buildInfoMessage(op: Operator, type: number, page: number, level: number): Promise<BaseMessageOptions> {
+export async function buildInfoMessage(op: T.Operator, type: number, page: number, level: number): Promise<Djs.BaseMessageOptions> {
     const embedArr = [], fileArr = [], rowArr = [];
-    const getMessageComponents = (message: BaseMessageOptions) => {
+    const getMessageComponents = (message: Djs.BaseMessageOptions) => {
         if (message.embeds) embedArr.push(...message.embeds);
         if (message.files) fileArr.push(...message.files);
         if (message.components) rowArr.push(...message.components);
@@ -467,32 +467,32 @@ export async function buildInfoMessage(op: Operator, type: number, page: number,
     embedArr.push(embed);
 
     const typeLabels = ['Skills', 'Modules', 'Art', 'Base Skills', 'Costs'];
-    const typeRow = new ActionRowBuilder<ButtonBuilder>();
+    const typeRow = new Djs.ActionRowBuilder<Djs.ButtonBuilder>();
 
     for (let i = 0; i < 5; i++) {
-        const button = new ButtonBuilder()
+        const button = new Djs.ButtonBuilder()
             .setCustomId(createCustomId('info', op.id, i + 1, 0, 0))
             .setLabel(typeLabels[i])
-            .setStyle(ButtonStyle.Success);
+            .setStyle(Djs.ButtonStyle.Success);
         if (i + 1 === type)
             button.setCustomId('info_type_current')
                 .setDisabled(true);
         typeRow.addComponents(button);
     }
     if (!op.skills || op.skills.length === 0)
-        typeRow.components[0].setStyle(ButtonStyle.Secondary)
+        typeRow.components[0].setStyle(Djs.ButtonStyle.Secondary)
             .setDisabled(true);
     if (!op.modules || op.modules.length === 0)
-        typeRow.components[1].setStyle(ButtonStyle.Secondary)
+        typeRow.components[1].setStyle(Djs.ButtonStyle.Secondary)
             .setDisabled(true);
     if (!op.skins || op.skins.length === 0)
-        typeRow.components[2].setStyle(ButtonStyle.Secondary)
+        typeRow.components[2].setStyle(Djs.ButtonStyle.Secondary)
             .setDisabled(true);
     if (!op.bases || op.bases.length === 0)
-        typeRow.components[3].setStyle(ButtonStyle.Secondary)
+        typeRow.components[3].setStyle(Djs.ButtonStyle.Secondary)
             .setDisabled(true);
     if (gameConsts.rarity[op.data.rarity] <= 1)
-        typeRow.components[4].setStyle(ButtonStyle.Secondary)
+        typeRow.components[4].setStyle(Djs.ButtonStyle.Secondary)
             .setDisabled(true);
 
     switch (type) {
@@ -501,12 +501,12 @@ export async function buildInfoMessage(op: Operator, type: number, page: number,
 
             if (op.skills.length <= 1) break;
 
-            const pageRow = new ActionRowBuilder<ButtonBuilder>();
+            const pageRow = new Djs.ActionRowBuilder<Djs.ButtonBuilder>();
             for (let i = 0; i < op.skills.length; i++) {
-                const button = new ButtonBuilder()
+                const button = new Djs.ButtonBuilder()
                     .setCustomId(createCustomId('info', op.id, type, i, level))
                     .setLabel(`Skill ${i + 1}`)
-                    .setStyle(ButtonStyle.Primary);
+                    .setStyle(Djs.ButtonStyle.Primary);
                 if (i === page)
                     button.setCustomId('info_page_current')
                         .setDisabled(true);
@@ -520,12 +520,12 @@ export async function buildInfoMessage(op: Operator, type: number, page: number,
 
             if (op.modules.length <= 1) break;
 
-            const pageRow = new ActionRowBuilder<ButtonBuilder>();
+            const pageRow = new Djs.ActionRowBuilder<Djs.ButtonBuilder>();
             for (let i = 0; i < op.modules.length; i++) {
-                const button = new ButtonBuilder()
+                const button = new Djs.ButtonBuilder()
                     .setCustomId(createCustomId('info', op.id, type, i, level))
                     .setLabel(`Module ${i + 1}`)
-                    .setStyle(ButtonStyle.Primary);
+                    .setStyle(Djs.ButtonStyle.Primary);
                 if (i === page)
                     button.setCustomId('info_page_current')
                         .setDisabled(true);
@@ -554,10 +554,10 @@ export async function buildInfoMessage(op: Operator, type: number, page: number,
 
     return { embeds: embedArr, files: fileArr, components: rowArr };
 }
-export async function buildItemMessage(item: Item): Promise<BaseMessageOptions> {
+export async function buildItemMessage(item: T.Item): Promise<Djs.BaseMessageOptions> {
     const description = item.data.description !== null ? `${item.data.usage}\n\n${item.data.description}` : item.data.usage;
 
-    const embed = new EmbedBuilder()
+    const embed = new Djs.EmbedBuilder()
         .setColor(embedColour)
         .setTitle(item.data.name)
         .setDescription(description);
@@ -567,14 +567,14 @@ export async function buildItemMessage(item: Item): Promise<BaseMessageOptions> 
         const stageId = stageDrop.stageId;
         if (!stageId.includes('main') && !stageId.includes('sub')) continue;
 
-        const stage = (await getStageArr({ query: stageId, include: ['excel.code'] }))[0];
+        const stage = (await api.single('stage', { query: stageId, include: ['excel.code'] }))[0];
         stageString += `${stage.excel.code} - ${gameConsts.itemDropRarities[stageDrop.occPer]}\n`;
     }
     if (stageString !== '') {
         embed.addFields({ name: 'Drop Stages', value: stageString, inline: true });
     }
     if (item.formula !== null && item.formula.costs.length > 0) {
-        const formulaString = buildCostString(item.formula.costs, await getAllItems({ include: ['data'] }));
+        const formulaString = buildCostString(item.formula.costs, await api.all('item'));
         embed.addFields({ name: 'Crafting Formula', value: formulaString, inline: true });
     }
     const imagePath = paths.aceshipImageUrl + `/items/${item.data.iconId}.png`;
@@ -583,22 +583,22 @@ export async function buildItemMessage(item: Item): Promise<BaseMessageOptions> 
 
     return { embeds: [embed] };
 }
-export async function buildModuleMessage(op: Operator, page: number, level: number): Promise<BaseMessageOptions> {
+export async function buildModuleMessage(op: T.Operator, page: number, level: number): Promise<Djs.BaseMessageOptions> {
     const embed = buildModuleEmbed(op, page, level);
 
-    const lOne = new ButtonBuilder()
+    const lOne = new Djs.ButtonBuilder()
         .setCustomId(createCustomId('modules', op.id, page, 0))
         .setLabel('Lv1')
-        .setStyle(ButtonStyle.Secondary);
-    const lTwo = new ButtonBuilder()
+        .setStyle(Djs.ButtonStyle.Secondary);
+    const lTwo = new Djs.ButtonBuilder()
         .setCustomId(createCustomId('modules', op.id, page, 1))
         .setLabel('Lv2')
-        .setStyle(ButtonStyle.Secondary);
-    const lThree = new ButtonBuilder()
+        .setStyle(Djs.ButtonStyle.Secondary);
+    const lThree = new Djs.ButtonBuilder()
         .setCustomId(createCustomId('modules', op.id, page, 2))
         .setLabel('Lv3')
-        .setStyle(ButtonStyle.Secondary);
-    const rowOne = new ActionRowBuilder<ButtonBuilder>().addComponents(lOne, lTwo, lThree);
+        .setStyle(Djs.ButtonStyle.Secondary);
+    const rowOne = new Djs.ActionRowBuilder<Djs.ButtonBuilder>().addComponents(lOne, lTwo, lThree);
 
     switch (level) {
         case 0:
@@ -615,13 +615,13 @@ export async function buildModuleMessage(op: Operator, page: number, level: numb
     return { embeds: [embed], components: [rowOne] };
 }
 export async function buildNewMessage() {
-    const opName = (op: Operator) => `${gameConsts.rarity[op.data.rarity] + 1}★ ${op.data.name}`;
+    const opName = (op: T.Operator) => `${gameConsts.rarity[op.data.rarity] + 1}★ ${op.data.name}`;
 
-    const aboutInfo = await getAbout();
+    const aboutInfo = await api.about();
     const date = new Date(aboutInfo.date);
-    const newInfo = await getNew();
+    const newInfo = await api.recent();
 
-    const embed = new EmbedBuilder()
+    const embed = new Djs.EmbedBuilder()
         .setColor(embedColour)
         .setTitle('Newly Updated Game Data')
         .setDescription('Data fetched from: https://github.com/Kengxxiao/ArknightsGameData_YoStar\n' +
@@ -645,16 +645,11 @@ export async function buildNewMessage() {
         embed.addFields({ name: 'New Operators', value: opString });
 
     const skinString = (await Promise.all(newInfo.skin
-        ?.filter(skin => skin.meta.created !== skin.meta.updated
-            && !newInfo.operator
-                ?.filter(op => op.meta.created === op.meta.updated)
-                .map(op => op.value.id)
-                .includes(skin.value[0].avatarId)
-            && skin.value[0].displaySkin.modelName
-        )
+        ?.filter(skin => skin.meta.created === skin.meta.updated
+            && skin.value.displaySkin.skinName)
         .map(async skin => {
-            const op = await getOperator({ query: skin.canon, include: ['data.rarity', 'data.name'] });
-            return `${opName(op)} - ${skin.value[skin.value.length - 1].displaySkin.skinName}`
+            const op = await api.single('operator', { query: skin.value.charId, include: ['data.rarity', 'data.name'] });
+            return `${opName(op)} - ${skin.value.displaySkin.skinName}`;
         })))
         .sort().reverse()
         .join('\n');
@@ -663,10 +658,9 @@ export async function buildNewMessage() {
 
     const moduleString = (await Promise.all(newInfo.module
         ?.filter(module => module.meta.created === module.meta.updated
-            && module.value.data
-        )
+            && module.value.data)
         .map(async module => {
-            const op = await getOperator({ query: module.value.info.charId, include: ['data.rarity', 'data.name'] });
+            const op = await api.single('operator', { query: module.value.info.charId, include: ['data.rarity', 'data.name'] });
             return `${opName(op)} - ${module.value.info.uniEquipName}`
         })))
         .sort().reverse()
@@ -676,10 +670,9 @@ export async function buildNewMessage() {
 
     const paradoxString = (await Promise.all(newInfo.paradox
         ?.filter(paradox => paradox.meta.created === paradox.meta.updated
-            && paradox.value.levels
-        )
+            && paradox.value.levels)
         .map(async paradox => {
-            const op = await getOperator({ query: paradox.value.excel.charId, include: ['data.rarity', 'data.name'] });
+            const op = await api.single('operator', { query: paradox.value.excel.charId, include: ['data.rarity', 'data.name'] });
             return `${opName(op)} - ${paradox.value.excel.name}`
         })))
         .sort().reverse()
@@ -689,16 +682,16 @@ export async function buildNewMessage() {
 
     return { embeds: [embed] };
 }
-export async function buildParadoxMessage(paradox: Paradox, page: number): Promise<BaseMessageOptions> {
+export async function buildParadoxMessage(paradox: T.Paradox, page: number): Promise<Djs.BaseMessageOptions> {
     const stageInfo = paradox.excel;
     const stageData = paradox.levels;
-    const op = await getOperator({ query: stageInfo.charId });
+    const op = await api.single('operator', { query: stageInfo.charId });
 
     const authorField = buildAuthorField(op);
     const title = `Paradox Simulation - ${stageInfo.name}`;
     const description = removeStyleTags(stageInfo.description);
 
-    const embed = new EmbedBuilder()
+    const embed = new Djs.EmbedBuilder()
         .setColor(embedColour)
         .setAuthor(authorField)
         .setTitle(title)
@@ -706,15 +699,15 @@ export async function buildParadoxMessage(paradox: Paradox, page: number): Promi
 
     embed.addFields(await buildStageEnemyFields(stageData));
 
-    const imageButton = new ButtonBuilder()
+    const imageButton = new Djs.ButtonBuilder()
         .setCustomId(createCustomId('paradox', stageInfo.charId, 0))
         .setLabel('Preview')
-        .setStyle(ButtonStyle.Primary);
-    const diagramButton = new ButtonBuilder()
+        .setStyle(Djs.ButtonStyle.Primary);
+    const diagramButton = new Djs.ButtonBuilder()
         .setCustomId(createCustomId('paradox', stageInfo.charId, 1))
         .setLabel('Diagram')
-        .setStyle(ButtonStyle.Primary);
-    const buttonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(imageButton, diagramButton);
+        .setStyle(Djs.ButtonStyle.Primary);
+    const buttonRow = new Djs.ActionRowBuilder<Djs.ButtonBuilder>().addComponents(imageButton, diagramButton);
 
     switch (page) {
         case 0:
@@ -744,7 +737,7 @@ export async function buildParadoxMessage(paradox: Paradox, page: number): Promi
         return { embeds: [embed], components: [buttonRow] };
     }
 }
-export async function buildRecruitMessage(value: number, tag: string, select: boolean, snowflakes: string[]): Promise<BaseMessageOptions[]> {
+export async function buildRecruitMessage(value: number, tag: string, select: boolean, snowflakes: string[]): Promise<Djs.BaseMessageOptions[]> {
     if (select) {
         value *= gameConsts.tagValues[tag];
     }
@@ -753,10 +746,10 @@ export async function buildRecruitMessage(value: number, tag: string, select: bo
     }
 
     const button = (id: string, label: string) => {
-        return new ButtonBuilder()
+        return new Djs.ButtonBuilder()
             .setCustomId(createCustomId('recruit', value, id, 'select', ...snowflakes))
             .setLabel(label)
-            .setStyle(ButtonStyle.Secondary);
+            .setStyle(Djs.ButtonStyle.Secondary);
     }
     const starterButton = button('starter', 'Starter');
     const seniorButton = button('senior', 'Senior Operator');
@@ -788,21 +781,21 @@ export async function buildRecruitMessage(value: number, tag: string, select: bo
     const robotButton = button('robot', 'Robot');
     const deleteButton = button('delete', '🗑️ Clear Tags')
         .setDisabled(true)
-        .setStyle(ButtonStyle.Danger);
+        .setStyle(Djs.ButtonStyle.Danger);
 
     const qualComponents = [
-        new ActionRowBuilder<ButtonBuilder>().addComponents(starterButton, seniorButton, topButton),
-        new ActionRowBuilder<ButtonBuilder>().addComponents(meleeButton, rangedButton),
-        new ActionRowBuilder<ButtonBuilder>().addComponents(guardButton, medicButton, vanguardButton, casterButton, sniperButton),
-        new ActionRowBuilder<ButtonBuilder>().addComponents(defenderButton, supporterButton, specialistButton)
+        new Djs.ActionRowBuilder<Djs.ButtonBuilder>().addComponents(starterButton, seniorButton, topButton),
+        new Djs.ActionRowBuilder<Djs.ButtonBuilder>().addComponents(meleeButton, rangedButton),
+        new Djs.ActionRowBuilder<Djs.ButtonBuilder>().addComponents(guardButton, medicButton, vanguardButton, casterButton, sniperButton),
+        new Djs.ActionRowBuilder<Djs.ButtonBuilder>().addComponents(defenderButton, supporterButton, specialistButton)
     ];
     const tagComponents = [
-        new ActionRowBuilder<ButtonBuilder>().addComponents(healingButton, supportButton, dpsButton, aoeButton, slowButton),
-        new ActionRowBuilder<ButtonBuilder>().addComponents(survivalButton, defenseButton, debuffButton, shiftButton, crowdControlButton),
-        new ActionRowBuilder<ButtonBuilder>().addComponents(nukerButton, summonButton, fastRedeployButton, dpRecoveryButton, robotButton)
+        new Djs.ActionRowBuilder<Djs.ButtonBuilder>().addComponents(healingButton, supportButton, dpsButton, aoeButton, slowButton),
+        new Djs.ActionRowBuilder<Djs.ButtonBuilder>().addComponents(survivalButton, defenseButton, debuffButton, shiftButton, crowdControlButton),
+        new Djs.ActionRowBuilder<Djs.ButtonBuilder>().addComponents(nukerButton, summonButton, fastRedeployButton, dpRecoveryButton, robotButton)
     ];
     const utilComponents = [
-        new ActionRowBuilder<ButtonBuilder>().addComponents(deleteButton)
+        new Djs.ActionRowBuilder<Djs.ButtonBuilder>().addComponents(deleteButton)
     ];
 
     const components = []; components.push(...qualComponents, ...tagComponents);
@@ -818,7 +811,7 @@ export async function buildRecruitMessage(value: number, tag: string, select: bo
     for (const button of selectedButtons) {
         deleteButton.setDisabled(false);
         button.setCustomId(button.data.custom_id.replace('select', 'deselect'));
-        button.setStyle(ButtonStyle.Primary);
+        button.setStyle(Djs.ButtonStyle.Primary);
     }
     if (selectedButtons.length >= 5) {
         for (const actionRow of components) {
@@ -829,13 +822,13 @@ export async function buildRecruitMessage(value: number, tag: string, select: bo
         }
     }
 
-    const qualEmbed = new EmbedBuilder()
+    const qualEmbed = new Djs.EmbedBuilder()
         .setColor(embedColour)
         .setTitle('Qualification/Position/Class')
-    const tagEmbed = new EmbedBuilder()
+    const tagEmbed = new Djs.EmbedBuilder()
         .setColor(embedColour)
         .setTitle('Tags')
-    const recruitEmbed = new EmbedBuilder()
+    const recruitEmbed = new Djs.EmbedBuilder()
         .setColor(embedColour)
         .setTitle('Recruitment Calculator');
 
@@ -853,8 +846,8 @@ export async function buildRecruitMessage(value: number, tag: string, select: bo
         return result;
     }
     const primeArray = selectedButtons.map(x => gameConsts.tagValues[x.data.custom_id.split('ඞ')[2]]);
-    const opMap: { [key: number]: Operator[] } = getPrimeCombinations(primeArray).reduce((acc, combination) => { acc[combination] = []; return acc; }, {});
-    const opList = await getAllOperators({ include: ['id', 'recruit', 'data.rarity', 'data.name'] });
+    const opMap: { [key: number]: T.Operator[] } = getPrimeCombinations(primeArray).reduce((acc, combination) => { acc[combination] = []; return acc; }, {});
+    const opList = await api.all('operator', { include: ['id', 'recruit', 'data.rarity', 'data.name'] })
     for (const key of Object.keys(opMap)) {
         for (const op of opList) {
             if (!gameConsts.recruitPool.includes(op.id)) continue;
@@ -899,10 +892,10 @@ export async function buildRecruitMessage(value: number, tag: string, select: bo
 
     return [{ content: '', embeds: [qualEmbed], components: qualComponents }, { content: '', embeds: [tagEmbed], components: tagComponents }, { content: '', embeds: [recruitEmbed], components: utilComponents }];
 }
-export async function buildRogueRelicMessage(relic: RogueRelic): Promise<BaseMessageOptions> {
+export async function buildRogueRelicMessage(relic: T.RogueRelic): Promise<Djs.BaseMessageOptions> {
     const description = `***Cost:* ${relic.value}▲**\n${relic.description !== null ? `${relic.usage}\n\n${relic.description}` : relic.usage}`;
 
-    const embed = new EmbedBuilder()
+    const embed = new Djs.EmbedBuilder()
         .setColor(embedColour)
         .setTitle(relic.name)
         .setDescription(description);
@@ -913,8 +906,8 @@ export async function buildRogueRelicMessage(relic: RogueRelic): Promise<BaseMes
 
     return { embeds: [embed] };
 }
-export async function buildRogueRelicListMessage(theme: number, index: number): Promise<BaseMessageOptions> {
-    const rogueTheme = await getRogueTheme({ query: theme.toString(), include: ['name', 'relicDict'] });
+export async function buildRogueRelicListMessage(theme: number, index: number): Promise<Djs.BaseMessageOptions> {
+    const rogueTheme = await api.single('rogue', { query: theme.toString(), include: ['name', 'relicDict'] });
     const descriptionLengthLimit = 24;
     const columnCount = 2;
     let descIndex = -1;
@@ -981,7 +974,7 @@ export async function buildRogueRelicListMessage(theme: number, index: number): 
     }
     defaultArr.forEach(relic => pushDescription(`${relic}\n`));
 
-    const embed = new EmbedBuilder()
+    const embed = new Djs.EmbedBuilder()
         .setColor(embedColour)
         .setTitle(`*${rogueTheme.name}* Relics`)
         .setDescription(`**Page ${index + 1} of ${Math.ceil(descriptionArr.length / columnCount)}**`);
@@ -990,28 +983,28 @@ export async function buildRogueRelicListMessage(theme: number, index: number): 
         embed.addFields({ name: blankChar, value: descriptionArr[i].string, inline: true });
     }
 
-    const prevButton = new ButtonBuilder()
+    const prevButton = new Djs.ButtonBuilder()
         .setCustomId(createCustomId(`is${theme + 2}`, 'relic', index - 1))
         .setLabel('Previous')
-        .setStyle(ButtonStyle.Primary);
-    const nextButton = new ButtonBuilder()
+        .setStyle(Djs.ButtonStyle.Primary);
+    const nextButton = new Djs.ButtonBuilder()
         .setCustomId(createCustomId(`is${theme + 2}`, 'relic', index + 1))
         .setLabel('Next')
-        .setStyle(ButtonStyle.Primary);
-    const componentRow = new ActionRowBuilder<ButtonBuilder>().addComponents(prevButton, nextButton);
+        .setStyle(Djs.ButtonStyle.Primary);
+    const componentRow = new Djs.ActionRowBuilder<Djs.ButtonBuilder>().addComponents(prevButton, nextButton);
 
     if (index === 0) {
         prevButton.setDisabled(true);
-        prevButton.setStyle(ButtonStyle.Secondary);
+        prevButton.setStyle(Djs.ButtonStyle.Secondary);
     }
     if (index * columnCount + columnCount >= descriptionArr.length) {
         nextButton.setDisabled(true);
-        nextButton.setStyle(ButtonStyle.Secondary);
+        nextButton.setStyle(Djs.ButtonStyle.Secondary);
     }
 
     return { embeds: [embed], components: [componentRow] };
 }
-export async function buildRogueStageMessage(theme: number, stage: RogueStage, page: number): Promise<BaseMessageOptions> {
+export async function buildRogueStageMessage(theme: number, stage: T.RogueStage, page: number): Promise<Djs.BaseMessageOptions> {
     const stageInfo = stage.excel;
     const stageData = stage.levels;
     const isChallenge = stageInfo.difficulty !== 'NORMAL';
@@ -1019,7 +1012,7 @@ export async function buildRogueStageMessage(theme: number, stage: RogueStage, p
     const title = isChallenge ? `Emergency ${stageInfo.code} - ${stageInfo.name}` : `${stageInfo.code} - ${stageInfo.name}`;
     const description = isChallenge ? removeStyleTags(`${stageInfo.description}\n${stageInfo.eliteDesc}`) : removeStyleTags(stageInfo.description);
 
-    const embed = new EmbedBuilder()
+    const embed = new Djs.EmbedBuilder()
         .setColor(embedColour)
         .setTitle(title)
         .setURL(`${paths.stageViewerUrl}?level=${stage.excel.id.toLowerCase()}`)
@@ -1027,15 +1020,15 @@ export async function buildRogueStageMessage(theme: number, stage: RogueStage, p
 
     embed.addFields(await buildStageEnemyFields(stageData));
 
-    const imageButton = new ButtonBuilder()
+    const imageButton = new Djs.ButtonBuilder()
         .setCustomId(createCustomId(`is${theme + 2}`, 'stage', isChallenge, stageInfo.name, 0))
         .setLabel('Preview')
-        .setStyle(ButtonStyle.Primary);
-    const diagramButton = new ButtonBuilder()
+        .setStyle(Djs.ButtonStyle.Primary);
+    const diagramButton = new Djs.ButtonBuilder()
         .setCustomId(createCustomId(`is${theme + 2}`, 'stage', isChallenge, stageInfo.name, 1))
         .setLabel('Diagram')
-        .setStyle(ButtonStyle.Primary);
-    const buttonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(imageButton, diagramButton);
+        .setStyle(Djs.ButtonStyle.Primary);
+    const buttonRow = new Djs.ActionRowBuilder<Djs.ButtonBuilder>().addComponents(imageButton, diagramButton);
 
     switch (page) {
         case 0:
@@ -1065,39 +1058,39 @@ export async function buildRogueStageMessage(theme: number, stage: RogueStage, p
         return { embeds: [embed], components: [buttonRow] };
     }
 }
-export async function buildRogueVariationMessage(variation: RogueVariation): Promise<BaseMessageOptions> {
+export async function buildRogueVariationMessage(variation: T.RogueVariation): Promise<Djs.BaseMessageOptions> {
     const description = `${variation.functionDesc}\n\n${variation.desc}`;
 
-    const embed = new EmbedBuilder()
+    const embed = new Djs.EmbedBuilder()
         .setColor(embedColour)
         .setTitle(variation.outerName)
         .setDescription(description);
 
     return { embeds: [embed] };
 }
-export async function buildRogueVariationListMessage(theme: number): Promise<BaseMessageOptions> {
-    const rogueTheme = await getRogueTheme({ query: theme.toString(), include: ['name', 'variationDict'] });
+export async function buildRogueVariationListMessage(theme: number): Promise<Djs.BaseMessageOptions> {
+    const rogueTheme = await api.single('rogue', { query: theme.toString(), include: ['name', 'variationDict'] });
 
     let description = '';
     for (const variation of Object.values(rogueTheme.variationDict)) {
         description += `${variation.outerName}\n`;
     }
 
-    const embed = new EmbedBuilder()
+    const embed = new Djs.EmbedBuilder()
         .setColor(embedColour)
         .setTitle(`*${rogueTheme.name}* Floor Effects`)
         .setDescription(description);
 
     return { embeds: [embed] };
 }
-export async function buildSandboxStageMessage(stage: SandboxStage) {
+export async function buildSandboxStageMessage(stage: T.SandboxStage) {
     const stageInfo = stage.excel;
     const stageData = stage.levels;
 
     const title = `${stageInfo.code} - ${stageInfo.name}`;
     const description = removeStyleTags(stageInfo.description);
 
-    const embed = new EmbedBuilder()
+    const embed = new Djs.EmbedBuilder()
         .setColor(embedColour)
         .setTitle(title)
         .setURL(`${paths.stageViewerUrl}?level=${stage.excel.stageId.toLowerCase()}`)
@@ -1108,17 +1101,17 @@ export async function buildSandboxStageMessage(stage: SandboxStage) {
 
     return { embeds: [embed] };
 }
-export async function buildSkillMessage(op: Operator, page: number, level: number): Promise<BaseMessageOptions> {
+export async function buildSkillMessage(op: T.Operator, page: number, level: number): Promise<Djs.BaseMessageOptions> {
     const embed = await buildSkillEmbed(op, page, level);
 
-    const rowOne = new ActionRowBuilder<ButtonBuilder>();
-    const rowTwo = new ActionRowBuilder<ButtonBuilder>();
+    const rowOne = new Djs.ActionRowBuilder<Djs.ButtonBuilder>();
+    const rowTwo = new Djs.ActionRowBuilder<Djs.ButtonBuilder>();
 
     for (let i = 0; i < op.skills[page].levels.length; i++) {
-        const button = new ButtonBuilder()
+        const button = new Djs.ButtonBuilder()
             .setCustomId(createCustomId('skills', op.id, page, i))
             .setLabel(gameConsts.skillLevels[i])
-            .setStyle(i < 7 ? ButtonStyle.Secondary : ButtonStyle.Danger);
+            .setStyle(i < 7 ? Djs.ButtonStyle.Secondary : Djs.ButtonStyle.Danger);
         if (i === level) {
             button.setDisabled(true);
         }
@@ -1128,65 +1121,65 @@ export async function buildSkillMessage(op: Operator, page: number, level: numbe
 
     return { embeds: [embed], components: [rowOne, rowTwo] };
 }
-export async function buildSpineEnemyMessage(gifFile: string, enemy: Enemy, animArr: string[], anim: string, rand: number): Promise<BaseMessageOptions> {
+export async function buildSpineEnemyMessage(gifFile: string, enemy: T.Enemy, animArr: string[], anim: string, rand: number): Promise<Djs.BaseMessageOptions> {
     const id = enemy.excel.enemyId;
 
     const authorField = buildAuthorField(enemy);
 
     const gifPath = join(__dirname, 'spine', gifFile);
-    const gif = new AttachmentBuilder(gifPath);
+    const gif = new Djs.AttachmentBuilder(gifPath);
 
-    const animSelector = new StringSelectMenuBuilder()
+    const animSelector = new Djs.StringSelectMenuBuilder()
         .setCustomId(createCustomId('spine', 'enemy', id, null, null))
         .setPlaceholder(anim);
-    const componentRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(animSelector);
+    const componentRow = new Djs.ActionRowBuilder<Djs.StringSelectMenuBuilder>().addComponents(animSelector);
 
     for (let i = 0; i < Math.min(animArr.length, 25); i++) {
         if (animArr[i] === 'Default') continue; // Default animations are a single frame that lasts forever, they do not work and should not be shown
 
-        animSelector.addOptions(new StringSelectMenuOptionBuilder()
+        animSelector.addOptions(new Djs.StringSelectMenuOptionBuilder()
             .setLabel(animArr[i])
             .setValue(animArr[i])
         );
     }
 
-    const embed = new EmbedBuilder()
+    const embed = new Djs.EmbedBuilder()
         .setAuthor(authorField)
         .setImage(`attachment://${cleanFilename(gifFile)}`)
         .setColor(embedColour);
 
     return { content: '', embeds: [embed], files: [gif], components: [componentRow] };
 }
-export async function buildSpineOperatorMessage(gifFile: string, op: Operator, skin: string, set: string, direction: string, animArr: string[], anim: string, rand: number): Promise<BaseMessageOptions> {
+export async function buildSpineOperatorMessage(gifFile: string, op: T.Operator, skin: string, set: string, direction: string, animArr: string[], anim: string, rand: number): Promise<Djs.BaseMessageOptions> {
     const id = op.id;
 
     const authorField = buildAuthorField(op);
 
     const gifPath = join(__dirname, 'spine', gifFile);
-    const gif = new AttachmentBuilder(gifPath);
+    const gif = new Djs.AttachmentBuilder(gifPath);
 
-    const animSelector = new StringSelectMenuBuilder()
+    const animSelector = new Djs.StringSelectMenuBuilder()
         .setCustomId(createCustomId('spine', 'operator', id, skin, set, direction))
         .setPlaceholder(anim);
-    const componentRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(animSelector);
+    const componentRow = new Djs.ActionRowBuilder<Djs.StringSelectMenuBuilder>().addComponents(animSelector);
 
     for (let i = 0; i < Math.min(animArr.length, 25); i++) {
         if (animArr[i] === 'Default') continue; // Default animations are a single frame that lasts forever, they do not work and should not be shown
 
-        animSelector.addOptions(new StringSelectMenuOptionBuilder()
+        animSelector.addOptions(new Djs.StringSelectMenuOptionBuilder()
             .setLabel(animArr[i])
             .setValue(animArr[i])
         );
     }
 
-    const embed = new EmbedBuilder()
+    const embed = new Djs.EmbedBuilder()
         .setAuthor(authorField)
         .setImage(`attachment://${cleanFilename(gifFile)}`)
         .setColor(embedColour);
 
     return { content: '', embeds: [embed], files: [gif], components: [componentRow] };
 }
-export async function buildStageMessage(stage: Stage, page: number): Promise<BaseMessageOptions> {
+export async function buildStageMessage(stage: T.Stage, page: number): Promise<Djs.BaseMessageOptions> {
     const stageInfo = stage.excel;
     const stageData = stage.levels;
     const isChallenge = stageInfo.diffGroup === 'TOUGH' || stageInfo.difficulty === 'FOUR_STAR'
@@ -1194,7 +1187,7 @@ export async function buildStageMessage(stage: Stage, page: number): Promise<Bas
     const title = isChallenge ? `Challenge ${stageInfo.code} - ${stageInfo.name}` : `${stageInfo.code} - ${stageInfo.name}`;
     const description = removeStyleTags(stageInfo.description);
 
-    const embed = new EmbedBuilder()
+    const embed = new Djs.EmbedBuilder()
         .setColor(embedColour)
         .setTitle(title)
         .setURL(`${paths.stageViewerUrl}?level=${stage.excel.stageId.toLowerCase()}`)
@@ -1204,10 +1197,10 @@ export async function buildStageMessage(stage: Stage, page: number): Promise<Bas
     for (const item of stageInfo.stageDropInfo.displayDetailRewards) {
         switch (item.dropType) {
             case 'NORMAL':
-                regularString += `${(await getItem({ query: item.id })).data.name}\n`;
+                regularString += `${(await api.single('item', { query: item.id })).data.name}\n`;
                 break;
             case 'SPECIAL':
-                specialString += `${(await getItem({ query: item.id })).data.name}\n`;
+                specialString += `${(await api.single('item', { query: item.id })).data.name}\n`;
                 break;
         }
     }
@@ -1220,21 +1213,19 @@ export async function buildStageMessage(stage: Stage, page: number): Promise<Bas
 
     embed.addFields(await buildStageEnemyFields(stageData));
 
-    let stageIndex;
-    if (isChallenge)
-        stageIndex = (await getToughStageArr({ query: stage.excel.code.toLowerCase() })).findIndex(x => x.excel.stageId === stage.excel.stageId);
-    else
-        stageIndex = (await getStageArr({ query: stage.excel.code.toLowerCase() })).findIndex(x => x.excel.stageId === stage.excel.stageId)
+    const stageIndex = isChallenge
+        ? (await api.single('toughstage', { query: stage.excel.code.toLowerCase() })).findIndex(x => x.excel.stageId === stage.excel.stageId)
+        : (await api.single('stage', { query: stage.excel.code.toLowerCase() })).findIndex(x => x.excel.stageId === stage.excel.stageId)
 
-    const imageButton = new ButtonBuilder()
+    const imageButton = new Djs.ButtonBuilder()
         .setCustomId(createCustomId('stage', stage.excel.code, stageIndex, isChallenge, 0))
         .setLabel('Preview')
-        .setStyle(ButtonStyle.Primary);
-    const diagramButton = new ButtonBuilder()
+        .setStyle(Djs.ButtonStyle.Primary);
+    const diagramButton = new Djs.ButtonBuilder()
         .setCustomId(createCustomId('stage', stage.excel.code, stageIndex, isChallenge, 1))
         .setLabel('Diagram')
-        .setStyle(ButtonStyle.Primary);
-    const buttonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(imageButton, diagramButton);
+        .setStyle(Djs.ButtonStyle.Primary);
+    const buttonRow = new Djs.ActionRowBuilder<Djs.ButtonBuilder>().addComponents(imageButton, diagramButton);
 
     switch (page) {
         case 0:
@@ -1277,17 +1268,17 @@ export async function buildStageMessage(stage: Stage, page: number): Promise<Bas
         return { content: '', embeds: [embed], components: [buttonRow] };
     }
 }
-export async function buildStageSelectMessage(stageArr: Stage[] | RogueStage[]): Promise<BaseMessageOptions> {
-    const stageSelector = new StringSelectMenuBuilder()
+export async function buildStageSelectMessage(stageArr: T.Stage[] | T.RogueStage[]): Promise<Djs.BaseMessageOptions> {
+    const stageSelector = new Djs.StringSelectMenuBuilder()
         .setCustomId(createCustomId('stage', 'select', stageArr[0].excel.code))
         .setPlaceholder('Select a stage!');
-    const componentRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(stageSelector);
+    const componentRow = new Djs.ActionRowBuilder<Djs.StringSelectMenuBuilder>().addComponents(stageSelector);
 
     for (let i = 0; i < stageArr.length; i++) {
         const stage = stageArr[i];
         const name = `${stage.excel.code} - ${stage.excel.name}`;
 
-        stageSelector.addOptions(new StringSelectMenuOptionBuilder()
+        stageSelector.addOptions(new Djs.StringSelectMenuOptionBuilder()
             .setLabel(name)
             .setValue(`${i}`)
         );
@@ -1296,19 +1287,19 @@ export async function buildStageSelectMessage(stageArr: Stage[] | RogueStage[]):
     return { content: 'Multiple stages with that code were found, please select a stage below:', components: [componentRow] };
 }
 
-function buildInfoArtMessage(op: Operator, type: number, page: number, level: number): BaseMessageOptions {
+function buildInfoArtMessage(op: T.Operator, type: number, page: number, level: number): Djs.BaseMessageOptions {
     const embed = buildArtEmbed(op, page);
 
-    const rowOne = new ActionRowBuilder<ButtonBuilder>();
-    const rowTwo = new ActionRowBuilder<ButtonBuilder>();
+    const rowOne = new Djs.ActionRowBuilder<Djs.ButtonBuilder>();
+    const rowTwo = new Djs.ActionRowBuilder<Djs.ButtonBuilder>();
     const components = [];
 
     for (let i = 0; i < op.skins.length; i++) {
         const skinGroup = op.skins[i].displaySkin.skinGroupName;
-        const button = new ButtonBuilder()
+        const button = new Djs.ButtonBuilder()
             .setCustomId(createCustomId('info', op.id, type, i, level, 'skin'))
             .setLabel(skinGroup)
-            .setStyle(ButtonStyle.Primary);
+            .setStyle(Djs.ButtonStyle.Primary);
         if (i === page)
             button.setCustomId(`info_page_current`)
                 .setDisabled(true);
@@ -1324,43 +1315,43 @@ function buildInfoArtMessage(op: Operator, type: number, page: number, level: nu
 
     return { embeds: [embed], components: components };
 }
-async function buildInfoCostMessage(op: Operator, type: number, page: number, level: number): Promise<BaseMessageOptions> {
+async function buildInfoCostMessage(op: T.Operator, type: number, page: number, level: number): Promise<Djs.BaseMessageOptions> {
     const embed = await buildCostEmbed(op, page);
 
     const costLabels = ['Promotions', 'Skills', 'Masteries', 'Modules'];
-    const buttonRow = new ActionRowBuilder<ButtonBuilder>();
+    const buttonRow = new Djs.ActionRowBuilder<Djs.ButtonBuilder>();
     for (let i = 0; i < 4; i++) {
-        const button = new ButtonBuilder()
+        const button = new Djs.ButtonBuilder()
             .setCustomId(createCustomId('info', op.id, type, i, level, 'cost'))
             .setLabel(costLabels[i])
-            .setStyle(ButtonStyle.Primary);
+            .setStyle(Djs.ButtonStyle.Primary);
         if (i === page)
             button.setCustomId('info_page_current')
                 .setDisabled(true);
         buttonRow.addComponents(button);
     }
     if (op.data.skills.length == 0)
-        buttonRow.components[1].setStyle(ButtonStyle.Secondary)
+        buttonRow.components[1].setStyle(Djs.ButtonStyle.Secondary)
             .setDisabled(true);
     if (gameConsts.rarity[op.data.rarity] <= 2)
-        buttonRow.components[2].setStyle(ButtonStyle.Secondary)
+        buttonRow.components[2].setStyle(Djs.ButtonStyle.Secondary)
             .setDisabled(true);
     if (op.modules.length == 0)
-        buttonRow.components[3].setStyle(ButtonStyle.Secondary)
+        buttonRow.components[3].setStyle(Djs.ButtonStyle.Secondary)
             .setDisabled(true);
 
     return { embeds: [embed], components: [buttonRow] };
 }
-function buildInfoModuleMessage(op: Operator, type: number, page: number, level: number): BaseMessageOptions {
+function buildInfoModuleMessage(op: T.Operator, type: number, page: number, level: number): Djs.BaseMessageOptions {
     const embed = buildModuleEmbed(op, page, level);
 
-    const buttonRow = new ActionRowBuilder<ButtonBuilder>();
+    const buttonRow = new Djs.ActionRowBuilder<Djs.ButtonBuilder>();
 
     for (let i = 0; i < 3; i++) {
-        const button = new ButtonBuilder()
+        const button = new Djs.ButtonBuilder()
             .setCustomId(createCustomId('info', op.id, type, page, i, 'module'))
             .setLabel(gameConsts.skillLevels[i])
-            .setStyle(ButtonStyle.Secondary);
+            .setStyle(Djs.ButtonStyle.Secondary);
         if (i === level)
             button.setCustomId('info_level_current')
                 .setDisabled(true);
@@ -1369,18 +1360,18 @@ function buildInfoModuleMessage(op: Operator, type: number, page: number, level:
 
     return { embeds: [embed], components: [buttonRow] };
 }
-async function buildInfoSkillMessage(op: Operator, type: number, page: number, level: number): Promise<BaseMessageOptions> {
+async function buildInfoSkillMessage(op: T.Operator, type: number, page: number, level: number): Promise<Djs.BaseMessageOptions> {
     const embed = await buildSkillEmbed(op, page, level);
 
-    const rowOne = new ActionRowBuilder<ButtonBuilder>();
+    const rowOne = new Djs.ActionRowBuilder<Djs.ButtonBuilder>();
 
     for (let i = 0; i < op.skills[page].levels.length; i++) {
         if (i >= 1 && i <= 5) continue;
 
-        const button = new ButtonBuilder()
+        const button = new Djs.ButtonBuilder()
             .setCustomId(createCustomId('info', op.id, type, page, i, 'skill'))
             .setLabel(gameConsts.skillLevels[i])
-            .setStyle(i < 7 ? ButtonStyle.Secondary : ButtonStyle.Danger);
+            .setStyle(i < 7 ? Djs.ButtonStyle.Secondary : Djs.ButtonStyle.Danger);
         if (i === level)
             button.setCustomId('info_level_current')
                 .setDisabled(true);
@@ -1390,21 +1381,21 @@ async function buildInfoSkillMessage(op: Operator, type: number, page: number, l
     return { embeds: [embed], components: [rowOne] };
 }
 
-function buildAuthorField(char: Enemy | Operator): EmbedAuthorOptions {
-    if ((char as Operator).id && (char as Operator).data) {
-        const op = (char as Operator);
+function buildAuthorField(char: T.Enemy | T.Operator): Djs.EmbedAuthorOptions {
+    if ((char as T.Operator).id && (char as T.Operator).data) {
+        const op = (char as T.Operator);
         const urlName = op.data.name.toLowerCase().split(' the ').join('-').split(/'|,/).join('').split(' ').join('-').split('ë').join('e').split('ł').join('l');// Unholy dumbness
         const authorField = { name: op.data.name, iconURL: paths.aceshipImageUrl + `/avatars/${op.id}.png`, url: `https://gamepress.gg/arknights/operator/${urlName}` };
         return authorField;
     }
-    else if ((char as Enemy).excel) {
-        const enem = (char as Enemy);
+    else if ((char as T.Enemy).excel) {
+        const enem = (char as T.Enemy);
         const authorField = { name: enem.excel.name, iconURL: paths.aceshipImageUrl + `/enemy/${enem.excel.enemyId}.png` };
         return authorField;
     }
     return null;
 }
-function buildCostString(costs: LevelUpCost[], itemArr: Item[]): string {
+function buildCostString(costs: T.LevelUpCost[], itemArr: T.Item[]): string {
     let description = '';
     for (const cost of costs) {
         const item = itemArr.find(e => e.data.itemId === cost.id);
@@ -1412,7 +1403,7 @@ function buildCostString(costs: LevelUpCost[], itemArr: Item[]): string {
     }
     return description;
 }
-function buildRangeField(range: GridRange): EmbedField {
+function buildRangeField(range: T.GridRange): Djs.EmbedField {
     let left = 0, right = 0, top = 0, bottom = 0;
     for (const square of range.grids) {
         if (square.col < left)
@@ -1455,7 +1446,7 @@ function buildRangeField(range: GridRange): EmbedField {
     }
     return { name: 'Range', value: rangeString, inline: false };
 }
-function buildStageDiagramFields(stageData: StageData): EmbedField[] {
+function buildStageDiagramFields(stageData: T.StageData): Djs.EmbedField[] {
     const map = stageData.mapData.map;
     const tiles = stageData.mapData.tiles;
     let mapString = '', legendArr = [];
@@ -1476,7 +1467,7 @@ function buildStageDiagramFields(stageData: StageData): EmbedField[] {
 
     return [{ name: 'Map', value: mapString, inline: false }, { name: 'Legend', value: legendString, inline: false }];
 }
-async function buildStageEnemyFields(stageData: StageData): Promise<EmbedField[]> {
+async function buildStageEnemyFields(stageData: T.StageData): Promise<Djs.EmbedField[]> {
     const waveDict: { [key: string]: number } = {}; // enemyId => enemy quantity
     for (const wave of stageData.waves) { // Count number of enemies in stage, store results in waveDict
         for (const fragment of wave.fragments) {
@@ -1498,7 +1489,7 @@ async function buildStageEnemyFields(stageData: StageData): Promise<EmbedField[]
         }
     }
 
-    const enemyArr = await getAllEnemies({ include: ['excel.enemyId', 'excel.enemyIndex', 'excel.name', 'excel.enemyLevel', 'levels.Value.level'] });
+    const enemyArr = await api.all('enemy', { include: ['excel.enemyId', 'excel.enemyIndex', 'excel.name', 'excel.enemyLevel', 'levels.Value.level'] })
     let enemyString = '', eliteString = '', bossString = '';
     for (const enemyRef of stageData.enemyDbRefs) {
         const enemy = enemyArr.find(e => e.excel.enemyId === enemyRef.id);
@@ -1527,7 +1518,7 @@ async function buildStageEnemyFields(stageData: StageData): Promise<EmbedField[]
         }
     }
 
-    const fieldArr: EmbedField[] = [];
+    const fieldArr: Djs.EmbedField[] = [];
     if (enemyString !== '') {
         fieldArr.push({ name: 'Enemies', value: enemyString, inline: true });
     }
@@ -1541,10 +1532,10 @@ async function buildStageEnemyFields(stageData: StageData): Promise<EmbedField[]
     return fieldArr;
 }
 
-function buildArtEmbed(op: Operator, page: number): EmbedBuilder {
+function buildArtEmbed(op: T.Operator, page: number): Djs.EmbedBuilder {
     const displaySkin = op.skins[page].displaySkin;
 
-    const embed = new EmbedBuilder()
+    const embed = new Djs.EmbedBuilder()
         .setColor(embedColour)
         .setAuthor(buildAuthorField(op))
         .setTitle(`${displaySkin.skinGroupName}${displaySkin.skinName ? ` - ${displaySkin.skinName}` : ''}`)
@@ -1580,12 +1571,12 @@ function buildArtEmbed(op: Operator, page: number): EmbedBuilder {
 
     return embed;
 }
-async function buildCostEmbed(op: Operator, page: number): Promise<EmbedBuilder> {
-    const embed = new EmbedBuilder()
+async function buildCostEmbed(op: T.Operator, page: number): Promise<Djs.EmbedBuilder> {
+    const embed = new Djs.EmbedBuilder()
         .setColor(embedColour)
         .setAuthor(buildAuthorField(op));
 
-    const itemArr = await getAllItems({ include: ['data'] });
+    const itemArr = await api.all('item', { include: ['data'] });
     switch (page) {
         default:
         case 0: {
@@ -1642,10 +1633,10 @@ async function buildCostEmbed(op: Operator, page: number): Promise<EmbedBuilder>
 
     return embed;
 }
-function buildModuleEmbed(op: Operator, page: number, level: number): EmbedBuilder {
+function buildModuleEmbed(op: T.Operator, page: number, level: number): Djs.EmbedBuilder {
     const module = op.modules[page];
 
-    const embed = new EmbedBuilder()
+    const embed = new Djs.EmbedBuilder()
         .setColor(embedColour)
         .setAuthor(buildAuthorField(op))
         .setTitle(`${module.info.typeIcon.toUpperCase()} ${module.info.uniEquipName} - Lv${level + 1}`)
@@ -1678,8 +1669,8 @@ function buildModuleEmbed(op: Operator, page: number, level: number): EmbedBuild
 
     return embed;
 }
-function buildOperatorEmbed(op: Operator): EmbedBuilder {
-    const embed = new EmbedBuilder()
+function buildOperatorEmbed(op: T.Operator): Djs.EmbedBuilder {
+    const embed = new Djs.EmbedBuilder()
         .setColor(embedColour)
         .setTitle(`${op.data.name} - ${'★'.repeat(gameConsts.rarity[op.data.rarity] + 1)}`)
         .setURL(buildAuthorField(op).url)
@@ -1735,7 +1726,7 @@ function buildOperatorEmbed(op: Operator): EmbedBuilder {
 
     return embed;
 }
-async function buildSkillEmbed(op: Operator, page: number, level: number): Promise<EmbedBuilder> {
+async function buildSkillEmbed(op: T.Operator, page: number, level: number): Promise<Djs.EmbedBuilder> {
     const skill = op.skills[page];
     const skillLevel = skill.levels[level];
 
@@ -1743,7 +1734,7 @@ async function buildSkillEmbed(op: Operator, page: number, level: number): Promi
         `\n***Initial:* ${skillLevel.spData.initSp} SP - *Cost:* ${skillLevel.spData.spCost} SP${(skillLevel.duration && skillLevel.duration > 0) ? ` - *Duration:* ${skillLevel.duration} sec` : ''}**` +
         `\n${insertBlackboard(skillLevel.description, skillLevel.blackboard.concat({ key: 'duration', value: skillLevel.duration }))}`;
 
-    const embed = new EmbedBuilder()
+    const embed = new Djs.EmbedBuilder()
         .setColor(embedColour)
         .setAuthor(buildAuthorField(op))
         .setTitle(`${skillLevel.name} - ${gameConsts.skillLevels[level]}`)
@@ -1751,7 +1742,7 @@ async function buildSkillEmbed(op: Operator, page: number, level: number): Promi
         .setDescription(description);
 
     if (skillLevel.rangeId) {
-        const range = await getRange({ query: skillLevel.rangeId });
+        const range = await api.single('range', { query: skillLevel.rangeId });
         embed.addFields(buildRangeField(range));
     }
 

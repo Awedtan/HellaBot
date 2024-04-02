@@ -1,5 +1,5 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
-import { Command } from '../structures/Command';
+import Command from '../structures/Command';
 import { globalCommands } from '../structures/HellaBot';
 import { buildHelpListMessage, buildHelpMessage } from '../utils/build';
 

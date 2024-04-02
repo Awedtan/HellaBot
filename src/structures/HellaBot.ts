@@ -1,7 +1,7 @@
 import { ActivityType, Client, Collection, Events, GatewayIntentBits, REST, Routes } from 'discord.js';
 import { readdirSync } from 'fs';
 import { join } from 'path';
-import { Command } from './Command';
+import Command from './Command';
 
 export const globalCommands: { [key: string]: Command } = {};
 

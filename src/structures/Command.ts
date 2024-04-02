@@ -1,6 +1,6 @@
 import { AutocompleteInteraction, ButtonInteraction, ChatInputCommandInteraction, SlashCommandBuilder, StringSelectMenuInteraction } from "discord.js";
 
-export interface Command {
+export default interface Command {
     data: SlashCommandBuilder;
     name: string;
     description: string[];

@@ -1,6 +1,6 @@
 import { AutocompleteInteraction, ButtonInteraction, CacheType, ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
-import { Command } from '../structures/Command';
-import { getRogueTheme } from '../utils/api';
+import Command from '../structures/Command';
+import * as api from '../utils/api';
 import { autocompleteRogueRelic, autocompleteRogueStage, autocompleteRogueToughStage, autocompleteRogueVariation } from '../utils/autocomplete';
 import { buildRogueRelicListMessage, buildRogueRelicMessage, buildRogueStageMessage, buildRogueVariationListMessage, buildRogueVariationMessage } from '../utils/build';
 
@@ -100,7 +100,7 @@ export default class IS3Command implements Command {
 
         switch (type) {
             case 'normal': {
-                const stageDict = (await getRogueTheme({ query: innerIndex.toString(), include: ['stageDict'] })).stageDict;
+                const stageDict = (await api.single('rogue', { query: innerIndex.toString(), include: ['stageDict'] })).stageDict;
                 const stage = stageDict[name];
 
                 if (!stageDict.hasOwnProperty(name))
@@ -114,7 +114,7 @@ export default class IS3Command implements Command {
                 return await interaction.editReply(stageEmbed);
             }
             case 'emergency': {
-                const stageDict = (await getRogueTheme({ query: innerIndex.toString(), include: ['toughStageDict'] })).toughStageDict;
+                const stageDict = (await api.single('rogue', { query: innerIndex.toString(), include: ['toughStageDict'] })).toughStageDict;
                 const stage = stageDict[name];
 
                 if (!stageDict.hasOwnProperty(name))
@@ -135,7 +135,7 @@ export default class IS3Command implements Command {
                     return await interaction.editReply(relicListEmbed);
                 }
 
-                const relicDict = (await getRogueTheme({ query: innerIndex.toString(), include: ['relicDict'] })).relicDict;
+                const relicDict = (await api.single('rogue', { query: innerIndex.toString(), include: ['relicDict'] })).relicDict;
 
                 if (!relicDict.hasOwnProperty(name))
                     return await interaction.reply({ content: 'That relic doesn\'t exist!', ephemeral: true });
@@ -154,7 +154,7 @@ export default class IS3Command implements Command {
                     return await interaction.editReply(variationListEmbed);
                 }
 
-                const variationDict = (await getRogueTheme({ query: innerIndex.toString(), include: ['variationDict'] })).variationDict;
+                const variationDict = (await api.single('rogue', { query: innerIndex.toString(), include: ['variationDict'] })).variationDict;
 
                 if (!variationDict.hasOwnProperty(name))
                     return await interaction.reply({ content: 'That variation doesn\'t exist!', ephemeral: true });
@@ -180,8 +180,8 @@ export default class IS3Command implements Command {
             case 'stage': {
                 const stages = (
                     idArr[2] === 'true'
-                        ? (await getRogueTheme({ query: `${innerIndex}`, include: ['toughStageDict'] })).toughStageDict
-                        : (await getRogueTheme({ query: `${innerIndex}`, include: ['stageDict'] })).stageDict
+                        ? (await api.single('rogue', { query: `${innerIndex}`, include: ['toughStageDict'] })).toughStageDict
+                        : (await api.single('rogue', { query: `${innerIndex}`, include: ['stageDict'] })).stageDict
                 );
                 const stage = stages[idArr[3]];
                 const page = parseInt(idArr[4]);

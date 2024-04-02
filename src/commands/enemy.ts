@@ -1,6 +1,6 @@
 import { AutocompleteInteraction, ButtonInteraction, CacheType, ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
-import { Command } from '../structures/Command';
-import { getEnemy } from '../utils/api';
+import Command from '../structures/Command';
+import * as api from '../utils/api';
 import { autocompleteEnemy } from '../utils/autocomplete';
 import { buildEnemyMessage } from '../utils/build';
 
@@ -26,7 +26,7 @@ export default class EnemyCommand implements Command {
     };
     async execute(interaction: ChatInputCommandInteraction) {
         const name = interaction.options.getString('name').toLowerCase();
-        const enemy = await getEnemy({ query: name });
+        const enemy = await api.single('enemy', { query: name });
 
         if (!enemy)
             return await interaction.reply({ content: 'That enemy doesn\'t exist!', ephemeral: true });
@@ -37,7 +37,7 @@ export default class EnemyCommand implements Command {
         return await interaction.editReply(enemyEmbed);
     }
     async buttonResponse(interaction: ButtonInteraction<CacheType>, idArr: string[]) {
-        const enemy = await getEnemy({ query: idArr[1] });
+        const enemy = await api.single('enemy', { query: idArr[1] });
         const level = parseInt(idArr[2]);
 
         const enemyEmbed = await buildEnemyMessage(enemy, level);

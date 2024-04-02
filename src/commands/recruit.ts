@@ -1,5 +1,5 @@
 import { ButtonInteraction, CacheType, ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
-import { Command } from '../structures/Command';
+import Command from '../structures/Command';
 import { buildRecruitMessage } from '../utils/build';
 
 export default class RecruitCommand implements Command {

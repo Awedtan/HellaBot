@@ -1,7 +1,7 @@
 import { AutocompleteInteraction, ButtonInteraction, CacheType, ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
-import { Command } from '../structures/Command';
+import Command from '../structures/Command';
 import { Operator } from 'hella-types';
-import { getOperator } from '../utils/api';
+import * as api from '../utils/api';
 import { autocompleteOperator } from '../utils/autocomplete';
 import { buildSkillMessage } from '../utils/build';
 
@@ -37,7 +37,7 @@ export default class SkillCommand implements Command {
         const name = interaction.options.getString('name').toLowerCase();
         let index = interaction.options.getInteger('index') - 1;
 
-        const op = await getOperator({ query: name });
+        const op = await api.single('operator', { query: name });
 
         if (!op)
             return await interaction.reply({ content: 'That operator doesn\'t exist!', ephemeral: true });
@@ -63,7 +63,7 @@ export default class SkillCommand implements Command {
         }
     }
     async buttonResponse(interaction: ButtonInteraction<CacheType>, idArr: string[]) {
-        const op = await getOperator({ query: idArr[1] });
+        const op = await api.single('operator', { query: idArr[1] });
         const page = parseInt(idArr[2]);
         const level = parseInt(idArr[3]);
 

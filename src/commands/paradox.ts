@@ -1,7 +1,7 @@
 import { AutocompleteInteraction, ButtonInteraction, CacheType, ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
-import { Command } from '../structures/Command';
 import { Operator } from 'hella-types';
-import { getOperator, getParadox } from '../utils/api';
+import Command from '../structures/Command';
+import * as api from '../utils/api';
 import { autocompleteOperator } from '../utils/autocomplete';
 import { buildParadoxMessage } from '../utils/build';
 
@@ -28,7 +28,7 @@ export default class ParadoxCommand implements Command {
     }
     async execute(interaction: ChatInputCommandInteraction) {
         const name = interaction.options.getString('name').toLowerCase();
-        const op = await getOperator({ query: name });
+        const op = await api.single('operator', { query: name });
 
         if (!op)
             return await interaction.reply({ content: 'That operator doesn\'t exist!', ephemeral: true });
@@ -41,8 +41,8 @@ export default class ParadoxCommand implements Command {
         return await interaction.editReply(paradoxEmbed);
     }
     async buttonResponse(interaction: ButtonInteraction<CacheType>, idArr: string[]) {
-        const op = await getOperator({ query: idArr[1] });
-        const paradox = await getParadox({ query: op.id });
+        const op = await api.single('operator', { query: idArr[1] });
+        const paradox = await api.single('paradox', { query: op.id });
         const page = parseInt(idArr[2]);
 
         const paradoxEmbed = await buildParadoxMessage(paradox, page);

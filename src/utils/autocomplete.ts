@@ -1,5 +1,5 @@
-import { CCStage, Definition, Enemy, Item, Operator, RogueRelic, RogueStage, RogueVariation, SandboxStage, Skin, Stage } from "hella-types";
-import { getRogueTheme, getSandboxAct, getSkinArr, matchDefinition, matchEnemy, matchItem, matchOperator, matchRogueStage, matchRogueToughStage, matchStageArr } from "./api";
+import * as T from "hella-types";
+import * as api from "./api";
 const { gameConsts } = require('../constants');
 
 type AutocompleteParams = {
@@ -9,11 +9,11 @@ type AutocompleteParams = {
 const limit = 6;
 const splitMatch = (str: string, query: string) => str.toLowerCase().includes(query.toLowerCase()) || str.toLowerCase().split('\'').join('').includes(query.toLowerCase());
 
-export async function autocompleteCc(query: string, callback: (e: CCStage['const']) => boolean = () => true) {
-    const matchQuery = (stage: CCStage['const']) => splitMatch(stage.name, query) || splitMatch(stage.location, query) || splitMatch(stage.levelId.split('/')[2], query);
+export async function autocompleteCc(query: string, callback: (e: T.CCStage['const']) => boolean = () => true) {
+    const matchQuery = (stage: T.CCStage['const']) => splitMatch(stage.name, query) || splitMatch(stage.location, query) || splitMatch(stage.levelId.split('/')[2], query);
 
-    const filteredArr: CCStage['const'][] = [];
-    const ccStages: CCStage['const'][] = gameConsts.ccStages;
+    const filteredArr: T.CCStage['const'][] = [];
+    const ccStages: T.CCStage['const'][] = gameConsts.ccStages;
     let i = 0;
     for (const stage of ccStages) {
         if (i >= limit) break;
@@ -26,11 +26,11 @@ export async function autocompleteCc(query: string, callback: (e: CCStage['const
 
     return mappedArr;
 }
-export async function autocompleteDefine({ query, include = [] }: AutocompleteParams, callback: (e: Definition) => boolean = () => true) {
+export async function autocompleteDefine({ query, include = [] }: AutocompleteParams, callback: (e: T.Definition) => boolean = () => true) {
     const requiredInclude = ['termName'];
 
-    const definitionArr = await matchDefinition({ query, include: requiredInclude.concat(include) });
-    const filteredArr: Definition[] = [];
+    const definitionArr = await api.match('define', { query, include: requiredInclude.concat(include) })
+    const filteredArr: T.Definition[] = [];
     let i = 0;
     for (const define of definitionArr) {
         if (i >= limit) break;
@@ -42,11 +42,11 @@ export async function autocompleteDefine({ query, include = [] }: AutocompletePa
 
     return mappedArr;
 }
-export async function autocompleteEnemy({ query, include = [] }: AutocompleteParams, callback: (e: Enemy) => boolean = () => true) {
+export async function autocompleteEnemy({ query, include = [] }: AutocompleteParams, callback: (e: T.Enemy) => boolean = () => true) {
     const requiredInclude = ['excel.name', 'excel.enemyIndex', 'excel.enemyId'];
 
-    const enemyArr = await matchEnemy({ query, include: requiredInclude.concat(include) });
-    const filteredArr: Enemy[] = [];
+    const enemyArr = await api.match('enemy', { query, include: requiredInclude.concat(include) });
+    const filteredArr: T.Enemy[] = [];
     let i = 0;
     for (const enemy of enemyArr) {
         if (i >= limit) break;
@@ -58,12 +58,12 @@ export async function autocompleteEnemy({ query, include = [] }: AutocompletePar
 
     return mappedArr;
 }
-export async function autocompleteRogueRelic(theme: number, { query, include = [] }: AutocompleteParams, callback: (e: RogueRelic) => boolean = () => true) {
-    const matchQuery = (relic: RogueRelic) => splitMatch(relic.name, query);
+export async function autocompleteRogueRelic(theme: number, { query, include = [] }: AutocompleteParams, callback: (e: T.RogueRelic) => boolean = () => true) {
+    const matchQuery = (relic: T.RogueRelic) => splitMatch(relic.name, query);
     const requiredInclude = ['relicDict'];
 
-    const rogueTheme = await getRogueTheme({ query: theme.toString(), include: requiredInclude.concat(include) });
-    const filteredArr: RogueRelic[] = [];
+    const rogueTheme = await api.single('rogue', { query: theme.toString(), include: requiredInclude.concat(include) });
+    const filteredArr: T.RogueRelic[] = [];
     let i = 0;
     for (const relic of Object.values(rogueTheme.relicDict)) {
         if (i >= limit) break;
@@ -75,11 +75,11 @@ export async function autocompleteRogueRelic(theme: number, { query, include = [
 
     return mappedArr;
 }
-export async function autocompleteRogueStage(theme: number, { query, include = [] }: AutocompleteParams, callback: (e: RogueStage) => boolean = () => true) {
+export async function autocompleteRogueStage(theme: number, { query, include = [] }: AutocompleteParams, callback: (e: T.RogueStage) => boolean = () => true) {
     const requiredInclude = ['excel.id', 'excel.code', 'excel.name'];
 
-    const stageArr = await matchRogueStage(theme, { query, include: requiredInclude.concat(include) });
-    const filteredArr: RogueStage[] = [];
+    const stageArr = await api.matchRogueStage(theme, { query, include: requiredInclude.concat(include) });
+    const filteredArr: T.RogueStage[] = [];
     let i = 0;
     for (const stage of stageArr) {
         if (i >= limit) break;
@@ -91,11 +91,11 @@ export async function autocompleteRogueStage(theme: number, { query, include = [
 
     return mappedArr;
 }
-export async function autocompleteRogueToughStage(theme: number, { query, include = [] }: AutocompleteParams, callback: (e: RogueStage) => boolean = () => true) {
+export async function autocompleteRogueToughStage(theme: number, { query, include = [] }: AutocompleteParams, callback: (e: T.RogueStage) => boolean = () => true) {
     const requiredInclude = ['excel.id', 'excel.code', 'excel.name'];
 
-    const stageArr = await matchRogueToughStage(theme, { query, include: requiredInclude.concat(include) });
-    const filteredArr: RogueStage[] = [];
+    const stageArr = await api.matchRogueToughStage(theme, { query, include: requiredInclude.concat(include) });
+    const filteredArr: T.RogueStage[] = [];
     let i = 0;
     for (const stage of stageArr) {
         if (i >= limit) break;
@@ -107,12 +107,12 @@ export async function autocompleteRogueToughStage(theme: number, { query, includ
 
     return mappedArr;
 }
-export async function autocompleteRogueVariation(theme: number, { query, include = [] }: AutocompleteParams, callback: (e: RogueVariation) => boolean = () => true) {
-    const matchQuery = (variation: RogueVariation) => splitMatch(variation.outerName, query);
+export async function autocompleteRogueVariation(theme: number, { query, include = [] }: AutocompleteParams, callback: (e: T.RogueVariation) => boolean = () => true) {
+    const matchQuery = (variation: T.RogueVariation) => splitMatch(variation.outerName, query);
     const requiredInclude = ['variationDict'];
 
-    const rogueTheme = await getRogueTheme({ query: theme.toString(), include: requiredInclude.concat(include) });
-    const filteredArr: RogueVariation[] = [];
+    const rogueTheme = await api.single('rogue', { query: theme.toString(), include: requiredInclude.concat(include) });
+    const filteredArr: T.RogueVariation[] = [];
     let i = 0;
     for (const variation of Object.values(rogueTheme.variationDict)) {
         if (i >= limit) break;
@@ -124,12 +124,12 @@ export async function autocompleteRogueVariation(theme: number, { query, include
 
     return mappedArr;
 }
-export async function autocompleteSandboxStage(act: number, { query, include = [] }: AutocompleteParams, callback: (e: SandboxStage) => boolean = () => true) {
-    const matchQuery = (stage: SandboxStage) => splitMatch(stage.excel.name, query) || splitMatch(stage.excel.code, query);
+export async function autocompleteSandboxStage(act: number, { query, include = [] }: AutocompleteParams, callback: (e: T.SandboxStage) => boolean = () => true) {
+    const matchQuery = (stage: T.SandboxStage) => splitMatch(stage.excel.name, query) || splitMatch(stage.excel.code, query);
     const requiredInclude = ['stageDict'];
 
-    const sandboxAct = await getSandboxAct({ query: act.toString(), include: requiredInclude.concat(include) });
-    const filteredArr: SandboxStage[] = [];
+    const sandboxAct = await api.single('sandbox', { query: act.toString(), include: requiredInclude.concat(include) });
+    const filteredArr: T.SandboxStage[] = [];
     let i = 0;
     for (const stage of Object.values(sandboxAct.stageDict)) {
         if (i >= limit) break;
@@ -141,13 +141,13 @@ export async function autocompleteSandboxStage(act: number, { query, include = [
 
     return mappedArr;
 }
-export async function autocompleteSkin(op: Operator, { query, include = [] }: AutocompleteParams, callback: (e: Skin) => boolean = () => true) {
-    const matchQuery = (skin: Skin) => splitMatch(skin.displaySkin.skinName ?? 'default', query);
+export async function autocompleteSkin(op: T.Operator, { query, include = [] }: AutocompleteParams, callback: (e: T.Skin) => boolean = () => true) {
+    const matchQuery = (skin: T.Skin) => splitMatch(skin.displaySkin.skinName ?? 'default', query);
     const requiredInclude = ['displaySkin.skinName', 'skinId'];
 
-    const skinArr = await getSkinArr({ query: op.id, include: requiredInclude.concat(include) });
+    const skinArr = await api.search('skin', { search: { 'charId': op.id }, include: requiredInclude.concat(include) });
     if (!skinArr || skinArr.length === 0) return [];
-    const filteredArr: Skin[] = [];
+    const filteredArr: T.Skin[] = [];
     let i = 0;
     for (const skin of skinArr) {
         if (i >= limit) break;
@@ -159,11 +159,11 @@ export async function autocompleteSkin(op: Operator, { query, include = [] }: Au
 
     return mappedArr;
 }
-export async function autocompleteItem({ query, include = [] }: AutocompleteParams, callback: (e: Item) => boolean = () => true) {
+export async function autocompleteItem({ query, include = [] }: AutocompleteParams, callback: (e: T.Item) => boolean = () => true) {
     const requiredInclude = ['data.name'];
 
-    const itemArr = await matchItem({ query, include: requiredInclude.concat(include) });
-    const filteredArr: Item[] = [];
+    const itemArr = await api.match('item', { query, include: requiredInclude.concat(include) });
+    const filteredArr: T.Item[] = [];
     let i = 0;
     for (const item of itemArr) {
         if (i >= limit) break;
@@ -175,11 +175,11 @@ export async function autocompleteItem({ query, include = [] }: AutocompletePara
 
     return mappedArr;
 }
-export async function autocompleteOperator({ query, include = [] }: AutocompleteParams, callback: (e: Operator) => Boolean = () => true) {
+export async function autocompleteOperator({ query, include = [] }: AutocompleteParams, callback: (e: T.Operator) => Boolean = () => true) {
     const requiredInclude = ['data.name'];
 
-    const operatorArr = await matchOperator({ query, include: requiredInclude.concat(include) });
-    const filteredArr: Operator[] = [];
+    const operatorArr = await api.match('operator', { query, include: requiredInclude.concat(include) });
+    const filteredArr: T.Operator[] = [];
     let i = 0;
     for (const op of operatorArr) {
         if (i >= limit) break;
@@ -191,11 +191,11 @@ export async function autocompleteOperator({ query, include = [] }: Autocomplete
 
     return mappedArr;
 }
-export async function autocompleteStage({ query, include = [] }: AutocompleteParams, callback: (e: Stage) => boolean = () => true) {
+export async function autocompleteStage({ query, include = [] }: AutocompleteParams, callback: (e: T.Stage) => boolean = () => true) {
     const requiredInclude = ['excel.name', 'excel.code', 'excel.stageId'];
 
-    const stageArrArr = await matchStageArr({ query, include: requiredInclude.concat(include) });
-    const filteredArr: Stage[] = [];
+    const stageArrArr = await api.match('stage', { query, include: requiredInclude.concat(include) });
+    const filteredArr: T.Stage[] = [];
     let i = 0;
     for (const stageArr of stageArrArr) {
         for (const stage of stageArr) {
@@ -209,11 +209,11 @@ export async function autocompleteStage({ query, include = [] }: AutocompletePar
 
     return mappedArr;
 }
-export async function autocompleteToughStage({ query, include = [] }: AutocompleteParams, callback: (e: Stage) => boolean = () => true) {
+export async function autocompleteToughStage({ query, include = [] }: AutocompleteParams, callback: (e: T.Stage) => boolean = () => true) {
     const requiredInclude = ['excel.name', 'excel.code', 'excel.stageId'];
 
-    const stageArrArr = await matchStageArr({ query, include: requiredInclude.concat(include) });
-    const filteredArr: Stage[] = [];
+    const stageArrArr = await api.match('stage', { query, include: requiredInclude.concat(include) });
+    const filteredArr: T.Stage[] = [];
     let i = 0;
     for (const stageArr of stageArrArr) {
         for (const stage of stageArr) {

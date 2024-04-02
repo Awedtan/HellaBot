@@ -1,6 +1,6 @@
 import { AutocompleteInteraction, ButtonInteraction, CacheType, ChatInputCommandInteraction, SlashCommandBuilder, StringSelectMenuInteraction } from 'discord.js';
-import { Command } from '../structures/Command';
-import { getStageArr, getToughStageArr } from '../utils/api';
+import Command from '../structures/Command';
+import * as api from '../utils/api';
 import { autocompleteStage, autocompleteToughStage } from '../utils/autocomplete';
 import { buildStageMessage, buildStageSelectMessage } from '../utils/build';
 
@@ -58,7 +58,7 @@ export default class StageCommand implements Command {
 
         switch (type) {
             case 'normal': {
-                const stageArr = await getStageArr({ query: code });
+                const stageArr = await api.single('stage', { query: code });
 
                 if (!stageArr || stageArr.length === 0)
                     return await interaction.reply({ content: 'That stage doesn\'t exist!', ephemeral: true });
@@ -81,7 +81,7 @@ export default class StageCommand implements Command {
                 }
             }
             case 'challenge': {
-                const stageArr = await getToughStageArr({ query: code });
+                const stageArr = await api.single('toughstage', { query: code });
 
                 if (!stageArr || stageArr.length === 0)
                     return await interaction.reply({ content: 'That stage doesn\'t exist!', ephemeral: true });
@@ -106,14 +106,14 @@ export default class StageCommand implements Command {
         }
     }
     async buttonResponse(interaction: ButtonInteraction<CacheType>, idArr: string[]) {
-        const stage = idArr[3] === 'true' ? (await getToughStageArr({ query: idArr[1] }))[parseInt(idArr[2])] : (await getStageArr({ query: idArr[1] }))[parseInt(idArr[2])];
+        const stage = idArr[3] === 'true' ? (await api.single('toughstage', { query: idArr[1] }))[parseInt(idArr[2])] : (await api.single('stage', { query: idArr[1] }))[parseInt(idArr[2])];
         const page = parseInt(idArr[4]);
 
         const stageEmbed = await buildStageMessage(stage, page);
         await interaction.editReply(stageEmbed);
     }
     async selectResponse(interaction: StringSelectMenuInteraction<CacheType>, idArr: string[]) {
-        const stage = (await getStageArr({ query: idArr[2] }))[interaction.values[0]];
+        const stage = (await api.single('stage', { query: idArr[2] }))[interaction.values[0]];
 
         const stageEmbed = await buildStageMessage(stage, 0);
         await interaction.editReply(stageEmbed);

@@ -1,8 +1,8 @@
 import { AutocompleteInteraction, ButtonInteraction, CacheType, ChatInputCommandInteraction, SlashCommandBuilder, StringSelectMenuInteraction } from 'discord.js';
-import { Command } from '../structures/Command';
-import { getCc } from '../utils/api';
-import { buildCcMessage, buildCcSelectMessage } from '../utils/build';
+import Command from '../structures/Command';
+import * as api from '../utils/api';
 import { autocompleteCc } from '../utils/autocomplete';
+import { buildCcMessage, buildCcSelectMessage } from '../utils/build';
 const { gameConsts } = require('../constants');
 
 export default class CCCommand implements Command {
@@ -65,7 +65,7 @@ export default class CCCommand implements Command {
         switch (type) {
             case 'stage': {
                 const name = interaction.options.getString('name').toLowerCase();
-                const stage = await getCc({ query: name });
+                const stage = await api.single('cc', { query: name });
 
                 if (!stage || !stage.const || !stage.levels)
                     return await interaction.reply({ content: 'That stage data doesn\'t exist!', ephemeral: true });
@@ -89,14 +89,14 @@ export default class CCCommand implements Command {
         }
     }
     async buttonResponse(interaction: ButtonInteraction<CacheType>, idArr: string[]) {
-        const stage = await getCc({ query: idArr[1] })
+        const stage = await api.single('cc', { query: idArr[1] });
         const page = parseInt(idArr[2]);
 
         const ccEmbed = await buildCcMessage(stage, page);
         await interaction.editReply(ccEmbed);
     }
     async selectResponse(interaction: StringSelectMenuInteraction<CacheType>, idArr: string[]) {
-        const stage = await getCc({ query: interaction.values[0] })
+        const stage = await api.single('cc', { query: interaction.values[0] });
 
         const ccEmbed = await buildCcMessage(stage, 0);
         await interaction.editReply(ccEmbed);

@@ -1,8 +1,8 @@
 import { AutocompleteInteraction, CacheType, ChatInputCommandInteraction, SlashCommandBuilder, StringSelectMenuInteraction } from 'discord.js';
 import { promises, unlinkSync } from 'fs';
 import { join } from 'path';
-import { Command } from '../structures/Command';
-import { getEnemy, getOperator } from '../utils/api';
+import Command from '../structures/Command';
+import * as api from '../utils/api';
 import { autocompleteEnemy, autocompleteOperator, autocompleteSkin } from '../utils/autocomplete';
 import { buildSpineEnemyMessage, buildSpineOperatorMessage } from '../utils/build';
 import * as spineHelper from '../utils/spine/spineHelper';
@@ -102,7 +102,7 @@ export default class SpineCommand implements Command {
                     }
                     case 'skin': {
                         const name = interaction.options.getString('name').toLowerCase();
-                        const op = await getOperator({ query: name });
+                        const op = await api.single('operator', { query: name });
                         const arr = await autocompleteSkin(op, { query: focused.value, include: ['id'] });
                         return await interaction.respond(arr);
                     }
@@ -124,7 +124,7 @@ export default class SpineCommand implements Command {
                 const skin = interaction.options.getString('skin')?.toLowerCase() ?? 'default';
                 const set = interaction.options.getString('set')?.toLowerCase() ?? 'battle';
                 let direction = interaction.options.getString('direction')?.toLowerCase() ?? 'front';
-                const op = await getOperator({ query: name, include: ['id', 'data', 'skins'] });
+                const op = await api.single('operator', { query: name, include: ['id', 'data', 'skins'] });
 
                 if (!op)
                     return await interaction.reply({ content: `That ${type} doesn\'t exist!`, ephemeral: true });
@@ -159,7 +159,7 @@ export default class SpineCommand implements Command {
                 break;
             }
             case 'enemy': {
-                const enemy = await getEnemy({ query: name, include: ['excel'] });
+                const enemy = await api.single('enemy', { query: name, include: ['excel']});
 
                 if (!enemy)
                     return await interaction.reply({ content: `That ${type} doesn\'t exist!`, ephemeral: true });
@@ -204,7 +204,7 @@ export default class SpineCommand implements Command {
 
         switch (type) {
             case 'operator': {
-                const op = await getOperator({ query: id, include: ['id', 'data', 'skins'] });
+                const op = await api.single('operator', { query: id, include: ['id', 'data', 'skins'] });
                 const skelData = await spineHelper.loadSkel(type, skin, set, direction);
                 const animArr = getSkelAnims(skelData);
                 const { page, browser, random } = await spineHelper.launchPage(type, skin, set, direction, anim);
@@ -222,7 +222,7 @@ export default class SpineCommand implements Command {
                 break;
             }
             case 'enemy': {
-                const enemy = await getEnemy({ query: id, include: ['excel'] });
+                const enemy = await api.single('enemy', { query: id, include: ['excel'] });
                 const skelData = await spineHelper.loadSkel(type, id, null, null);
                 const animArr = getSkelAnims(skelData);
                 const { page, browser, random } = await spineHelper.launchPage(type, id, null, null, anim);
