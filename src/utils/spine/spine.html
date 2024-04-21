@@ -37,7 +37,6 @@
     const vType = vars.get('type');
     const vSet = vars.get('set');
     const vId = vars.get('id');
-    const vDirection = vars.get('direction');
     const vAnimation = vars.get('animation');
     const vRandom = vars.get('random');
     let spinePath;
@@ -98,7 +97,7 @@
 
     async function init() {
         // This is here cause its async, and no top level async allowed
-        spinePath = await getSpineUrl(vType, vId, vSet, vDirection);
+        spinePath = await getSpineUrl(vType, vId, vSet);
 
         // MY STUFF ABOVE HERE --------------------------------------------------------------------------------------------
 

@@ -22,13 +22,13 @@ async function enemyPageClose(browser, interaction, enemy, animArr, anim, random
 
     if (await fileExists(gifPath)) unlinkSync(gifPath);
 }
-async function operatorPageClose(browser, interaction, op, skin, set, direction, animArr, anim, random) {
+async function operatorPageClose(browser, interaction, op, skin, set, animArr, anim, random) {
     await new Promise(r => setTimeout(r, 1000));
     await browser.close();
 
     const gifFile = join(skin + random + '.gif');
     const gifPath = join(__dirname, '..', 'utils', 'spine', gifFile);
-    const spineEmbed = await buildSpineOperatorMessage(gifFile, op, skin, set, direction, animArr, anim, random);
+    const spineEmbed = await buildSpineOperatorMessage(gifFile, op, skin, set, animArr, anim, random);
     await interaction.editReply(spineEmbed);
 
     if (await fileExists(gifPath)) unlinkSync(gifPath);
@@ -56,16 +56,9 @@ export default class SpineCommand implements Command {
                     option.setName('set')
                         .setDescription('Operator animation set')
                         .addChoices(
-                            { name: 'battle', value: 'battle' },
-                            { name: 'base', value: 'build' }
-                        )
-                )
-                .addStringOption(option =>
-                    option.setName('direction')
-                        .setDescription('Operator direction')
-                        .addChoices(
                             { name: 'front', value: 'front' },
-                            { name: 'back', value: 'back' }
+                            { name: 'back', value: 'back' },
+                            { name: 'base', value: 'build' }
                         )
                 )
         )
@@ -82,12 +75,12 @@ export default class SpineCommand implements Command {
     name = 'Spine';
     description = [
         'Render an operator or enemy\'s spine animations and send it as a GIF.',
-        '`operator`: render an operator\'s spine animations. The `[skin]`, `[set]`, and `[direction]` fields are all optional. If not specified, `default`, `battle`, and `front` will be used.',
+        '`operator`: render an operator\'s spine animations. The `[skin]` and `[set]` fields are optional. If not specified, the values `default` and `front` will be used, respectively.',
         '`enemy`: render an enemy\'s spine animations.'
     ];
     usage = [
         '`/spine operator [operator]`',
-        '`/spine operator [operator] [skin] [set] [direction]`',
+        '`/spine operator [operator] [skin] [set]`',
         '`/spine enemy [enemy]`'
     ];
     async autocomplete(interaction: AutocompleteInteraction) {
@@ -122,8 +115,7 @@ export default class SpineCommand implements Command {
         switch (type) {
             case 'operator': {
                 const skin = interaction.options.getString('skin')?.toLowerCase() ?? 'default';
-                const set = interaction.options.getString('set')?.toLowerCase() ?? 'battle';
-                let direction = interaction.options.getString('direction')?.toLowerCase() ?? 'front';
+                const set = interaction.options.getString('set')?.toLowerCase() ?? 'front';
                 const op = await api.single('operator', { query: name, include: ['id', 'data', 'skins'] });
 
                 if (!op)
@@ -131,9 +123,8 @@ export default class SpineCommand implements Command {
                 if (skin !== 'default' && !op.skins.some(s => s.battleSkin.skinOrPrefabId.toLowerCase() === skin || s.displaySkin.skinName?.toLowerCase() === skin))
                     return await interaction.reply({ content: 'That skin doesn\'t exist!', ephemeral: true });
 
-                if (op.data.subProfessionId === 'bard') direction = 'front';
                 const skinId = op.skins.find(s => s.battleSkin.skinOrPrefabId.toLowerCase() === skin || s.displaySkin.skinName?.toLowerCase() === skin)?.battleSkin.skinOrPrefabId.toLowerCase() ?? op.id;
-                const skelData = await spineHelper.loadSkel(type, skinId, set, direction);
+                const skelData = await spineHelper.loadSkel(type, skinId, set);
 
                 if (!skelData)
                     return await interaction.reply({ content: 'There was an error while loading the spine data!', ephemeral: true });
@@ -145,10 +136,10 @@ export default class SpineCommand implements Command {
 
                 await interaction.deferReply();
 
-                const { page, browser, random } = await spineHelper.launchPage(type, skinId, set, direction, animArr[0]);
+                const { page, browser, random } = await spineHelper.launchPage(type, skinId, set, animArr[0]);
                 page.on('console', async message => {
                     if (message.text() === 'done') {
-                        await operatorPageClose(browser, interaction, op, skinId, set, direction, animArr, animArr[0], random);
+                        await operatorPageClose(browser, interaction, op, skinId, set, animArr, animArr[0], random);
                     }
                 }).on('pageerror', async ({ message }) => {
                     await browser.close();
@@ -159,7 +150,7 @@ export default class SpineCommand implements Command {
                 break;
             }
             case 'enemy': {
-                const enemy = await api.single('enemy', { query: name, include: ['excel']});
+                const enemy = await api.single('enemy', { query: name, include: ['excel'] });
 
                 if (!enemy)
                     return await interaction.reply({ content: `That ${type} doesn\'t exist!`, ephemeral: true });
@@ -197,7 +188,6 @@ export default class SpineCommand implements Command {
         const id = idArr[2];
         const skin = idArr[3];
         const set = idArr[4];
-        const direction = idArr[5];
         const anim = interaction.values[0];
 
         await interaction.editReply({ content: `Generating \`${anim}\` gif...`, components: [] });
@@ -205,12 +195,12 @@ export default class SpineCommand implements Command {
         switch (type) {
             case 'operator': {
                 const op = await api.single('operator', { query: id, include: ['id', 'data', 'skins'] });
-                const skelData = await spineHelper.loadSkel(type, skin, set, direction);
+                const skelData = await spineHelper.loadSkel(type, skin, set);
                 const animArr = getSkelAnims(skelData);
-                const { page, browser, random } = await spineHelper.launchPage(type, skin, set, direction, anim);
+                const { page, browser, random } = await spineHelper.launchPage(type, skin, set, anim);
                 page.on('console', async message => {
                     if (message.text() === 'done') {
-                        await operatorPageClose(browser, interaction, op, skin, set, direction, animArr, anim, random)
+                        await operatorPageClose(browser, interaction, op, skin, set, animArr, anim, random)
                     }
                 }
                 ).on('pageerror', async ({ message }) => {

@@ -28,7 +28,7 @@ export default class ParadoxCommand implements Command {
     }
     async execute(interaction: ChatInputCommandInteraction) {
         const name = interaction.options.getString('name').toLowerCase();
-        const op = await api.single('operator', { query: name });
+        const op = await api.single('operator', { query: name, include: ['id', 'data', 'paradox'] });
 
         if (!op)
             return await interaction.reply({ content: 'That operator doesn\'t exist!', ephemeral: true });
@@ -37,15 +37,14 @@ export default class ParadoxCommand implements Command {
 
         await interaction.deferReply();
 
-        const paradoxEmbed = await buildParadoxMessage(op.paradox, 0);
+        const paradoxEmbed = await buildParadoxMessage(op, 0);
         return await interaction.editReply(paradoxEmbed);
     }
     async buttonResponse(interaction: ButtonInteraction<CacheType>, idArr: string[]) {
-        const op = await api.single('operator', { query: idArr[1] });
-        const paradox = await api.single('paradox', { query: op.id });
+        const op = await api.single('operator', { query: idArr[1], include: ['id', 'data', 'paradox'] });
         const page = parseInt(idArr[2]);
 
-        const paradoxEmbed = await buildParadoxMessage(paradox, page);
+        const paradoxEmbed = await buildParadoxMessage(op, page);
         await interaction.editReply(paradoxEmbed);
     }
 }

@@ -37,7 +37,7 @@ export default class SkillCommand implements Command {
         const name = interaction.options.getString('name').toLowerCase();
         let index = interaction.options.getInteger('index') - 1;
 
-        const op = await api.single('operator', { query: name });
+        const op = await api.single('operator', { query: name, include: ['id', 'data', 'skills'] });
 
         if (!op)
             return await interaction.reply({ content: 'That operator doesn\'t exist!', ephemeral: true });
@@ -63,7 +63,7 @@ export default class SkillCommand implements Command {
         }
     }
     async buttonResponse(interaction: ButtonInteraction<CacheType>, idArr: string[]) {
-        const op = await api.single('operator', { query: idArr[1] });
+        const op = await api.single('operator', { query: idArr[1], include: ['id', 'data', 'skills'] });
         const page = parseInt(idArr[2]);
         const level = parseInt(idArr[3]);
 

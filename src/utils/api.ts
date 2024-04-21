@@ -130,7 +130,7 @@ export async function about() {
     return (await res.json())[0];
 }
 
-export async function recent() {
+export async function newEn() {
     const path = new PathBuilder().route('new').toString();
     const res = await fetch(path);
     if (!res.ok) return null;

@@ -617,15 +617,23 @@ export async function buildModuleMessage(op: T.Operator, page: number, level: nu
 export async function buildNewMessage() {
     const opName = (op: T.Operator) => `${gameConsts.rarity[op.data.rarity] + 1}★ ${op.data.name}`;
 
+    const opCache = {};
+    async function getOp(id: string) {
+        if (!opCache[id]) {
+            opCache[id] = await api.single('operator', { query: id, include: ['data.rarity', 'data.name'] });
+        }
+        return opCache[id];
+    }
+
     const aboutInfo = await api.about();
     const date = new Date(aboutInfo.date);
-    const newInfo = await api.recent();
+    const newInfo = await api.newEn();
 
     const embed = new Djs.EmbedBuilder()
         .setColor(embedColour)
         .setTitle('Newly Updated Game Data')
         .setDescription('Data fetched from: https://github.com/Kengxxiao/ArknightsGameData_YoStar\n' +
-            `Latest commit: \`${aboutInfo.updated}\`\n` +
+            `Latest commit: \`${aboutInfo.hash}\`\n` +
             `Last updated at: \`${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()} ${date.toTimeString().slice(0, 8)}\``);
 
     const archetypeString = newInfo.archetype
@@ -648,7 +656,7 @@ export async function buildNewMessage() {
         ?.filter(skin => skin.meta.created === skin.meta.updated
             && skin.value.displaySkin.skinName)
         .map(async skin => {
-            const op = await api.single('operator', { query: skin.value.charId, include: ['data.rarity', 'data.name'] });
+            const op = await getOp(skin.value.charId);
             return `${opName(op)} - ${skin.value.displaySkin.skinName}`;
         })))
         .sort().reverse()
@@ -660,7 +668,7 @@ export async function buildNewMessage() {
         ?.filter(module => module.meta.created === module.meta.updated
             && module.value.data)
         .map(async module => {
-            const op = await api.single('operator', { query: module.value.info.charId, include: ['data.rarity', 'data.name'] });
+            const op = await getOp(module.value.info.charId);
             return `${opName(op)} - ${module.value.info.uniEquipName}`
         })))
         .sort().reverse()
@@ -672,7 +680,7 @@ export async function buildNewMessage() {
         ?.filter(paradox => paradox.meta.created === paradox.meta.updated
             && paradox.value.levels)
         .map(async paradox => {
-            const op = await api.single('operator', { query: paradox.value.excel.charId, include: ['data.rarity', 'data.name'] });
+            const op = await getOp(paradox.value.excel.charId);
             return `${opName(op)} - ${paradox.value.excel.name}`
         })))
         .sort().reverse()
@@ -682,10 +690,10 @@ export async function buildNewMessage() {
 
     return { embeds: [embed] };
 }
-export async function buildParadoxMessage(paradox: T.Paradox, page: number): Promise<Djs.BaseMessageOptions> {
+export async function buildParadoxMessage(op: T.Operator, page: number): Promise<Djs.BaseMessageOptions> {
+    const paradox = op.paradox;
     const stageInfo = paradox.excel;
     const stageData = paradox.levels;
-    const op = await api.single('operator', { query: stageInfo.charId });
 
     const authorField = buildAuthorField(op);
     const title = `Paradox Simulation - ${stageInfo.name}`;
@@ -1150,7 +1158,7 @@ export async function buildSpineEnemyMessage(gifFile: string, enemy: T.Enemy, an
 
     return { content: '', embeds: [embed], files: [gif], components: [componentRow] };
 }
-export async function buildSpineOperatorMessage(gifFile: string, op: T.Operator, skin: string, set: string, direction: string, animArr: string[], anim: string, rand: number): Promise<Djs.BaseMessageOptions> {
+export async function buildSpineOperatorMessage(gifFile: string, op: T.Operator, skin: string, set: string, animArr: string[], anim: string, rand: number): Promise<Djs.BaseMessageOptions> {
     const id = op.id;
 
     const authorField = buildAuthorField(op);
@@ -1159,7 +1167,7 @@ export async function buildSpineOperatorMessage(gifFile: string, op: T.Operator,
     const gif = new Djs.AttachmentBuilder(gifPath);
 
     const animSelector = new Djs.StringSelectMenuBuilder()
-        .setCustomId(createCustomId('spine', 'operator', id, skin, set, direction))
+        .setCustomId(createCustomId('spine', 'operator', id, skin, set))
         .setPlaceholder(anim);
     const componentRow = new Djs.ActionRowBuilder<Djs.StringSelectMenuBuilder>().addComponents(animSelector);
 

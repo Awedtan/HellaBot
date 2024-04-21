@@ -41,7 +41,7 @@ export default class CostCommand implements Command {
     async execute(interaction: ChatInputCommandInteraction) {
         const name = interaction.options.getString('name').toLowerCase();
         const page = parseInt(interaction.options.getString('type'));
-        const op = await api.single('operator', { query: name });
+        const op = await api.single('operator', { query: name, include: ['id', 'data', 'skills', 'modules'] });
 
         if (!op)
             return await interaction.reply({ content: 'That operator doesn\'t exist!', ephemeral: true });
@@ -54,7 +54,7 @@ export default class CostCommand implements Command {
         return await interaction.editReply(costEmbed);
     }
     async buttonResponse(interaction: ButtonInteraction<CacheType>, idArr: string[]) {
-        const op = await api.single('operator', { query: idArr[1] });
+        const op = await api.single('operator', { query: idArr[1], include: ['id', 'data', 'skills', 'modules'] });
         const page = parseInt(idArr[2]);
 
         const costEmbed = await buildCostMessage(op, page);

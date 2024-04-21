@@ -3,9 +3,9 @@ const path = require('path');
 const puppeteer = require('puppeteer');
 const XMLHttpRequest = require('w3c-xmlhttprequest').XMLHttpRequest;
 
-async function loadSkel(type, id, set, direction) {
+async function loadSkel(type, id, set) {
     try {
-        const skelPath = await getSpineUrl(type, id, set, direction) + '.skel';
+        const skelPath = await getSpineUrl(type, id, set) + '.skel';
         const assetManager = new spine.AssetManager();
         assetManager.loadBinary(skelPath);
         let loadCount = 0;
@@ -24,12 +24,11 @@ async function loadSkel(type, id, set, direction) {
     }
 }
 
-async function launchPage(type, id, set, direction, animation) {
+async function launchPage(type, id, set, animation) {
     const random = Math.floor(Math.random() * 1000000);
 
     let options = `?type=${type}&id=${encodeURIComponent(id)}&random=${random}`;
     if (set) options += `&set=${set}`;
-    if (direction) options += `&direction=${direction}`;
     if (animation) options += `&animation=${animation}`;
 
     const browser = await puppeteer.launch({ headless: 'new', args: ["--no-sandbox", "--disabled-setupid-sandbox"] });

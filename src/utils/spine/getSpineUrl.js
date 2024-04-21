@@ -1,4 +1,4 @@
-async function getSpineUrl(type, id, set, direction) {
+async function getSpineUrl(type, id, set) {
     const urlExists = async url => (await fetch(url)).status === 200;
     const myAssetUrl = "https://raw.githubusercontent.com/Awedtan/HellaAssets/main";
     const enemySpineIdOverride = {
@@ -26,7 +26,7 @@ async function getSpineUrl(type, id, set, direction) {
             }
         }
         else {
-            spinePath = `${myAssetUrl}/spine/${type}/${set}/${id}/${direction}/${id}`;
+            spinePath = `${myAssetUrl}/spine/${type}/battle/${id}/${set}/${id}`;
         }
     }
     else {

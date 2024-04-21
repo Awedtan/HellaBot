@@ -28,7 +28,7 @@ export default class ArtCommand implements Command {
     }
     async execute(interaction: ChatInputCommandInteraction) {
         const name = interaction.options.getString('name').toLowerCase();
-        const op = await api.single('operator', { query: name });
+        const op = await api.single('operator', { query: name, include: ['id', 'data', 'skins'] });
 
         if (!op)
             return await interaction.reply({ content: 'That operator doesn\'t exist!', ephemeral: true });
@@ -41,7 +41,7 @@ export default class ArtCommand implements Command {
         return await interaction.editReply(skinEmbed);
     }
     async buttonResponse(interaction: ButtonInteraction<CacheType>, idArr: string[]) {
-        const op = await api.single('operator', { query: idArr[1] });
+        const op = await api.single('operator', { query: idArr[1], include: ['id', 'data', 'skins'] });
         const page = parseInt(idArr[2]);
         const skinEmbed = await buildArtMessage(op, page);
 
