@@ -215,7 +215,7 @@ export default class SpineCommand implements Command {
                 const enemy = await api.single('enemy', { query: id, include: ['excel'] });
                 const skelData = await spineHelper.loadSkel(type, id, null, null);
                 const animArr = getSkelAnims(skelData);
-                const { page, browser, random } = await spineHelper.launchPage(type, id, null, null, anim);
+                const { page, browser, random } = await spineHelper.launchPage(type, id, null, anim);
                 page.on('console', async message => {
                     if (message.text() === 'done') {
                         await enemyPageClose(browser, interaction, enemy, animArr, anim, random);
