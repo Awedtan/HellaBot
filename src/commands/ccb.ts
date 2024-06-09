@@ -2,7 +2,7 @@ import { AutocompleteInteraction, ButtonInteraction, CacheType, ChatInputCommand
 import Command from '../structures/Command';
 import * as api from '../utils/api';
 import { autocompleteCcb } from '../utils/autocomplete';
-import { buildCcMessage, buildCcbSelectMessage } from '../utils/build';
+import { buildCcbMessage, buildCcbSelectMessage } from '../utils/build';
 const { gameConsts } = require('../constants');
 
 export default class CCBCommand implements Command {
@@ -59,7 +59,7 @@ export default class CCBCommand implements Command {
 
                 await interaction.deferReply();
 
-                const ccbEmbed = await buildCcMessage(stage, 0);
+                const ccbEmbed = await buildCcbMessage(stage, 0);
                 return await interaction.editReply(ccbEmbed);
             }
             case 'season': {
@@ -79,13 +79,13 @@ export default class CCBCommand implements Command {
         const stage = await api.single('ccb', { query: idArr[1] });
         const page = parseInt(idArr[2]);
 
-        const ccbEmbed = await buildCcMessage(stage, page);
+        const ccbEmbed = await buildCcbMessage(stage, page);
         await interaction.editReply(ccbEmbed);
     }
     async selectResponse(interaction: StringSelectMenuInteraction<CacheType>, idArr: string[]) {
         const stage = await api.single('ccb', { query: interaction.values[0] });
 
-        const ccbEmbed = await buildCcMessage(stage, 0);
+        const ccbEmbed = await buildCcbMessage(stage, 0);
         await interaction.editReply(ccbEmbed);
     }
 }

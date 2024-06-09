@@ -162,7 +162,60 @@ export async function buildCcMessage(stage: T.CCStage, page: number): Promise<Dj
     }
 
     if (page === 0) {
-        const imagePath = paths.myAssetUrl + `/stages/${stageInfo.levelId.split('/')[2]}.png`;
+        const imagePath = paths.myAssetUrl + `/stages/${stageInfo.levelId.split('/')[stageInfo.levelId.split('/').length - 1]}.png`;
+        if (await urlExists(imagePath)) {
+            embed.setImage(imagePath)
+
+            return { content: '', embeds: [embed], components: [buttonRow] };
+        }
+        else {
+            embed.addFields(buildStageDiagramFields(stageData));
+
+            return { content: '', embeds: [embed], components: [] };
+        }
+    }
+    else {
+        embed.addFields(buildStageDiagramFields(stageData));
+
+        return { content: '', embeds: [embed], components: [buttonRow] };
+    }
+}
+export async function buildCcbMessage(stage: T.CCStage, page: number): Promise<Djs.BaseMessageOptions> {
+    const stageInfo = stage.const;
+    const stageData = stage.levels;
+
+    const title = `${stageInfo.location} - ${stageInfo.name}`;
+    const description = removeStyleTags(stageInfo.description);
+
+    const embed = new Djs.EmbedBuilder()
+        .setColor(embedColour)
+        .setTitle(title)
+        .setURL(`${paths.stageViewerUrl}?level=${stage.const.levelId.toLowerCase()}`)
+        .setDescription(description);
+
+    embed.addFields(await buildStageEnemyFields(stageData));
+
+    const imageButton = new Djs.ButtonBuilder()
+        .setCustomId(createCustomId('ccb', stage.const.name.toLowerCase(), 0))
+        .setLabel('Preview')
+        .setStyle(Djs.ButtonStyle.Primary);
+    const diagramButton = new Djs.ButtonBuilder()
+        .setCustomId(createCustomId('ccb', stage.const.name.toLowerCase(), 1))
+        .setLabel('Diagram')
+        .setStyle(Djs.ButtonStyle.Primary);
+    const buttonRow = new Djs.ActionRowBuilder<Djs.ButtonBuilder>().addComponents(imageButton, diagramButton);
+
+    switch (page) {
+        case 0:
+            imageButton.setDisabled(true);
+            break;
+        case 1:
+            diagramButton.setDisabled(true);
+            break;
+    }
+
+    if (page === 0) {
+        const imagePath = paths.myAssetUrl + `/stages/${stageInfo.levelId.replace('level_', '').split('/')[stageInfo.levelId.replace('level_', '').split('/').length - 1]}.png`;
         if (await urlExists(imagePath)) {
             embed.setImage(imagePath)
 
