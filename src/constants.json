@@ -328,10 +328,17 @@
             }
         ],
         "ccbSeasons": {
+            "poo": [
+                "Research Base Quarantine Zone",
+                "Area 13 Ruins",
+                "Beach Repair",
+                "Muddy Bog"
+            ],
             "1": [
                 "Ashen Swampland",
                 "Fortified Pass",
                 "Federal Prison",
+                "Beach Repair",
                 "Area 13 Ruins"
             ]
         },

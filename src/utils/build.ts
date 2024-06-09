@@ -196,6 +196,22 @@ export async function buildCcSelectMessage(season: string): Promise<Djs.BaseMess
 
     return { content: `Please select a stage from CC#${season} below:`, components: [componentRow] };
 }
+export async function buildCcbSelectMessage(season: string): Promise<Djs.BaseMessageOptions> {
+    const ccbSelector = new Djs.StringSelectMenuBuilder()
+        .setCustomId(createCustomId('ccb', 'select'))
+        .setPlaceholder('Select a stage!');
+    const componentRow = new Djs.ActionRowBuilder<Djs.StringSelectMenuBuilder>().addComponents(ccbSelector);
+
+    const names: string = gameConsts.ccbSeasons[season];
+    for (const name of names) {
+        ccbSelector.addOptions(new Djs.StringSelectMenuOptionBuilder()
+            .setLabel(name)
+            .setValue(name.toLowerCase())
+        );
+    }
+
+    return { content: `Please select a stage from CCB#${season} below:`, components: [componentRow] };
+}
 export async function buildCostMessage(op: T.Operator, page: number): Promise<Djs.BaseMessageOptions> {
     const embed = await buildCostEmbed(op, page);
 

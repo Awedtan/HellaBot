@@ -22,7 +22,24 @@ export async function autocompleteCc(query: string, callback: (e: T.CCStage['con
         i++;
     }
 
-    const mappedArr = filteredArr.map(stage => ({ name: `${stage.location} - ${stage.name}`, value: stage.levelId.split('/')[2] }));
+    const mappedArr = filteredArr.map(stage => ({ name: `${stage.location} - ${stage.name}`, value: stage.levelId.split('/')[stage.levelId.split('/').length - 1] }));
+
+    return mappedArr;
+}
+export async function autocompleteCcb(query: string, callback: (e: T.CCStage['const']) => boolean = () => true) {
+    const matchQuery = (stage: T.CCStage['const']) => splitMatch(stage.name, query) || splitMatch(stage.location, query) || splitMatch(stage.levelId.split('/')[2], query);
+
+    const filteredArr: T.CCStage['const'][] = [];
+    const ccbStages: T.CCStage['const'][] = gameConsts.ccbStages;
+    let i = 0;
+    for (const stage of ccbStages) {
+        if (i >= limit) break;
+        if (filteredArr.includes(stage) || !matchQuery(stage) || !callback(stage)) continue;
+        filteredArr.push(stage);
+        i++;
+    }
+
+    const mappedArr = filteredArr.map(stage => ({ name: `${stage.location} - ${stage.name}`, value: stage.levelId.split('/')[stage.levelId.split('/').length - 1] }));
 
     return mappedArr;
 }

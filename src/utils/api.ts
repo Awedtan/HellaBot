@@ -35,6 +35,7 @@ type ObjectMap = {
     'archetype': string;
     'base': T.Base;
     'cc': T.CCStage;
+    'ccb': T.CCStage;
     'define': T.Definition;
     'enemy': T.Enemy;
     'event': T.GameEvent;
