@@ -317,14 +317,66 @@
             {
                 "levelId": "obt/rune/level_rune_14-01",
                 "location": "Barrenlands",
-                "name": "Nameless Shelter",
-                "description": "TBD"
+                "name": "Nameless Sanctuary",
+                "description": "A hideout in the barrens where the ancient Sarkaz altars are still operational. Outsiders are not welcome here, and naturally, armed Rhodes Island operators will not be treated kindly.\n<Originium Altar> Periodically emits Pulse Waves to the 4 surrounding tiles, damaging both allied and enemy units."
             },
             {
                 "levelId": "obt/rune/level_rune_14-02",
                 "location": "Victoria",
-                "name": "Misty Warzone",
+                "name": "Foggy Warzone",
+                "description": "Fog envelops Londinium, hiding Sarkaz within. Be vigilant, advance carefully, and don't be thrown off by the enemy's ambush."
+            }
+        ],
+        "ccbSeasons": {
+            "1": [
+                "Ashen Swampland",
+                "Fortified Pass",
+                "Federal Prison",
+                "Area 13 Ruins"
+            ]
+        },
+        "ccbStages": [
+            {
+                "levelId": "obt/crisis/v2/level_crisis_v2_01-01",
+                "location": "Victoria",
+                "name": "Ashen Swampland",
+                "description": "Time and again, this place has been ravaged by the flames of war and the forces of nature. But after each disaster, the reeds are able to raise their soot-covered heads once more. Will you resist to the very end like the reeds, or will you accept failure like the ashes blanketing the ground?\n<Reeds> Operators within gain Camouflage"
+            },
+            {
+                "levelId": "obt/crisis/v2/level_crisis_v2_01-02",
+                "location": "Yan",
+                "name": "Fortified Pass",
+                "description": "A fortified army checkpoint since ancient times, used offensively as a springboard for clearing out bandits and defensively as insurance to fall back to. Recently, a Shanhaizhong force has gathered to capture the pass for use as their base of operations. The army has no plans to let them have their way, and neither should you.\n<Yumen Catastrophe Defenses> Units placed here deal more damage to ground units and take less damage from ground units."
+            },
+            {
+                "levelId": "obt/crisis/v2/level_crisis_v2_01-03",
+                "location": "Columbia",
+                "name": "Federal Prison",
                 "description": "TBD"
+            },
+            {
+                "levelId": "obt/crisis/v2/level_crisis_v2_01-04",
+                "location": "qwer",
+                "name": "TBD",
+                "description": "TBD"
+            },
+            {
+                "levelId": "obt/crisis/v2/level_crisis_v2_01-05",
+                "location": "Bolívar",
+                "name": "Beach Repair",
+                "description": "Repairs are underway at the artificial beach, but disgruntled drunkards who lost their favorite drinking spot are causing trouble at the work site. Do not let them have their way."
+            },
+            {
+                "levelId": "obt/crisis/v2/level_crisis_v2_01-06",
+                "location": "asdf",
+                "name": "TBD",
+                "description": "TBD"
+            },
+            {
+                "levelId": "obt/crisis/v2/level_crisis_v2_01-07",
+                "location": "Chernobog",
+                "name": "Area 13 Ruins",
+                "description": "One of Chernobog's central districts has been seriously contaminated by Originium. The Reunion garrison here has lost all sense of reason, indiscriminately attacking anything they see. This madness must end."
             }
         ],
         "eliteLevels": {
