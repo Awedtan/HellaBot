@@ -356,9 +356,9 @@
             },
             {
                 "levelId": "obt/crisis/v2/level_crisis_v2_01-04",
-                "location": "qwer",
-                "name": "TBD",
-                "description": "TBD"
+                "location": "Columbia",
+                "name": "Research Base Quarantine Zone",
+                "description": "Former experimental products are wreaking havoc in Site 359's quarantine zone, along with disgruntled former Rhine Lab employees. It is time they woke up from their dream."
             },
             {
                 "levelId": "obt/crisis/v2/level_crisis_v2_01-05",
@@ -368,9 +368,9 @@
             },
             {
                 "levelId": "obt/crisis/v2/level_crisis_v2_01-06",
-                "location": "asdf",
-                "name": "TBD",
-                "description": "TBD"
+                "location": "Victoria",
+                "name": "Muddy Bog",
+                "description": "Ghosts leave no traces in the mud. Their malice is hidden amongst the reeds, waiting to spread like wildfire when the wind blows. "
             },
             {
                 "levelId": "obt/crisis/v2/level_crisis_v2_01-07",
