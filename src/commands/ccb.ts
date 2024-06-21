@@ -27,6 +27,7 @@ export default class CCBCommand implements Command {
                         .setDescription('Season #')
                         .setRequired(true)
                         .addChoices(
+                            { name: 'poo', value: 'poo' },
                             { name: '1', value: '1' }
                         )
                 )
