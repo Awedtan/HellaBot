@@ -44,7 +44,7 @@ export async function autocompleteCcb(query: string, callback: (e: T.CCStage['co
     return mappedArr;
 }
 export async function autocompleteDefine({ query, include = [] }: AutocompleteParams, callback: (e: T.Definition) => boolean = () => true) {
-    const requiredInclude = ['termName'];
+    const requiredInclude = ['termName', 'termId'];
 
     const definitionArr = await api.match('define', { query, include: requiredInclude.concat(include) })
     const filteredArr: T.Definition[] = [];
@@ -55,7 +55,7 @@ export async function autocompleteDefine({ query, include = [] }: AutocompletePa
         filteredArr.push(define);
         i++;
     }
-    const mappedArr = filteredArr.slice(0, limit).map(define => ({ name: define.termName, value: define.termName }));
+    const mappedArr = filteredArr.slice(0, limit).map(define => ({ name: define.termName, value: define.termId }));
 
     return mappedArr;
 }
@@ -172,12 +172,15 @@ export async function autocompleteSkin(op: T.Operator, { query, include = [] }: 
         filteredArr.push(skin);
         i++;
     }
-    const mappedArr = filteredArr.map(skin => ({ name: skin.displaySkin.skinName ?? 'Default', value: skin.displaySkin.skinName ? skin.skinId.split('@').join('_') : 'default' }));
+    const mappedArr = filteredArr.map(skin => ({
+        name: skin.displaySkin.skinName ?? 'Default',
+        value: skin.displaySkin.skinName ? skin.skinId.split('@').join('_') : 'default'
+    }));
 
     return mappedArr;
 }
 export async function autocompleteItem({ query, include = [] }: AutocompleteParams, callback: (e: T.Item) => boolean = () => true) {
-    const requiredInclude = ['data.name'];
+    const requiredInclude = ['data.name', 'data.itemId'];
 
     const itemArr = await api.match('item', { query, include: requiredInclude.concat(include) });
     const filteredArr: T.Item[] = [];
@@ -188,12 +191,12 @@ export async function autocompleteItem({ query, include = [] }: AutocompletePara
         filteredArr.push(item);
         i++;
     }
-    const mappedArr = filteredArr.map(item => ({ name: item.data.name, value: item.data.name }));
+    const mappedArr = filteredArr.map(item => ({ name: item.data.name, value: item.data.itemId }));
 
     return mappedArr;
 }
 export async function autocompleteOperator({ query, include = [] }: AutocompleteParams, callback: (e: T.Operator) => Boolean = () => true) {
-    const requiredInclude = ['data.name'];
+    const requiredInclude = ['id', 'data.name'];
 
     const operatorArr = await api.match('operator', { query, include: requiredInclude.concat(include) });
     const filteredArr: T.Operator[] = [];
@@ -204,7 +207,7 @@ export async function autocompleteOperator({ query, include = [] }: Autocomplete
         filteredArr.push(op);
         i++;
     }
-    const mappedArr = filteredArr.map(op => ({ name: op.data.name, value: op.data.name }));
+    const mappedArr = filteredArr.map(op => ({ name: op.data.name, value: op.id }));
 
     return mappedArr;
 }
