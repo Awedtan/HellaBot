@@ -9,10 +9,9 @@ const cleanFilename = (text: string) => text.split(/%|[#\+]|&|\[|\]/).join(''); 
 const urlExists = async (url: string) => (await fetch(url)).status === 200;
 const createCustomId = (...args: (string | number | boolean)[]): string => args.join('ඞ').toLowerCase();
 function removeStyleTags(text: string) {
-    if (!text) return '';
-    const regex = /<.[a-z]{2,5}?\.[^<]+>|<\/[^<]*>|<color=[^>]+>/;
-    text = text.split(regex).join('');
-    return text;
+    // cant use something like /<[^>]+>/g since stage hazards are also marked by <>, gotta be specific ¯\_(ツ)_/¯
+    const regex = /<.[a-z]{2,5}?\.[^<]+>|<\/[^<]*>|<color=[^>]+>/g;
+    return text.replace(regex, '') ?? '';
 }
 function insertBlackboard(text: string, blackboard: T.Blackboard[]) {
     // Note: check these every so often to see if their skills still display properly
@@ -25,48 +24,17 @@ function insertBlackboard(text: string, blackboard: T.Blackboard[]) {
     // irene s1
     // utage s2
 
-    const chunkIsVariable = (chunk: string, blackboard: T.Blackboard[]) => {
-        chunk = chunk.toLowerCase();
-        for (const variable of blackboard) {
-            const key = variable.key;
-            if (chunk.indexOf(key.toLowerCase()) !== 0 && !(chunk.charAt(0) === '-' && chunk.indexOf(key.toLowerCase()) === 1)) continue;
-            if (chunk.split(' ').length !== 1) continue;
-            if (![key.charAt(key.length - 1), '0', '%'].includes(chunk.charAt(chunk.length - 1))) continue;
-            return true;
-        }
-        return false;
-    }
     const formatVariable = (chunk: string, blackboard: T.Blackboard[]) => {
         // {tag} {tag:0} {tag:0%} {tag:0.0} {tag:0.0%}
-        chunk = chunk.toLowerCase();
-        let value;
-        const tag = chunk.split(':')[0];
-        for (const variable of blackboard) {
-            const key = variable.key;
-            if (tag === key) {
-                switch (chunk.charAt(chunk.length - 1)) {
-                    case key.charAt(key.length - 1):
-                    case '0':
-                        value = variable.value;
-                        break;
-                    case '%':
-                        value = `${Math.round(variable.value * 100)}%`
-                        break;
-                }
-            }
-            else if (tag === `-${key}`) {
-                switch (chunk.charAt(chunk.length - 1)) {
-                    case key.charAt(key.length - 1):
-                    case '0':
-                        value = -variable.value;
-                        break;
-                    case '%':
-                        value = `${-Math.round(variable.value * 100)}%`
-                        break;
-                }
-            }
-        }
-        return `\`${value}\``;
+        const tag = chunk.split(':')[0].toLowerCase();
+        const negative = tag.startsWith('-');
+        const key = negative ? tag.slice(1) : tag;
+        const variable = blackboard.find(variable => variable.key === key);
+
+        if (!variable) return chunk;
+
+        const value = negative ? -variable.value : variable.value;
+        return chunk.charAt(chunk.length - 1) === '%' ? `\`${Math.round(value * 100)}%\`` : `\`${value}\``;
     }
 
     const textArr = removeStyleTags(text.trim()).split(/{|}/);
@@ -74,12 +42,10 @@ function insertBlackboard(text: string, blackboard: T.Blackboard[]) {
     if (textArr.join('') === '') return null;
 
     for (let i = 0; i < textArr.length; i++) {
-        if (chunkIsVariable(textArr[i], blackboard)) {
-            textArr[i] = formatVariable(textArr[i], blackboard);
-        }
+        textArr[i] = formatVariable(textArr[i], blackboard);
     }
 
-    return textArr.join('').split('-`').join('`-').split('+`').join('`+');
+    return textArr.join('').replaceAll('-`', '`-').replaceAll('+`', '`+');
 }
 const blankChar = '\u200B';
 
