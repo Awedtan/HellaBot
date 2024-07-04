@@ -672,24 +672,21 @@ export async function buildNewMessage() {
             `Last updated at: \`${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()} ${date.toTimeString().slice(0, 8)}\``);
 
     const archetypeString = newInfo.archetype
-        ?.filter(archetype => archetype.meta.created === archetype.meta.updated)
-        .map(archetype => archetype.value)
+        ?.map(archetype => archetype.value)
         .sort().reverse()
         .join('\n');
     if (archetypeString && archetypeString.length > 0)
         embed.addFields({ name: 'New Archetypes', value: archetypeString });
 
     const opString = newInfo.operator
-        ?.filter(op => op.meta.created === op.meta.updated)
-        .map(op => opName(op.value))
+        ?.map(op => opName(op.value))
         .sort().reverse()
         .join('\n');
     if (opString && opString.length > 0)
         embed.addFields({ name: 'New Operators', value: opString });
 
     const skinString = (await Promise.all(newInfo.skin
-        ?.filter(skin => skin.meta.created === skin.meta.updated
-            && skin.value.displaySkin.skinName)
+        ?.filter(skin => skin.value.displaySkin.skinName)
         .map(async skin => {
             const op = await getOp(skin.value.charId);
             return `${opName(op)} - ${skin.value.displaySkin.skinName}`;
@@ -700,8 +697,7 @@ export async function buildNewMessage() {
         embed.addFields({ name: 'New Skins', value: skinString });
 
     const moduleString = (await Promise.all(newInfo.module
-        ?.filter(module => module.meta.created === module.meta.updated
-            && module.value.data)
+        ?.filter(module => module.value.data)
         .map(async module => {
             const op = await getOp(module.value.info.charId);
             return `${opName(op)} - ${module.value.info.uniEquipName}`
@@ -712,8 +708,7 @@ export async function buildNewMessage() {
         embed.addFields({ name: 'New Modules', value: moduleString });
 
     const paradoxString = (await Promise.all(newInfo.paradox
-        ?.filter(paradox => paradox.meta.created === paradox.meta.updated
-            && paradox.value.levels)
+        ?.filter(paradox => paradox.value.levels)
         .map(async paradox => {
             const op = await getOp(paradox.value.excel.charId);
             return `${opName(op)} - ${paradox.value.excel.name}`
