@@ -1146,6 +1146,8 @@ export async function buildSkillMessage(op: T.Operator, page: number, level: num
     const rowTwo = new Djs.ActionRowBuilder<Djs.ButtonBuilder>();
 
     for (let i = 0; i < op.skills[page].levels.length; i++) {
+        if (i >= 0 && i <= 5) continue;
+
         const button = new Djs.ButtonBuilder()
             .setCustomId(createCustomId('skills', op.id, page, i))
             .setLabel(gameConsts.skillLevels[i])
@@ -1157,7 +1159,7 @@ export async function buildSkillMessage(op: T.Operator, page: number, level: num
         else rowTwo.addComponents(button);
     }
 
-    return { embeds: [embed], components: [rowOne, rowTwo] };
+    return { embeds: [embed], components: [rowTwo] };
 }
 export async function buildSpineEnemyMessage(gifFile: string, enemy: T.Enemy, animArr: string[], anim: string, rand: number): Promise<Djs.BaseMessageOptions> {
     const id = enemy.excel.enemyId;
@@ -1404,7 +1406,7 @@ async function buildInfoSkillMessage(op: T.Operator, type: number, page: number,
     const rowOne = new Djs.ActionRowBuilder<Djs.ButtonBuilder>();
 
     for (let i = 0; i < op.skills[page].levels.length; i++) {
-        if (i >= 1 && i <= 5) continue;
+        if (i >= 0 && i <= 5) continue;
 
         const button = new Djs.ButtonBuilder()
             .setCustomId(createCustomId('info', op.id, type, page, i, 'skill'))

@@ -52,7 +52,7 @@ export default class SkillCommand implements Command {
         let first = true;
         for (let i = 0; i < op.data.skills.length; i++) {
             if (index !== -1 && index !== i) continue;
-            const skillEmbed = await buildSkillMessage(op, i, 0);
+            const skillEmbed = await buildSkillMessage(op, i, 6);
             if (first) {
                 await interaction.editReply(skillEmbed);
                 first = false;
