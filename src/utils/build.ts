@@ -532,6 +532,7 @@ export async function buildInfoMessage(op: T.Operator, type: number, page: numbe
 
     switch (type) {
         case 1: {
+            if (level === 0) level = 6;
             getMessageComponents(await buildInfoSkillMessage(op, type, page, level));
 
             if (op.skills.length <= 1) break;
