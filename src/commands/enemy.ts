@@ -41,6 +41,6 @@ export default class EnemyCommand implements Command {
         const level = parseInt(idArr[2]);
 
         const enemyEmbed = await buildEnemyMessage(enemy, level);
-        await interaction.editReply(enemyEmbed);
+        await interaction.update(enemyEmbed);
     }
 }

@@ -43,6 +43,6 @@ export default class InfoCommand implements Command {
         const level = parseInt(idArr[4]);
 
         const infoEmbed = await buildInfoMessage(op, type, page, level);
-        await interaction.editReply(infoEmbed);
+        await interaction.update(infoEmbed);
     }
 }

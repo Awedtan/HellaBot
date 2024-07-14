@@ -37,5 +37,6 @@ export default class RecruitCommand implements Command {
         for (let i = 0; i < placeholders.length; i++) {
             await placeholders[i].edit(recruitEmbed[i]);
         }
+        await interaction.update({});
     }
 }

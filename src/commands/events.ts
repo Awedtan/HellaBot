@@ -21,6 +21,6 @@ export default class EventCommand implements Command {
         const index = parseInt(idArr[1]);
 
         const eventListEmbed = await buildEventListMessage(index);
-        await interaction.editReply(eventListEmbed);
+        await interaction.update(eventListEmbed);
     }
 }

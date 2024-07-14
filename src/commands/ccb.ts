@@ -81,12 +81,12 @@ export default class CCBCommand implements Command {
         const page = parseInt(idArr[2]);
 
         const ccbEmbed = await buildCcbMessage(stage, page);
-        await interaction.editReply(ccbEmbed);
+        await interaction.update(ccbEmbed);
     }
     async selectResponse(interaction: StringSelectMenuInteraction<CacheType>, idArr: string[]) {
         const stage = await api.single('ccb', { query: interaction.values[0] });
 
         const ccbEmbed = await buildCcbMessage(stage, 0);
-        await interaction.editReply(ccbEmbed);
+        await interaction.update(ccbEmbed);
     }
 }

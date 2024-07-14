@@ -56,6 +56,6 @@ export default class ModuleCommand implements Command {
         const level = parseInt(idArr[3]);
 
         const moduleEmbed = await buildModuleMessage(op, page, level);
-        await interaction.editReply(moduleEmbed);
+        await interaction.update(moduleEmbed);
     }
 }

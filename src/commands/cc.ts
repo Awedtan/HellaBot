@@ -93,12 +93,12 @@ export default class CCCommand implements Command {
         const page = parseInt(idArr[2]);
 
         const ccEmbed = await buildCcMessage(stage, page);
-        await interaction.editReply(ccEmbed);
+        await interaction.update(ccEmbed);
     }
     async selectResponse(interaction: StringSelectMenuInteraction<CacheType>, idArr: string[]) {
         const stage = await api.single('cc', { query: interaction.values[0] });
 
         const ccEmbed = await buildCcMessage(stage, 0);
-        await interaction.editReply(ccEmbed);
+        await interaction.update(ccEmbed);
     }
 }

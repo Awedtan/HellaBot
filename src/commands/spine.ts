@@ -190,7 +190,7 @@ export default class SpineCommand implements Command {
         const set = idArr[4];
         const anim = interaction.values[0];
 
-        await interaction.editReply({ content: `Generating \`${anim}\` gif...`, components: [] });
+        await interaction.update({ content: `Generating \`${anim}\` gif...`, components: [] });
 
         switch (type) {
             case 'operator': {
@@ -206,7 +206,7 @@ export default class SpineCommand implements Command {
                 ).on('pageerror', async ({ message }) => {
                     await browser.close();
                     console.error(`Spine error for ${id}: ` + message);
-                    return await interaction.editReply({ content: 'There was an error while generating the animation!' });
+                    return await interaction.update({ content: 'There was an error while generating the animation!' });
                 });
 
                 break;
@@ -223,7 +223,7 @@ export default class SpineCommand implements Command {
                 }).on('pageerror', async ({ message }) => {
                     await browser.close();
                     console.error(`Spine error for ${id}: ` + message);
-                    return await interaction.editReply({ content: 'There was an error while generating the animation!' });
+                    return await interaction.update({ content: 'There was an error while generating the animation!' });
                 });
 
                 break;

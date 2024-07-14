@@ -45,6 +45,6 @@ export default class ParadoxCommand implements Command {
         const page = parseInt(idArr[2]);
 
         const paradoxEmbed = await buildParadoxMessage(op, page);
-        await interaction.editReply(paradoxEmbed);
+        await interaction.update(paradoxEmbed);
     }
 }

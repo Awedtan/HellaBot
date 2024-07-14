@@ -45,6 +45,6 @@ export default class ArtCommand implements Command {
         const page = parseInt(idArr[2]);
         const skinEmbed = await buildArtMessage(op, page);
 
-        await interaction.editReply(skinEmbed);
+        await interaction.update(skinEmbed);
     }
 }

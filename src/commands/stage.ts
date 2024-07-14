@@ -110,12 +110,12 @@ export default class StageCommand implements Command {
         const page = parseInt(idArr[4]);
 
         const stageEmbed = await buildStageMessage(stage, page);
-        await interaction.editReply(stageEmbed);
+        await interaction.update(stageEmbed);
     }
     async selectResponse(interaction: StringSelectMenuInteraction<CacheType>, idArr: string[]) {
         const stage = (await api.single('stage', { query: idArr[2] }))[interaction.values[0]];
 
         const stageEmbed = await buildStageMessage(stage, 0);
-        await interaction.editReply(stageEmbed);
+        await interaction.update(stageEmbed);
     }
 };

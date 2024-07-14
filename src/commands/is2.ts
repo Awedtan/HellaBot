@@ -173,7 +173,7 @@ export default class IS2Command implements Command {
                 const index = parseInt(idArr[2]);
 
                 const relicListEmbed = await buildRogueRelicListMessage(innerIndex, index);
-                await interaction.editReply(relicListEmbed);
+                await interaction.update(relicListEmbed);
 
                 break;
             }
@@ -187,7 +187,7 @@ export default class IS2Command implements Command {
                 const page = parseInt(idArr[4]);
 
                 const stageEmbed = await buildRogueStageMessage(innerIndex, stage, page);
-                await interaction.editReply(stageEmbed);
+                await interaction.update(stageEmbed);
 
                 break;
             }

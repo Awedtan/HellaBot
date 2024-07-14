@@ -68,6 +68,6 @@ export default class SkillCommand implements Command {
         const level = parseInt(idArr[3]);
 
         const skillEmbed = await buildSkillMessage(op, page, level);
-        await interaction.editReply(skillEmbed);
+        await interaction.update(skillEmbed);
     }
 }

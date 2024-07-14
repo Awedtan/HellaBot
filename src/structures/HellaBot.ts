@@ -66,7 +66,6 @@ export default class HellaBot {
             }
             else if (interaction.isButton()) {
                 try {
-                    await interaction.deferUpdate();
                     const idArr: string[] = interaction.customId.split('ඞ');
                     const command = this.commands.get(idArr[0]);
                     await command.buttonResponse(interaction, idArr);
@@ -76,7 +75,6 @@ export default class HellaBot {
             }
             else if (interaction.isStringSelectMenu()) {
                 try {
-                    await interaction.deferUpdate();
                     const idArr: string[] = interaction.customId.split('ඞ');
                     const command = this.commands.get(idArr[0]);
                     await command.selectResponse(interaction, idArr);

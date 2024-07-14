@@ -58,6 +58,6 @@ export default class CostCommand implements Command {
         const page = parseInt(idArr[2]);
 
         const costEmbed = await buildCostMessage(op, page);
-        await interaction.editReply(costEmbed);
+        await interaction.update(costEmbed);
     }
 }
