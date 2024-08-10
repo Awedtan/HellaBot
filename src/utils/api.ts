@@ -45,9 +45,14 @@ type ObjectMap = {
     'paradox': T.Paradox;
     'range': T.GridRange;
     'rogue': T.RogueTheme;
-    // 'roguestage': RogueStage;
-    // 'roguetoughstage': RogueStage;
+    'roguestage/0': T.RogueStage;
+    'roguestage/1': T.RogueStage;
+    'roguestage/2': T.RogueStage;
+    'roguetoughstage/0': T.RogueStage;
+    'roguetoughstage/1': T.RogueStage;
+    'roguetoughstage/2': T.RogueStage;
     'sandbox': T.SandboxAct;
+    'sandboxstage/0': T.SandboxStage;
     'skill': T.Skill;
     'skin': T.Skin;
     'stage': T.Stage[];

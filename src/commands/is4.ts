@@ -11,7 +11,7 @@ const outerName = 'Expeditioner\'s Jǫklumarkar';
 export default class IS4Command implements Command {
     data = new SlashCommandBuilder()
         .setName(`is${outerIndex}`)
-        .setDescription(`Show information on IS${outerIndex} (${outerName})`)
+        .setDescription(`Show information on IS${outerIndex}: ${outerName}`)
         .addSubcommandGroup(subcommandGroup =>
             subcommandGroup.setName('stage')
                 .setDescription(`Show information on an IS${outerIndex} stage`)
@@ -178,12 +178,9 @@ export default class IS4Command implements Command {
                 break;
             }
             case 'stage': {
-                const stages = (
-                    idArr[2] === 'true'
-                        ? (await api.single('rogue', { query: `${innerIndex}`, include: ['toughStageDict'] })).toughStageDict
-                        : (await api.single('rogue', { query: `${innerIndex}`, include: ['stageDict'] })).stageDict
-                );
-                const stage = stages[idArr[3]];
+                const stage = idArr[2] === 'true'
+                    ? await api.single(`roguetoughstage/${innerIndex}`, { query: idArr[3] })
+                    : await api.single(`roguestage/${innerIndex}`, { query: idArr[3] });
                 const page = parseInt(idArr[4]);
 
                 const stageEmbed = await buildRogueStageMessage(innerIndex, stage, page);

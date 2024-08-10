@@ -1060,11 +1060,11 @@ export async function buildRogueStageMessage(theme: number, stage: T.RogueStage,
     embed.addFields(await buildStageEnemyFields(stageData));
 
     const imageButton = new Djs.ButtonBuilder()
-        .setCustomId(createCustomId(`is${theme + 2}`, 'stage', isChallenge, stageInfo.name, 0))
+        .setCustomId(createCustomId(`is${theme + 2}`, 'stage', isChallenge, stageInfo.id, 0))
         .setLabel('Preview')
         .setStyle(Djs.ButtonStyle.Primary);
     const diagramButton = new Djs.ButtonBuilder()
-        .setCustomId(createCustomId(`is${theme + 2}`, 'stage', isChallenge, stageInfo.name, 1))
+        .setCustomId(createCustomId(`is${theme + 2}`, 'stage', isChallenge, stageInfo.id, 1))
         .setLabel('Diagram')
         .setStyle(Djs.ButtonStyle.Primary);
     const buttonRow = new Djs.ActionRowBuilder<Djs.ButtonBuilder>().addComponents(imageButton, diagramButton);
@@ -1082,18 +1082,15 @@ export async function buildRogueStageMessage(theme: number, stage: T.RogueStage,
         const imagePath = paths.myAssetUrl + `/stages/${stageInfo.id}.png`;
         if (await urlExists(imagePath)) {
             embed.setImage(imagePath);
-
             return { embeds: [embed], components: [buttonRow] };
         }
         else {
             embed.addFields(buildStageDiagramFields(stageData));
-
             return { embeds: [embed] };
         }
     }
     else {
         embed.addFields(buildStageDiagramFields(stageData));
-
         return { embeds: [embed], components: [buttonRow] };
     }
 }
@@ -1122,7 +1119,7 @@ export async function buildRogueVariationListMessage(theme: number): Promise<Djs
 
     return { embeds: [embed] };
 }
-export async function buildSandboxStageMessage(stage: T.SandboxStage) {
+export async function buildSandboxStageMessage(theme: number, stage: T.SandboxStage, page: number): Promise<Djs.BaseMessageOptions> {
     const stageInfo = stage.excel;
     const stageData = stage.levels;
 
@@ -1136,9 +1133,42 @@ export async function buildSandboxStageMessage(stage: T.SandboxStage) {
         .setDescription(description);
 
     embed.addFields(await buildStageEnemyFields(stageData));
-    embed.addFields(buildStageDiagramFields(stageData));
 
-    return { embeds: [embed] };
+    const imageButton = new Djs.ButtonBuilder()
+        .setCustomId(createCustomId(`ra${theme + 2}`, 'stage', stage.excel.stageId, 0))
+        .setLabel('Preview')
+        .setStyle(Djs.ButtonStyle.Primary);
+    const diagramButton = new Djs.ButtonBuilder()
+        .setCustomId(createCustomId(`ra${theme + 2}`, 'stage', stage.excel.stageId, 1))
+        .setLabel('Diagram')
+        .setStyle(Djs.ButtonStyle.Primary);
+    const buttonRow = new Djs.ActionRowBuilder<Djs.ButtonBuilder>().addComponents(imageButton, diagramButton);
+
+    switch (page) {
+        case 0:
+            imageButton.setDisabled(true);
+            break;
+        case 1:
+            diagramButton.setDisabled(true);
+            break;
+    }
+
+    if (page === 0) {
+        const imagePath = paths.myAssetUrl + `/sandboxstages/${stageInfo.stageId}.png`;
+
+        if (await urlExists(imagePath)) {
+            embed.setImage(imagePath)
+            return { content: '', embeds: [embed], components: [buttonRow] };
+        }
+        else {
+            embed.addFields(buildStageDiagramFields(stageData));
+            return { content: '', embeds: [embed], components: [] };
+        }
+    }
+    else {
+        embed.addFields(buildStageDiagramFields(stageData));
+        return { content: '', embeds: [embed], components: [buttonRow] };
+    }
 }
 export async function buildSkillMessage(op: T.Operator, page: number, level: number): Promise<Djs.BaseMessageOptions> {
     const embed = await buildSkillEmbed(op, page, level);
@@ -1284,28 +1314,23 @@ export async function buildStageMessage(stage: T.Stage, page: number): Promise<D
 
         if (await urlExists(imagePath)) {
             embed.setImage(imagePath)
-
             return { content: '', embeds: [embed], components: [buttonRow] };
         }
         else if (await urlExists(toughPath)) {
             embed.setImage(toughPath)
-
             return { content: '', embeds: [embed], components: [buttonRow] };
         }
         else if (await urlExists(newPath)) {
             embed.setImage(newPath)
-
             return { content: '', embeds: [embed], components: [buttonRow] };
         }
         else {
             embed.addFields(buildStageDiagramFields(stageData));
-
             return { content: '', embeds: [embed], components: [] };
         }
     }
     else {
         embed.addFields(buildStageDiagramFields(stageData));
-
         return { content: '', embeds: [embed], components: [buttonRow] };
     }
 }
