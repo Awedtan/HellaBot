@@ -154,7 +154,7 @@ export async function autocompleteSandboxStage(act: number, { query, include = [
         filteredArr.push(stage);
         i++;
     }
-    const mappedArr = filteredArr.map(stage => ({ name: `${stage.excel.code} - ${stage.excel.name}`, value: stage.excel.name }));
+    const mappedArr = filteredArr.map(stage => ({ name: `${stage.excel.code} - ${stage.excel.name}`, value: stage.excel.stageId }));
 
     return mappedArr;
 }

@@ -100,10 +100,9 @@ export default class IS4Command implements Command {
 
         switch (type) {
             case 'normal': {
-                const stageDict = (await api.single('rogue', { query: innerIndex.toString(), include: ['stageDict'] })).stageDict;
-                const stage = stageDict[name];
+                const stage = (await api.single(`roguestage/${innerIndex}`, { query: name }));
 
-                if (!stageDict.hasOwnProperty(name))
+                if (!stage)
                     return await interaction.reply({ content: 'That stage doesn\'t exist!', ephemeral: true });
                 if (!stage.excel || !stage.levels)
                     return await interaction.reply({ content: 'That stage data doesn\'t exist!', ephemeral: true });

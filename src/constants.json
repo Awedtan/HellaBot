@@ -870,6 +870,14 @@
             "tile_flowerf": {
                 "emoji": "❎",
                 "name": "Non-deployable Area (Flowerable)"
+            },
+            "tile_xbdpsea": {
+                "emoji": "🔷",
+                "name": "Deep Water Zone"
+            },
+            "tile_puddle": {
+                "emoji": "🔷",
+                "name": "Deep Water Zone"
             }
         }
     }

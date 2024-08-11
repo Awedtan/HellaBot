@@ -46,10 +46,9 @@ export default class RA2Command implements Command {
 
         switch (type) {
             case 'stage': {
-                const stageDict = (await api.single('sandbox', { query: innerIndex.toString(), include: ['stageDict'] })).stageDict;
-                const stage = stageDict[name];
+                const stage = await api.single(`sandboxstage/${innerIndex}`, { query: name });
 
-                if (!stageDict.hasOwnProperty(name))
+                if (!stage)
                     return await interaction.reply({ content: 'That stage doesn\'t exist!', ephemeral: true });
                 if (!stage.excel || !stage.levels)
                     return await interaction.reply({ content: 'That stage data doesn\'t exist!', ephemeral: true });
