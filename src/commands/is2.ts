@@ -100,7 +100,7 @@ export default class IS2Command implements Command {
 
         switch (type) {
             case 'normal': {
-                const stage = (await api.single(`roguestage/${innerIndex}`, { query: name }));
+                const stage = await api.single(`rogue/stage/${innerIndex}`, { query: name });
 
                 if (!stage)
                     return await interaction.reply({ content: 'That stage doesn\'t exist!', ephemeral: true });
@@ -113,10 +113,9 @@ export default class IS2Command implements Command {
                 return await interaction.editReply(stageEmbed);
             }
             case 'emergency': {
-                const stageDict = (await api.single('rogue', { query: innerIndex.toString(), include: ['toughStageDict'] })).toughStageDict;
-                const stage = stageDict[name];
+                const stage = await api.single(`rogue/toughstage/${innerIndex}`, { query: name });
 
-                if (!stageDict.hasOwnProperty(name))
+                if (!stage)
                     return await interaction.reply({ content: 'That stage doesn\'t exist!', ephemeral: true });
                 if (!stage.excel || !stage.levels)
                     return await interaction.reply({ content: 'That stage data doesn\'t exist!', ephemeral: true });
@@ -134,14 +133,13 @@ export default class IS2Command implements Command {
                     return await interaction.editReply(relicListEmbed);
                 }
 
-                const relicDict = (await api.single('rogue', { query: innerIndex.toString(), include: ['relicDict'] })).relicDict;
+                const relic = await api.single(`rogue/relic/${innerIndex}`, { query: name });
 
-                if (!relicDict.hasOwnProperty(name))
+                if (!relic)
                     return await interaction.reply({ content: 'That relic doesn\'t exist!', ephemeral: true });
 
                 await interaction.deferReply();
 
-                const relic = relicDict[name];
                 const relicEmbed = await buildRogueRelicMessage(relic);
                 return await interaction.editReply(relicEmbed);
             }
@@ -153,14 +151,13 @@ export default class IS2Command implements Command {
                     return await interaction.editReply(variationListEmbed);
                 }
 
-                const variationDict = (await api.single('rogue', { query: innerIndex.toString(), include: ['variationDict'] })).variationDict;
+                const variation = await api.single(`rogue/variation/${innerIndex}`, { query: name });
 
-                if (!variationDict.hasOwnProperty(name))
+                if (!variation)
                     return await interaction.reply({ content: 'That variation doesn\'t exist!', ephemeral: true });
 
                 await interaction.deferReply();
 
-                const variation = variationDict[name];
                 const variationEmbed = await buildRogueVariationMessage(variation);
                 return await interaction.editReply(variationEmbed);
             }
@@ -178,8 +175,8 @@ export default class IS2Command implements Command {
             }
             case 'stage': {
                 const stage = idArr[2] === 'true'
-                    ? await api.single(`roguetoughstage/${innerIndex}`, { query: idArr[3] })
-                    : await api.single(`roguestage/${innerIndex}`, { query: idArr[3] });
+                    ? await api.single(`rogue/toughstage/${innerIndex}`, { query: idArr[3] })
+                    : await api.single(`rogue/stage/${innerIndex}`, { query: idArr[3] });
                 const page = parseInt(idArr[4]);
 
                 const stageEmbed = await buildRogueStageMessage(innerIndex, stage, page);

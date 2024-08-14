@@ -1,8 +1,8 @@
 import { AutocompleteInteraction, ButtonInteraction, ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
 import Command from '../structures/Command';
 import * as api from '../utils/api';
-import { autocompleteSandboxStage } from '../utils/autocomplete';
-import { buildSandboxStageMessage } from '../utils/build';
+import { autocompleteSandboxItem, autocompleteSandboxStage } from '../utils/autocomplete';
+import { buildSandboxItemMessage, buildSandboxStageMessage } from '../utils/build';
 
 const innerIndex = 0;
 const outerIndex = innerIndex + 2;
@@ -21,6 +21,26 @@ export default class RA2Command implements Command {
                         .setRequired(true)
                         .setAutocomplete(true)
                 )
+        )
+        .addSubcommand(subcommand =>
+            subcommand.setName('item')
+                .setDescription(`Show information on an RA${outerIndex} item`)
+                .addStringOption(option =>
+                    option.setName('name')
+                        .setDescription('Item name')
+                        .setRequired(true)
+                        .setAutocomplete(true)
+                )
+        // )
+        // .addSubcommand(subcommand =>
+        //     subcommand.setName('weather')
+        //         .setDescription(`Show information on an RA${outerIndex} weather effect`)
+        //         .addStringOption(option =>
+        //             option.setName('name')
+        //                 .setDescription('Weather name')
+        //                 .setRequired(true)
+        //                 .setAutocomplete(true)
+        //         )
         ) as SlashCommandBuilder;
     name = `RA${outerIndex}`;
     description = [
@@ -38,6 +58,14 @@ export default class RA2Command implements Command {
                 const arr = await autocompleteSandboxStage(innerIndex, { query: value });
                 return await interaction.respond(arr);
             }
+            case 'item': {
+                const arr = await autocompleteSandboxItem(innerIndex, { query: value });
+                return await interaction.respond(arr);
+            }
+            // case 'weather': {
+            //     const arr = await autocompleteSandboxWeather(innerIndex, { query: value });
+            //     return await interaction.respond(arr);
+            // }
         }
     }
     async execute(interaction: ChatInputCommandInteraction) {
@@ -46,7 +74,7 @@ export default class RA2Command implements Command {
 
         switch (type) {
             case 'stage': {
-                const stage = await api.single(`sandboxstage/${innerIndex}`, { query: name });
+                const stage = await api.single(`sandbox/stage/${innerIndex}`, { query: name });
 
                 if (!stage)
                     return await interaction.reply({ content: 'That stage doesn\'t exist!', ephemeral: true });
@@ -58,12 +86,34 @@ export default class RA2Command implements Command {
                 const stageEmbed = await buildSandboxStageMessage(innerIndex, stage, 0);
                 return await interaction.editReply(stageEmbed);
             }
+            case 'item': {
+                const item = await api.single(`sandbox/item/${innerIndex}`, { query: name });
+
+                if (!item)
+                    return await interaction.reply({ content: 'That item doesn\'t exist!', ephemeral: true });
+
+                await interaction.deferReply();
+
+                const itemEmbed = await buildSandboxItemMessage(innerIndex, item);
+                return await interaction.editReply(itemEmbed);
+            }
+            // case 'weather': {
+            //     const weather = await api.single(`sandbox/weather/${innerIndex}`, { query: name });
+
+            //     if (!weather)
+            //         return await interaction.reply({ content: 'That weather effect doesn\'t exist!', ephemeral: true });
+
+            //     await interaction.deferReply();
+
+            //     const weatherEmbed = await buildSandboxWeatherMessage(innerIndex, weather);
+            //     return await interaction.editReply(weatherEmbed
+            // }
         }
     }
     async buttonResponse(interaction: ButtonInteraction, idArr: string[]) {
         switch (idArr[1]) {
             case 'stage': {
-                const stage = await api.single(`sandboxstage/${innerIndex}`, { query: idArr[2] });
+                const stage = await api.single(`sandbox/stage/${innerIndex}`, { query: idArr[2] });
                 const page = parseInt(idArr[3]);
 
                 const stageEmbed = await buildSandboxStageMessage(innerIndex, stage, page);

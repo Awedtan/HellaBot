@@ -45,14 +45,22 @@ type ObjectMap = {
     'paradox': T.Paradox;
     'range': T.GridRange;
     'rogue': T.RogueTheme;
-    'roguestage/0': T.RogueStage;
-    'roguestage/1': T.RogueStage;
-    'roguestage/2': T.RogueStage;
-    'roguetoughstage/0': T.RogueStage;
-    'roguetoughstage/1': T.RogueStage;
-    'roguetoughstage/2': T.RogueStage;
+    'rogue/stage/0': T.RogueStage;
+    'rogue/stage/1': T.RogueStage;
+    'rogue/stage/2': T.RogueStage;
+    'rogue/toughstage/0': T.RogueStage;
+    'rogue/toughstage/1': T.RogueStage;
+    'rogue/toughstage/2': T.RogueStage;
+    'rogue/relic/0': T.RogueRelic;
+    'rogue/relic/1': T.RogueRelic;
+    'rogue/relic/2': T.RogueRelic;
+    'rogue/variation/0': T.RogueVariation;
+    'rogue/variation/1': T.RogueVariation;
+    'rogue/variation/2': T.RogueVariation;
     'sandbox': T.SandboxAct;
-    'sandboxstage/0': T.SandboxStage;
+    'sandbox/stage/0': T.SandboxStage;
+    'sandbox/item/0': T.SandboxItem;
+    'sandbox/weather/0': T.SandboxWeather;
     'skill': T.Skill;
     'skin': T.Skin;
     'stage': T.Stage[];
@@ -165,13 +173,4 @@ export async function search<T extends keyof ObjectMap>(route: T, { search, limi
     const res = await getSearch({ route, search, limit, include, exclude });
     if (res) return res as ObjectMap[T][];
     return await getSearch({ route: `cn/${route}`, search, limit, include, exclude }) as ObjectMap[T][];
-}
-
-// todo: find some better way of doing this, how to dynamically include all rogue indexes?
-export async function matchRogueStage(theme: number, { query, limit, include, exclude }: MatchParams): Promise<T.RogueStage[]> {
-    return await getMatch({ route: `roguestage/${theme}`, query, limit, include, exclude });
-}
-
-export async function matchRogueToughStage(theme: number, { query, limit, include, exclude }: MatchParams): Promise<T.RogueStage[]> {
-    return await getMatch({ route: `roguetoughstage/${theme}`, query, limit, include, exclude });
 }

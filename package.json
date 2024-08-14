@@ -10,7 +10,7 @@
     "dependencies": {
         "discord.js": "^14.14.1",
         "dotenv": "^16.4.5",
-        "hella-types": "^0.0.13",
+        "hella-types": "^0.0.15",
         "nodemon": "^3.1.0",
         "puppeteer": "^22.6.1",
         "simple-git": "^3.24.0",

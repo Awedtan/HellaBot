@@ -6,244 +6,142 @@ type AutocompleteParams = {
     query: string;
     include?: string[];
 };
+type rogueTheme = 0 | 1 | 2;
+type sandTheme = 0;
 const limit = 6;
 const splitMatch = (str: string, query: string) => str.toLowerCase().includes(query.toLowerCase()) || str.toLowerCase().split('\'').join('').includes(query.toLowerCase());
 
 export async function autocompleteCc(query: string, callback: (e: T.CCStage['const']) => boolean = () => true) {
     const matchQuery = (stage: T.CCStage['const']) => splitMatch(stage.name, query) || splitMatch(stage.location, query) || splitMatch(stage.levelId.split('/')[2], query);
 
-    const filteredArr: T.CCStage['const'][] = [];
-    const ccStages: T.CCStage['const'][] = gameConsts.ccStages;
-    let i = 0;
-    for (const stage of ccStages) {
-        if (i >= limit) break;
-        if (filteredArr.includes(stage) || !matchQuery(stage) || !callback(stage)) continue;
-        filteredArr.push(stage);
-        i++;
-    }
-
-    const mappedArr = filteredArr.map(stage => ({ name: `${stage.location} - ${stage.name}`, value: stage.levelId.split('/')[stage.levelId.split('/').length - 1] }));
-
-    return mappedArr;
+    return gameConsts.ccStages
+        .filter(stage => callback(stage) && matchQuery(stage))
+        .slice(0, limit)
+        .map(stage => ({ name: `${stage.location} - ${stage.name}`, value: stage.levelId.split('/')[stage.levelId.split('/').length - 1] }));
 }
 export async function autocompleteCcb(query: string, callback: (e: T.CCStage['const']) => boolean = () => true) {
     const matchQuery = (stage: T.CCStage['const']) => splitMatch(stage.name, query) || splitMatch(stage.location, query) || splitMatch(stage.levelId.split('/')[2], query);
 
-    const filteredArr: T.CCStage['const'][] = [];
-    const ccbStages: T.CCStage['const'][] = gameConsts.ccbStages;
-    let i = 0;
-    for (const stage of ccbStages) {
-        if (i >= limit) break;
-        if (filteredArr.includes(stage) || !matchQuery(stage) || !callback(stage)) continue;
-        filteredArr.push(stage);
-        i++;
-    }
-
-    const mappedArr = filteredArr.map(stage => ({ name: `${stage.location} - ${stage.name}`, value: stage.levelId.split('/')[stage.levelId.split('/').length - 1] }));
-
-    return mappedArr;
+    return gameConsts.ccbStages
+        .filter(stage => callback(stage) && matchQuery(stage))
+        .slice(0, limit)
+        .map(stage => ({ name: `${stage.location} - ${stage.name}`, value: stage.levelId.split('/')[stage.levelId.split('/').length - 1] }));
 }
 export async function autocompleteDefine({ query, include = [] }: AutocompleteParams, callback: (e: T.Definition) => boolean = () => true) {
-    const requiredInclude = ['termName', 'termId'];
+    const requiredInclude = ['termId', 'termName'];
 
-    const definitionArr = await api.match('define', { query, include: requiredInclude.concat(include) })
-    const filteredArr: T.Definition[] = [];
-    let i = 0;
-    for (const define of definitionArr) {
-        if (i >= limit) break;
-        if (filteredArr.includes(define) || !callback(define)) continue;
-        filteredArr.push(define);
-        i++;
-    }
-    const mappedArr = filteredArr.slice(0, limit).map(define => ({ name: define.termName, value: define.termId }));
-
-    return mappedArr;
+    return (await api.match('define', { query, include: requiredInclude.concat(include) }))
+        .filter(callback)
+        .slice(0, limit)
+        .map(define => ({ name: define.termName, value: define.termId }));
 }
 export async function autocompleteEnemy({ query, include = [] }: AutocompleteParams, callback: (e: T.Enemy) => boolean = () => true) {
-    const requiredInclude = ['excel.name', 'excel.enemyIndex', 'excel.enemyId'];
+    const requiredInclude = ['excel.enemyId', 'excel.name', 'excel.enemyIndex'];
 
-    const enemyArr = await api.match('enemy', { query, include: requiredInclude.concat(include) });
-    const filteredArr: T.Enemy[] = [];
-    let i = 0;
-    for (const enemy of enemyArr) {
-        if (i >= limit) break;
-        if (filteredArr.includes(enemy) || !callback(enemy)) continue;
-        filteredArr.push(enemy);
-        i++;
-    }
-    const mappedArr = filteredArr.map(enemy => ({ name: `${enemy.excel.enemyIndex} - ${enemy.excel.name}`, value: enemy.excel.enemyId }));
-
-    return mappedArr;
+    return (await api.match('enemy', { query, include: requiredInclude.concat(include) }))
+        .filter(callback)
+        .slice(0, limit)
+        .map(enemy => ({ name: `${enemy.excel.enemyIndex} - ${enemy.excel.name}`, value: enemy.excel.enemyId }));
 }
-export async function autocompleteRogueRelic(theme: number, { query, include = [] }: AutocompleteParams, callback: (e: T.RogueRelic) => boolean = () => true) {
-    const matchQuery = (relic: T.RogueRelic) => splitMatch(relic.name, query);
-    const requiredInclude = ['relicDict'];
+export async function autocompleteRogueRelic(theme: rogueTheme, { query, include = [] }: AutocompleteParams, callback: (e: T.RogueRelic) => boolean = () => true) {
+    const requiredInclude = ['id', 'name'];
 
-    const rogueTheme = await api.single('rogue', { query: theme.toString(), include: requiredInclude.concat(include) });
-    const filteredArr: T.RogueRelic[] = [];
-    let i = 0;
-    for (const relic of Object.values(rogueTheme.relicDict)) {
-        if (i >= limit) break;
-        if (filteredArr.includes(relic) || !matchQuery(relic) || !callback(relic)) continue;
-        filteredArr.push(relic);
-        i++;
-    }
-    const mappedArr = filteredArr.map(relic => ({ name: relic.name, value: relic.name }));
-
-    return mappedArr;
+    return (await api.match(`rogue/relic/${theme}`, { query, include: requiredInclude.concat(include) }))
+        .filter(callback)
+        .slice(0, limit)
+        .map(relic => ({ name: relic.name, value: relic.id }));
 }
-export async function autocompleteRogueStage(theme: number, { query, include = [] }: AutocompleteParams, callback: (e: T.RogueStage) => boolean = () => true) {
+export async function autocompleteRogueStage(theme: rogueTheme, { query, include = [] }: AutocompleteParams, callback: (e: T.RogueStage) => boolean = () => true) {
     const requiredInclude = ['excel.id', 'excel.code', 'excel.name'];
 
-    const stageArr = await api.matchRogueStage(theme, { query, include: requiredInclude.concat(include) });
-    const filteredArr: T.RogueStage[] = [];
-    let i = 0;
-    for (const stage of stageArr) {
-        if (i >= limit) break;
-        if (filteredArr.some(s => s.excel.id === stage.excel.id) || !callback(stage)) continue;
-        filteredArr.push(stage);
-        i++;
-    }
-    const mappedArr = filteredArr.map(stage => ({ name: `${stage.excel.code} - ${stage.excel.name}`, value: stage.excel.name }));
-
-    return mappedArr;
+    return (await api.match(`rogue/stage/${theme}`, { query, include: requiredInclude.concat(include) }))
+        .filter(callback)
+        .slice(0, limit)
+        .map(stage => ({ name: `${stage.excel.code} - ${stage.excel.name}`, value: stage.excel.id }));
 }
-export async function autocompleteRogueToughStage(theme: number, { query, include = [] }: AutocompleteParams, callback: (e: T.RogueStage) => boolean = () => true) {
+export async function autocompleteRogueToughStage(theme: rogueTheme, { query, include = [] }: AutocompleteParams, callback: (e: T.RogueStage) => boolean = () => true) {
     const requiredInclude = ['excel.id', 'excel.code', 'excel.name'];
 
-    const stageArr = await api.matchRogueToughStage(theme, { query, include: requiredInclude.concat(include) });
-    const filteredArr: T.RogueStage[] = [];
-    let i = 0;
-    for (const stage of stageArr) {
-        if (i >= limit) break;
-        if (filteredArr.some(s => s.excel.id === stage.excel.id) || !callback(stage)) continue;
-        filteredArr.push(stage);
-        i++;
-    }
-    const mappedArr = filteredArr.map(stage => ({ name: `${stage.excel.code} - ${stage.excel.name}`, value: stage.excel.name }));
-
-    return mappedArr;
+    return (await api.match(`rogue/toughstage/${theme}`, { query, include: requiredInclude.concat(include) }))
+        .filter(callback)
+        .slice(0, limit)
+        .map(stage => ({ name: `${stage.excel.code} - ${stage.excel.name}`, value: stage.excel.id }));
 }
-export async function autocompleteRogueVariation(theme: number, { query, include = [] }: AutocompleteParams, callback: (e: T.RogueVariation) => boolean = () => true) {
-    const matchQuery = (variation: T.RogueVariation) => splitMatch(variation.outerName, query);
-    const requiredInclude = ['variationDict'];
+export async function autocompleteRogueVariation(theme: rogueTheme, { query, include = [] }: AutocompleteParams, callback: (e: T.RogueVariation) => boolean = () => true) {
+    const requiredInclude = ['id', 'outerName'];
 
-    const rogueTheme = await api.single('rogue', { query: theme.toString(), include: requiredInclude.concat(include) });
-    const filteredArr: T.RogueVariation[] = [];
-    let i = 0;
-    for (const variation of Object.values(rogueTheme.variationDict)) {
-        if (i >= limit) break;
-        if (filteredArr.includes(variation) || !matchQuery(variation) || !callback(variation)) continue;
-        filteredArr.push(variation);
-        i++;
-    }
-    const mappedArr = filteredArr.map(variation => ({ name: variation.outerName, value: variation.outerName }));
-
-    return mappedArr;
+    return (await api.match(`rogue/variation/${theme}`, { query: query, include: requiredInclude.concat(include) }))
+        .filter(callback)
+        .slice(0, limit)
+        .map(variation => ({ name: variation.outerName, value: variation.id }));
 }
-export async function autocompleteSandboxStage(act: number, { query, include = [] }: AutocompleteParams, callback: (e: T.SandboxStage) => boolean = () => true) {
-    const matchQuery = (stage: T.SandboxStage) => splitMatch(stage.excel.name, query) || splitMatch(stage.excel.code, query);
-    const requiredInclude = ['stageDict'];
+export async function autocompleteSandboxItem(act: sandTheme, { query, include = [] }: AutocompleteParams, callback: (e: T.SandboxItem) => boolean = () => true) {
+    const requiredInclude = ['data.itemId', 'data.itemName'];
 
-    const sandboxAct = await api.single('sandbox', { query: act.toString(), include: requiredInclude.concat(include) });
-    const filteredArr: T.SandboxStage[] = [];
-    let i = 0;
-    for (const stage of Object.values(sandboxAct.stageDict)) {
-        if (i >= limit) break;
-        if (filteredArr.some(s => s.excel.name === stage.excel.name) || !matchQuery(stage) || !callback(stage)) continue;
-        filteredArr.push(stage);
-        i++;
-    }
-    const mappedArr = filteredArr.map(stage => ({ name: `${stage.excel.code} - ${stage.excel.name}`, value: stage.excel.stageId }));
+    return (await api.match(`sandbox/item/${act}`, { query, include: requiredInclude.concat(include) }))
+        .filter(callback)
+        .slice(0, limit)
+        .map(item => ({ name: item.data.itemName, value: item.data.itemId }));
+}
+export async function autocompleteSandboxStage(act: sandTheme, { query, include = [] }: AutocompleteParams, callback: (e: T.SandboxStage) => boolean = () => true) {
+    const requiredInclude = ['excel.stageId', 'excel.name', 'excel.code'];
 
-    return mappedArr;
+    return (await api.match(`sandbox/stage/${act}`, { query, include: requiredInclude.concat(include) }))
+        .filter(callback)
+        .slice(0, limit)
+        .map(stage => ({ name: `${stage.excel.code} - ${stage.excel.name}`, value: stage.excel.stageId }));
+}
+export async function autocompleteSandboxWeather(act: sandTheme, { query, include = [] }: AutocompleteParams, callback: (e: T.SandboxWeather) => boolean = () => true) {
+    const requiredInclude = ['weatherId', 'name'];
+
+    return (await api.match(`sandbox/weather/${act}`, { query, include: requiredInclude.concat(include) }))
+        .filter(callback)
+        .slice(0, limit)
+        .map(weather => ({ name: weather.name, value: weather.weatherId }));
 }
 export async function autocompleteSkin(op: T.Operator, { query, include = [] }: AutocompleteParams, callback: (e: T.Skin) => boolean = () => true) {
-    const matchQuery = (skin: T.Skin) => splitMatch(skin.displaySkin.skinName ?? 'default', query);
-    const requiredInclude = ['displaySkin.skinName', 'skinId'];
+    const requiredInclude = ['skinId', 'displaySkin.skinName'];
 
-    const skinArr = await api.search('skin', { search: { 'charId': op.id }, include: requiredInclude.concat(include) });
-    if (!skinArr || skinArr.length === 0) return [];
-    const filteredArr: T.Skin[] = [];
-    let i = 0;
-    for (const skin of skinArr) {
-        if (i >= limit) break;
-        if (filteredArr.some(s => s.displaySkin.skinName === skin.displaySkin.skinName) || !matchQuery(skin) || !callback(skin)) continue;
-        filteredArr.push(skin);
-        i++;
-    }
-    const mappedArr = filteredArr.map(skin => ({
-        name: skin.displaySkin.skinName ?? 'Default',
-        value: skin.displaySkin.skinName ? skin.skinId.split('@').join('_') : 'default'
-    }));
-
-    return mappedArr;
+    return [{ name: 'Default', value: 'default' }]
+        .concat(...(await api.search('skin', { search: { 'charId': op.id }, include: requiredInclude.concat(include) }))
+            .filter(skin => skin.displaySkin.skinName && callback(skin))
+            .slice(0, limit)
+            .map(skin => ({ name: skin.displaySkin.skinName ?? 'Default', value: skin.displaySkin.skinName ? skin.skinId.split('@').join('_') : 'default' }))
+        );
 }
 export async function autocompleteItem({ query, include = [] }: AutocompleteParams, callback: (e: T.Item) => boolean = () => true) {
-    const requiredInclude = ['data.name', 'data.itemId'];
+    const requiredInclude = ['data.itemId', 'data.name'];
 
-    const itemArr = await api.match('item', { query, include: requiredInclude.concat(include) });
-    const filteredArr: T.Item[] = [];
-    let i = 0;
-    for (const item of itemArr) {
-        if (i >= limit) break;
-        if (filteredArr.includes(item) || !callback(item)) continue;
-        filteredArr.push(item);
-        i++;
-    }
-    const mappedArr = filteredArr.map(item => ({ name: item.data.name, value: item.data.itemId }));
-
-    return mappedArr;
+    return (await api.match('item', { query, include: requiredInclude.concat(include) }))
+        .filter(callback)
+        .slice(0, limit)
+        .map(item => ({ name: item.data.name, value: item.data.itemId }));
 }
 export async function autocompleteOperator({ query, include = [] }: AutocompleteParams, callback: (e: T.Operator) => Boolean = () => true) {
     const requiredInclude = ['id', 'data.name'];
 
-    const operatorArr = await api.match('operator', { query, include: requiredInclude.concat(include) });
-    const filteredArr: T.Operator[] = [];
-    let i = 0;
-    for (const op of operatorArr) {
-        if (i >= limit) break;
-        if (filteredArr.includes(op) || !callback(op)) continue;
-        filteredArr.push(op);
-        i++;
-    }
-    const mappedArr = filteredArr.map(op => ({ name: op.data.name, value: op.id }));
-
-    return mappedArr;
+    return (await api.match('operator', { query, include: requiredInclude.concat(include) }))
+        .filter(callback)
+        .slice(0, limit)
+        .map(op => ({ name: op.data.name, value: op.id }));
 }
 export async function autocompleteStage({ query, include = [] }: AutocompleteParams, callback: (e: T.Stage) => boolean = () => true) {
     const requiredInclude = ['excel.name', 'excel.code', 'excel.stageId'];
 
-    const stageArrArr = await api.match('stage', { query, include: requiredInclude.concat(include) });
-    const filteredArr: T.Stage[] = [];
-    let i = 0;
-    for (const stageArr of stageArrArr) {
-        for (const stage of stageArr) {
-            if (i >= limit) break;
-            if (filteredArr.some(s => s.excel.stageId === stage.excel.stageId) || !callback(stage)) continue;
-            filteredArr.push(stage);
-            i++;
-        }
-    }
-    const mappedArr = filteredArr.map(stage => ({ name: `${stage.excel.code} - ${stage.excel.name}`, value: stage.excel.stageId }));
-
-    return mappedArr;
+    return ((await api.match('stage', { query, include: requiredInclude.concat(include) }))) // god bless
+        .filter(a => a.length === 1)
+        .flat()
+        .filter(callback)
+        .slice(0, limit)
+        .map(stage => ({ name: `${stage.excel.code} - ${stage.excel.name}`, value: stage.excel.stageId }));
 }
 export async function autocompleteToughStage({ query, include = [] }: AutocompleteParams, callback: (e: T.Stage) => boolean = () => true) {
     const requiredInclude = ['excel.name', 'excel.code', 'excel.stageId'];
 
-    const stageArrArr = await api.match('stage', { query, include: requiredInclude.concat(include) });
-    const filteredArr: T.Stage[] = [];
-    let i = 0;
-    for (const stageArr of stageArrArr) {
-        for (const stage of stageArr) {
-            if (i >= limit) break;
-            if (filteredArr.some(s => s.excel.stageId === stage.excel.stageId) || !callback(stage)) continue;
-            filteredArr.push(stage);
-            i++;
-        }
-    }
-    const mappedArr = filteredArr.map(stage => ({ name: `${stage.excel.code} - ${stage.excel.name}`, value: stage.excel.stageId }));
-
-    return mappedArr;
+    return ((await api.match('toughstage', { query, include: requiredInclude.concat(include) }))) // god bless
+        .filter(a => a.length === 1)
+        .flat()
+        .filter(callback)
+        .slice(0, limit)
+        .map(stage => ({ name: `${stage.excel.code} - ${stage.excel.name}`, value: stage.excel.stageId }));
 }

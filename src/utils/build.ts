@@ -1119,6 +1119,42 @@ export async function buildRogueVariationListMessage(theme: number): Promise<Djs
 
     return { embeds: [embed] };
 }
+export async function buildSandboxItemMessage(theme: number, item: T.SandboxItem): Promise<Djs.BaseMessageOptions> {
+    const items = (await api.single('sandbox', { query: theme.toString(), include: ['itemDict'] })).itemDict;
+
+    const embed = new Djs.EmbedBuilder()
+        .setColor(embedColour)
+        .setTitle(item.data.itemName)
+        .setDescription(`${item.data.itemUsage}\n\n${item.data.itemDesc}`);
+
+    if (item.craft) {
+        let costString = '';
+        for (const [mat, count] of Object.entries(item.craft.materialItems)) {
+            costString += `${items[mat].data.itemName} **x${count}**\n`;
+        }
+        embed.addFields({ name: 'Crafting Formula', value: costString });
+    }
+    if (item.drink) {
+        embed.addFields({ name: 'Energy', value: item.drink.count.toString(), inline: true });
+    }
+    if (item.food) {
+        embed.addFields({ name: 'Normal effect', value: item.food.itemUsage, inline: true });
+        embed.addFields({ name: 'Enhanced effect', value: item.food.enhancedUsage, inline: true });
+        item.food.recipes.forEach(recipe => {
+            let recipeString = '';
+            const mats = {};
+            recipe.mats.forEach(mat => {
+                mats[mat] ? mats[mat]++ : mats[mat] = 1;
+            });
+            for (const [mat, count] of Object.entries(mats)) {
+                recipeString += `${items[mat].data.itemName} **x${count}**\n`;
+            }
+            embed.addFields({ name: 'Recipe', value: recipeString });
+        });
+    }
+
+    return { embeds: [embed] };
+}
 export async function buildSandboxStageMessage(theme: number, stage: T.SandboxStage, page: number): Promise<Djs.BaseMessageOptions> {
     const stageInfo = stage.excel;
     const stageData = stage.levels;
