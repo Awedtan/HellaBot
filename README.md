@@ -34,10 +34,9 @@ The project directory should now look something like this:
 ```sh
 HellaBot/
 ├── config.json
-├── LICENSE
 ├── node_modules/
-├── package-lock.json
 ├── package.json
+├── package-lock.json
 ├── README.md
 ├── src/
 └── tsconfig.json
@@ -74,10 +73,10 @@ All command interactions are event-driven, so buttons and other interactables wi
 | modules | Show an operator's modules                                       |
 | new     | Show newly updated game data                                     |
 | paradox | Show an operator's Paradox Simulation stage                      |
-| ra      | Show information on a Reclamation Algorithm stage                |
+| ra2     | Show information on RA2: Tales Within the Sand                   |
 | recruit | Find recruitable operators from recruitment tags                 |
 | skills  | Show an operator's skills                                        |
-| spine   | Render and display spine animations (experimental)               |
+| spine   | Render and display spine animations                              |
 | stage   | Show information on a stage                                      |
 
 ## Acknowledgements
