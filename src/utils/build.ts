@@ -1206,6 +1206,14 @@ export async function buildSandboxStageMessage(theme: number, stage: T.SandboxSt
         return { content: '', embeds: [embed], components: [buttonRow] };
     }
 }
+export async function buildSandboxWeatherMessage(theme: number, weather: T.SandboxWeather): Promise<Djs.BaseMessageOptions> {
+    const embed = new Djs.EmbedBuilder()
+        .setColor(embedColour)
+        .setTitle(weather.name)
+        .setDescription(`${weather.functionDesc}\n\n${weather.description}`);
+
+    return { embeds: [embed] };
+}
 export async function buildSkillMessage(op: T.Operator, page: number, level: number): Promise<Djs.BaseMessageOptions> {
     const embed = await buildSkillEmbed(op, page, level);
 

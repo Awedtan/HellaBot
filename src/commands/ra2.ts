@@ -1,8 +1,8 @@
 import { AutocompleteInteraction, ButtonInteraction, ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
 import Command from '../structures/Command';
 import * as api from '../utils/api';
-import { autocompleteSandboxItem, autocompleteSandboxStage } from '../utils/autocomplete';
-import { buildSandboxItemMessage, buildSandboxStageMessage } from '../utils/build';
+import { autocompleteSandboxItem, autocompleteSandboxStage, autocompleteSandboxWeather } from '../utils/autocomplete';
+import { buildSandboxItemMessage, buildSandboxStageMessage, buildSandboxWeatherMessage } from '../utils/build';
 
 const innerIndex = 0;
 const outerIndex = innerIndex + 2;
@@ -31,24 +31,28 @@ export default class RA2Command implements Command {
                         .setRequired(true)
                         .setAutocomplete(true)
                 )
-        // )
-        // .addSubcommand(subcommand =>
-        //     subcommand.setName('weather')
-        //         .setDescription(`Show information on an RA${outerIndex} weather effect`)
-        //         .addStringOption(option =>
-        //             option.setName('name')
-        //                 .setDescription('Weather name')
-        //                 .setRequired(true)
-        //                 .setAutocomplete(true)
-        //         )
+        )
+        .addSubcommand(subcommand =>
+            subcommand.setName('weather')
+                .setDescription(`Show information on an RA${outerIndex} weather effect`)
+                .addStringOption(option =>
+                    option.setName('name')
+                        .setDescription('Weather name')
+                        .setRequired(true)
+                        .setAutocomplete(true)
+                )
         ) as SlashCommandBuilder;
     name = `RA${outerIndex}`;
     description = [
         `Show information on RA${outerIndex}: ${outerName}.`,
         '`stage`: show the enemy list, image preview, and stage diagram for a stage.',
+        '`item`: show the description of an item.',
+        '`weather`: show the description of a weather effect.',
     ];
     usage = [
-        `\`/ra${outerIndex} stage [stage]\``
+        `\`/ra${outerIndex} stage [stage]\``,
+        `\`/ra${outerIndex} item [item]\``,
+        `\`/ra${outerIndex} weather [weather]\``,
     ];
     async autocomplete(interaction: AutocompleteInteraction) {
         const type = interaction.options.getSubcommand();
@@ -62,10 +66,10 @@ export default class RA2Command implements Command {
                 const arr = await autocompleteSandboxItem(innerIndex, { query: value });
                 return await interaction.respond(arr);
             }
-            // case 'weather': {
-            //     const arr = await autocompleteSandboxWeather(innerIndex, { query: value });
-            //     return await interaction.respond(arr);
-            // }
+            case 'weather': {
+                const arr = await autocompleteSandboxWeather(innerIndex, { query: value });
+                return await interaction.respond(arr);
+            }
         }
     }
     async execute(interaction: ChatInputCommandInteraction) {
@@ -97,17 +101,17 @@ export default class RA2Command implements Command {
                 const itemEmbed = await buildSandboxItemMessage(innerIndex, item);
                 return await interaction.editReply(itemEmbed);
             }
-            // case 'weather': {
-            //     const weather = await api.single(`sandbox/weather/${innerIndex}`, { query: name });
+            case 'weather': {
+                const weather = await api.single(`sandbox/weather/${innerIndex}`, { query: name });
 
-            //     if (!weather)
-            //         return await interaction.reply({ content: 'That weather effect doesn\'t exist!', ephemeral: true });
+                if (!weather)
+                    return await interaction.reply({ content: 'That weather effect doesn\'t exist!', ephemeral: true });
 
-            //     await interaction.deferReply();
+                await interaction.deferReply();
 
-            //     const weatherEmbed = await buildSandboxWeatherMessage(innerIndex, weather);
-            //     return await interaction.editReply(weatherEmbed
-            // }
+                const weatherEmbed = await buildSandboxWeatherMessage(innerIndex, weather);
+                return await interaction.editReply(weatherEmbed);
+            }
         }
     }
     async buttonResponse(interaction: ButtonInteraction, idArr: string[]) {
