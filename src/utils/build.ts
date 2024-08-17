@@ -1153,6 +1153,10 @@ export async function buildSandboxItemMessage(theme: number, item: T.SandboxItem
         });
     }
 
+    const imagePath = paths.myAssetUrl + `/sandboxitems/${item.data.itemId}.png`;
+    if (await urlExists(imagePath))
+        embed.setThumbnail(imagePath);
+
     return { embeds: [embed] };
 }
 export async function buildSandboxStageMessage(theme: number, stage: T.SandboxStage, page: number): Promise<Djs.BaseMessageOptions> {
@@ -1211,6 +1215,10 @@ export async function buildSandboxWeatherMessage(theme: number, weather: T.Sandb
         .setColor(embedColour)
         .setTitle(weather.name)
         .setDescription(`${weather.functionDesc}\n\n${weather.description}`);
+
+    const imagePath = paths.myAssetUrl + `/sandboxweather/${weather.weatherIconId}.png`;
+    if (await urlExists(imagePath))
+        embed.setThumbnail(imagePath);
 
     return { embeds: [embed] };
 }
