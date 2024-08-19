@@ -887,9 +887,10 @@ export async function buildRecruitMessage(value: number, tag: string, select: bo
     const primeArray = selectedButtons.map(x => gameConsts.tagValues[x.data.custom_id.split('ඞ')[2]]);
     const opMap: { [key: number]: T.Operator[] } = getPrimeCombinations(primeArray).reduce((acc, combination) => { acc[combination] = []; return acc; }, {});
     const opList = await api.all('operator', { include: ['id', 'recruit', 'data.rarity', 'data.name'] })
+    const recruitPool = (await api.recruitPool()).value;
     for (const key of Object.keys(opMap)) {
         for (const op of opList) {
-            if (!gameConsts.recruitPool.includes(op.id)) continue;
+            if (!recruitPool.includes(op.id)) continue;
             if (op.recruit % parseInt(key) !== 0) continue;
             if (op.recruit % gameConsts.tagValues['top'] === 0 && parseInt(key) % gameConsts.tagValues['top'] !== 0) continue;
 

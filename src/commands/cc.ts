@@ -79,7 +79,7 @@ export default class CCCommand implements Command {
                 const index = interaction.options.getString('index').toLowerCase();
 
                 if (!gameConsts.ccSeasons.hasOwnProperty(index))
-                    return await interaction.reply({ content: 'That stage/season doesn\'t exist!', ephemeral: true });
+                    return await interaction.reply({ content: 'That season doesn\'t exist!', ephemeral: true });
 
                 await interaction.deferReply();
 

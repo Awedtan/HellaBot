@@ -151,6 +151,13 @@ export async function newEn() {
     return (await res.json());
 }
 
+export async function recruitPool(){
+    const path = new PathBuilder().route('recruitpool').toString();
+    const res = await fetch(path);
+    if (!res.ok) return null;
+    return (await res.json())[0];
+}
+
 export async function single<T extends keyof ObjectMap>(route: T, { query, include, exclude }: SingleParams): Promise<ObjectMap[T]> {
     const res = await getSingle({ route, query, include, exclude });
     if (res) return res as ObjectMap[T];

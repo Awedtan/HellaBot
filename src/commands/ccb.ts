@@ -66,8 +66,8 @@ export default class CCBCommand implements Command {
             case 'season': {
                 const index = interaction.options.getString('index').toLowerCase();
 
-                if (!gameConsts.ccSeasons.hasOwnProperty(index))
-                    return await interaction.reply({ content: 'That stage/season doesn\'t exist!', ephemeral: true });
+                if (!gameConsts.ccbSeasons.hasOwnProperty(index))
+                    return await interaction.reply({ content: 'That season doesn\'t exist!', ephemeral: true });
 
                 await interaction.deferReply();
 
