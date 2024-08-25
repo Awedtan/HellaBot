@@ -29,14 +29,14 @@ export default class HellaBot {
         for (const file of commandFiles) {
             const command = new (await import(join(__dirname, '..', 'commands', file))).default();
 
-            if (this.disabled[command.data.name.toLowerCase()]) continue;
+            if (this.disabled && this.disabled[command.data.name.toLowerCase()]) continue;
 
             globalCommands[command.data.name] = command; // MUST be loaded first for help command options to work
         }
         for (const file of commandFiles) {
             const command = new (await import(join(__dirname, '..', 'commands', file))).default();
 
-            if (this.disabled[command.data.name.toLowerCase()]) continue;
+            if (this.disabled && this.disabled[command.data.name.toLowerCase()]) continue;
 
             this.commands.set(command.data.name, command);
             commandArr.push(command.data.toJSON());
