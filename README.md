@@ -6,14 +6,20 @@ A work-in-progress personal project. Game data is fetched from [HellaAPI](https:
 
 <img src="https://raw.githubusercontent.com/Awedtan/HellaBot-Assets/main/readme/demo.gif" height="600"/>
 
+> Note: this example is pretty outdated, the bot loads commands even faster now :^)
+
 ## Installation
 
-If you want to run the bot on your own machine or wherever else, follow the steps below.
+To invite a me-hosted instance of the bot to a server, click here: https://discord.com/oauth2/authorize?client_id=1277141603575922710
+
+> Note: the `spine` command is disabled for this bot because it is quite compute-intensive and the bot is hosted on a cheap cloud VM with not a lot of power. If you'd like that functionality, look below ↓
+
+To run the bot on your own machine or wherever else, follow the steps below.
 
 1. Install [Node.js](https://nodejs.org/en)
 2. Clone or download this repository
 ```sh
-git clone https://github.com/Awedtan/HellaBot.git
+git clone https://github.com/Awedtan/HellaBot.git --depth=1
 ```
 3. Move into the project folder
 ```sh
