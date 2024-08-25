@@ -8,12 +8,14 @@ export const globalCommands: { [key: string]: Command } = {};
 export default class HellaBot {
     client: Client;
     commands = new Collection<string, Command>();
+    disabled: { [key: string]: boolean };
 
-    public constructor(token: string, clientId: string, intents: { intents: GatewayIntentBits[] }) {
+    public constructor(token: string, clientId: string, disabled: { [key: string]: boolean }, intents: { intents: GatewayIntentBits[] }) {
         this.client = new Client(intents);
         this.client.login(token);
         this.loadCommands(token, clientId);
         this.handleInteractions();
+        this.disabled = disabled;
 
         this.client.once(Events.ClientReady, client => {
             console.log(`Ready! Logged in as ${client.user.tag}`);
@@ -26,10 +28,16 @@ export default class HellaBot {
         const commandFiles = readdirSync(join(__dirname, '..', 'commands')).filter(file => file.endsWith('.ts'));
         for (const file of commandFiles) {
             const command = new (await import(join(__dirname, '..', 'commands', file))).default();
+
+            if (this.disabled[command.data.name.toLowerCase()]) continue;
+
             globalCommands[command.data.name] = command; // MUST be loaded first for help command options to work
         }
         for (const file of commandFiles) {
             const command = new (await import(join(__dirname, '..', 'commands', file))).default();
+
+            if (this.disabled[command.data.name.toLowerCase()]) continue;
+
             this.commands.set(command.data.name, command);
             commandArr.push(command.data.toJSON());
         }
