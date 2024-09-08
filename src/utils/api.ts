@@ -37,6 +37,7 @@ type ObjectMap = {
     'cc': T.CCStage;
     'ccb': T.CCStage;
     'define': T.Definition;
+    'deployable': T.Deployable;
     'enemy': T.Enemy;
     'event': T.GameEvent;
     'item': T.Item;

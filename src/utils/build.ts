@@ -9,6 +9,7 @@ const cleanFilename = (text: string) => text.split(/%|[#\+]|&|\[|\]/).join(''); 
 const urlExists = async (url: string) => (await fetch(url)).status === 200;
 const createCustomId = (...args: (string | number | boolean)[]): string => args.join('ඞ').toLowerCase();
 function removeStyleTags(text: string) {
+    if (!text) return '';
     // cant use something like /<[^>]+>/g since stage hazards are also marked by <>, gotta be specific ¯\_(ツ)_/¯
     const regex = /<.[a-z]{2,5}?\.[^<]+>|<\/[^<]*>|<color=[^>]+>/g;
     return text.replace(regex, '') ?? '';
@@ -332,6 +333,11 @@ export async function buildDefineListMessage(): Promise<Djs.BaseMessageOptions> 
 
     return { embeds: [embed] };
 }
+export async function buildDeployMessage(deploy: T.Deployable): Promise<Djs.BaseMessageOptions> {
+    const embed = buildDeployableEmbed(deploy, false);
+
+    return { embeds: [embed] };
+}
 export async function buildEnemyMessage(enemy: T.Enemy, level: number): Promise<Djs.BaseMessageOptions> {
     const enemyInfo = enemy.excel;
     const enemyData = enemy.levels.Value[level].enemyData;
@@ -498,7 +504,7 @@ export async function buildInfoMessage(op: T.Operator, type: number, page: numbe
         if (message.components) rowArr.push(...message.components);
     };
 
-    const embed = buildOperatorEmbed(op);
+    const embed = buildDeployableEmbed(op);
     embedArr.push(embed);
 
     const typeLabels = ['Skills', 'Modules', 'Art', 'Base Skills', 'Costs'];
@@ -1500,11 +1506,14 @@ async function buildInfoSkillMessage(op: T.Operator, type: number, page: number,
     return { embeds: [embed], components: [rowOne] };
 }
 
-function buildAuthorField(char: T.Enemy | T.Operator): Djs.EmbedAuthorOptions {
-    if ((char as T.Operator).id && (char as T.Operator).data) {
-        const op = (char as T.Operator);
+function buildAuthorField(char: T.Enemy | T.Deployable, url: boolean = true): Djs.EmbedAuthorOptions {
+    if ((char as T.Deployable).id && (char as T.Deployable).data) {
+        const op = (char as T.Deployable);
         const urlName = op.data.name.toLowerCase().split(' the ').join('-').split(/'|,/).join('').split(' ').join('-').split('ë').join('e').split('ł').join('l');// Unholy dumbness
-        const authorField = { name: op.data.name, iconURL: paths.aceshipImageUrl + `/avatars/${op.id}.png`, url: `https://gamepress.gg/arknights/operator/${urlName}` };
+        const authorField = { name: op.data.name, iconURL: paths.aceshipImageUrl + `/avatars/${op.id}.png` };
+        if (url) {
+            authorField['url'] = `https://gamepress.gg/arknights/operator/${urlName}`
+        }
         return authorField;
     }
     else if ((char as T.Enemy).excel) {
@@ -1788,41 +1797,50 @@ function buildModuleEmbed(op: T.Operator, page: number, level: number): Djs.Embe
 
     return embed;
 }
-function buildOperatorEmbed(op: T.Operator): Djs.EmbedBuilder {
+function buildDeployableEmbed(deploy: T.Deployable, rarity: boolean = true): Djs.EmbedBuilder {
     const embed = new Djs.EmbedBuilder()
         .setColor(embedColour)
-        .setTitle(`${op.data.name} - ${'★'.repeat(gameConsts.rarity[op.data.rarity] + 1)}`)
-        .setURL(buildAuthorField(op).url)
-        .setThumbnail(paths.aceshipImageUrl + `/avatars/${op.id}.png`);
+        .setTitle(rarity ? `${deploy.data.name} - ${'★'.repeat(gameConsts.rarity[deploy.data.rarity] + 1)}` : deploy.data.name)
+        .setURL(buildAuthorField(deploy, rarity).url)
+        .setThumbnail(paths.aceshipImageUrl + `/avatars/${deploy.id}.png`);
 
-    let description = removeStyleTags(op.data.description);
-    if (op.data.trait !== null) {
-        const candidate = op.data.trait.candidates[op.data.trait.candidates.length - 1];
-        if (candidate.overrideDescripton !== null) {
+    let description = removeStyleTags(deploy.data.description);
+    if (deploy.data.trait) {
+        const candidate = deploy.data.trait.candidates[deploy.data.trait.candidates.length - 1];
+        if (candidate.overrideDescripton) {
             description = insertBlackboard(candidate.overrideDescripton, candidate.blackboard);
         }
     }
-    embed.addFields({ name: `${gameConsts.professions[op.data.profession]} - ${op.archetype}`, value: description });
-    embed.addFields(buildRangeField(op.range));
-    if (op.data.talents) {
-        for (const talent of op.data.talents) {
-            const candidate = talent.candidates[talent.candidates.length - 1];
-            embed.addFields({ name: `*${candidate.name}*`, value: removeStyleTags(candidate.description) });
+    if (description == '') description = blankChar;
+    embed.addFields({ name: `${gameConsts.professions[deploy.data.profession]} - ${deploy.archetype}`, value: description });
+    if (deploy.range) {
+        embed.addFields(buildRangeField(deploy.range));
+    }
+    if (deploy.data.talents) {
+        for (const talent of deploy.data.talents) {
+            if (talent.candidates) {
+                const candidate = talent.candidates[talent.candidates.length - 1];
+                if (candidate.name) {
+                    embed.addFields({ name: `*${candidate.name}*`, value: removeStyleTags(candidate.description) });
+                }
+            }
         }
     }
-    if (op.data.potentialRanks && op.data.potentialRanks.length > 0) {
-        const potentialString = op.data.potentialRanks.map(potential => potential.description).join('\n');
+    if (deploy.data.potentialRanks && deploy.data.potentialRanks.length > 0) {
+        const potentialString = deploy.data.potentialRanks.map(potential => potential.description).join('\n');
         embed.addFields({ name: 'Potentials', value: potentialString, inline: true });
     }
-    const trustString = Object.entries(op.data.favorKeyFrames[1].data)
-        .filter(([key, bonus]) => bonus)
-        .map(([key, bonus]) => `${key.toUpperCase()} +${bonus}`)
-        .join('\n');
-    if (trustString !== '') {
-        embed.addFields({ name: 'Trust Bonus', value: trustString, inline: true });
+    if (deploy.data.favorKeyFrames) {
+        const trustString = Object.entries(deploy.data.favorKeyFrames[1].data)
+            .filter(([key, bonus]) => bonus)
+            .map(([key, bonus]) => `${key.toUpperCase()} +${bonus}`)
+            .join('\n');
+        if (trustString !== '') {
+            embed.addFields({ name: 'Trust Bonus', value: trustString, inline: true });
+        }
     }
 
-    const maxStats = op.data.phases[op.data.phases.length - 1].attributesKeyFrames[1].data;
+    const maxStats = deploy.data.phases[deploy.data.phases.length - 1].attributesKeyFrames[deploy.data.phases[deploy.data.phases.length - 1].attributesKeyFrames.length - 1].data;
     const hp = maxStats.maxHp.toString();
     const atk = maxStats.atk.toString();
     const def = maxStats.def.toString();

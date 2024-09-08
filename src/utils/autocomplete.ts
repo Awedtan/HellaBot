@@ -35,6 +35,14 @@ export async function autocompleteDefine({ query, include = [] }: AutocompletePa
         .slice(0, limit)
         .map(define => ({ name: define.termName, value: define.termId }));
 }
+export async function autocompleteDeployable({ query, include = [] }: AutocompleteParams, callback: (e: T.Deployable) => boolean = () => true) {
+    const requiredInclude = ['id', 'data.name'];
+
+    return (await api.match('deployable', { query, include: requiredInclude.concat(include) }))
+        .filter(callback)
+        .slice(0, limit)
+        .map(deploy => ({ name: deploy.data.name, value: deploy.id }));
+}
 export async function autocompleteEnemy({ query, include = [] }: AutocompleteParams, callback: (e: T.Enemy) => boolean = () => true) {
     const requiredInclude = ['excel.enemyId', 'excel.name', 'excel.enemyIndex'];
 

@@ -438,7 +438,9 @@
             "CASTER": "Caster",
             "MEDIC": "Medic",
             "SUPPORT": "Supporter",
-            "SPECIAL": "Specialist"
+            "SPECIAL": "Specialist",
+            "TOKEN": "Deployable",
+            "TRAP": "Deployable"
         },
         "qualifications": {
             "starter": 0,
