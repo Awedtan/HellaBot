@@ -68,6 +68,7 @@ All command interactions are event-driven, so buttons and other interactables wi
 | ccb     | Show information on a CC Battleplan stage or season              |
 | costs   | Show an operator's elite, skill, mastery, and module costs       |
 | define  | Show definitions for in-game terms                               |
+| deploy  | Show information on a deployable                                 |
 | enemy   | Show an enemy's information and abilities                        |
 | events  | Show a list of in-game events                                    |
 | help    | Show help info on commands                                       |
