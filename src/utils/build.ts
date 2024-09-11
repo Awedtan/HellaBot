@@ -782,6 +782,23 @@ export async function buildParadoxMessage(op: T.Operator, page: number): Promise
         return { embeds: [embed], components: [buttonRow] };
     }
 }
+export async function buildPingMessage(): Promise<Djs.BaseMessageOptions> {
+    const embed = new Djs.EmbedBuilder()
+        .setColor(embedColour)
+        .setTitle('Ping')
+        .addFields(
+            { name: 'Discord', value: `Pinging...`, inline: true },
+            { name: 'GitHub', value: `Pinging...`, inline: true },
+            { name: 'HellaAPI', value: `Pinging...`, inline: true }
+        );
+    
+    const button = new Djs.ButtonBuilder()
+        .setCustomId(createCustomId('ping', 'refresh'))
+        .setLabel('Refresh')
+        .setStyle(Djs.ButtonStyle.Primary);
+
+    return { embeds: [embed], components: [new Djs.ActionRowBuilder<Djs.ButtonBuilder>().addComponents(button)] };
+}
 export async function buildRecruitMessage(value: number, tag: string, select: boolean, snowflakes: string[]): Promise<Djs.BaseMessageOptions[]> {
     if (select) {
         value *= gameConsts.tagValues[tag];
