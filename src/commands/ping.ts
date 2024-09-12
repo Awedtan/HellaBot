@@ -16,12 +16,13 @@ export default class PingCommand implements Command {
         await interaction.editReply(pingEmbed);
 
         const embed = EmbedBuilder.from(pingEmbed.embeds[0]);
-        const a = Date.now();
+        const start = Date.now();
+        // race condition :^)
         fetch('https://discord.com/api/gateway').then(res => {
             const apiField = embed.data.fields.find(field => field.name === 'HellaAPI');
             const githubField = embed.data.fields.find(field => field.name === 'GitHub');
             embed.setFields([
-                { name: 'Discord', value: res.ok ? `${Date.now() - a}ms` : 'Unreachable', inline: true },
+                { name: 'Discord', value: res.ok ? `${Date.now() - start}ms` : 'Unreachable', inline: true },
                 githubField,
                 apiField
             ]);
@@ -32,7 +33,7 @@ export default class PingCommand implements Command {
             const apiField = embed.data.fields.find(field => field.name === 'HellaAPI');
             embed.setFields([
                 discordField,
-                { name: 'GitHub', value: res.ok ? `${Date.now() - a}ms` : 'Unreachable', inline: true },
+                { name: 'GitHub', value: res.ok ? `${Date.now() - start}ms` : 'Unreachable', inline: true },
                 apiField
             ]);
             interaction.editReply({ embeds: [embed] });
@@ -43,7 +44,7 @@ export default class PingCommand implements Command {
             embed.setFields([
                 discordField,
                 githubField,
-                { name: 'HellaAPI', value: (await res.json()).length ? `${Date.now() - a}ms` : 'Unreachable', inline: true }
+                { name: 'HellaAPI', value: res.ok ? `${Date.now() - start}ms` : 'Unreachable', inline: true }
             ]);
             interaction.editReply({ embeds: [embed] });
         });
