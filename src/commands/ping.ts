@@ -1,4 +1,4 @@
-import { ButtonInteraction, ChatInputCommandInteraction, EmbedBuilder, Interaction, SlashCommandBuilder } from 'discord.js';
+import { ButtonInteraction, ChatInputCommandInteraction, EmbedBuilder, SlashCommandBuilder } from 'discord.js';
 import Command from '../structures/Command';
 import { buildPingMessage } from '../utils/build';
 
@@ -17,7 +17,7 @@ export default class PingCommand implements Command {
 
         const embed = EmbedBuilder.from(pingEmbed.embeds[0]);
         const a = Date.now();
-        fetch('https://discord.com/api/v10').then(res => {
+        fetch('https://discord.com/api/gateway').then(res => {
             const apiField = embed.data.fields.find(field => field.name === 'HellaAPI');
             const githubField = embed.data.fields.find(field => field.name === 'GitHub');
             embed.setFields([
