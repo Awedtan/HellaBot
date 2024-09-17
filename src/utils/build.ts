@@ -496,7 +496,11 @@ export async function buildGachaListMessage(index: number): Promise<Djs.BaseMess
         const startTime = new Date(bannerArr[i].client.openTime * 1000);
         const endTime = new Date(bannerArr[i].client.endTime * 1000);
         const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-        let bannerName = banner.client.gachaPoolName === 'Rare Operators useful in all kinds of stages' ? 'Standard Banner' : banner.client.gachaPoolName;
+        let bannerName = banner.client.gachaPoolName === 'Rare Operators useful in all kinds of stages'
+            ? banner.client.gachaRuleType === 'CLASSIC'
+                ? 'Kernel Banner'
+                : 'Standard Banner'
+            : banner.client.gachaPoolName;
         const bannerDates = `${months[startTime.getMonth()]} ${startTime.getDate()}, ${startTime.getFullYear()} - ${months[endTime.getMonth()]} ${endTime.getDate()}, ${endTime.getFullYear()}`;
         let bannerDesc = '';
         if (bannerName === 'Joint Operation') {
