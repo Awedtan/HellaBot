@@ -476,6 +476,86 @@ export async function buildEventListMessage(index: number): Promise<Djs.BaseMess
 
     return { embeds: [embed], components: [componentRow] };
 }
+export async function buildGachaListMessage(index: number): Promise<Djs.BaseMessageOptions> {
+    const bannerCount = 4;
+    const timeArr = (await api.all('gacha', { include: ['client.gachaPoolId', 'client.openTime'] }))
+        .sort((a, b) => b.client.openTime - a.client.openTime);
+    const bannerArr = await Promise.all(
+        timeArr.slice(index * bannerCount, (index + 1) * bannerCount)
+            .map(async time => await api.single('gacha', { query: time.client.gachaPoolId.toLowerCase() }))
+    );
+    const charNames = await api.all('operator', { include: ['id', 'data.name'] });
+
+    const embed = new Djs.EmbedBuilder()
+        .setColor(embedColour)
+        .setTitle('Gacha Banners')
+        .setDescription(`**Page ${index + 1} of ${Math.ceil(timeArr.length / bannerCount)}**`);
+
+    for (let i = 0; i < bannerArr.length; i++) {
+        const banner = bannerArr[i];
+        const startTime = new Date(bannerArr[i].client.openTime * 1000);
+        const endTime = new Date(bannerArr[i].client.endTime * 1000);
+        const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+        let bannerName = banner.client.gachaPoolName === 'Rare Operators useful in all kinds of stages' ? 'Standard Banner' : banner.client.gachaPoolName;
+        const bannerDates = `${months[startTime.getMonth()]} ${startTime.getDate()}, ${startTime.getFullYear()} - ${months[endTime.getMonth()]} ${endTime.getDate()}, ${endTime.getFullYear()}`;
+        let bannerDesc = '';
+        if (bannerName === 'Joint Operation') {
+            for (const charId of banner.details.detailInfo.availCharInfo.perAvailList[0].charIdList) {
+                bannerDesc += `6★ ${charNames.find(char => char.id === charId).data.name}\n`;
+            }
+            for (const charId of banner.details.detailInfo.availCharInfo.perAvailList[1].charIdList) {
+                bannerDesc += `5★ ${charNames.find(char => char.id === charId).data.name}\n`;
+            }
+        }
+        else if (['NORMAL', 'CLASSIC', 'LINKAGE', 'LIMITED', 'SINGLE'].includes(banner.client.gachaRuleType)) {
+            for (const charList of banner.details.detailInfo.upCharInfo.perCharList) {
+                for (const charId of charList.charIdList) {
+                    bannerDesc += `${charList.rarityRank + 1}★ ${charNames.find(char => char.id === charId).data.name}\n`;
+                }
+            }
+        }
+        else {
+            switch (banner.client.gachaRuleType) {
+                case 'FESCLASSIC': {
+                    bannerName = 'Kernel Locating';
+                    bannerDesc = 'Select and lock-in two 6★ and three 5★ Kernel operators.';
+                    break;
+                }
+                case 'CLASSIC_ATTAIN': {
+                    bannerDesc = 'First 6★ is guaranteed to be an unowned Kernel operator.';
+                    break;
+                }
+                case 'ATTAIN': {
+                    bannerDesc = 'First 6★ is guaranteed to be an unowned operator from a selection.';
+                    break;
+                }
+            }
+        }
+
+        embed.addFields({ name: bannerName, value: `${bannerDates}\n${bannerDesc}` });
+    }
+
+    const prevButton = new Djs.ButtonBuilder()
+        .setCustomId(createCustomId('gacha', index - 1))
+        .setLabel('Newer')
+        .setStyle(Djs.ButtonStyle.Primary);
+    const nextButton = new Djs.ButtonBuilder()
+        .setCustomId(createCustomId('gacha', index + 1))
+        .setLabel('Older')
+        .setStyle(Djs.ButtonStyle.Primary);
+    const componentRow = new Djs.ActionRowBuilder<Djs.ButtonBuilder>().addComponents(prevButton, nextButton);
+
+    if (index === 0) {
+        prevButton.setDisabled(true);
+        prevButton.setStyle(Djs.ButtonStyle.Secondary);
+    }
+    if ((index + 1) * bannerCount >= timeArr.length) {
+        nextButton.setDisabled(true);
+        nextButton.setStyle(Djs.ButtonStyle.Secondary);
+    }
+
+    return { embeds: [embed], components: [componentRow] };
+}
 export async function buildHelpMessage(name: string): Promise<Djs.BaseMessageOptions> {
     const command = globalCommands[name];
 
@@ -791,7 +871,7 @@ export async function buildPingMessage(): Promise<Djs.BaseMessageOptions> {
             { name: 'GitHub', value: `Pinging...`, inline: true },
             { name: 'HellaAPI', value: `Pinging...`, inline: true }
         );
-    
+
     const button = new Djs.ButtonBuilder()
         .setCustomId(createCustomId('ping', 'refresh'))
         .setLabel('Refresh')

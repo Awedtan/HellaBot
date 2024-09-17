@@ -40,6 +40,7 @@ type ObjectMap = {
     'deployable': T.Deployable;
     'enemy': T.Enemy;
     'event': T.GameEvent;
+    'gacha': T.GachaPool;
     'item': T.Item;
     'module': T.Module;
     'operator': T.Operator;
