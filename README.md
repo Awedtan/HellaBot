@@ -71,6 +71,7 @@ All command interactions are event-driven, so buttons and other interactables wi
 | deploy  | Show information on a deployable                                 |
 | enemy   | Show an enemy's information and abilities                        |
 | events  | Show a list of in-game events                                    |
+| gacha   | Show a list of gacha banners and rate-ups                        |
 | help    | Show help info on commands                                       |
 | info    | Show an operator's information and attributes                    |
 | is2     | Show information on IS2: Phantom & Crimson Solitaire             |
@@ -80,6 +81,7 @@ All command interactions are event-driven, so buttons and other interactables wi
 | modules | Show an operator's modules                                       |
 | new     | Show newly updated game data                                     |
 | paradox | Show an operator's Paradox Simulation stage                      |
+| ping    | Get bot network latency                                          |
 | ra2     | Show information on RA2: Tales Within the Sand                   |
 | recruit | Find recruitable operators from recruitment tags                 |
 | skills  | Show an operator's skills                                        |
@@ -88,6 +90,8 @@ All command interactions are event-driven, so buttons and other interactables wi
 
 ## Acknowledgements
 
-Huge thanks to [Kengxxiao/ArknightsGameData](https://github.com/Kengxxiao/ArknightsGameData) and [Aceship/Arknight-Images](https://github.com/Aceship/Arknight-Images) for compiling and providing game resources that this project depends on.
+[Kengxxiao/ArknightsGameData_YoStar](https://github.com/Kengxxiao/ArknightsGameData_YoStar) for providing the raw game data.
 
-Thanks to [MrJAwesome](https://www.youtube.com/@MrJAwesomeYT) for making extensive videos on Discord.js so I can preview features without going through all the drudgery myself.
+[Aceship/Arknight-Images](https://github.com/Aceship/Arknight-Images) for providing game images.
+
+[MrJAwesome](https://www.youtube.com/@MrJAwesomeYT) for making videos on Discord.js that helped me get started on this project.
