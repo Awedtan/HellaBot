@@ -1,5 +1,6 @@
 import * as T from "hella-types";
 const { paths } = require('../constants.json');
+const { apiUrl } = require('../../config.json');
 
 type RouteParams = {
     route: string,
@@ -73,7 +74,7 @@ class PathBuilder {
     private path: string;
     private paramed = false;
     constructor() {
-        this.path = paths.apiUrl;
+        this.path = apiUrl ?? paths.apiUrl;
     }
     public route(route: string) {
         this.path += `/${route}`;
@@ -153,7 +154,7 @@ export async function newEn() {
     return (await res.json());
 }
 
-export async function recruitPool(){
+export async function recruitPool() {
     const path = new PathBuilder().route('recruitpool').toString();
     const res = await fetch(path);
     if (!res.ok) return null;
