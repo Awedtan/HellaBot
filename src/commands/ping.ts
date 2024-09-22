@@ -1,6 +1,8 @@
 import { ButtonInteraction, ChatInputCommandInteraction, EmbedBuilder, SlashCommandBuilder } from 'discord.js';
 import Command from '../structures/Command';
 import { buildPingMessage } from '../utils/build';
+const { paths } = require('../constants.json');
+const { apiUrl } = require('../../config.json');
 
 export default class PingCommand implements Command {
     data = new SlashCommandBuilder()
@@ -38,7 +40,7 @@ export default class PingCommand implements Command {
             ]);
             interaction.editReply({ embeds: [embed] });
         });
-        fetch('https://awedtan.ca/api/about').then(async res => {
+        fetch(`${apiUrl ?? paths.apiUrl}/about`).then(async res => {
             const discordField = embed.data.fields.find(field => field.name === 'Discord');
             const githubField = embed.data.fields.find(field => field.name === 'GitHub');
             embed.setFields([
