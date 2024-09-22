@@ -448,11 +448,7 @@ export async function buildEventListMessage(index: number): Promise<Djs.BaseMess
         .setDescription(`**Page ${index + 1} of ${Math.ceil(eventArr.length / eventCount)}**`);
 
     for (let i = index * eventCount; i < index * eventCount + eventCount && i < eventArr.length; i++) {
-        const event = eventArr[i];
-        const startDate = new Date(event.startTime * 1000);
-        const endDate = new Date(event.endTime * 1000);
-        const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-        embed.addFields({ name: event.name, value: `${months[startDate.getMonth()]} ${startDate.getDate()}, ${startDate.getFullYear()} - ${months[endDate.getMonth()]} ${endDate.getDate()}, ${endDate.getFullYear()}` })
+        embed.addFields({ name: eventArr[i].name, value: `<t:${eventArr[i].startTime}> - <t:${eventArr[i].endTime}>` })
     }
 
     const prevButton = new Djs.ButtonBuilder()
@@ -493,15 +489,12 @@ export async function buildGachaListMessage(index: number): Promise<Djs.BaseMess
 
     for (let i = 0; i < bannerArr.length; i++) {
         const banner = bannerArr[i];
-        const startTime = new Date(bannerArr[i].client.openTime * 1000);
-        const endTime = new Date(bannerArr[i].client.endTime * 1000);
-        const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
         let bannerName = banner.client.gachaPoolName === 'Rare Operators useful in all kinds of stages'
             ? banner.client.gachaRuleType === 'CLASSIC'
                 ? 'Kernel Banner'
                 : 'Standard Banner'
             : banner.client.gachaPoolName;
-        const bannerDates = `${months[startTime.getMonth()]} ${startTime.getDate()}, ${startTime.getFullYear()} - ${months[endTime.getMonth()]} ${endTime.getDate()}, ${endTime.getFullYear()}`;
+        const bannerDates = `<t:${bannerArr[i].client.openTime}> - <t:${bannerArr[i].client.endTime}>`;
         let bannerDesc = '';
         if (bannerName === 'Joint Operation') {
             for (const charId of banner.details.detailInfo.availCharInfo.perAvailList[0].charIdList) {
@@ -740,7 +733,7 @@ export async function buildModuleMessage(op: T.Operator, page: number, level: nu
 
     return { embeds: [embed], components: [rowOne] };
 }
-export async function buildNewMessage() {
+export async function buildNewMessage(): Promise<Djs.BaseMessageOptions> {
     const opName = (op: T.Operator) => `${gameConsts.rarity[op.data.rarity] + 1}★ ${op.data.name}`;
 
     const opCache = {};
@@ -752,7 +745,6 @@ export async function buildNewMessage() {
     }
 
     const aboutInfo = await api.about();
-    const date = new Date(aboutInfo.date);
     const newInfo = await api.newEn();
 
     const embed = new Djs.EmbedBuilder()
@@ -760,7 +752,7 @@ export async function buildNewMessage() {
         .setTitle('Newly Updated Game Data')
         .setDescription('Data fetched from: https://github.com/Kengxxiao/ArknightsGameData_YoStar\n' +
             `Latest commit: \`${aboutInfo.hash}\`\n` +
-            `Last updated at: \`${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()} ${date.toTimeString().slice(0, 8)}\``);
+            `Last updated at: <t:${aboutInfo.date}>`);
 
     const archetypeString = newInfo.archetype
         ?.map(archetype => archetype.value)
