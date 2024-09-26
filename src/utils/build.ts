@@ -451,6 +451,10 @@ export async function buildEventListMessage(index: number): Promise<Djs.BaseMess
         embed.addFields({ name: eventArr[i].name, value: `<t:${eventArr[i].startTime}> - <t:${eventArr[i].endTime}>` })
     }
 
+    const preverButton = new Djs.ButtonBuilder()
+        .setCustomId(createCustomId('events', index - 5))
+        .setLabel('<<')
+        .setStyle(Djs.ButtonStyle.Primary);
     const prevButton = new Djs.ButtonBuilder()
         .setCustomId(createCustomId('events', index - 1))
         .setLabel('Newer')
@@ -459,21 +463,35 @@ export async function buildEventListMessage(index: number): Promise<Djs.BaseMess
         .setCustomId(createCustomId('events', index + 1))
         .setLabel('Older')
         .setStyle(Djs.ButtonStyle.Primary);
-    const componentRow = new Djs.ActionRowBuilder<Djs.ButtonBuilder>().addComponents(prevButton, nextButton);
+    const nexterButton = new Djs.ButtonBuilder()
+        .setCustomId(createCustomId('events', index + 5))
+        .setLabel('>>')
+        .setStyle(Djs.ButtonStyle.Primary);
+    const componentRow = new Djs.ActionRowBuilder<Djs.ButtonBuilder>().addComponents(preverButton, prevButton, nextButton, nexterButton);
 
+    if (index < 5) {
+        preverButton.setCustomId(createCustomId('events', 0, 'prever'));
+    }
     if (index === 0) {
+        preverButton.setDisabled(true);
+        preverButton.setStyle(Djs.ButtonStyle.Secondary);
         prevButton.setDisabled(true);
         prevButton.setStyle(Djs.ButtonStyle.Secondary);
     }
-    if (index * eventCount + eventCount >= eventArr.length) {
+    if (index + 1 > Math.floor(eventArr.length / eventCount)) {
         nextButton.setDisabled(true);
         nextButton.setStyle(Djs.ButtonStyle.Secondary);
+        nexterButton.setDisabled(true);
+        nexterButton.setStyle(Djs.ButtonStyle.Secondary);
+    }
+    if (index + 5 > Math.floor(eventArr.length / eventCount)) {
+        nexterButton.setCustomId(createCustomId('events', Math.floor(eventArr.length / eventCount), 'newer'));
     }
 
     return { embeds: [embed], components: [componentRow] };
 }
 export async function buildGachaListMessage(index: number): Promise<Djs.BaseMessageOptions> {
-    const bannerCount = 4;
+    const bannerCount = 6;
     const timeArr = (await api.all('gacha', { include: ['client.gachaPoolId', 'client.openTime'] }))
         .sort((a, b) => b.client.openTime - a.client.openTime);
     const bannerArr = await Promise.all(
@@ -497,19 +515,24 @@ export async function buildGachaListMessage(index: number): Promise<Djs.BaseMess
         const bannerDates = `<t:${bannerArr[i].client.openTime}> - <t:${bannerArr[i].client.endTime}>`;
         let bannerDesc = '';
         if (bannerName === 'Joint Operation') {
+            let ops6 = [], ops5 = [];
             for (const charId of banner.details.detailInfo.availCharInfo.perAvailList[0].charIdList) {
-                bannerDesc += `6★ ${charNames.find(char => char.id === charId).data.name}\n`;
+                ops6.push(charNames.find(char => char.id === charId).data.name);
             }
             for (const charId of banner.details.detailInfo.availCharInfo.perAvailList[1].charIdList) {
-                bannerDesc += `5★ ${charNames.find(char => char.id === charId).data.name}\n`;
+                ops5.push(charNames.find(char => char.id === charId).data.name);
             }
+            bannerDesc = `6★ ${ops6.join(', ')}\n5★ ${ops5.join(', ')}`;
         }
         else if (['NORMAL', 'CLASSIC', 'LINKAGE', 'LIMITED', 'SINGLE'].includes(banner.client.gachaRuleType)) {
+            let ops6 = [], ops5 = [];
             for (const charList of banner.details.detailInfo.upCharInfo.perCharList) {
                 for (const charId of charList.charIdList) {
-                    bannerDesc += `${charList.rarityRank + 1}★ ${charNames.find(char => char.id === charId).data.name}\n`;
+                    if (charList.rarityRank === 5) ops6.push(charNames.find(char => char.id === charId).data.name);
+                    else if (charList.rarityRank === 4) ops5.push(charNames.find(char => char.id === charId).data.name);
                 }
             }
+            bannerDesc = `6★ ${ops6.join(', ')}\n5★ ${ops5.join(', ')}`;
         }
         else {
             switch (banner.client.gachaRuleType) {
@@ -532,23 +555,41 @@ export async function buildGachaListMessage(index: number): Promise<Djs.BaseMess
         embed.addFields({ name: bannerName, value: `${bannerDates}\n${bannerDesc}` });
     }
 
+    const preverButton = new Djs.ButtonBuilder()
+        .setCustomId(createCustomId('gacha', index - 5, 'prever'))
+        .setLabel('<<')
+        .setStyle(Djs.ButtonStyle.Primary);
     const prevButton = new Djs.ButtonBuilder()
-        .setCustomId(createCustomId('gacha', index - 1))
+        .setCustomId(createCustomId('gacha', index - 1, 'prev'))
         .setLabel('Newer')
         .setStyle(Djs.ButtonStyle.Primary);
     const nextButton = new Djs.ButtonBuilder()
-        .setCustomId(createCustomId('gacha', index + 1))
+        .setCustomId(createCustomId('gacha', index + 1, 'next'))
         .setLabel('Older')
         .setStyle(Djs.ButtonStyle.Primary);
-    const componentRow = new Djs.ActionRowBuilder<Djs.ButtonBuilder>().addComponents(prevButton, nextButton);
+    const nexterButton = new Djs.ButtonBuilder()
+        .setCustomId(createCustomId('gacha', index + 5, 'nexter'))
+        .setLabel('>>')
+        .setStyle(Djs.ButtonStyle.Primary);
+    const componentRow = new Djs.ActionRowBuilder<Djs.ButtonBuilder>().addComponents(preverButton, prevButton, nextButton, nexterButton);
 
+    if (index < 5) {
+        preverButton.setCustomId(createCustomId('gacha', 0, 'prever'));
+    }
     if (index === 0) {
+        preverButton.setDisabled(true);
+        preverButton.setStyle(Djs.ButtonStyle.Secondary);
         prevButton.setDisabled(true);
         prevButton.setStyle(Djs.ButtonStyle.Secondary);
     }
-    if ((index + 1) * bannerCount >= timeArr.length) {
+    if (index + 1 > Math.floor(timeArr.length / bannerCount)) {
         nextButton.setDisabled(true);
         nextButton.setStyle(Djs.ButtonStyle.Secondary);
+        nexterButton.setDisabled(true);
+        nexterButton.setStyle(Djs.ButtonStyle.Secondary);
+    }
+    if (index + 5 > Math.floor(timeArr.length / bannerCount)) {
+        nexterButton.setCustomId(createCustomId('gacha', Math.floor(timeArr.length / bannerCount), 'newer'));
     }
 
     return { embeds: [embed], components: [componentRow] };
