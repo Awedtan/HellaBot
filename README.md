@@ -10,7 +10,7 @@ A work-in-progress personal project. Game data is fetched from [HellaAPI](https:
 
 ## Installation
 
-To invite a me-hosted instance of the bot to a server, click here: https://discord.com/oauth2/authorize?client_id=1277141603575922710
+To invite a me-hosted instance of the bot to a server, [click here!](https://discord.com/application-directory/1277141603575922710)
 
 > Note: the `spine` command is disabled for this bot because it is quite compute-intensive and the bot is hosted on a cheap cloud VM with not a lot of power. If you'd like that functionality, look below ↓
 
