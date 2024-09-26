@@ -30,7 +30,7 @@ cd HellaBot
 npm install
 ```
 5. In the project folder, rename `sample-config.json` to `config.json` and fill in the fields
-```json
+```jsonc
 {
     // required fields
     "token": "your_bot_token_here",
