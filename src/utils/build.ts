@@ -916,13 +916,11 @@ export async function buildPingMessage(): Promise<Djs.BaseMessageOptions> {
 
     return { embeds: [embed], components: [new Djs.ActionRowBuilder<Djs.ButtonBuilder>().addComponents(button)] };
 }
-export async function buildRecruitMessage(value: number, tag: string, select: boolean, snowflakes: string[]): Promise<Djs.BaseMessageOptions[]> {
-    if (select) {
-        value *= gameConsts.tagValues[tag];
-    }
-    else {
-        value /= gameConsts.tagValues[tag];
-    }
+export async function buildRecruitMessage(value: number, tags: string[], select: boolean, snowflakes: string[]): Promise<Djs.BaseMessageOptions[]> {
+    tags.forEach(tag => {
+        select ? value *= gameConsts.tagValues[tag]
+            : value /= gameConsts.tagValues[tag];
+    })
 
     const button = (id: string, label: string) => {
         return new Djs.ButtonBuilder()
