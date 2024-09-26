@@ -29,11 +29,18 @@ cd HellaBot
 ```sh
 npm install
 ```
-5. Create a `config.json` file in the project folder, and copy your Discord bot token and application ID into it.
+5. In the project folder, rename `sample-config.json` to `config.json` and fill in the fields
 ```json
 {
+    // required fields
     "token": "your_bot_token_here",
-    "clientId": "your_application_id_here"
+    "clientId": "your_application_id_here",
+
+    // optional fields, you can delete these fields if not using them
+    "apiUrl": "your_api_url_here", // default URL is https://awedtan.ca/api
+    "disabled": { // you can add commands here and set to `true` to disable them
+        "spine": false
+    }
 }
 ```
 The project directory should now look something like this:

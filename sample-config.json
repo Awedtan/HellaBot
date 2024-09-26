@@ -1,0 +1,8 @@
+{
+    "token": "your_bot_token_here",
+    "clientId": "your_application_id_here",
+    "apiUrl": "your_api_url_here",
+    "disabled": {
+        "spine": false
+    }
+}
