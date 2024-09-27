@@ -2,17 +2,15 @@
 
 An Arknights Discord bot that provides information on operators, enemies, stages, and more! 
 
+[Click here](https://discord.com/application-directory/1277141603575922710) to invite a me-hosted instance of the bot to a server!
+
+> Note: the `spine` command is disabled for this bot because it is quite compute-intensive and the bot is hosted on a cheap cloud VM with not a lot of power. If you'd like that functionality, you can install and run the bot yourself :^)
+
 A work-in-progress personal project. Game data is fetched from [HellaAPI](https://github.com/Awedtan/HellaAPI).
 
 <img src="https://raw.githubusercontent.com/Awedtan/HellaBot-Assets/main/readme/demo.gif" height="600"/>
 
-> Note: this example is pretty outdated, the bot loads commands even faster now :^)
-
 ## Installation
-
-To invite a me-hosted instance of the bot to a server, [click here!](https://discord.com/application-directory/1277141603575922710)
-
-> Note: the `spine` command is disabled for this bot because it is quite compute-intensive and the bot is hosted on a cheap cloud VM with not a lot of power. If you'd like that functionality, look below ↓
 
 To run the bot on your own machine or wherever else, follow the steps below.
 
