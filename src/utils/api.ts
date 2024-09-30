@@ -35,8 +35,10 @@ type SearchParams = {
 type ObjectMap = {
     'archetype': string;
     'base': T.Base;
-    'cc': T.CCStage;
-    'ccb': T.CCStage;
+    'cc': T.CCStageLegacy;
+    'ccb': T.CCSeason;
+    'ccb/legacy': T.CCStageLegacy;
+    'ccb/stage': T.CCStage;
     'define': T.Definition;
     'deployable': T.Deployable;
     'enemy': T.Enemy;

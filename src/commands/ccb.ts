@@ -1,8 +1,8 @@
 import { AutocompleteInteraction, ButtonInteraction, CacheType, ChatInputCommandInteraction, SlashCommandBuilder, StringSelectMenuInteraction } from 'discord.js';
 import Command from '../structures/Command';
 import * as api from '../utils/api';
-import { autocompleteCcb } from '../utils/autocomplete';
-import { buildCcbMessage, buildCcbSelectMessage } from '../utils/build';
+import { autocompleteCCB, autocompleteCCBLegacy } from '../utils/autocomplete';
+import { buildCCBLegacyMessage, buildCCBLegacySelectMessage, buildCCBMessage } from '../utils/build';
 const { gameConsts } = require('../constants');
 
 export default class CCBCommand implements Command {
@@ -28,7 +28,8 @@ export default class CCBCommand implements Command {
                         .setRequired(true)
                         .addChoices(
                             { name: 'poo', value: 'poo' },
-                            { name: '1', value: '1' }
+                            { name: '1', value: '1' },
+                            { name: '2', value: '2' },
                         )
                 )
         ) as SlashCommandBuilder;
@@ -44,8 +45,10 @@ export default class CCBCommand implements Command {
     ]
     async autocomplete(interaction: AutocompleteInteraction) {
         const value = interaction.options.getFocused().toLowerCase();
-        const arr = await autocompleteCcb(value);
-        return await interaction.respond(arr);
+        const arr = autocompleteCCBLegacy(value);
+        if (arr.length < 6)
+            arr.push(...await autocompleteCCB({ query: value }));
+        return await interaction.respond(arr.slice(0, 6));
     }
     async execute(interaction: ChatInputCommandInteraction) {
         const type = interaction.options.getSubcommand();
@@ -53,15 +56,29 @@ export default class CCBCommand implements Command {
         switch (type) {
             case 'stage': {
                 const name = interaction.options.getString('name').toLowerCase();
-                const stage = await api.single('ccb', { query: name });
 
-                if (!stage || !stage.const || !stage.levels)
-                    return await interaction.reply({ content: 'That stage data doesn\'t exist!', ephemeral: true });
+                if (gameConsts.ccbStages.find(stage => [stage.name.toLowerCase(), stage.levelId.split('/')[stage.levelId.split('/').length - 1]].includes(name))) {
+                    const stage = await api.single('ccb/legacy', { query: name });
 
-                await interaction.deferReply();
+                    if (!stage || !stage.const || !stage.levels)
+                        return await interaction.reply({ content: 'That stage data doesn\'t exist!', ephemeral: true });
 
-                const ccbEmbed = await buildCcbMessage(stage, 0);
-                return await interaction.editReply(ccbEmbed);
+                    await interaction.deferReply();
+
+                    const ccbEmbed = await buildCCBLegacyMessage(stage, 0);
+                    return await interaction.editReply(ccbEmbed);
+                }
+                else {
+                    const stage = await api.single('ccb/stage', { query: name });
+
+                    if (!stage || !stage.excel || !stage.levels)
+                        return await interaction.reply({ content: 'That stage data doesn\'t exist!', ephemeral: true });
+
+                    await interaction.deferReply();
+
+                    const ccbEmbed = await buildCCBMessage(stage, 0);
+                    return await interaction.editReply(ccbEmbed);
+                }
             }
             case 'season': {
                 const index = interaction.options.getString('index').toLowerCase();
@@ -71,22 +88,26 @@ export default class CCBCommand implements Command {
 
                 await interaction.deferReply();
 
-                const ccbSelectEmbed = await buildCcbSelectMessage(index);
+                const ccbSelectEmbed = await buildCCBLegacySelectMessage(index);
                 return await interaction.editReply(ccbSelectEmbed);
             }
         }
     }
     async buttonResponse(interaction: ButtonInteraction<CacheType>, idArr: string[]) {
-        const stage = await api.single('ccb', { query: idArr[1] });
+        const name = idArr[1];
         const page = parseInt(idArr[2]);
 
-        const ccbEmbed = await buildCcbMessage(stage, page);
+        const ccbEmbed = gameConsts.ccbStages.find(stage => stage.name.toLowerCase() === name)
+            ? await buildCCBLegacyMessage(await api.single('ccb/legacy', { query: name }), page)
+            : await buildCCBMessage(await api.single('ccb/stage', { query: name }), page);
         await interaction.update(ccbEmbed);
     }
     async selectResponse(interaction: StringSelectMenuInteraction<CacheType>, idArr: string[]) {
-        const stage = await api.single('ccb', { query: interaction.values[0] });
+        const name = interaction.values[0];
 
-        const ccbEmbed = await buildCcbMessage(stage, 0);
+        const ccbEmbed = gameConsts.ccbStages.find(stage => stage.name.toLowerCase() === name)
+            ? await buildCCBLegacyMessage(await api.single('ccb/legacy', { query: name }), 0)
+            : await buildCCBMessage(await api.single('ccb/stage', { query: name }), 0);
         await interaction.update(ccbEmbed);
     }
 }

@@ -1,8 +1,8 @@
 import { AutocompleteInteraction, ButtonInteraction, CacheType, ChatInputCommandInteraction, SlashCommandBuilder, StringSelectMenuInteraction } from 'discord.js';
 import Command from '../structures/Command';
 import * as api from '../utils/api';
-import { autocompleteCc } from '../utils/autocomplete';
-import { buildCcMessage, buildCcSelectMessage } from '../utils/build';
+import { autocompleteCC } from '../utils/autocomplete';
+import { buildCCMessage, buildCCSelectMessage } from '../utils/build';
 const { gameConsts } = require('../constants');
 
 export default class CCCommand implements Command {
@@ -56,7 +56,7 @@ export default class CCCommand implements Command {
     ]
     async autocomplete(interaction: AutocompleteInteraction) {
         const value = interaction.options.getFocused().toLowerCase();
-        const arr = await autocompleteCc(value);
+        const arr = await autocompleteCC(value);
         return await interaction.respond(arr);
     }
     async execute(interaction: ChatInputCommandInteraction) {
@@ -72,7 +72,7 @@ export default class CCCommand implements Command {
 
                 await interaction.deferReply();
 
-                const ccEmbed = await buildCcMessage(stage, 0);
+                const ccEmbed = await buildCCMessage(stage, 0);
                 return await interaction.editReply(ccEmbed);
             }
             case 'season': {
@@ -83,7 +83,7 @@ export default class CCCommand implements Command {
 
                 await interaction.deferReply();
 
-                const ccSelectEmbed = await buildCcSelectMessage(index);
+                const ccSelectEmbed = await buildCCSelectMessage(index);
                 return await interaction.editReply(ccSelectEmbed);
             }
         }
@@ -92,13 +92,13 @@ export default class CCCommand implements Command {
         const stage = await api.single('cc', { query: idArr[1] });
         const page = parseInt(idArr[2]);
 
-        const ccEmbed = await buildCcMessage(stage, page);
+        const ccEmbed = await buildCCMessage(stage, page);
         await interaction.update(ccEmbed);
     }
     async selectResponse(interaction: StringSelectMenuInteraction<CacheType>, idArr: string[]) {
         const stage = await api.single('cc', { query: interaction.values[0] });
 
-        const ccEmbed = await buildCcMessage(stage, 0);
+        const ccEmbed = await buildCCMessage(stage, 0);
         await interaction.update(ccEmbed);
     }
 }

@@ -11,21 +11,29 @@ type sandTheme = 0;
 const limit = 6;
 const splitMatch = (str: string, query: string) => str.toLowerCase().includes(query.toLowerCase()) || str.toLowerCase().split('\'').join('').includes(query.toLowerCase());
 
-export async function autocompleteCc(query: string, callback: (e: T.CCStage['const']) => boolean = () => true) {
-    const matchQuery = (stage: T.CCStage['const']) => splitMatch(stage.name, query) || splitMatch(stage.location, query) || splitMatch(stage.levelId.split('/')[2], query);
+export function autocompleteCC(query: string, callback: (e: T.CCStageLegacy['const']) => boolean = () => true) {
+    const matchQuery = (stage: T.CCStageLegacy['const']) => splitMatch(stage.name, query) || splitMatch(stage.location, query) || splitMatch(stage.levelId.split('/')[2], query);
 
     return gameConsts.ccStages
         .filter(stage => callback(stage) && matchQuery(stage))
         .slice(0, limit)
         .map(stage => ({ name: `${stage.location} - ${stage.name}`, value: stage.levelId.split('/')[stage.levelId.split('/').length - 1] }));
 }
-export async function autocompleteCcb(query: string, callback: (e: T.CCStage['const']) => boolean = () => true) {
-    const matchQuery = (stage: T.CCStage['const']) => splitMatch(stage.name, query) || splitMatch(stage.location, query) || splitMatch(stage.levelId.split('/')[2], query);
+export function autocompleteCCBLegacy(query: string, callback: (e: T.CCStageLegacy['const']) => boolean = () => true) {
+    const matchQuery = (stage: T.CCStageLegacy['const']) => splitMatch(stage.name, query) || splitMatch(stage.location, query) || splitMatch(stage.levelId.split('/')[2], query);
 
     return gameConsts.ccbStages
         .filter(stage => callback(stage) && matchQuery(stage))
         .slice(0, limit)
         .map(stage => ({ name: `${stage.location} - ${stage.name}`, value: stage.levelId.split('/')[stage.levelId.split('/').length - 1] }));
+}
+export async function autocompleteCCB({ query, include = [] }: AutocompleteParams, callback: (e: T.CCStage) => boolean = () => true) {
+    const requiredInclude = ['excel.code', 'excel.name', 'excel.stageId'];
+
+    return (await api.match('ccb/stage', { query, include: requiredInclude.concat(include) }))
+        .filter(callback)
+        .slice(0, limit)
+        .map(stage => ({ name: `${stage.excel.code} - ${stage.excel.name}`, value: stage.excel.stageId }));
 }
 export async function autocompleteDefine({ query, include = [] }: AutocompleteParams, callback: (e: T.Definition) => boolean = () => true) {
     const requiredInclude = ['termId', 'termName'];

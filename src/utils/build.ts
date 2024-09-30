@@ -94,7 +94,7 @@ export async function buildBaseMessage(op: T.Operator, page: number): Promise<Dj
 
     return { embeds: [embed] };
 }
-export async function buildCcMessage(stage: T.CCStage, page: number): Promise<Djs.BaseMessageOptions> {
+export async function buildCCMessage(stage: T.CCStageLegacy, page: number): Promise<Djs.BaseMessageOptions> {
     const stageInfo = stage.const;
     const stageData = stage.levels;
 
@@ -147,7 +147,7 @@ export async function buildCcMessage(stage: T.CCStage, page: number): Promise<Dj
         return { content: '', embeds: [embed], components: [buttonRow] };
     }
 }
-export async function buildCcbMessage(stage: T.CCStage, page: number): Promise<Djs.BaseMessageOptions> {
+export async function buildCCBLegacyMessage(stage: T.CCStageLegacy, page: number): Promise<Djs.BaseMessageOptions> {
     const stageInfo = stage.const;
     const stageData = stage.levels;
 
@@ -200,7 +200,60 @@ export async function buildCcbMessage(stage: T.CCStage, page: number): Promise<D
         return { content: '', embeds: [embed], components: [buttonRow] };
     }
 }
-export async function buildCcSelectMessage(season: string): Promise<Djs.BaseMessageOptions> {
+export async function buildCCBMessage(stage: T.CCStage, page: number): Promise<Djs.BaseMessageOptions> {
+    const stageInfo = stage.excel;
+    const stageData = stage.levels;
+
+    const title = `${stageInfo.code} - ${stageInfo.name}`;
+    const description = removeStyleTags(stageInfo.description);
+
+    const embed = new Djs.EmbedBuilder()
+        .setColor(embedColour)
+        .setTitle(title)
+        .setURL(`${paths.stageViewerUrl}?level=${stage.excel.levelId.toLowerCase()}`)
+        .setDescription(description);
+
+    embed.addFields(await buildStageEnemyFields(stageData));
+
+    const imageButton = new Djs.ButtonBuilder()
+        .setCustomId(createCustomId('ccb', stage.excel.name.toLowerCase(), 0))
+        .setLabel('Preview')
+        .setStyle(Djs.ButtonStyle.Primary);
+    const diagramButton = new Djs.ButtonBuilder()
+        .setCustomId(createCustomId('ccb', stage.excel.name.toLowerCase(), 1))
+        .setLabel('Diagram')
+        .setStyle(Djs.ButtonStyle.Primary);
+    const buttonRow = new Djs.ActionRowBuilder<Djs.ButtonBuilder>().addComponents(imageButton, diagramButton);
+
+    switch (page) {
+        case 0:
+            imageButton.setDisabled(true);
+            break;
+        case 1:
+            diagramButton.setDisabled(true);
+            break;
+    }
+
+    if (page === 0) {
+        const imagePath = paths.myAssetUrl + `/stages/${stageInfo.levelId.replace('level_', '').split('/')[stageInfo.levelId.replace('level_', '').split('/').length - 1]}.png`;
+        if (await urlExists(imagePath)) {
+            embed.setImage(imagePath)
+
+            return { content: '', embeds: [embed], components: [buttonRow] };
+        }
+        else {
+            embed.addFields(buildStageDiagramFields(stageData));
+
+            return { content: '', embeds: [embed], components: [] };
+        }
+    }
+    else {
+        embed.addFields(buildStageDiagramFields(stageData));
+
+        return { content: '', embeds: [embed], components: [buttonRow] };
+    }
+}
+export async function buildCCSelectMessage(season: string): Promise<Djs.BaseMessageOptions> {
     const ccSelector = new Djs.StringSelectMenuBuilder()
         .setCustomId(createCustomId('cc', 'select'))
         .setPlaceholder('Select a stage!');
@@ -216,7 +269,7 @@ export async function buildCcSelectMessage(season: string): Promise<Djs.BaseMess
 
     return { content: `Please select a stage from CC#${season} below:`, components: [componentRow] };
 }
-export async function buildCcbSelectMessage(season: string): Promise<Djs.BaseMessageOptions> {
+export async function buildCCBLegacySelectMessage(season: string): Promise<Djs.BaseMessageOptions> {
     const ccbSelector = new Djs.StringSelectMenuBuilder()
         .setCustomId(createCustomId('ccb', 'select'))
         .setPlaceholder('Select a stage!');
