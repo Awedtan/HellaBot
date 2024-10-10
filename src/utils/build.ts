@@ -585,6 +585,13 @@ export async function buildGachaListMessage(index: number): Promise<Djs.BaseMess
                     else if (charList.rarityRank === 4) ops5.push(charNames.find(char => char.id === charId).data.name);
                 }
             }
+            if (ops6.length === 0) {
+                for (const charList of banner.details.detailInfo.availCharInfo.perAvailList) {
+                    for (const charId of charList.charIdList) {
+                        if (charList.rarityRank === 5) ops6.push(charNames.find(char => char.id === charId).data.name);
+                    }
+                }
+            }
             bannerDesc = `6★ ${ops6.join(', ')}\n5★ ${ops5.join(', ')}`;
         }
         else {
