@@ -486,14 +486,10 @@ export async function buildEnemyMessage(enemy: T.Enemy, level: number): Promise<
 export async function buildEventListMessage(index: number): Promise<Djs.BaseMessageOptions> {
     const eventCount = 6;
 
-    let eventArr = [];
-    const dataArr = await api.all('event');
-    for (const event of dataArr) {
-        const skipLoginArr = ['LOGIN_ONLY', 'CHECKIN_ONLY', 'FLOAT_PARADE', 'PRAY_ONLY', 'GRID_GACHA_V2', 'GRID_GACHA']; // Skip login events
-        if (skipLoginArr.includes(event.type)) continue;
-        eventArr.push(event);
-    }
-    eventArr.sort((first: T.GameEvent, second: T.GameEvent) => second.startTime - first.startTime); // Sort by descending start time
+    const skipLoginEvents = ['LOGIN_ONLY', 'CHECKIN_ONLY', 'FLOAT_PARADE', 'PRAY_ONLY', 'GRID_GACHA_V2', 'GRID_GACHA', 'BLESS_ONLY', 'CHECKIN_ACCESS'];
+    const eventArr = (await api.all('event'))
+        .filter(e => !skipLoginEvents.includes(e.type))
+        .sort((a, b) => b.startTime - a.startTime);
 
     const embed = new Djs.EmbedBuilder()
         .setColor(embedColour)
@@ -1138,7 +1134,7 @@ export async function buildRogueRelicMessage(relic: T.RogueRelic): Promise<Djs.B
         .setTitle(relic.name)
         .setDescription(description);
 
-    const imagePath = paths.myAssetUrl + `/rogueitems/${relic.iconId}.png`;
+    const imagePath = paths.myAssetUrl + `/rogue/items/${relic.iconId}.png`;
     if (await urlExists(imagePath))
         embed.setThumbnail(imagePath);
 
@@ -1352,7 +1348,7 @@ export async function buildSandboxItemMessage(theme: number, item: T.SandboxItem
         });
     }
 
-    const imagePath = paths.myAssetUrl + `/sandboxitems/${item.data.itemId}.png`;
+    const imagePath = paths.myAssetUrl + `/sandbox/items/${item.data.itemId}.png`;
     if (await urlExists(imagePath))
         embed.setThumbnail(imagePath);
 
@@ -1393,7 +1389,7 @@ export async function buildSandboxStageMessage(theme: number, stage: T.SandboxSt
     }
 
     if (page === 0) {
-        const imagePath = paths.myAssetUrl + `/sandboxstages/${stageInfo.stageId}.png`;
+        const imagePath = paths.myAssetUrl + `/sandbox/stages/${stageInfo.stageId}.png`;
 
         if (await urlExists(imagePath)) {
             embed.setImage(imagePath)
@@ -1415,7 +1411,7 @@ export async function buildSandboxWeatherMessage(theme: number, weather: T.Sandb
         .setTitle(weather.name)
         .setDescription(`${weather.functionDesc}\n\n${weather.description}`);
 
-    const imagePath = paths.myAssetUrl + `/sandboxweather/${weather.weatherIconId}.png`;
+    const imagePath = paths.myAssetUrl + `/sandbox/weather/${weather.weatherIconId}.png`;
     if (await urlExists(imagePath))
         embed.setThumbnail(imagePath);
 
