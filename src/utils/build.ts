@@ -1990,7 +1990,7 @@ function buildDeployableEmbed(deploy: T.Deployable, rarity: boolean = true): Djs
         .setColor(embedColour)
         .setTitle(rarity ? `${deploy.data.name} - ${'★'.repeat(gameConsts.rarity[deploy.data.rarity] + 1)}` : deploy.data.name)
         .setURL(buildAuthorField(deploy, rarity).url)
-        .setThumbnail(paths.aceshipImageUrl + `/avatars/${deploy.id}.png`);
+        .setThumbnail(rarity ? paths.myAssetUrl + `/operator/avatars/${deploy.id}.png` : paths.aceshipImageUrl + `/avatars/${deploy.id}.png`);
 
     let description = removeStyleTags(deploy.data.description);
     if (deploy.data.trait) {
