@@ -1986,11 +1986,14 @@ function buildModuleEmbed(op: T.Operator, page: number, level: number): Djs.Embe
     return embed;
 }
 function buildDeployableEmbed(deploy: T.Deployable, rarity: boolean = true): Djs.EmbedBuilder {
+    let avatarThumb = rarity ? paths.myAssetUrl + `/operator/avatars/${deploy.id}.png` : paths.aceshipImageUrl + `/avatars/${deploy.id}.png`;
+    if (deploy.id === 'char_1037_amiya3') avatarThumb = paths.myAssetUrl + `/operator/avatars/char_1037_amiya3_2.png`
+
     const embed = new Djs.EmbedBuilder()
         .setColor(embedColour)
         .setTitle(rarity ? `${deploy.data.name} - ${'★'.repeat(gameConsts.rarity[deploy.data.rarity] + 1)}` : deploy.data.name)
         .setURL(buildAuthorField(deploy, rarity).url)
-        .setThumbnail(rarity ? paths.myAssetUrl + `/operator/avatars/${deploy.id}.png` : paths.aceshipImageUrl + `/avatars/${deploy.id}.png`);
+        .setThumbnail(avatarThumb);
 
     let description = removeStyleTags(deploy.data.description);
     if (deploy.data.trait) {
