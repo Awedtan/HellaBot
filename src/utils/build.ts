@@ -89,7 +89,7 @@ export async function buildBaseMessage(op: T.Operator, page: number): Promise<Dj
         .setColor(embedColour)
         .setAuthor(authorField)
         .setTitle(title)
-        .setThumbnail(paths.aceshipImageUrl + `/ui/infrastructure/skill/${base.skillIcon}.png`)
+        .setThumbnail(paths.myAssetUrl + `/operator/bases/${base.skillIcon}.png`)
         .setDescription(description);
 
     return { embeds: [embed] };
@@ -1698,7 +1698,7 @@ function buildAuthorField(char: T.Enemy | T.Deployable, url: boolean = true): Dj
     if ((char as T.Deployable).id && (char as T.Deployable).data) {
         const op = (char as T.Deployable);
         const urlName = op.data.name.toLowerCase().split(' the ').join('-').split(/'|,/).join('').split(' ').join('-').split('ë').join('e').split('ł').join('l');// Unholy dumbness
-        const authorField = { name: op.data.name, iconURL: paths.aceshipImageUrl + `/avatars/${op.id}.png` };
+        const authorField = { name: op.data.name, iconURL: paths.myAssetUrl + `/operator/avatars/${op.id}.png` };
         if (url) {
             authorField['url'] = `https://gamepress.gg/arknights/operator/${urlName}`
         }
@@ -1855,7 +1855,7 @@ function buildArtEmbed(op: T.Operator, page: number): Djs.EmbedBuilder {
         .setColor(embedColour)
         .setAuthor(buildAuthorField(op))
         .setTitle(`${displaySkin.skinGroupName}${displaySkin.skinName ? ` - ${displaySkin.skinName}` : ''}`)
-        .setImage(paths.aceshipImageUrl + `/characters/${encodeURIComponent(op.skins[page].portraitId)}.png`);
+        .setImage(paths.myAssetUrl + `/operator/arts/${encodeURIComponent(op.skins[page].portraitId)}.png`);
 
     switch (displaySkin.skinGroupId) {
         case 'ILLUST_0': {
@@ -1956,7 +1956,7 @@ function buildModuleEmbed(op: T.Operator, page: number, level: number): Djs.Embe
         .setColor(embedColour)
         .setAuthor(buildAuthorField(op))
         .setTitle(`${module.info.typeIcon.toUpperCase()} ${module.info.uniEquipName} - Lv${level + 1}`)
-        .setThumbnail(paths.aceshipImageUrl + `/equip/icon/${module.info.uniEquipId}.png`);
+        .setThumbnail(paths.myAssetUrl + `/operator/modules/${module.info.uniEquipId}.png`);
 
     let description = '', talentName = null, talentDescription = null;
     for (const part of module.data.phases[level].parts) {
@@ -2063,7 +2063,7 @@ async function buildSkillEmbed(op: T.Operator, page: number, level: number): Pro
         .setColor(embedColour)
         .setAuthor(buildAuthorField(op))
         .setTitle(`${skillLevel.name} - ${gameConsts.skillLevels[level]}`)
-        .setThumbnail(paths.aceshipImageUrl + `/skills/skill_icon_${skill.iconId ?? skill.skillId}.png`)
+        .setThumbnail(paths.myAssetUrl + `/operator/skills/skill_icon_${skill.iconId ?? skill.skillId}.png`)
         .setDescription(description);
 
     if (skillLevel.rangeId) {
