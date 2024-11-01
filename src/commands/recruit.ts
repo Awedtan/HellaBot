@@ -6,6 +6,7 @@ const tagOptions = [
     // { name: 'Starter', value: 'starter' },
     // { name: 'Senior', value: 'senior' },
     // { name: 'Top', value: 'top' },
+    // { name: 'Robot', value: 'robot' },
     { name: 'Melee', value: 'melee' },
     { name: 'Ranged', value: 'ranged' },
     { name: 'Guard', value: 'guard' },
@@ -30,7 +31,7 @@ const tagOptions = [
     { name: 'Summon', value: 'summon' },
     { name: 'Fast-Redeploy', value: 'fast-redeploy' },
     { name: 'DP-Recovery', value: 'dp-recovery' },
-    { name: 'Robot', value: 'robot' }
+    { name: 'Elemental', value: 'elemental' }
 ];
 
 export default class RecruitCommand implements Command {

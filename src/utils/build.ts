@@ -987,6 +987,7 @@ export async function buildRecruitMessage(value: number, tags: string[], select:
     const starterButton = button('starter', 'Starter');
     const seniorButton = button('senior', 'Senior Operator');
     const topButton = button('top', 'Top Operator');
+    const robotButton = button('robot', 'Robot');
     const meleeButton = button('melee', 'Melee');
     const rangedButton = button('ranged', 'Ranged');
     const guardButton = button('guard', 'Guard');
@@ -1011,13 +1012,13 @@ export async function buildRecruitMessage(value: number, tags: string[], select:
     const summonButton = button('summon', 'Summon');
     const fastRedeployButton = button('fast-redeploy', 'Fast-Redeploy');
     const dpRecoveryButton = button('dp-recovery', 'DP-Recovery');
-    const robotButton = button('robot', 'Robot');
+    const elementalButton = button('elemental', 'Elemental');
     const deleteButton = button('delete', '🗑️ Clear Tags')
         .setDisabled(true)
         .setStyle(Djs.ButtonStyle.Danger);
 
     const qualComponents = [
-        new Djs.ActionRowBuilder<Djs.ButtonBuilder>().addComponents(starterButton, seniorButton, topButton),
+        new Djs.ActionRowBuilder<Djs.ButtonBuilder>().addComponents(starterButton, seniorButton, topButton, robotButton),
         new Djs.ActionRowBuilder<Djs.ButtonBuilder>().addComponents(meleeButton, rangedButton),
         new Djs.ActionRowBuilder<Djs.ButtonBuilder>().addComponents(guardButton, medicButton, vanguardButton, casterButton, sniperButton),
         new Djs.ActionRowBuilder<Djs.ButtonBuilder>().addComponents(defenderButton, supporterButton, specialistButton)
@@ -1025,7 +1026,7 @@ export async function buildRecruitMessage(value: number, tags: string[], select:
     const tagComponents = [
         new Djs.ActionRowBuilder<Djs.ButtonBuilder>().addComponents(healingButton, supportButton, dpsButton, aoeButton, slowButton),
         new Djs.ActionRowBuilder<Djs.ButtonBuilder>().addComponents(survivalButton, defenseButton, debuffButton, shiftButton, crowdControlButton),
-        new Djs.ActionRowBuilder<Djs.ButtonBuilder>().addComponents(nukerButton, summonButton, fastRedeployButton, dpRecoveryButton, robotButton)
+        new Djs.ActionRowBuilder<Djs.ButtonBuilder>().addComponents(nukerButton, summonButton, fastRedeployButton, dpRecoveryButton, elementalButton)
     ];
     const utilComponents = [
         new Djs.ActionRowBuilder<Djs.ButtonBuilder>().addComponents(deleteButton)
