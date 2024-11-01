@@ -144,9 +144,10 @@ export async function autocompleteOperator({ query, include = [] }: Autocomplete
 export async function autocompleteStage({ query, include = [] }: AutocompleteParams, callback: (e: T.Stage) => boolean = () => true) {
     const requiredInclude = ['excel.name', 'excel.code', 'excel.stageId'];
 
-    return ((await api.match('stage', { query, include: requiredInclude.concat(include) }))) // god bless
+    return (await api.match('stage', { query, include: requiredInclude.concat(include) }))
         .filter(a => a.length === 1)
         .flat()
+        .filter((item, index, self) => self.findIndex(t => t.excel.stageId === item.excel.stageId) === index)
         .filter(callback)
         .slice(0, limit)
         .map(stage => ({ name: `${stage.excel.code} - ${stage.excel.name}`, value: stage.excel.stageId }));
@@ -154,9 +155,10 @@ export async function autocompleteStage({ query, include = [] }: AutocompletePar
 export async function autocompleteToughStage({ query, include = [] }: AutocompleteParams, callback: (e: T.Stage) => boolean = () => true) {
     const requiredInclude = ['excel.name', 'excel.code', 'excel.stageId'];
 
-    return ((await api.match('toughstage', { query, include: requiredInclude.concat(include) }))) // god bless
+    return (await api.match('toughstage', { query, include: requiredInclude.concat(include) }))
         .filter(a => a.length === 1)
         .flat()
+        .filter((item, index, self) => self.findIndex(t => t.excel.stageId === item.excel.stageId) === index)
         .filter(callback)
         .slice(0, limit)
         .map(stage => ({ name: `${stage.excel.code} - ${stage.excel.name}`, value: stage.excel.stageId }));

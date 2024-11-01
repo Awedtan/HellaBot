@@ -109,7 +109,7 @@ class PathBuilder {
 }
 
 async function getSingle({ route, query, include, exclude }: RouteParams) {
-    const path = new PathBuilder().route(`${route}/${query}`).include(include).exclude(exclude).toString();
+    const path = new PathBuilder().route(`${route}/${encodeURIComponent(query)}`).include(include).exclude(exclude).toString();
     const res = await fetch(path);
     if (!res.ok) return null;
     return (await res.json()).value;
@@ -124,7 +124,7 @@ async function getMulti({ route, limit, include, exclude }: RouteParams) {
 
 async function getMatch({ route, query, limit, include, exclude }: RouteParams) {
     if (query === '') return [];
-    const path = new PathBuilder().route(`${route}/match/${query}`).limit(limit).include(include).exclude(exclude).toString();
+    const path = new PathBuilder().route(`${route}/match/${encodeURIComponent(query)}`).limit(limit).include(include).exclude(exclude).toString();
     const res = await fetch(path);
     if (!res.ok) return null;
     return (await res.json()).map(datum => datum.value);
