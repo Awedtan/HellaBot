@@ -3,7 +3,7 @@ import { promises, unlinkSync } from 'fs';
 import { join } from 'path';
 import Command from '../structures/Command';
 import * as api from '../utils/api';
-import { autocompleteEnemy, autocompleteOperator, autocompleteSkin } from '../utils/autocomplete';
+import { autocompleteEnemy, autocompleteOperator } from '../utils/autocomplete';
 import { buildSpineEnemyMessage, buildSpineOperatorMessage } from '../utils/build';
 import * as spineHelper from '../utils/spine/spineHelper';
 const { gameConsts } = require('../constants');
@@ -95,8 +95,11 @@ export default class SpineCommand implements Command {
                     }
                     case 'skin': {
                         const name = interaction.options.getString('name').toLowerCase();
-                        const op = await api.single('operator', { query: name });
-                        const arr = await autocompleteSkin(op, { query: focused.value, include: ['id'] });
+                        const op = await api.single('operator', { query: name, include: ['skins'] });
+                        const arr = [{ name: 'Default', value: 'default' }]
+                            .concat(...op.skins
+                                .filter(s => s.displaySkin.skinName)
+                                .map(s => ({ name: s.displaySkin.skinName, value: s.battleSkin.skinOrPrefabId })));
                         return await interaction.respond(arr);
                     }
                 }

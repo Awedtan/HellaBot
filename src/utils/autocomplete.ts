@@ -115,16 +115,6 @@ export async function autocompleteSandboxWeather(act: sandTheme, { query, includ
         .slice(0, limit)
         .map(weather => ({ name: weather.name, value: weather.weatherId }));
 }
-export async function autocompleteSkin(op: T.Operator, { query, include = [] }: AutocompleteParams, callback: (e: T.Skin) => boolean = () => true) {
-    const requiredInclude = ['skinId', 'displaySkin.skinName'];
-
-    return [{ name: 'Default', value: 'default' }]
-        .concat(...(await api.search('skin', { search: { 'charId': op.id }, include: requiredInclude.concat(include) }))
-            .filter(skin => skin.displaySkin.skinName && callback(skin))
-            .slice(0, limit)
-            .map(skin => ({ name: skin.displaySkin.skinName ?? 'Default', value: skin.displaySkin.skinName ? skin.skinId.split('@').join('_') : 'default' }))
-        );
-}
 export async function autocompleteItem({ query, include = [] }: AutocompleteParams, callback: (e: T.Item) => boolean = () => true) {
     const requiredInclude = ['data.itemId', 'data.name'];
 
