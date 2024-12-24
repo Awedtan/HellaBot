@@ -99,7 +99,8 @@ export default class SpineCommand implements Command {
                         const arr = [{ name: 'Default', value: 'default' }]
                             .concat(...op.skins
                                 .filter(s => s.displaySkin.skinName)
-                                .map(s => ({ name: s.displaySkin.skinName, value: s.battleSkin.skinOrPrefabId })));
+                                .map(s => ({ name: s.displaySkin.skinName, value: s.battleSkin.skinOrPrefabId })))
+                            .filter(s => s.name.toLowerCase().includes(focused.value.toLowerCase()));
                         return await interaction.respond(arr);
                     }
                 }
