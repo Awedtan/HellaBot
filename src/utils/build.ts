@@ -3,6 +3,7 @@ import type * as T from "hella-types";
 import { join } from 'path';
 import { globalCommands } from '../structures/HellaBot';
 import * as api from './api';
+import * as pstats from './penguin-stats';
 const { embedColour, paths, gameConsts } = require('../constants');
 
 const cleanFilename = (text: string) => text.split(/%|[#\+]|&|\[|\]/).join(''); // Remove special characters that discord doesn't like (%, #, etc.)
@@ -771,6 +772,8 @@ export async function buildInfoMessage(op: T.Operator, type: number, page: numbe
     return { embeds: embedArr, files: fileArr, components: rowArr };
 }
 export async function buildItemMessage(item: T.Item): Promise<Djs.BaseMessageOptions> {
+    const dropStageCount = 6;
+
     const description = item.data.description !== null ? `${item.data.usage}\n\n${item.data.description}` : item.data.usage;
 
     const embed = new Djs.EmbedBuilder()
@@ -778,16 +781,12 @@ export async function buildItemMessage(item: T.Item): Promise<Djs.BaseMessageOpt
         .setTitle(item.data.name)
         .setDescription(description);
 
-    let stageString = '';
-    for (const stageDrop of item.data.stageDropList) {
-        const stageId = stageDrop.stageId;
-        if (!stageId.includes('main') && !stageId.includes('sub')) continue;
-
-        const stage = (await api.single('stage', { query: stageId, include: ['excel.code'] }))[0];
-        stageString += `${stage.excel.code} - ${gameConsts.itemDropRarities[stageDrop.occPer]}\n`;
-    }
-    if (stageString !== '') {
-        embed.addFields({ name: 'Drop Stages', value: stageString, inline: true });
+    const sanityString = (await pstats.getItemAverageSanity(item))
+        .sort((a, b) => a.sanity - b.sanity)
+        .slice(0, dropStageCount)
+        .map(s => `${s.code} - **${s.sanity.toFixed(2)}**`).join('\n');
+    if (sanityString !== '') {
+        embed.addFields({ name: 'Drop Stages (Sanity/Item)', value: sanityString, inline: true });
     }
     if (item.formula !== null && item.formula.costs.length > 0) {
         const formulaString = buildCostString(item.formula.costs, await api.all('item'));

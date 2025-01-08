@@ -4,7 +4,8 @@
         "aceshipImageUrl": "https://raw.githubusercontent.com/Aceship/Arknight-Images/main",
         "apiUrl": "https://awedtan.ca/api",
         "myAssetUrl": "https://raw.githubusercontent.com/Awedtan/HellaAssets/main",
-        "stageViewerUrl": "https://awedtan.github.io/stage-viewer"
+        "stageViewerUrl": "https://awedtan.github.io/stage-viewer",
+        "penguinStatsUrl": "https://penguin-stats.io/PenguinStats/api/v2"
     },
     "gameConsts": {
         "ccSeasons": {
