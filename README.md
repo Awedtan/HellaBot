@@ -2,9 +2,9 @@
 
 An Arknights Discord bot that provides information on operators, enemies, stages, and more! 
 
-[Click here](https://discord.com/application-directory/1277141603575922710) to invite a me-hosted instance of the bot to a server!
+[Click here to invite a me-hosted instance of the bot to a server!](https://discord.com/application-directory/1277141603575922710)
 
-> Note: the `spine` command is disabled for this bot because it is quite compute-intensive and the bot is hosted on a cheap cloud VM with not a lot of power. If you'd like that functionality, you can install and run the bot yourself :^)
+> Note: the `spine` command is disabled for this instance because it's quite compute-intensive and the bot's running on a low-power system. If you'd like that functionality, you can install and run the bot yourself :^)
 
 A work-in-progress personal project. Game data is fetched from [HellaAPI](https://github.com/Awedtan/HellaAPI).
 
@@ -19,22 +19,19 @@ To run the bot on your own machine or wherever else, follow the steps below.
 ```sh
 git clone https://github.com/Awedtan/HellaBot.git --depth=1
 ```
-3. Move into the project folder
+3. Install the project dependencies
 ```sh
 cd HellaBot
-```
-4. Install the project dependencies
-```sh
 npm install
 ```
-5. In the project folder, rename `sample-config.json` to `config.json` and fill in the fields
+4. In the project folder, rename `sample-config.json` to `config.json` and fill in the fields
 ```jsonc
 {
     // required fields
     "token": "your_bot_token_here",
     "clientId": "your_application_id_here",
 
-    // optional fields, you can delete these fields if not using them
+    // optional fields, delete these fields if not using them
     "apiUrl": "your_api_url_here", // default URL is https://awedtan.ca/api
     "disabled": { // you can add commands here and set to `true` to disable them
         "spine": false
@@ -52,7 +49,7 @@ HellaBot/
 ├── src/
 └── tsconfig.json
 ```
-6. Run the bot!
+5. Run the bot!
 ```sh
 npm start
 ```
@@ -98,5 +95,7 @@ All command interactions are event-driven, so buttons and other interactables wi
 [Kengxxiao/ArknightsGameData_YoStar](https://github.com/Kengxxiao/ArknightsGameData_YoStar) for providing the raw game data.
 
 [Aceship/Arknight-Images](https://github.com/Aceship/Arknight-Images) for providing game images.
+
+[Penguin Statistics](https://penguin-stats.io/) for providing item drop rates.
 
 [MrJAwesome](https://www.youtube.com/@MrJAwesomeYT) for making videos on Discord.js that helped me get started on this project.
