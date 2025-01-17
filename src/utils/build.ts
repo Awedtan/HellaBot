@@ -1329,12 +1329,12 @@ export async function buildSandboxItemMessage(theme: number, item: T.SandboxItem
         }
         embed.addFields({ name: 'Crafting Formula', value: costString });
     }
-    if (item.drink) {
-        embed.addFields({ name: 'Energy', value: item.drink.count.toString(), inline: true });
-    }
     if (item.food) {
-        embed.addFields({ name: 'Normal effect', value: item.food.itemUsage, inline: true });
-        embed.addFields({ name: 'Enhanced effect', value: item.food.enhancedUsage, inline: true });
+        for (let i = 0; i < item.food.variants.length; i++) {
+            const variant = item.food.variants[i];
+            const fieldName = i === 0 ? 'Normal' : `Variant ${variant.name.slice(item.food.variants[0].name.length).trim()}`;
+            embed.addFields({ name: fieldName, value: variant.usage, inline: i !== 0 });
+        }
         item.food.recipes.forEach(recipe => {
             let recipeString = '';
             const mats = {};
@@ -1344,8 +1344,11 @@ export async function buildSandboxItemMessage(theme: number, item: T.SandboxItem
             for (const [mat, count] of Object.entries(mats)) {
                 recipeString += `${items[mat].data.itemName} **x${count}**\n`;
             }
-            embed.addFields({ name: 'Recipe', value: recipeString });
+            embed.addFields({ name: 'Recipe', value: recipeString, inline: true });
         });
+    }
+    if (item.drink && !item.food) {
+        embed.addFields({ name: 'Energy', value: item.drink.count.toString() });
     }
 
     const imagePath = paths.myAssetUrl + `/sandbox/items/${item.data.itemId}.png`;
