@@ -447,7 +447,7 @@ export async function buildEnemyMessage(enemy: T.Enemy, level: number): Promise<
     const embed = new Djs.EmbedBuilder()
         .setColor(embedColour)
         .setTitle(title)
-        .setThumbnail(paths.aceshipImageUrl + `/enemy/${enemyInfo.enemyId}.png`)
+        .setThumbnail(paths.myAssetUrl + `/enemy/${enemyInfo.enemyId}.png`)
         .setDescription(description)
         .addFields(
             { name: '❤️ HP', value: hp, inline: true },
@@ -792,7 +792,7 @@ export async function buildItemMessage(item: T.Item): Promise<Djs.BaseMessageOpt
         const formulaString = buildCostString(item.formula.costs, await api.all('item'));
         embed.addFields({ name: 'Crafting Formula', value: formulaString, inline: true });
     }
-    const imagePath = paths.aceshipImageUrl + `/items/${item.data.iconId}.png`;
+    const imagePath = paths.myAssetUrl + `/items/${item.data.iconId}.png`;
     if (await urlExists(imagePath))
         embed.setThumbnail(imagePath);
 
@@ -1709,7 +1709,7 @@ function buildAuthorField(char: T.Enemy | T.Deployable, url: boolean = true): Dj
     }
     else if ((char as T.Enemy).excel) {
         const enem = (char as T.Enemy);
-        const authorField = { name: enem.excel.name, iconURL: paths.aceshipImageUrl + `/enemy/${enem.excel.enemyId}.png` };
+        const authorField = { name: enem.excel.name, iconURL: paths.myAssetUrl + `/enemy/${enem.excel.enemyId}.png` };
         return authorField;
     }
     return null;
@@ -1900,7 +1900,7 @@ async function buildCostEmbed(op: T.Operator, page: number): Promise<Djs.EmbedBu
         default:
         case 0: {
             embed.setTitle('Promotion Costs')
-                .setThumbnail(paths.aceshipImageUrl + `/items/sprite_exp_card_t4.png`);
+                .setThumbnail(paths.myAssetUrl + `/items/sprite_exp_card_t4.png`);
             for (let i = 0; i < op.data.phases.length; i++) {
                 if (op.data.phases[i].evolveCost === null) continue;
 
@@ -1911,7 +1911,7 @@ async function buildCostEmbed(op: T.Operator, page: number): Promise<Djs.EmbedBu
         }
         case 1: {
             embed.setTitle('Skill Upgrade Costs')
-                .setThumbnail(paths.aceshipImageUrl + `/items/MTL_SKILL2.png`);
+                .setThumbnail(paths.myAssetUrl + `/items/MTL_SKILL2.png`);
             for (let i = 0; i < op.data.allSkillLvlup.length; i++) {
                 if (op.data.allSkillLvlup[i].lvlUpCost === null) continue;
 
@@ -1922,7 +1922,7 @@ async function buildCostEmbed(op: T.Operator, page: number): Promise<Djs.EmbedBu
         }
         case 2: {
             embed.setTitle('Skill Mastery Costs')
-                .setThumbnail(paths.aceshipImageUrl + `/items/MTL_SKILL3.png`);
+                .setThumbnail(paths.myAssetUrl + `/items/MTL_SKILL3.png`);
             for (let i = 0; i < op.data.skills.length; i++) {
                 embed.addFields({ name: blankChar, value: `**Skill ${i + 1} - ${op.skills[i].levels[0].name}**` });
                 for (let j = 0; j < op.data.skills[i].levelUpCostCond.length; j++) {
@@ -1936,7 +1936,7 @@ async function buildCostEmbed(op: T.Operator, page: number): Promise<Djs.EmbedBu
         }
         case 3: {
             embed.setTitle('Module Upgrade Costs')
-                .setThumbnail(paths.aceshipImageUrl + `/items/mod_unlock_token.png`);
+                .setThumbnail(paths.myAssetUrl + `/items/mod_unlock_token.png`);
             for (const module of op.modules) {
                 if (module.info.uniEquipId.includes('uniequip_001')) continue;
 
