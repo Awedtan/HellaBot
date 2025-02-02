@@ -3,20 +3,18 @@
     "version": "1.0.0",
     "description": "",
     "scripts": {
-        "start": "ts-node src/index.ts",
-        "dev": "nodemon src/index.ts"
+        "start": "ts-node src/index.ts"
     },
     "author": "",
     "dependencies": {
-        "discord.js": "^14.14.1",
-        "dotenv": "^16.4.5",
+        "discord.js": "^14.17.3",
+        "dotenv": "^16.4.7",
         "hella-types": "^0.2.1",
-        "nodemon": "^3.1.0",
-        "puppeteer": "^22.6.1",
-        "simple-git": "^3.24.0",
+        "puppeteer": "^24.1.1",
+        "simple-git": "^3.27.0",
         "ts-node": "^10.9.2",
-        "typescript": "^5.4.3",
+        "typescript": "^5.7.3",
         "w3c-xmlhttprequest": "^3.0.4",
-        "zod": "^3.22.4"
+        "zod": "^3.24.1"
     }
 }
