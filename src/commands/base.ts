@@ -28,7 +28,7 @@ export default class BaseCommand implements Command {
     }
     async execute(interaction: ChatInputCommandInteraction) {
         const name = interaction.options.getString('name').toLowerCase();
-        const op = await api.single('operator', { query: name, include: ['id', 'data', 'bases']  });
+        const op = await api.single('operator', { query: name, include: ['id', 'data', 'bases'] });
 
         if (!op)
             return await interaction.reply({ content: 'That operator doesn\'t exist!', ephemeral: true });

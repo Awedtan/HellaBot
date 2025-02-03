@@ -2,10 +2,11 @@ import * as T from "hella-types";
 const { paths } = require('../constants.json');
 const { apiUrl } = require('../../config.json');
 
+type Compare = '=' | '>=' | '<=';
 type RouteParams = {
     route: string,
     query?: string,
-    search?: Record<string, string>,
+    search?: [string, Compare, string][],
     limit?: number,
     include?: string[],
     exclude?: string[]
@@ -27,7 +28,7 @@ type MatchParams = {
     exclude?: string[];
 };
 type SearchParams = {
-    search: Record<string, string>;
+    search: [string, Compare, string][];
     limit?: number;
     include?: string[];
     exclude?: string[];
@@ -82,13 +83,13 @@ class PathBuilder {
         this.path += `/${route}`;
         return this;
     }
-    public param(field: string, query: string) {
+    public param(field: string, query: string, compare: Compare = '=') {
         if (!this.paramed) {
-            this.path += `?${field}=${query}`;
+            this.path += `?${field}${compare}${query}`;
             this.paramed = true;
         }
         else {
-            this.path += `&${field}=${query}`;
+            this.path += `&${field}${compare}${query}`;
         }
     }
     public include(include: string[]) {
@@ -106,40 +107,6 @@ class PathBuilder {
     public toString() {
         return this.path;
     }
-}
-
-async function getSingle({ route, query, include, exclude }: RouteParams) {
-    const path = new PathBuilder().route(`${route}/${encodeURIComponent(query)}`).include(include).exclude(exclude).toString();
-    const res = await fetch(path);
-    if (!res.ok) return null;
-    return (await res.json()).value;
-}
-
-async function getMulti({ route, limit, include, exclude }: RouteParams) {
-    const path = new PathBuilder().route(route).limit(limit).include(include).exclude(exclude).toString();
-    const res = await fetch(path);
-    if (!res.ok) return null;
-    return (await res.json()).map(datum => datum.value);
-}
-
-async function getMatch({ route, query, limit, include, exclude }: RouteParams) {
-    if (query === '') return [];
-    const path = new PathBuilder().route(`${route}/match/${encodeURIComponent(query)}`).limit(limit).include(include).exclude(exclude).toString();
-    const res = await fetch(path);
-    if (!res.ok) return null;
-    return (await res.json()).map(datum => datum.value);
-}
-
-async function getSearch({ route, search, limit, include, exclude }: RouteParams) {
-    if (!search) return [];
-    const pathB = new PathBuilder().route(`${route}/search`).limit(limit).include(include).exclude(exclude);
-    for (const [key, value] of Object.entries(search)) {
-        pathB.param(key, value);
-    }
-    const path = pathB.toString();
-    const res = await fetch(path);
-    if (!res.ok) return null;
-    return (await res.json()).map(datum => datum.value);
 }
 
 export async function about() {
@@ -164,25 +131,73 @@ export async function recruitPool() {
 }
 
 export async function single<T extends keyof ObjectMap>(route: T, { query, include, exclude }: SingleParams): Promise<ObjectMap[T]> {
-    const res = await getSingle({ route, query, include, exclude });
+    const _single = async ({ route, query, include, exclude }: RouteParams) => {
+        const pathB = new PathBuilder()
+            .route(`${route}/${encodeURIComponent(query)}`)
+            .include(include)
+            .exclude(exclude);
+        const res = await fetch(pathB.toString());
+        if (!res.ok) return null;
+        return (await res.json()).value;
+    }
+
+    const res = await _single({ route, query, include, exclude });
     if (res) return res as ObjectMap[T];
-    return await getSingle({ route: `cn/${route}`, query, include, exclude }) as ObjectMap[T];
+    return await _single({ route: `cn/${route}`, query, include, exclude }) as ObjectMap[T];
 }
 
 export async function all<T extends keyof ObjectMap>(route: T, { limit, include, exclude }: AllParams = {}): Promise<ObjectMap[T][]> {
-    const res = await getMulti({ route, limit, include, exclude });
+    const _all = async ({ route, limit, include, exclude }: RouteParams) => {
+        const pathB = new PathBuilder()
+            .route(route)
+            .limit(limit)
+            .include(include)
+            .exclude(exclude);
+        const res = await fetch(pathB.toString());
+        if (!res.ok) return null;
+        return (await res.json()).map(datum => datum.value);
+    }
+
+    const res = await _all({ route, limit, include, exclude });
     if (res) return res as ObjectMap[T][];
-    return await getMulti({ route: `cn/${route}`, limit, include, exclude }) as ObjectMap[T][];
+    return await _all({ route: `cn/${route}`, limit, include, exclude }) as ObjectMap[T][];
 }
 
 export async function match<T extends keyof ObjectMap>(route: T, { query, limit, include, exclude }: MatchParams): Promise<ObjectMap[T][]> {
-    const res = await getMatch({ route, query, limit, include, exclude });
+    const _match = async ({ route, query, limit, include, exclude }: RouteParams) => {
+        if (query === '') return [];
+        const pathB = new PathBuilder()
+            .route(`${route}/match/${encodeURIComponent(query)}`)
+            .limit(limit)
+            .include(include)
+            .exclude(exclude);
+        const res = await fetch(pathB.toString());
+        if (!res.ok) return null;
+        return (await res.json()).map(datum => datum.value);
+    }
+
+    const res = await _match({ route, query, limit, include, exclude });
     if (res) return res as ObjectMap[T][];
-    return await getMatch({ route: `cn/${route}`, query, limit, include, exclude }) as ObjectMap[T][];
+    return await _match({ route: `cn/${route}`, query, limit, include, exclude }) as ObjectMap[T][];
 }
 
 export async function search<T extends keyof ObjectMap>(route: T, { search, limit, include, exclude }: SearchParams): Promise<ObjectMap[T][]> {
-    const res = await getSearch({ route, search, limit, include, exclude });
+    const _search = async ({ route, search, limit, include, exclude }: RouteParams) => {
+        if (!search) return [];
+        const pathB = new PathBuilder()
+            .route(`${route}/search`)
+            .limit(limit)
+            .include(include)
+            .exclude(exclude);
+        for (const searchParam of search) {
+            pathB.param(searchParam[0], searchParam[2], searchParam[1]);
+        }
+        const res = await fetch(pathB.toString());
+        if (!res.ok) return null;
+        return (await res.json()).map(datum => datum.value);
+    }
+
+    const res = await _search({ route, search, limit, include, exclude });
     if (res) return res as ObjectMap[T][];
-    return await getSearch({ route: `cn/${route}`, search, limit, include, exclude }) as ObjectMap[T][];
+    return await _search({ route: `cn/${route}`, search, limit, include, exclude }) as ObjectMap[T][];
 }

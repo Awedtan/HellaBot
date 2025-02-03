@@ -342,6 +342,42 @@ export async function buildCostMessage(op: T.Operator, page: number): Promise<Dj
 
     return { embeds: [embed], components: [buttonRow] };
 }
+export async function buildCurrentMessage(): Promise<Djs.BaseMessageOptions> {
+    const now = new Date();
+    const currTime = Math.floor(now.getTime() / 1000);
+    const currBanners = await api.search('gacha', {
+        search: [['client.openTime', '<=', `${currTime}`], ['client.endTime', '>=', `${currTime}`]]
+    });
+    const currEvents = await api.search('event', {
+        search: [['startTime', '<=', `${currTime}`], ['endTime', '>=', `${currTime}`]]
+    });
+    const charNames = await api.all('operator', { include: ['id', 'data.name'] });
+
+    const utc7Offset = -7 * 60; // UTC-7 offset in minutes
+    const localTime = new Date(now.getTime() + (now.getTimezoneOffset() + utc7Offset) * 60000);
+    const dailySupply = gameConsts.dailySupply[localTime.getUTCDay()];
+
+    const embed = new Djs.EmbedBuilder()
+        .setColor(embedColour)
+        .setTitle('Current Events and Banners')
+        .setDescription(`**Current Date/Time: <t:${currTime}:F>**`);
+
+    if (currEvents.length > 0) {
+        for (const event of currEvents) {
+            embed.addFields(buildEventField(event));
+        }
+    }
+    if (currBanners.length > 0) {
+        for (const banner of currBanners) {
+            embed.addFields(buildBannerField(charNames, banner, true));
+        }
+    }
+
+    const supplyString = dailySupply.map(s => `**${s}** - ${gameConsts.supplyDrops[s]}`).join('\n'); // todo: add emojis once those are done
+    embed.addFields({ name: 'Supply Stages', value: supplyString });
+
+    return { embeds: [embed] };
+}
 export async function buildDefineMessage(definition: T.Definition): Promise<Djs.BaseMessageOptions> {
     const embed = new Djs.EmbedBuilder()
         .setColor(embedColour)
@@ -494,11 +530,11 @@ export async function buildEventListMessage(index: number): Promise<Djs.BaseMess
 
     const embed = new Djs.EmbedBuilder()
         .setColor(embedColour)
-        .setTitle('In-Game Events')
+        .setTitle('Game Events')
         .setDescription(`**Page ${index + 1} of ${Math.ceil(eventArr.length / eventCount)}**`);
 
     for (let i = index * eventCount; i < index * eventCount + eventCount && i < eventArr.length; i++) {
-        embed.addFields({ name: eventArr[i].name, value: `<t:${eventArr[i].startTime}> - <t:${eventArr[i].endTime}>` })
+        embed.addFields(buildEventField(eventArr[i]));
     }
 
     const preverButton = new Djs.ButtonBuilder()
@@ -555,61 +591,8 @@ export async function buildGachaListMessage(index: number): Promise<Djs.BaseMess
         .setTitle('Gacha Banners')
         .setDescription(`**Page ${index + 1} of ${Math.ceil(timeArr.length / bannerCount)}**`);
 
-    for (let i = 0; i < bannerArr.length; i++) {
-        const banner = bannerArr[i];
-        let bannerName = banner.client.gachaPoolName === 'Rare Operators useful in all kinds of stages'
-            ? banner.client.gachaRuleType === 'CLASSIC'
-                ? 'Kernel Banner'
-                : 'Standard Banner'
-            : banner.client.gachaPoolName;
-        const bannerDates = `<t:${bannerArr[i].client.openTime}> - <t:${bannerArr[i].client.endTime}>`;
-        let bannerDesc = '';
-        if (bannerName === 'Joint Operation') {
-            let ops6 = [], ops5 = [];
-            for (const charId of banner.details.detailInfo.availCharInfo.perAvailList[0].charIdList) {
-                ops6.push(charNames.find(char => char.id === charId).data.name);
-            }
-            for (const charId of banner.details.detailInfo.availCharInfo.perAvailList[1].charIdList) {
-                ops5.push(charNames.find(char => char.id === charId).data.name);
-            }
-            bannerDesc = `6★ ${ops6.join(', ')}\n5★ ${ops5.join(', ')}`;
-        }
-        else if (['NORMAL', 'CLASSIC', 'LINKAGE', 'LIMITED', 'SINGLE'].includes(banner.client.gachaRuleType)) {
-            let ops6 = [], ops5 = [];
-            for (const charList of banner.details.detailInfo.upCharInfo.perCharList) {
-                for (const charId of charList.charIdList) {
-                    if (charList.rarityRank === 5) ops6.push(charNames.find(char => char.id === charId).data.name);
-                    else if (charList.rarityRank === 4) ops5.push(charNames.find(char => char.id === charId).data.name);
-                }
-            }
-            if (ops6.length === 0) {
-                for (const charList of banner.details.detailInfo.availCharInfo.perAvailList) {
-                    for (const charId of charList.charIdList) {
-                        if (charList.rarityRank === 5) ops6.push(charNames.find(char => char.id === charId).data.name);
-                    }
-                }
-            }
-            bannerDesc = `6★ ${ops6.join(', ')}\n5★ ${ops5.join(', ')}`;
-        }
-        else {
-            switch (banner.client.gachaRuleType) {
-                case 'FESCLASSIC': {
-                    bannerName = 'Kernel Locating';
-                    bannerDesc = 'Select and lock-in two 6★ and three 5★ Kernel operators.';
-                    break;
-                }
-                case 'CLASSIC_ATTAIN': {
-                    bannerDesc = 'First 6★ is guaranteed to be an unowned Kernel operator.';
-                    break;
-                }
-                case 'ATTAIN': {
-                    bannerDesc = 'First 6★ is guaranteed to be an unowned operator from a selection.';
-                    break;
-                }
-            }
-        }
-
-        embed.addFields({ name: bannerName, value: `${bannerDates}\n${bannerDesc}` });
+    for (const banner of bannerArr) {
+        embed.addFields(buildBannerField(charNames, banner));
     }
 
     const preverButton = new Djs.ButtonBuilder()
@@ -1714,6 +1697,67 @@ function buildAuthorField(char: T.Enemy | T.Deployable, url: boolean = true): Dj
     }
     return null;
 }
+function buildBannerField(charNames: T.Operator[], banner: T.GachaPool, timeLeft: boolean = false): Djs.EmbedField {
+    let bannerName = banner.client.gachaPoolName === 'Rare Operators useful in all kinds of stages'
+        ? banner.client.gachaRuleType === 'CLASSIC'
+            ? 'Kernel Banner'
+            : 'Standard Banner'
+        : banner.client.gachaPoolName;
+    const currTime = Math.floor(Date.now() / 1000);
+    let bannerDates = `<t:${banner.client.openTime}> to <t:${banner.client.endTime}>`;
+    if (banner.client.openTime < currTime && banner.client.endTime > currTime) {
+        bannerDates += ' - Ends <t:' + banner.client.endTime + ':R>';
+    }
+    else if (banner.client.openTime > currTime) {
+        bannerDates += ` - Starts <t:${banner.client.openTime}:R>`;
+    }
+    let bannerDesc = '';
+    if (bannerName === 'Joint Operation') {
+        let ops6 = [], ops5 = [];
+        for (const charId of banner.details.detailInfo.availCharInfo.perAvailList[0].charIdList) {
+            ops6.push(charNames.find(char => char.id === charId).data.name);
+        }
+        for (const charId of banner.details.detailInfo.availCharInfo.perAvailList[1].charIdList) {
+            ops5.push(charNames.find(char => char.id === charId).data.name);
+        }
+        bannerDesc = `6★ ${ops6.join(', ')}\n5★ ${ops5.join(', ')}`;
+    }
+    else if (['NORMAL', 'CLASSIC', 'LINKAGE', 'LIMITED', 'SINGLE'].includes(banner.client.gachaRuleType)) {
+        let ops6 = [], ops5 = [];
+        for (const charList of banner.details.detailInfo.upCharInfo.perCharList) {
+            for (const charId of charList.charIdList) {
+                if (charList.rarityRank === 5) ops6.push(charNames.find(char => char.id === charId).data.name);
+                else if (charList.rarityRank === 4) ops5.push(charNames.find(char => char.id === charId).data.name);
+            }
+        }
+        if (ops6.length === 0) {
+            for (const charList of banner.details.detailInfo.availCharInfo.perAvailList) {
+                for (const charId of charList.charIdList) {
+                    if (charList.rarityRank === 5) ops6.push(charNames.find(char => char.id === charId).data.name);
+                }
+            }
+        }
+        bannerDesc = `6★ ${ops6.join(', ')}\n5★ ${ops5.join(', ')}`;
+    }
+    else {
+        switch (banner.client.gachaRuleType) {
+            case 'FESCLASSIC': {
+                bannerName = 'Kernel Locating';
+                bannerDesc = 'Select and lock-in two 6★ and three 5★ Kernel operators.';
+                break;
+            }
+            case 'CLASSIC_ATTAIN': {
+                bannerDesc = 'First 6★ is guaranteed to be an unowned Kernel operator.';
+                break;
+            }
+            case 'ATTAIN': {
+                bannerDesc = 'First 6★ is guaranteed to be an unowned operator from a selection.';
+                break;
+            }
+        }
+    }
+    return { name: bannerName, value: `${bannerDates}\n${bannerDesc}`, inline: false };
+}
 function buildCostString(costs: T.LevelUpCost[], itemArr: T.Item[]): string {
     let description = '';
     for (const cost of costs) {
@@ -1721,6 +1765,17 @@ function buildCostString(costs: T.LevelUpCost[], itemArr: T.Item[]): string {
         description += `${item.data.name} **x${cost.count}**\n`;
     }
     return description;
+}
+function buildEventField(event: T.GameEvent): Djs.EmbedField {
+    const currTime = Math.floor(Date.now() / 1000);
+    let eventString = `<t:${event.startTime}> to <t:${event.endTime}>`;
+    if (event.startTime < currTime && event.endTime > currTime) {
+        eventString += ' - Ends <t:' + event.endTime + ':R>';
+    }
+    else if (event.startTime > currTime) {
+        eventString += ` - Starts <t:${event.startTime}:R>`;
+    }
+    return { name: event.name, value: eventString, inline: false };
 }
 function buildRangeField(range: T.GridRange): Djs.EmbedField {
     let left = 0, right = 0, top = 0, bottom = 0;

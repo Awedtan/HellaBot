@@ -394,6 +394,61 @@
                 "description": "One of Chernobog's central districts has been seriously contaminated by Originium. The Reunion garrison here has lost all sense of reason, indiscriminately attacking anything they see. This madness must end."
             }
         ],
+        "dailySupply": {
+            "0": [
+                "Aerial Threat",
+                "Cargo Escort",
+                "Fearless Protection",
+                "Solid Defense",
+                "Tactical Drill",
+                "Tough Siege",
+                "Unstoppable Charge"
+            ],
+            "1": [
+                "Fierce Attack",
+                "Resource Search",
+                "Solid Defense",
+                "Tactical Drill",
+                "Tough Siege"
+            ],
+            "2": [
+                "Aerial Threat",
+                "Cargo Escort",
+                "Fearless Protection",
+                "Fierce Attack",
+                "Tactical Drill"
+            ],
+            "3": [
+                "Aerial Threat",
+                "Fearless Protection",
+                "Resource Search",
+                "Tactical Drill",
+                "Unstoppable Charge"
+            ],
+            "4": [
+                "Cargo Escort",
+                "Solid Defense",
+                "Tactical Drill",
+                "Tough Siege",
+                "Unstoppable Charge"
+            ],
+            "5": [
+                "Aerial Threat",
+                "Fierce Attack",
+                "Resource Search",
+                "Solid Defense",
+                "Tactical Drill"
+            ],
+            "6": [
+                "Cargo Escort",
+                "Fearless Protection",
+                "Fierce Attack",
+                "Resource Search",
+                "Tactical Drill",
+                "Tough Siege",
+                "Unstoppable Charge"
+            ]
+        },
         "eliteLevels": {
             "PHASE_0": "E0",
             "PHASE_1": "E1",
@@ -486,6 +541,72 @@
             "INCREASE_WHEN_TAKEN_DAMAGE": "Defensive",
             "INCREASE_WITH_TIME": "Per Second",
             "8": "Passive"
+        },
+        "supplyDrops":{
+            "Aerial Threat": "Skill Summaries",
+            "Cargo Escort": "LMD",
+            "Fearless Protection": "Guard & Specialist Chips",
+            "Fierce Attack": "Caster & Sniper Chips",
+            "Resource Search": "Furniture and Building Materials",
+            "Solid Defense": "Medic & Defender Chips",
+            "Tactical Drill": "Battle Records",
+            "Tough Siege": "Purchase Certificates",
+            "Unstoppable Charge": "Vanguard & Supporter Chips"
+        },
+        "supplyStages": {
+            "Aerial Threat": [
+                "wk_fly_1",
+                "wk_fly_2",
+                "wk_fly_3",
+                "wk_fly_4",
+                "wk_fly_5"
+            ],
+            "Cargo Escort": [
+                "wk_melee_1",
+                "wk_melee_2",
+                "wk_melee_3",
+                "wk_melee_4",
+                "wk_melee_5",
+                "wk_melee_6"
+            ],
+            "Fearless Protection": [
+                "pro_d_1",
+                "pro_d_2"
+            ],
+            "Fierce Attack": [
+                "pro_b_1",
+                "pro_b_2"
+            ],
+            "Resource Search": [
+                "wk_armor_1",
+                "wk_armor_2",
+                "wk_armor_3",
+                "wk_armor_4",
+                "wk_armor_5"
+            ],
+            "Solid Defense": [
+                "pro_a_1",
+                "pro_a_2"
+            ],
+            "Tactical Drill": [
+                "wk_kc_1",
+                "wk_kc_2",
+                "wk_kc_3",
+                "wk_kc_4",
+                "wk_kc_5",
+                "wk_kc_6"
+            ],
+            "Tough Siege": [
+                "wk_toxic_1",
+                "wk_toxic_2",
+                "wk_toxic_3",
+                "wk_toxic_4",
+                "wk_toxic_5"
+            ],
+            "Unstoppable Chage": [
+                "pro_c_1",
+                "pro_c_2"
+            ]
         },
         "tagValues": {
             "": 1,

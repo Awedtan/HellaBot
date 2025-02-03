@@ -10,9 +10,9 @@ export default class HelpCommand implements Command {
         .addStringOption(option =>
             option.setName('command')
                 .setDescription('Command name')
-                .addChoices(
-                    ...Object.values(globalCommands).map(command => { return { name: command.data.name, value: command.data.name } })
-                )
+                // .addChoices(
+                //     ...Object.values(globalCommands).map(command => { return { name: command.data.name, value: command.data.name } })
+                // )
         ) as SlashCommandBuilder;
     name = 'Help';
     description = ['Show information on commands. If no command is specified, show a list of all commands.'];

@@ -1,6 +1,6 @@
 import { ButtonInteraction, CacheType, ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
 import Command from '../structures/Command';
-import { buildEventListMessage, buildGachaListMessage } from '../utils/build';
+import { buildGachaListMessage } from '../utils/build';
 
 export default class GachaCommand implements Command {
     data = new SlashCommandBuilder()
