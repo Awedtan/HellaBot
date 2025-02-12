@@ -69,6 +69,7 @@ All command interactions are event-driven, so buttons and other interactables wi
 | cc      | Show information on a Contingency Contract stage or season       |
 | ccb     | Show information on a CC Battleplan stage or season              |
 | costs   | Show an operator's elite, skill, mastery, and module costs       |
+| current | Show what's currently happening in the game                      |
 | define  | Show definitions for in-game terms                               |
 | deploy  | Show information on a deployable                                 |
 | enemy   | Show an enemy's information and abilities                        |
@@ -79,6 +80,7 @@ All command interactions are event-driven, so buttons and other interactables wi
 | is2     | Show information on IS2: Phantom & Crimson Solitaire             |
 | is3     | Show information on IS3: Mizuki & Caerula Arbor                  |
 | is4     | Show information on IS4: Expeditioner's Jǫklumarkar              |
+| is5     | Show information on IS5: Sarkaz's Furnaceside Fables             |
 | item    | Show information on an item                                      |
 | modules | Show an operator's modules                                       |
 | new     | Show newly updated game data                                     |
