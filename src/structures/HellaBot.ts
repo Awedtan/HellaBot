@@ -1,51 +1,42 @@
-import { ActivityType, Client, Collection, Events, GatewayIntentBits, REST, Routes } from 'discord.js';
+import { ActivityType, ApplicationEmoji, Client, Collection, Events, GatewayIntentBits, REST, Routes } from 'discord.js';
 import { readdirSync } from 'fs';
 import { join } from 'path';
+import * as api from '../utils/api';
 import Command from './Command';
+const { paths } = require('../constants');
 
 export const globalCommands: { [key: string]: Command } = {};
+export const globalEmojis: { [key: string]: ApplicationEmoji } = {};
 
 export default class HellaBot {
+    token: string;
+    clientId: string;
+    disabled: { [key: string]: boolean };
     client: Client;
     commands = new Collection<string, Command>();
-    disabled: { [key: string]: boolean };
 
-    public constructor(token: string, clientId: string, disabled: { [key: string]: boolean }, intents: { intents: GatewayIntentBits[] }) {
-        this.client = new Client(intents);
-        this.client.login(token);
-        this.loadCommands(token, clientId);
-        this.handleInteractions();
+    public static async create(token: string, clientId: string, disabled: { [key: string]: boolean }) {
+        const bot = new HellaBot(token, clientId, disabled);
+        await bot.registerCommands();
+        await new Promise<void>((resolve) => {
+            bot.client.once(Events.ClientReady, client => {
+                client.user.setActivity('CC#13', { type: ActivityType.Competing });
+                resolve();
+            });
+        });
+        await bot.registerEmojis();
+        console.log(`Ready! Logged in as ${bot.client.user.tag}`);
+        return bot;
+    }
+
+    private constructor(token: string, clientId: string, disabled: { [key: string]: boolean }) {
+        this.token = token;
+        this.clientId = clientId;
         this.disabled = disabled;
 
-        this.client.once(Events.ClientReady, client => {
-            console.log(`Ready! Logged in as ${client.user.tag}`);
-            client.user.setActivity('CC#13', { type: ActivityType.Competing });
-        });
-    }
+        this.client = new Client({ intents: [GatewayIntentBits.Guilds] });
+        this.client.login(this.token);
 
-    async loadCommands(token: string, clientId: string) {
-        const commandArr = [];
-        const commandFiles = readdirSync(join(__dirname, '..', 'commands')).filter(file => file.endsWith('.ts'));
-        for (const file of commandFiles) {
-            const command = new (await import(join(__dirname, '..', 'commands', file))).default();
-
-            if (this.disabled && this.disabled[command.data.name.toLowerCase()]) continue;
-
-            globalCommands[command.data.name] = command; // MUST be loaded first for help command options to work
-        }
-        for (const file of commandFiles) {
-            const command = new (await import(join(__dirname, '..', 'commands', file))).default();
-
-            if (this.disabled && this.disabled[command.data.name.toLowerCase()]) continue;
-
-            this.commands.set(command.data.name, command);
-            commandArr.push(command.data.toJSON());
-        }
-        const rest = new REST().setToken(token);
-        await rest.put(Routes.applicationCommands(clientId), { body: commandArr },);
-    }
-
-    async handleInteractions() {
         this.client.on(Events.InteractionCreate, async interaction => {
             if (interaction.isChatInputCommand()) {
                 const command = this.commands.get(interaction.commandName);
@@ -91,5 +82,56 @@ export default class HellaBot {
                 }
             }
         });
+    }
+
+    private async registerCommands() {
+        const commandArr = [];
+        const commandFiles = readdirSync(join(__dirname, '..', 'commands')).filter(file => file.endsWith('.ts'));
+        for (const file of commandFiles) {
+            const command = new (await import(join(__dirname, '..', 'commands', file))).default();
+
+            if (this.disabled && this.disabled[command.data.name.toLowerCase()]) continue;
+
+            globalCommands[command.data.name] = command; // MUST be loaded first for help command options to work
+        }
+        for (const file of commandFiles) {
+            const command = new (await import(join(__dirname, '..', 'commands', file))).default();
+
+            if (this.disabled && this.disabled[command.data.name.toLowerCase()]) continue;
+
+            this.commands.set(command.data.name, command);
+            commandArr.push(command.data.toJSON());
+        }
+
+        try {
+            const rest = new REST().setToken(this.token);
+            await rest.put(Routes.applicationCommands(this.clientId), { body: commandArr },);
+        } catch (err) {
+            console.error(err);
+        }
+
+        console.log('Registered application commands');
+    }
+
+    private async registerEmojis() {
+        const emojis = await this.client.application.emojis.fetch();
+        const emojiDict = Object.fromEntries(emojis.map(emoji => [emoji.name, true]));
+        for (const emoji of emojis) {
+            globalEmojis[emoji[1].name] = emoji[1];
+        }
+
+        const operators = await api.all('operator', { include: ['id', 'data.name'] });
+        for (const op of operators) {
+            if (op.id === 'char_1037_amiya3') op.id = 'char_1037_amiya3_2';
+            if (!emojiDict[op.id]) {
+                try {
+                    await this.client.application.emojis.create({ attachment: `${paths.myAssetUrl}/operator/avatars/${op.id}.png`, name: op.id });
+                } catch (err) {
+                    console.error(err);
+                }
+            }
+        }
+
+        console.log('Registered application emojis');
     }
 }

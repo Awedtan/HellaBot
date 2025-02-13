@@ -1,8 +1,8 @@
 import { AutocompleteInteraction, ButtonInteraction, CacheType, ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
 import Command from '../structures/Command';
 import * as api from '../utils/api';
-import { autocompleteRogueRelic, autocompleteRogueStage, autocompleteRogueToughStage, autocompleteRogueVariation } from '../utils/autocomplete';
-import { buildRogueRelicListMessage, buildRogueRelicMessage, buildRogueStageMessage, buildRogueVariationListMessage, buildRogueVariationMessage } from '../utils/build';
+import { autocompleteRogueRelic, autocompleteRogueStage, autocompleteRogueToughStage } from '../utils/autocomplete';
+import { buildRogueRelicListMessage, buildRogueRelicMessage, buildRogueStageMessage } from '../utils/build';
 
 const innerIndex = 3;
 const outerIndex = innerIndex + 2;
@@ -51,14 +51,12 @@ export default class IS5Command implements Command {
         `Show information on IS${outerIndex}: ${outerName}.`,
         '`stage normal`: show the enemy list, image preview, and stage diagram for a stage.',
         '`stage emergency`: show the enemy list, image preview, and stage diagram for the emergency version of a stage.',
-        '`relic`: show the cost and description of a relic.',
-        '`variation`: show the description of a floor effect.'
+        '`relic`: show the cost and description of a relic.'
     ];
     usage = [
         `\`/is${outerIndex} stage normal [stage]\``,
         `\`/is${outerIndex} stage emergency [stage]\``,
-        `\`/is${outerIndex} relic [relic]\``,
-        `\`/is${outerIndex} variation [effect]\``
+        `\`/is${outerIndex} relic [relic]\``
     ];
     async autocomplete(interaction: AutocompleteInteraction) {
         const type = interaction.options.getSubcommand();
@@ -74,11 +72,6 @@ export default class IS5Command implements Command {
             }
             case 'relic': {
                 const arr = await autocompleteRogueRelic(innerIndex, { query: value });
-                arr.push({ name: 'List All', value: 'list' });
-                return await interaction.respond(arr);
-            }
-            case 'variation': {
-                const arr = await autocompleteRogueVariation(innerIndex, { query: value });
                 arr.push({ name: 'List All', value: 'list' });
                 return await interaction.respond(arr);
             }

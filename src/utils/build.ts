@@ -1,20 +1,17 @@
 import * as Djs from 'discord.js';
 import type * as T from "hella-types";
 import { join } from 'path';
-import { globalCommands } from '../structures/HellaBot';
+import { globalCommands, globalEmojis } from '../structures/HellaBot';
 import * as api from './api';
 import * as pstats from './penguin-stats';
 const { embedColour, paths, gameConsts } = require('../constants');
 
+const blankChar = '\u200B';
 const cleanFilename = (text: string) => text.split(/%|[#\+]|&|\[|\]/).join(''); // Remove special characters that discord doesn't like (%, #, etc.)
-const urlExists = async (url: string) => (await fetch(url)).status === 200;
 const createCustomId = (...args: (string | number | boolean)[]): string => args.join('ඞ').toLowerCase();
-function removeStyleTags(text: string) {
-    if (!text) return '';
-    // cant use something like /<[^>]+>/g since stage hazards are also marked by <>, gotta be specific ¯\_(ツ)_/¯
-    const regex = /<.[a-z]{2,5}?\.[^<]+>|<\/[^<]*>|<color=[^>]+>/g;
-    return text.replace(regex, '') ?? '';
-}
+const getOpEmoji = (op: T.Operator): string => globalEmojis[op.id] ? `<:${op.id}:${globalEmojis[op.id].id}>` : '';
+const removeStyleTags = (text: string) => text ? text.replace(/<.[a-z]{2,5}?\.[^<]+>|<\/[^<]*>|<color=[^>]+>/g, '') : ''; // cant use something like /<[^>]+>/g since stage hazards are also marked by <>, gotta be specific ¯\_(ツ)_/¯
+const urlExists = async (url: string) => (await fetch(url)).status === 200;
 function insertBlackboard(text: string, blackboard: T.Blackboard[]) {
     // Note: check these every so often to see if their skills still display properly
     // silverash s2/s3
@@ -49,7 +46,6 @@ function insertBlackboard(text: string, blackboard: T.Blackboard[]) {
 
     return textArr.join('').replaceAll('-`', '`-').replaceAll('+`', '`+');
 }
-const blankChar = '\u200B';
 
 export async function buildArtMessage(op: T.Operator, page: number): Promise<Djs.BaseMessageOptions> {
     const embed = buildArtEmbed(op, page);
@@ -351,7 +347,7 @@ export async function buildCurrentMessage(): Promise<Djs.BaseMessageOptions> {
     const currEvents = await api.search('event', {
         search: [['startTime', '<=', `${currTime}`], ['endTime', '>=', `${currTime}`]]
     });
-    const charNames = await api.all('operator', { include: ['id', 'data.name'] });
+    const opNames = await api.all('operator', { include: ['id', 'data.name'] });
 
     const utc7Offset = -7 * 60; // UTC-7 offset in minutes
     const localTime = new Date(now.getTime() + (now.getTimezoneOffset() + utc7Offset) * 60000);
@@ -369,12 +365,12 @@ export async function buildCurrentMessage(): Promise<Djs.BaseMessageOptions> {
     }
     if (currBanners.length > 0) {
         for (const banner of currBanners) {
-            embed.addFields(buildBannerField(charNames, banner, true));
+            embed.addFields(buildBannerField(opNames, banner, true));
         }
     }
 
     const supplyString = dailySupply.map(s => `**${s}** - ${gameConsts.supplyDrops[s]}`).join('\n'); // todo: add emojis once those are done
-    embed.addFields({ name: 'Supply Stages', value: supplyString });
+    embed.addFields({ name: 'Today\'s Supply Stages', value: supplyString });
 
     return { embeds: [embed] };
 }
@@ -584,7 +580,7 @@ export async function buildGachaListMessage(index: number): Promise<Djs.BaseMess
         timeArr.slice(index * bannerCount, (index + 1) * bannerCount)
             .map(async time => await api.single('gacha', { query: time.client.gachaPoolId.toLowerCase() }))
     );
-    const charNames = await api.all('operator', { include: ['id', 'data.name'] });
+    const opNames = await api.all('operator', { include: ['id', 'data.name'] });
 
     const embed = new Djs.EmbedBuilder()
         .setColor(embedColour)
@@ -592,7 +588,7 @@ export async function buildGachaListMessage(index: number): Promise<Djs.BaseMess
         .setDescription(`**Page ${index + 1} of ${Math.ceil(timeArr.length / bannerCount)}**`);
 
     for (const banner of bannerArr) {
-        embed.addFields(buildBannerField(charNames, banner));
+        embed.addFields(buildBannerField(opNames, banner));
     }
 
     const preverButton = new Djs.ButtonBuilder()
@@ -1697,7 +1693,7 @@ function buildAuthorField(char: T.Enemy | T.Deployable, url: boolean = true): Dj
     }
     return null;
 }
-function buildBannerField(charNames: T.Operator[], banner: T.GachaPool, timeLeft: boolean = false): Djs.EmbedField {
+function buildBannerField(opNames: T.Operator[], banner: T.GachaPool, timeLeft: boolean = false): Djs.EmbedField {
     let bannerName = banner.client.gachaPoolName === 'Rare Operators useful in all kinds of stages'
         ? banner.client.gachaRuleType === 'CLASSIC'
             ? 'Kernel Banner'
@@ -1713,27 +1709,31 @@ function buildBannerField(charNames: T.Operator[], banner: T.GachaPool, timeLeft
     }
     let bannerDesc = '';
     if (bannerName === 'Joint Operation') {
-        let ops6 = [], ops5 = [];
+        const ops6 = [], ops5 = [];
         for (const charId of banner.details.detailInfo.availCharInfo.perAvailList[0].charIdList) {
-            ops6.push(charNames.find(char => char.id === charId).data.name);
+            const char = opNames.find(char => char.id === charId);
+            ops6.push(`${getOpEmoji(char)} ${char.data.name}`);
         }
         for (const charId of banner.details.detailInfo.availCharInfo.perAvailList[1].charIdList) {
-            ops5.push(charNames.find(char => char.id === charId).data.name);
+            const char = opNames.find(char => char.id === charId);
+            ops5.push(`${getOpEmoji(char)} ${char.data.name}`);
         }
         bannerDesc = `6★ ${ops6.join(', ')}\n5★ ${ops5.join(', ')}`;
     }
     else if (['NORMAL', 'CLASSIC', 'LINKAGE', 'LIMITED', 'SINGLE'].includes(banner.client.gachaRuleType)) {
-        let ops6 = [], ops5 = [];
+        const ops6 = [], ops5 = [];
         for (const charList of banner.details.detailInfo.upCharInfo.perCharList) {
             for (const charId of charList.charIdList) {
-                if (charList.rarityRank === 5) ops6.push(charNames.find(char => char.id === charId).data.name);
-                else if (charList.rarityRank === 4) ops5.push(charNames.find(char => char.id === charId).data.name);
+                const char = opNames.find(char => char.id === charId);
+                if (charList.rarityRank === 5) ops6.push(`${getOpEmoji(char)} ${char.data.name}`);
+                else if (charList.rarityRank === 4) ops5.push(`${getOpEmoji(char)} ${char.data.name}`);
             }
         }
         if (ops6.length === 0) {
             for (const charList of banner.details.detailInfo.availCharInfo.perAvailList) {
                 for (const charId of charList.charIdList) {
-                    if (charList.rarityRank === 5) ops6.push(charNames.find(char => char.id === charId).data.name);
+                    const char = opNames.find(char => char.id === charId);
+                    if (charList.rarityRank === 5) ops6.push(`${getOpEmoji(char)} ${char.data.name}`);
                 }
             }
         }
@@ -1751,7 +1751,18 @@ function buildBannerField(charNames: T.Operator[], banner: T.GachaPool, timeLeft
                 break;
             }
             case 'ATTAIN': {
-                bannerDesc = 'First 6★ is guaranteed to be an unowned operator from a selection.';
+                bannerDesc = `First 6★ is guaranteed to be an unowned operator from a pool.`;
+                break;
+            }
+            case 'SPECIAL': {
+                const ops6 = [];
+                for (const charList of banner.details.detailInfo.availCharInfo.perAvailList) {
+                    for (const charId of charList.charIdList) {
+                        const char = opNames.find(char => char.id === charId);
+                        if (charList.rarityRank === 5) ops6.push(`${getOpEmoji(char)} ${char.data.name}`);
+                    }
+                }
+                bannerDesc = `Select and lock-in three 6★ and three 5★ operators from a pool.\n6★ ${ops6.join(', ')}`;
                 break;
             }
         }
