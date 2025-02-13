@@ -116,9 +116,6 @@ export default class HellaBot {
     private async registerEmojis() {
         const emojis = await this.client.application.emojis.fetch();
         const emojiDict = Object.fromEntries(emojis.map(emoji => [emoji.name, true]));
-        for (const emoji of emojis) {
-            globalEmojis[emoji[1].name] = emoji[1];
-        }
 
         const operators = await api.all('operator', { include: ['id', 'data.name'] });
         for (const op of operators) {
@@ -130,6 +127,11 @@ export default class HellaBot {
                     console.error(err);
                 }
             }
+        }
+
+        const finalEmojis = await this.client.application.emojis.fetch();
+        for (const emoji of finalEmojis) {
+            globalEmojis[emoji[1].name] = emoji[1];
         }
 
         console.log('Registered application emojis');
