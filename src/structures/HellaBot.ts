@@ -17,15 +17,13 @@ export default class HellaBot {
 
     public static async create(token: string, clientId: string, disabled: { [key: string]: boolean }) {
         const bot = new HellaBot(token, clientId, disabled);
-        await bot.registerCommands();
-        await new Promise<void>((resolve) => {
-            bot.client.once(Events.ClientReady, client => {
-                client.user.setActivity('CC#13', { type: ActivityType.Competing });
-                resolve();
-            });
+        bot.client.once(Events.ClientReady, async client => {
+            client.user.setActivity('CC#13', { type: ActivityType.Competing });
+            await bot.registerCommands();
+            await bot.registerEmojis();
+            console.log(`Ready! Logged in as ${bot.client.user.tag}`);
         });
-        await bot.registerEmojis();
-        console.log(`Ready! Logged in as ${bot.client.user.tag}`);
+        await bot.client.login(token);
         return bot;
     }
 
@@ -35,7 +33,6 @@ export default class HellaBot {
         this.disabled = disabled;
 
         this.client = new Client({ intents: [GatewayIntentBits.Guilds] });
-        this.client.login(this.token);
 
         this.client.on(Events.InteractionCreate, async interaction => {
             if (interaction.isChatInputCommand()) {
