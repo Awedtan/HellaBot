@@ -341,12 +341,12 @@ export async function buildCostMessage(op: T.Operator, page: number): Promise<Dj
 export async function buildCurrentMessage(): Promise<Djs.BaseMessageOptions> {
     const now = new Date();
     const currTime = Math.floor(now.getTime() / 1000);
-    const currBanners = await api.search('gacha', {
-        search: [['client.openTime', '<=', `${currTime}`], ['client.endTime', '>=', `${currTime}`]]
-    });
-    const currEvents = await api.search('event', {
-        search: [['startTime', '<=', `${currTime}`], ['endTime', '>=', `${currTime}`]]
-    });
+    const currBanners = (await api.search('gacha',
+        { search: [['client.openTime', '<=', `${currTime}`], ['client.endTime', '>=', `${currTime}`]] }
+    )).sort((a, b) => a.client.endTime - b.client.endTime);
+    const currEvents = (await api.search('event',
+        { search: [['startTime', '<=', `${currTime}`], ['endTime', '>=', `${currTime}`]] }
+    )).sort((a, b) => a.endTime - b.endTime);
     const opNames = await api.all('operator', { include: ['id', 'data.name'] });
 
     const utc7Offset = -7 * 60; // UTC-7 offset in minutes
