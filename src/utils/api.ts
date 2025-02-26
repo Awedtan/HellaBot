@@ -2,11 +2,10 @@ import * as T from "hella-types";
 const { paths } = require('../constants.json');
 const { apiUrl } = require('../../config.json');
 
-type Compare = '=' | '>=' | '<=';
 type RouteParams = {
     route: string,
     query?: string,
-    search?: [string, Compare, string][],
+    filter?: SearchV2Filter,
     limit?: number,
     include?: string[],
     exclude?: string[]
@@ -27,8 +26,11 @@ type MatchParams = {
     include?: string[];
     exclude?: string[];
 };
-type SearchParams = {
-    search: [string, Compare, string][];
+type SearchV2Filter = {
+    [key: string]: any | { [key: string]: any | { [key: string]: any[] } }
+};
+type SearchV2Params = {
+    filter: SearchV2Filter;
     limit?: number;
     include?: string[];
     exclude?: string[];
@@ -87,13 +89,13 @@ class PathBuilder {
         this.path += `/${route}`;
         return this;
     }
-    public param(field: string, query: string, compare: Compare = '=') {
+    public param(field: string, query: string) {
         if (!this.paramed) {
-            this.path += `?${field}${compare}${query}`;
+            this.path += `?${field}=${query}`;
             this.paramed = true;
         }
         else {
-            this.path += `&${field}${compare}${query}`;
+            this.path += `&${field}=${query}`;
         }
     }
     public include(include: string[]) {
@@ -106,6 +108,10 @@ class PathBuilder {
     }
     public limit(limit: number) {
         if (limit) this.param('limit', limit.toString());
+        return this;
+    }
+    public filter(filter: SearchV2Filter) {
+        if (filter) this.param('filter', JSON.stringify(filter));
         return this;
     }
     public toString() {
@@ -135,7 +141,7 @@ export async function recruitPool() {
 }
 
 export async function single<T extends keyof ObjectMap>(route: T, { query, include, exclude }: SingleParams): Promise<ObjectMap[T]> {
-    const _single = async ({ route, query, include, exclude }: RouteParams) => {
+    const _single = async ({ route, query, include, exclude }: RouteParams): Promise<ObjectMap[T]> => {
         const pathB = new PathBuilder()
             .route(`${route}/${encodeURIComponent(query)}`)
             .include(include)
@@ -146,12 +152,12 @@ export async function single<T extends keyof ObjectMap>(route: T, { query, inclu
     }
 
     const res = await _single({ route, query, include, exclude });
-    if (res) return res as ObjectMap[T];
-    return await _single({ route: `cn/${route}`, query, include, exclude }) as ObjectMap[T];
+    if (res) return res;
+    return await _single({ route: `cn/${route}`, query, include, exclude });
 }
 
 export async function all<T extends keyof ObjectMap>(route: T, { limit, include, exclude }: AllParams = {}): Promise<ObjectMap[T][]> {
-    const _all = async ({ route, limit, include, exclude }: RouteParams) => {
+    const _all = async ({ route, limit, include, exclude }: RouteParams): Promise<ObjectMap[T][]> => {
         const pathB = new PathBuilder()
             .route(route)
             .limit(limit)
@@ -163,12 +169,12 @@ export async function all<T extends keyof ObjectMap>(route: T, { limit, include,
     }
 
     const res = await _all({ route, limit, include, exclude });
-    if (res) return res as ObjectMap[T][];
-    return await _all({ route: `cn/${route}`, limit, include, exclude }) as ObjectMap[T][];
+    if (res) return res;
+    return await _all({ route: `cn/${route}`, limit, include, exclude });
 }
 
 export async function match<T extends keyof ObjectMap>(route: T, { query, limit, include, exclude }: MatchParams): Promise<ObjectMap[T][]> {
-    const _match = async ({ route, query, limit, include, exclude }: RouteParams) => {
+    const _match = async ({ route, query, limit, include, exclude }: RouteParams): Promise<ObjectMap[T][]> => {
         if (query === '') return [];
         const pathB = new PathBuilder()
             .route(`${route}/match/${encodeURIComponent(query)}`)
@@ -181,27 +187,25 @@ export async function match<T extends keyof ObjectMap>(route: T, { query, limit,
     }
 
     const res = await _match({ route, query, limit, include, exclude });
-    if (res) return res as ObjectMap[T][];
-    return await _match({ route: `cn/${route}`, query, limit, include, exclude }) as ObjectMap[T][];
+    if (res) return res;
+    return await _match({ route: `cn/${route}`, query, limit, include, exclude });
 }
 
-export async function search<T extends keyof ObjectMap>(route: T, { search, limit, include, exclude }: SearchParams): Promise<ObjectMap[T][]> {
-    const _search = async ({ route, search, limit, include, exclude }: RouteParams) => {
-        if (!search) return [];
+export async function searchV2<T extends keyof ObjectMap>(route: T, { filter, limit, include, exclude }: SearchV2Params): Promise<ObjectMap[T][]> {
+    const _searchV2 = async ({ route, filter, limit, include, exclude }: RouteParams): Promise<ObjectMap[T][]> => {
+        if (!filter) return [];
         const pathB = new PathBuilder()
-            .route(`${route}/search`)
+            .route(`${route}/searchV2`)
+            .filter(filter)
             .limit(limit)
             .include(include)
             .exclude(exclude);
-        for (const searchParam of search) {
-            pathB.param(searchParam[0], searchParam[2], searchParam[1]);
-        }
         const res = await fetch(pathB.toString());
         if (!res.ok) return null;
         return (await res.json()).map(datum => datum.value);
     }
 
-    const res = await _search({ route, search, limit, include, exclude });
-    if (res) return res as ObjectMap[T][];
-    return await _search({ route: `cn/${route}`, search, limit, include, exclude }) as ObjectMap[T][];
+    const res = await _searchV2({ route, filter, limit, include, exclude });
+    if (res) return res;
+    return await _searchV2({ route: `cn/${route}`, filter, limit, include, exclude });
 }

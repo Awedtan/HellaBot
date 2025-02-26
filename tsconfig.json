@@ -2,10 +2,9 @@
     "compilerOptions": {
         "allowJs": false,
         "target": "es2022",
-        "module": "commonjs",
-        "declaration": true
+        "module": "commonjs"
     },
     "include": [
-        "./**/*"
+        "src/**/*.ts"
     ]
 }

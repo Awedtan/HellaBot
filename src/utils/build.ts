@@ -10,6 +10,7 @@ const blankChar = '\u200B';
 const cleanFilename = (text: string) => text.split(/%|[#\+]|&|\[|\]/).join(''); // Remove special characters that discord doesn't like (%, #, etc.)
 const createCustomId = (...args: (string | number | boolean)[]): string => args.join('ඞ').toLowerCase();
 const getOpEmoji = (op: T.Operator): string => globalEmojis[op.id] ? `<:${op.id}:${globalEmojis[op.id].id}>` : '';
+const getItemEmoji = (item: T.Item): string => globalEmojis[item.data.iconId] ? `<:${item.data.iconId}:${globalEmojis[item.data.iconId].id}>` : '';
 const removeStyleTags = (text: string) => text ? text.replace(/<.[a-z]{2,5}?\.[^<]+>|<\/[^<]*>|<color=[^>]+>/g, '') : ''; // cant use something like /<[^>]+>/g since stage hazards are also marked by <>, gotta be specific ¯\_(ツ)_/¯
 const urlExists = async (url: string) => (await fetch(url)).status === 200;
 function insertBlackboard(text: string, blackboard: T.Blackboard[]) {
@@ -341,11 +342,11 @@ export async function buildCostMessage(op: T.Operator, page: number): Promise<Dj
 export async function buildCurrentMessage(): Promise<Djs.BaseMessageOptions> {
     const now = new Date();
     const currTime = Math.floor(now.getTime() / 1000);
-    const currBanners = (await api.search('gacha',
-        { search: [['client.openTime', '<=', `${currTime}`], ['client.endTime', '>=', `${currTime}`]] }
+    const currBanners = (await api.searchV2(
+        'gacha', { filter: { 'client.openTime': { '<=': currTime }, 'client.endTime': { '>=': currTime } } }
     )).sort((a, b) => a.client.endTime - b.client.endTime);
-    const currEvents = (await api.search('event',
-        { search: [['startTime', '<=', `${currTime}`], ['endTime', '>=', `${currTime}`]] }
+    const currEvents = (await api.searchV2(
+        'event', { filter: { 'startTime': { '<=': currTime }, 'endTime': { '>=': currTime }, }, }
     )).sort((a, b) => a.endTime - b.endTime);
     const opNames = await api.all('operator', { include: ['id', 'data.name'] });
 
@@ -1494,14 +1495,18 @@ export async function buildStageMessage(stage: T.Stage, page: number): Promise<D
         .setDescription(description);
 
     let regularString = '', specialString = '';
-    for (const item of stageInfo.stageDropInfo.displayDetailRewards) {
-        switch (item.dropType) {
-            case 'NORMAL':
-                regularString += `${(await api.single('item', { query: item.id })).data.name}\n`;
+    for (const reward of stageInfo.stageDropInfo.displayDetailRewards) {
+        switch (reward.dropType) {
+            case 'NORMAL': {
+                const item = await api.single('item', { query: reward.id });
+                regularString += `${getItemEmoji(item)} ${item.data.name}\n`;
                 break;
-            case 'SPECIAL':
-                specialString += `${(await api.single('item', { query: item.id })).data.name}\n`;
+            }
+            case 'SPECIAL': {
+                const item = await api.single('item', { query: reward.id });
+                specialString += `${getItemEmoji(item)} ${item.data.name}\n`;
                 break;
+            }
         }
     }
     if (regularString !== '') {
@@ -1773,7 +1778,7 @@ function buildCostString(costs: T.LevelUpCost[], itemArr: T.Item[]): string {
     let description = '';
     for (const cost of costs) {
         const item = itemArr.find(e => e.data.itemId === cost.id);
-        description += `${item.data.name} **x${cost.count}**\n`;
+        description += `${getItemEmoji(item)} ${item.data.name} **x${cost.count}**\n`;
     }
     return description;
 }
@@ -1970,7 +1975,7 @@ async function buildCostEmbed(op: T.Operator, page: number): Promise<Djs.EmbedBu
             for (let i = 0; i < op.data.phases.length; i++) {
                 if (op.data.phases[i].evolveCost === null) continue;
 
-                const description = buildCostString(op.data.phases[i].evolveCost, itemArr) + `LMD **x${gameConsts.evolveGoldCost[gameConsts.rarity[op.data.rarity]][i - 1]}**\n`;
+                const description = buildCostString(op.data.phases[i].evolveCost, itemArr) + `<:GOLD:1344134565454938163> LMD **x${gameConsts.evolveGoldCost[gameConsts.rarity[op.data.rarity]][i - 1]}**\n`;
                 embed.addFields({ name: `Elite ${i}`, value: description, inline: true });
             }
             break;

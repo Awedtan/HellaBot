@@ -126,6 +126,30 @@ export default class HellaBot {
             }
         }
 
+        const items = (await api.searchV2('item', { filter: { 'data.itemType': { 'in': ['MATERIAL', 'CARD_EXP'] } }, include: ['data'] }))
+            .filter(item => !item.data.name.includes('Token') && !item.data.itemId.includes('token') && !item.data.iconId.includes('token'))
+            .sort((a, b) => a.data.sortId - b.data.sortId);
+
+        for (const item of items) {
+            if (!item.data.iconId) continue;
+            if (!emojiDict[item.data.iconId]) {
+                try {
+                    await this.client.application.emojis.create({ attachment: `${paths.myAssetUrl}/items/${item.data.iconId}.png`, name: item.data.iconId });
+                } catch (err) {
+                    console.error(err);
+                }
+            }
+        }
+
+        const lmd = await api.single('item', { query: '4001' });
+        if (!emojiDict[lmd.data.iconId]) {
+            try {
+                await this.client.application.emojis.create({ attachment: `${paths.myAssetUrl}/items/${lmd.data.iconId}.png`, name: lmd.data.iconId });
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
         const finalEmojis = await this.client.application.emojis.fetch();
         for (const emoji of finalEmojis) {
             globalEmojis[emoji[1].name] = emoji[1];

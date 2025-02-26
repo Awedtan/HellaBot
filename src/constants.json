@@ -543,15 +543,15 @@
             "8": "Passive"
         },
         "supplyDrops":{
-            "Aerial Threat": "Skill Summaries",
-            "Cargo Escort": "LMD",
-            "Fearless Protection": "Guard & Specialist Chips",
-            "Fierce Attack": "Caster & Sniper Chips",
-            "Resource Search": "Furniture & Building Materials",
-            "Solid Defense": "Medic & Defender Chips",
-            "Tactical Drill": "Battle Records",
-            "Tough Siege": "Purchase Certificates",
-            "Unstoppable Charge": "Vanguard & Supporter Chips"
+            "Aerial Threat": "<:MTL_SKILL3:1344131888331100270> Skill Summaries",
+            "Cargo Escort": "<:GOLD:1344134565454938163> LMD",
+            "Fearless Protection": "<:MTL_ASC_GRD2:1344132014361804831><:MTL_ASC_SPC2:1344132025518657606> Guard & Specialist Chips",
+            "Fierce Attack": "<:MTL_ASC_CST2:1344132019818332291><:MTL_ASC_SNP2:1344132017830494329> Caster & Sniper Chips",
+            "Resource Search": "<:COIN_FURN:1344140427162419271><:MTL_BASE_SYNTH3:1344140428672368680> Furniture & Building Materials",
+            "Solid Defense": "<:MTL_ASC_MED2:1344132022511079505><:MTL_ASC_TNK2:1344132016148578376> Medic & Defender Chips",
+            "Tactical Drill": "<:sprite_exp_card_t4:1344138059628679168> Battle Records",
+            "Tough Siege": "<:EXGG_SHD:1344140421894504479> Purchase Certificates",
+            "Unstoppable Charge": "<:MTL_ASC_PIO2:1344132013086609529><:MTL_ASC_SUP2:1344132023937273876> Vanguard & Supporter Chips"
         },
         "supplyStages": {
             "Aerial Threat": [
