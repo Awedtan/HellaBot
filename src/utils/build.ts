@@ -9,10 +9,18 @@ const { embedColour, paths, gameConsts } = require('../constants');
 const blankChar = '\u200B';
 const cleanFilename = (text: string) => text.split(/%|[#\+]|&|\[|\]/).join(''); // Remove special characters that discord doesn't like (%, #, etc.)
 const createCustomId = (...args: (string | number | boolean)[]): string => args.join('ඞ').toLowerCase();
-const getOpEmoji = (op: T.Operator): string => globalEmojis[op.id] ? `<:${op.id}:${globalEmojis[op.id].id}>` : '';
-const getItemEmoji = (item: T.Item): string => globalEmojis[item.data.iconId] ? `<:${item.data.iconId}:${globalEmojis[item.data.iconId].id}>` : '';
 const removeStyleTags = (text: string) => text ? text.replace(/<.[a-z]{2,5}?\.[^<]+>|<\/[^<]*>|<color=[^>]+>/g, '') : ''; // cant use something like /<[^>]+>/g since stage hazards are also marked by <>, gotta be specific ¯\_(ツ)_/¯
 const urlExists = async (url: string) => (await fetch(url)).status === 200;
+function getItemEmoji(item: T.Item | string): string {
+    if (typeof item === 'string')
+        return globalEmojis[item] ? `<:${item}:${globalEmojis[item].id}>` : '';
+    return globalEmojis[item.data.iconId] ? `<:${item.data.iconId}:${globalEmojis[item.data.iconId].id}>` : '';
+}
+function getOpEmoji(op: T.Operator | string): string {
+    if (typeof op === 'string')
+        return globalEmojis[op] ? `<:${op}:${globalEmojis[op].id}>` : '';
+    return globalEmojis[op.id] ? `<:${op.id}:${globalEmojis[op.id].id}>` : '';
+}
 function insertBlackboard(text: string, blackboard: T.Blackboard[]) {
     // Note: check these every so often to see if their skills still display properly
     // silverash s2/s3
@@ -1975,7 +1983,7 @@ async function buildCostEmbed(op: T.Operator, page: number): Promise<Djs.EmbedBu
             for (let i = 0; i < op.data.phases.length; i++) {
                 if (op.data.phases[i].evolveCost === null) continue;
 
-                const description = buildCostString(op.data.phases[i].evolveCost, itemArr) + `<:GOLD:1344134565454938163> LMD **x${gameConsts.evolveGoldCost[gameConsts.rarity[op.data.rarity]][i - 1]}**\n`;
+                const description = buildCostString(op.data.phases[i].evolveCost, itemArr) + `${getItemEmoji('GOLD')} LMD **x${gameConsts.evolveGoldCost[gameConsts.rarity[op.data.rarity]][i - 1]}**\n`;
                 embed.addFields({ name: `Elite ${i}`, value: description, inline: true });
             }
             break;
