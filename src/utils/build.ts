@@ -428,10 +428,59 @@ export async function buildDefineListMessage(): Promise<Djs.BaseMessageOptions> 
 
     return { embeds: [embed] };
 }
-export async function buildDeployMessage(deploy: T.Deployable): Promise<Djs.BaseMessageOptions> {
-    const embed = buildDeployableEmbed(deploy, false);
+export async function buildDeployMessage(deploy: T.Deployable, type: number, page, level): Promise<Djs.BaseMessageOptions> {
+    const embedArr = [], fileArr = [], rowArr = [];
+    const getMessageComponents = (message: Djs.BaseMessageOptions) => {
+        if (message.embeds) embedArr.push(...message.embeds);
+        if (message.files) fileArr.push(...message.files);
+        if (message.components) rowArr.push(...message.components);
+    };
 
-    return { embeds: [embed] };
+    const embed = buildDeployableEmbed(deploy, false);
+    embedArr.push(embed);
+
+    const typeLabels = ['Skills'];
+    const typeRow = new Djs.ActionRowBuilder<Djs.ButtonBuilder>();
+
+    for (let i = 0; i < 1; i++) {
+        const button = new Djs.ButtonBuilder()
+            .setCustomId(createCustomId('deploy', deploy.id, i + 1, 0, 0))
+            .setLabel(typeLabels[i])
+            .setStyle(Djs.ButtonStyle.Success);
+        if (i + 1 === type)
+            button.setCustomId('deploy_type_current')
+                .setDisabled(true);
+        typeRow.addComponents(button);
+    }
+    if (!deploy.skills || deploy.skills.length === 0)
+        typeRow.components[0].setStyle(Djs.ButtonStyle.Secondary)
+            .setDisabled(true);
+    switch (type) {
+        case 1: {
+            getMessageComponents(await buildDeploySkillMessage(deploy, type, page, level));
+
+            if (deploy.skills.length <= 1) break;
+
+            const pageRow = new Djs.ActionRowBuilder<Djs.ButtonBuilder>();
+            for (let i = 0; i < deploy.skills.length; i++) {
+                if (!deploy.skills[i]) continue;
+
+                const button = new Djs.ButtonBuilder()
+                    .setCustomId(createCustomId('deploy', deploy.id, type, i, level))
+                    .setLabel(`Skill ${i + 1}`)
+                    .setStyle(Djs.ButtonStyle.Primary);
+                if (i === page)
+                    button.setCustomId('deploy_page_current')
+                        .setDisabled(true);
+                pageRow.addComponents(button);
+            }
+            rowArr.push(pageRow);
+            break;
+        }
+    }
+
+    rowArr.push(typeRow);
+    return { embeds: embedArr, files: fileArr, components: rowArr };
 }
 export async function buildEnemyMessage(enemy: T.Enemy, level: number): Promise<Djs.BaseMessageOptions> {
     const enemyInfo = enemy.excel;
@@ -708,6 +757,8 @@ export async function buildInfoMessage(op: T.Operator, type: number, page: numbe
 
             const pageRow = new Djs.ActionRowBuilder<Djs.ButtonBuilder>();
             for (let i = 0; i < op.skills.length; i++) {
+                if (!op.skills[i]) continue;
+
                 const button = new Djs.ButtonBuilder()
                     .setCustomId(createCustomId('info', op.id, type, i, level))
                     .setLabel(`Skill ${i + 1}`)
@@ -1430,7 +1481,7 @@ export async function buildSkillMessage(op: T.Operator, page: number, level: num
 
     return { embeds: [embed], components: [rowTwo] };
 }
-export async function buildSpineEnemyMessage(gifFile: string, enemy: T.Enemy, animArr: string[], anim: string, rand: number): Promise<Djs.BaseMessageOptions> {
+export async function buildSpineEnemyMessage(gifFile: string, enemy: T.Enemy, animArr: string[], anim: string): Promise<Djs.BaseMessageOptions> {
     const id = enemy.excel.enemyId;
 
     const authorField = buildAuthorField(enemy);
@@ -1459,7 +1510,7 @@ export async function buildSpineEnemyMessage(gifFile: string, enemy: T.Enemy, an
 
     return { content: '', embeds: [embed], files: [gif], components: [componentRow] };
 }
-export async function buildSpineOperatorMessage(gifFile: string, op: T.Operator, skin: string, set: string, animArr: string[], anim: string, rand: number): Promise<Djs.BaseMessageOptions> {
+export async function buildSpineOperatorMessage(gifFile: string, op: T.Operator, skin: string, set: string, animArr: string[], anim: string): Promise<Djs.BaseMessageOptions> {
     const id = op.id;
 
     const authorField = buildAuthorField(op);
@@ -1478,6 +1529,35 @@ export async function buildSpineOperatorMessage(gifFile: string, op: T.Operator,
         animSelector.addOptions(new Djs.StringSelectMenuOptionBuilder()
             .setLabel(animArr[i])
             .setValue(animArr[i])
+        );
+    }
+
+    const embed = new Djs.EmbedBuilder()
+        .setAuthor(authorField)
+        .setImage(`attachment://${cleanFilename(gifFile)}`)
+        .setColor(embedColour);
+
+    return { content: '', embeds: [embed], files: [gif], components: [componentRow] };
+}
+export async function buildSpineDeployMessage(gifFile: string, deploy: T.Deployable, skin: string, set: string, animARr: string[], anim: string): Promise<Djs.BaseMessageOptions> {
+    const id = deploy.id;
+
+    const authorField = buildAuthorField(deploy);
+
+    const gifPath = join(__dirname, 'spine', gifFile);
+    const gif = new Djs.AttachmentBuilder(gifPath);
+
+    const animSelector = new Djs.StringSelectMenuBuilder()
+        .setCustomId(createCustomId('spine', 'deploy', id, skin, set))
+        .setPlaceholder(anim);
+    const componentRow = new Djs.ActionRowBuilder<Djs.StringSelectMenuBuilder>().addComponents(animSelector);
+
+    for (let i = 0; i < Math.min(animARr.length, 25); i++) {
+        if (animARr[i] === 'Default') continue; // Default animations are a single frame that lasts forever, they do not work and should not be shown
+
+        animSelector.addOptions(new Djs.StringSelectMenuOptionBuilder()
+            .setLabel(animARr[i])
+            .setValue(animARr[i])
         );
     }
 
@@ -1682,6 +1762,24 @@ async function buildInfoSkillMessage(op: T.Operator, type: number, page: number,
             .setStyle(i < 7 ? Djs.ButtonStyle.Secondary : Djs.ButtonStyle.Danger);
         if (i === level)
             button.setCustomId('info_level_current')
+                .setDisabled(true);
+        rowOne.addComponents(button)
+    }
+
+    return { embeds: [embed], components: [rowOne] };
+}
+async function buildDeploySkillMessage(deploy: T.Deployable, type: number, page: number, level: number): Promise<Djs.BaseMessageOptions> {
+    const embed = await buildSkillEmbed(deploy, page, level);
+
+    const rowOne = new Djs.ActionRowBuilder<Djs.ButtonBuilder>();
+
+    for (let i = 0; i < deploy.skills[page].levels.length; i++) {
+        const button = new Djs.ButtonBuilder()
+            .setCustomId(createCustomId('deploy', deploy.id, type, page, i, 'skill'))
+            .setLabel(gameConsts.skillLevels[i])
+            .setStyle(i < 7 ? Djs.ButtonStyle.Secondary : Djs.ButtonStyle.Danger);
+        if (i === level)
+            button.setCustomId('deploy_level_current')
                 .setDisabled(true);
         rowOne.addComponents(button)
     }
@@ -2136,7 +2234,7 @@ function buildDeployableEmbed(deploy: T.Deployable, rarity: boolean = true): Djs
 
     return embed;
 }
-async function buildSkillEmbed(op: T.Operator, page: number, level: number): Promise<Djs.EmbedBuilder> {
+async function buildSkillEmbed(op: T.Deployable, page: number, level: number): Promise<Djs.EmbedBuilder> {
     const skill = op.skills[page];
     const skillLevel = skill.levels[level];
 

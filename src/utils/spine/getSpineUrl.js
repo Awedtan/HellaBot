@@ -10,31 +10,39 @@ async function getSpineUrl(type, id, set) {
     let spinePath = null;
     id = encodeURIComponent(id);
 
-    if (type === 'operator') {
-        if (set === 'build') {
-            spinePath = `${myAssetUrl}/spine/${type}/${set}/build_${id}/build_${id}`
-            if (!await urlExists(spinePath + '.skel')) {
-                if (await urlExists(spinePath.split('build_').join('Build_') + '.skel')) { // Capitalize Build_
-                    spinePath = spinePath.split('build_').join('Build_');
-                }
-                else if (await urlExists(spinePath.split('char_').join('Char_') + '.skel')) { // Capitalize Char_
-                    spinePath = spinePath.split('char_').join('Char_');
-                }
-                else if (await urlExists(spinePath.split('build_').join('') + '.skel')) { // Remove build_
-                    spinePath = spinePath.split('build_').join('');
+    switch (type) {
+        case 'operator': {
+            if (set === 'build') {
+                spinePath = `${myAssetUrl}/spine/${type}/${set}/build_${id}/build_${id}`
+                if (!await urlExists(spinePath + '.skel')) {
+                    if (await urlExists(spinePath.split('build_').join('Build_') + '.skel')) { // Capitalize Build_
+                        spinePath = spinePath.split('build_').join('Build_');
+                    }
+                    else if (await urlExists(spinePath.split('char_').join('Char_') + '.skel')) { // Capitalize Char_
+                        spinePath = spinePath.split('char_').join('Char_');
+                    }
+                    else if (await urlExists(spinePath.split('build_').join('') + '.skel')) { // Remove build_
+                        spinePath = spinePath.split('build_').join('');
+                    }
                 }
             }
+            else {
+                spinePath = `${myAssetUrl}/spine/${type}/battle/${id}/${set}/${id}`;
+            }
+            break;
         }
-        else {
+        case 'enemy': {
+            id = enemySpineIdOverride[id] ?? id;
+            spinePath = `${myAssetUrl}/spine/${type}/${id}/${id}`;
+            if (!await urlExists(spinePath + '.skel')) {
+                id = id.split(/_[^_]+$/).join('');
+                spinePath = `${myAssetUrl}/spine/${type}/${id}/${id}` // Take out trailing _asdf
+            }
+            break;
+        }
+        case 'deploy': {
             spinePath = `${myAssetUrl}/spine/${type}/battle/${id}/${set}/${id}`;
-        }
-    }
-    else {
-        id = enemySpineIdOverride[id] ?? id;
-        spinePath = `${myAssetUrl}/spine/${type}/${id}/${id}`;
-        if (!await urlExists(spinePath + '.skel')) {
-            id = id.split(/_[^_]+$/).join('');
-            spinePath = `${myAssetUrl}/spine/${type}/${id}/${id}` // Take out trailing _asdf
+            break;
         }
     }
 
