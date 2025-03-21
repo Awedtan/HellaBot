@@ -89,7 +89,7 @@ export default class RecruitCommand implements Command {
         ];
         const recruitEmbed = await buildRecruitMessage(1, tags, true, placeholders.map(x => x.id));
         for (let i = 0; i < placeholders.length; i++) {
-            await placeholders[i].edit(recruitEmbed[i]);
+            await interaction.editReply({ message: placeholders[i], content: recruitEmbed[i].content, embeds: recruitEmbed[i].embeds, components: recruitEmbed[i].components });
         }
     }
     async buttonResponse(interaction: ButtonInteraction<CacheType>, idArr: string[]) {
@@ -98,13 +98,17 @@ export default class RecruitCommand implements Command {
         const select = idArr[3] === 'select';
         const snowflakes = idArr.slice(4);
 
-        const placeholders = await Promise.all(snowflakes.map(async x => await interaction.channel.messages.fetch(x)));
+        // https://discordjs.guide/additional-info/changes-in-v13.html#dm-channels
+        // apparently as of discord.js v13, DM channels are no longer being cached
+        // so if the interaction channel is null, assume it's a DM and fetch the channel manually
+        const channel = interaction.channel ?? await interaction.user.createDM();
+        const placeholders = await Promise.all(snowflakes.map(async x => await channel.messages.fetch(x)));
         const recruitEmbed = tag === 'delete'
             ? await buildRecruitMessage(1, [''], true, snowflakes)
             : await buildRecruitMessage(value, [tag], select, snowflakes);
+        await interaction.update({});
         for (let i = 0; i < placeholders.length; i++) {
             await placeholders[i].edit(recruitEmbed[i]);
         }
-        await interaction.update({});
     }
 }

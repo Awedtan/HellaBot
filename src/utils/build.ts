@@ -16,10 +16,15 @@ function getItemEmoji(item: T.Item | string): string {
         return globalEmojis[item] ? `<:${item}:${globalEmojis[item].id}>` : '';
     return globalEmojis[item.data.iconId] ? `<:${item.data.iconId}:${globalEmojis[item.data.iconId].id}>` : '';
 }
-function getOpEmoji(op: T.Operator | string): string {
-    if (typeof op === 'string')
-        return globalEmojis[op] ? `<:${op}:${globalEmojis[op].id}>` : '';
-    return globalEmojis[op.id] ? `<:${op.id}:${globalEmojis[op.id].id}>` : '';
+function getOpPrettyName(op: T.Operator, { rarity = true, emoji = true, name = true } = {}): string {
+    let string = '';
+    if (rarity)
+        string += `${gameConsts.rarity[op.data.rarity] + 1}★ `
+    if (emoji)
+        string += `<:${op.id}:${globalEmojis[op.id].id}> `
+    if (name)
+        string += op.data.name;
+    return string;
 }
 function insertBlackboard(text: string, blackboard: T.Blackboard[]) {
     // Note: check these every so often to see if their skills still display properly
@@ -348,14 +353,23 @@ export async function buildCostMessage(op: T.Operator, page: number): Promise<Dj
     return { embeds: [embed], components: [buttonRow] };
 }
 export async function buildCurrentMessage(): Promise<Djs.BaseMessageOptions> {
+    const skipLoginEvents = ['LOGIN_ONLY', 'CHECKIN_ONLY', 'FLOAT_PARADE', 'PRAY_ONLY', 'GRID_GACHA_V2', 'GRID_GACHA', 'BLESS_ONLY', 'CHECKIN_ACCESS'];
+
     const now = new Date();
     const currTime = Math.floor(now.getTime() / 1000);
-    const currBanners = (await api.searchV2(
-        'gacha', { filter: { 'client.openTime': { '<=': currTime }, 'client.endTime': { '>=': currTime } } }
-    )).sort((a, b) => a.client.endTime - b.client.endTime);
-    const currEvents = (await api.searchV2(
-        'event', { filter: { 'startTime': { '<=': currTime }, 'endTime': { '>=': currTime }, }, }
-    )).sort((a, b) => a.endTime - b.endTime);
+    const currBanners = (await api.searchV2('gacha', {
+        filter: {
+            'client.openTime': { '<=': currTime },
+            'client.endTime': { '>=': currTime }
+        }
+    })).sort((a, b) => a.client.endTime - b.client.endTime);
+    const currEvents = (await api.searchV2('event', {
+        filter: {
+            'startTime': { '<=': currTime },
+            'endTime': { '>=': currTime },
+            'type': { 'nin': skipLoginEvents }
+        },
+    })).sort((a, b) => a.endTime - b.endTime);
     const opNames = await api.all('operator', { include: ['id', 'data.name'] });
 
     const utc7Offset = -7 * 60; // UTC-7 offset in minutes
@@ -578,9 +592,11 @@ export async function buildEventListMessage(index: number): Promise<Djs.BaseMess
     const eventCount = 6;
 
     const skipLoginEvents = ['LOGIN_ONLY', 'CHECKIN_ONLY', 'FLOAT_PARADE', 'PRAY_ONLY', 'GRID_GACHA_V2', 'GRID_GACHA', 'BLESS_ONLY', 'CHECKIN_ACCESS'];
-    const eventArr = (await api.all('event'))
-        .filter(e => !skipLoginEvents.includes(e.type))
-        .sort((a, b) => b.startTime - a.startTime);
+    const eventArr = (await api.searchV2('event', {
+        filter: {
+            'type': { 'nin': skipLoginEvents }
+        }
+    })).sort((a, b) => b.startTime - a.startTime);
 
     const embed = new Djs.EmbedBuilder()
         .setColor(embedColour)
@@ -869,12 +885,12 @@ export async function buildModuleMessage(op: T.Operator, page: number, level: nu
     return { embeds: [embed], components: [rowOne] };
 }
 export async function buildNewMessage(): Promise<Djs.BaseMessageOptions> {
-    const opName = (op: T.Operator) => `${gameConsts.rarity[op.data.rarity] + 1}★ ${op.data.name}`;
+    const opName = (op: T.Operator) => getOpPrettyName(op);
 
     const opCache = {};
     async function getOp(id: string) {
         if (!opCache[id]) {
-            opCache[id] = await api.single('operator', { query: id, include: ['data.rarity', 'data.name'] });
+            opCache[id] = await api.single('operator', { query: id, include: ['id', 'data.rarity', 'data.name'] });
         }
         return opCache[id];
     }
@@ -1152,7 +1168,7 @@ export async function buildRecruitMessage(value: number, tags: string[], select:
         let opCount = 0, opString = '';
         for (const op of opArr[1]) {
             if (opCount < 12) {
-                opString += `${gameConsts.rarity[op.data.rarity] + 1}★ ${op.data.name}\n`;
+                opString += getOpPrettyName(op) + '\n';
             }
             opCount++;
         }
@@ -1823,11 +1839,11 @@ function buildBannerField(opNames: T.Operator[], banner: T.GachaPool, timeLeft: 
         const ops6 = [], ops5 = [];
         for (const charId of banner.details.detailInfo.availCharInfo.perAvailList[0].charIdList) {
             const char = opNames.find(char => char.id === charId);
-            ops6.push(`${getOpEmoji(char)} ${char.data.name}`);
+            ops6.push(getOpPrettyName(char, { rarity: false }));
         }
         for (const charId of banner.details.detailInfo.availCharInfo.perAvailList[1].charIdList) {
             const char = opNames.find(char => char.id === charId);
-            ops5.push(`${getOpEmoji(char)} ${char.data.name}`);
+            ops5.push(getOpPrettyName(char, { rarity: false }));
         }
         bannerDesc = `6★ ${ops6.join(', ')}\n5★ ${ops5.join(', ')}`;
     }
@@ -1836,15 +1852,15 @@ function buildBannerField(opNames: T.Operator[], banner: T.GachaPool, timeLeft: 
         for (const charList of banner.details.detailInfo.upCharInfo.perCharList) {
             for (const charId of charList.charIdList) {
                 const char = opNames.find(char => char.id === charId);
-                if (charList.rarityRank === 5) ops6.push(`${getOpEmoji(char)} ${char.data.name}`);
-                else if (charList.rarityRank === 4) ops5.push(`${getOpEmoji(char)} ${char.data.name}`);
+                if (charList.rarityRank === 5) ops6.push(getOpPrettyName(char, { rarity: false }));
+                else if (charList.rarityRank === 4) ops5.push(getOpPrettyName(char, { rarity: false }));
             }
         }
         if (ops6.length === 0) {
             for (const charList of banner.details.detailInfo.availCharInfo.perAvailList) {
                 for (const charId of charList.charIdList) {
                     const char = opNames.find(char => char.id === charId);
-                    if (charList.rarityRank === 5) ops6.push(`${getOpEmoji(char)} ${char.data.name}`);
+                    if (charList.rarityRank === 5) ops6.push(getOpPrettyName(char, { rarity: false }));
                 }
             }
         }
@@ -1870,7 +1886,7 @@ function buildBannerField(opNames: T.Operator[], banner: T.GachaPool, timeLeft: 
                 for (const charList of banner.details.detailInfo.availCharInfo.perAvailList) {
                     for (const charId of charList.charIdList) {
                         const char = opNames.find(char => char.id === charId);
-                        if (charList.rarityRank === 5) ops6.push(`${getOpEmoji(char)} ${char.data.name}`);
+                        if (charList.rarityRank === 5) ops6.push(getOpPrettyName(char, { rarity: false }));
                     }
                 }
                 bannerDesc = `Select and lock-in three 6★ and three 5★ operators from a pool.\n6★ ${ops6.join(', ')}`;
