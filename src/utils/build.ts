@@ -27,16 +27,6 @@ function getOpPrettyName(op: T.Operator, { rarity = true, emoji = true, name = t
     return string;
 }
 function insertBlackboard(text: string, blackboard: T.Blackboard[]) {
-    // Note: check these every so often to see if their skills still display properly
-    // silverash s2/s3
-    // eyjafjalla s2
-    // lin s1
-    // tachanka s1/s2
-    // mizuki s1
-    // mostima s3
-    // irene s1
-    // utage s2
-
     const formatVariable = (chunk: string, blackboard: T.Blackboard[]) => {
         // {tag} {tag:0} {tag:0%} {tag:0.0} {tag:0.0%}
         const tag = chunk.split(':')[0].toLowerCase();
@@ -51,13 +41,9 @@ function insertBlackboard(text: string, blackboard: T.Blackboard[]) {
     }
 
     const textArr = removeStyleTags(text.trim()).split(/{|}/);
-
-    if (textArr.join('') === '') return null;
-
     for (let i = 0; i < textArr.length; i++) {
         textArr[i] = formatVariable(textArr[i], blackboard);
     }
-
     return textArr.join('').replaceAll('-`', '`-').replaceAll('+`', '`+');
 }
 
@@ -723,6 +709,176 @@ export async function buildHelpListMessage(): Promise<Djs.BaseMessageOptions> {
     embed.addFields({ name: blankChar, value: 'For more information on a specific command, use `/help [command]`' });
 
     return { embeds: [embed] };
+}
+export async function buildInfoMessageV2(op: T.Operator, type: number, level: number) {
+    const containerArr = [buildTitleContainer(op)];
+
+    switch (type) {
+        case 0: {
+            const container = buildDeployableContainer(op);
+            containerArr.push(container);
+
+            container.addSeparatorComponents(new Djs.SeparatorBuilder().setSpacing(Djs.SeparatorSpacingSize.Large));
+
+            break;
+        }
+        case 1: {
+            if (level < 6) level = 6;
+
+            const container = await buildSkillContainer(op, level);
+            containerArr.push(container);
+
+            container.addSeparatorComponents(new Djs.SeparatorBuilder().setSpacing(Djs.SeparatorSpacingSize.Large));
+
+            const skillAction = new Djs.ActionRowBuilder<Djs.ButtonBuilder>();
+            container.addActionRowComponents(skillAction);
+
+            for (let i = 6; i < op.skills[0].levels.length; i++) {
+                const button = new Djs.ButtonBuilder()
+                    .setCustomId(createCustomId('infov2', op.id, type, i, 'skill'))
+                    .setLabel(gameConsts.skillLevels[i])
+                    .setStyle(Djs.ButtonStyle.Secondary);
+                if (i === level)
+                    button.setCustomId('infov2_level_current')
+                        .setStyle(Djs.ButtonStyle.Primary)
+                        .setDisabled(true);
+                skillAction.addComponents(button);
+            }
+            break;
+        }
+        case 2: {
+            const container = buildModuleContainer(op, level);
+            containerArr.push(container);
+
+            container.addSeparatorComponents(new Djs.SeparatorBuilder().setSpacing(Djs.SeparatorSpacingSize.Large));
+
+            const moduleAction = new Djs.ActionRowBuilder<Djs.ButtonBuilder>();
+            container.addActionRowComponents(moduleAction);
+
+            for (let i = 0; i < 3; i++) {
+                const button = new Djs.ButtonBuilder()
+                    .setCustomId(createCustomId('infov2', op.id, type, i, 'module'))
+                    .setLabel(`Level ${i + 1}`)
+                    .setStyle(Djs.ButtonStyle.Secondary);
+                if (i === level)
+                    button.setCustomId('infov2_level_current')
+                        .setStyle(Djs.ButtonStyle.Primary)
+                        .setDisabled(true);
+                moduleAction.addComponents(button);
+            }
+            break;
+        }
+        case 3: {
+            const container = buildBaseContainer(op);
+            containerArr.push(container);
+
+            container.addSeparatorComponents(new Djs.SeparatorBuilder().setSpacing(Djs.SeparatorSpacingSize.Large));
+
+            break;
+        }
+        case 4: {
+            const container = await buildCostContainer(op, level);
+            containerArr.push(container);
+
+            container.addSeparatorComponents(new Djs.SeparatorBuilder().setSpacing(Djs.SeparatorSpacingSize.Large));
+
+            const costLabels = ['Promotions', 'Skills', 'Masteries', 'Modules'];
+            const costActions = new Djs.ActionRowBuilder<Djs.ButtonBuilder>();
+            container.addActionRowComponents(costActions);
+
+            for (let i = 0; i < 4; i++) {
+                const button = new Djs.ButtonBuilder()
+                    .setCustomId(createCustomId('infov2', op.id, type, i, 'cost'))
+                    .setLabel(costLabels[i])
+                    .setStyle(Djs.ButtonStyle.Secondary);
+                if (i === level)
+                    button.setCustomId('infov2_level_current')
+                        .setStyle(Djs.ButtonStyle.Primary)
+                        .setDisabled(true);
+                costActions.addComponents(button);
+            }
+            if (op.data.skills.length == 0)
+                costActions.components[1].setStyle(Djs.ButtonStyle.Secondary)
+                    .setDisabled(true);
+            if (gameConsts.rarity[op.data.rarity] <= 2)
+                costActions.components[2].setStyle(Djs.ButtonStyle.Secondary)
+                    .setDisabled(true);
+            if (op.modules.length == 0)
+                costActions.components[3].setStyle(Djs.ButtonStyle.Secondary)
+                    .setDisabled(true);
+            break;
+        }
+        case 5: {
+            const container = buildArtContainer(op, level);
+            containerArr.push(container);
+
+            container.addSeparatorComponents(new Djs.SeparatorBuilder().setSpacing(Djs.SeparatorSpacingSize.Large));
+
+            const rowOne = new Djs.ActionRowBuilder<Djs.ButtonBuilder>();
+            const rowTwo = new Djs.ActionRowBuilder<Djs.ButtonBuilder>();
+            const artActionRows = [];
+
+            for (let i = 0; i < op.skins.length; i++) {
+                const skinGroup = op.skins[i].displaySkin.skinGroupName;
+                const button = new Djs.ButtonBuilder()
+                    .setCustomId(createCustomId('infov2', op.id, type, i, 'art'))
+                    .setLabel(skinGroup)
+                    .setStyle(Djs.ButtonStyle.Secondary);
+                if (i === level)
+                    button.setCustomId('infov2_level_current')
+                        .setStyle(Djs.ButtonStyle.Primary)
+                        .setDisabled(true);
+                if (op.skins[i].battleSkin.skinOrPrefabId === 'DefaultSkin') {
+                    rowOne.addComponents(button);
+                    artActionRows[0] = rowOne;
+                }
+                else {
+                    rowTwo.addComponents(button);
+                    artActionRows[1] = rowTwo;
+                }
+            }
+            container.addActionRowComponents(artActionRows);
+            break;
+        }
+    }
+
+    const typeLabels = [
+        ['Stats', 'Skills', 'Modules', 'Base Skills', 'Costs'],
+        ['Outfits']
+    ];
+    const rowArr = [new Djs.ActionRowBuilder<Djs.ButtonBuilder>(), new Djs.ActionRowBuilder<Djs.ButtonBuilder>()];
+    containerArr[1].addActionRowComponents(...rowArr);
+
+    for (let i = 0; i < typeLabels.length; i++) {
+        for (let j = 0; j < typeLabels[i].length; j++) {
+            const button = new Djs.ButtonBuilder()
+                .setCustomId(createCustomId('infov2', op.id, i * 5 + j, 0))
+                .setLabel(typeLabels[i][j])
+                .setStyle(Djs.ButtonStyle.Primary);
+            if (i * 5 + j === type)
+                button.setCustomId('infov2_type_current')
+                    .setStyle(Djs.ButtonStyle.Primary)
+                    .setDisabled(true);
+            rowArr[i].addComponents(button);
+        }
+    }
+    if (!op.skills || op.skills.length === 0)
+        rowArr[0].components[1].setStyle(Djs.ButtonStyle.Secondary)
+            .setDisabled(true);
+    if (!op.modules || op.modules.length === 0)
+        rowArr[0].components[2].setStyle(Djs.ButtonStyle.Secondary)
+            .setDisabled(true);
+    if (!op.bases || op.bases.length === 0)
+        rowArr[0].components[3].setStyle(Djs.ButtonStyle.Secondary)
+            .setDisabled(true);
+    if (gameConsts.rarity[op.data.rarity] <= 1)
+        rowArr[0].components[4].setStyle(Djs.ButtonStyle.Secondary)
+            .setDisabled(true);
+    if (!op.skins || op.skins.length === 0)
+        rowArr[1].components[1].setStyle(Djs.ButtonStyle.Secondary)
+            .setDisabled(true);
+
+    return { components: containerArr, flags: Djs.MessageFlags.IsComponentsV2 | Djs.MessageFlags.Ephemeral }; // remove ephemeral once patched
 }
 export async function buildInfoMessage(op: T.Operator, type: number, page: number, level: number): Promise<Djs.BaseMessageOptions> {
     const embedArr = [], fileArr = [], rowArr = [];
@@ -2168,7 +2324,10 @@ function buildModuleEmbed(op: T.Operator, page: number, level: number): Djs.Embe
         if (part.addOrOverrideTalentDataBundle.candidates) {
             const candidate = part.addOrOverrideTalentDataBundle.candidates[part.addOrOverrideTalentDataBundle.candidates.length - 1];
             talentName = candidate.name ?? talentName;
-            talentDescription = insertBlackboard(candidate.upgradeDescription, candidate.blackboard) ?? talentDescription;
+            const upgradeDesc = insertBlackboard(candidate.upgradeDescription, candidate.blackboard);
+            if (upgradeDesc !== '') {
+                talentDescription = upgradeDesc;
+            }
         }
     }
     embed.setDescription(description);
@@ -2271,4 +2430,406 @@ async function buildSkillEmbed(op: T.Deployable, page: number, level: number): P
     }
 
     return embed;
+}
+
+function buildTitleContainer(deploy: T.Operator, rarity: boolean = true): Djs.ContainerBuilder {
+    const container = new Djs.ContainerBuilder().setAccentColor(embedColour);
+
+    const titleSection = new Djs.SectionBuilder();
+    container.addSectionComponents(titleSection);
+
+    let avatarThumb = rarity ? paths.myAssetUrl + `/operator/avatars/${deploy.id}.png` : paths.aceshipImageUrl + `/avatars/${deploy.id}.png`;
+    if (deploy.id === 'char_1037_amiya3') avatarThumb = paths.myAssetUrl + `/operator/avatars/char_1037_amiya3_2.png`;
+    const titleThumb = new Djs.ThumbnailBuilder({ media: { url: avatarThumb } });
+    titleSection.setThumbnailAccessory(titleThumb);
+
+    let description = removeStyleTags(deploy.data.description);
+    if (deploy.data.trait) {
+        const candidate = deploy.data.trait.candidates[deploy.data.trait.candidates.length - 1];
+        if (candidate.overrideDescripton) {
+            description = insertBlackboard(candidate.overrideDescripton, candidate.blackboard);
+        }
+    }
+
+    const titleText = new Djs.TextDisplayBuilder()
+        .setContent([
+            `## ${deploy.data.name} - ${'★'.repeat(gameConsts.rarity[deploy.data.rarity] + 1)}`,
+            `**${gameConsts.professions[deploy.data.profession]} - ${deploy.archetype}**`,
+            description
+        ].join('\n'));
+    titleSection.addTextDisplayComponents(titleText);
+
+    return container;
+}
+function buildDeployableContainer(deploy: T.Deployable, rarity: boolean = true): Djs.ContainerBuilder {
+    const container = new Djs.ContainerBuilder().setAccentColor(embedColour);
+
+    if (deploy.range) {
+        const rangeText = new Djs.TextDisplayBuilder()
+            .setContent([
+                '**Range**',
+                buildRangeField(deploy.range).value
+            ].join('\n'));
+        container.addTextDisplayComponents(rangeText);
+    }
+
+    if (deploy.data.talents) {
+        for (const talent of deploy.data.talents) {
+            if (talent.candidates) {
+                const candidate = talent.candidates[talent.candidates.length - 1];
+                if (candidate.name) {
+                    const talentText = new Djs.TextDisplayBuilder()
+                        .setContent([
+                            `***${candidate.name}***`,
+                            removeStyleTags(candidate.description)
+                        ].join('\n'));
+                    container.addTextDisplayComponents(talentText);
+                }
+            }
+        }
+    }
+
+    if (deploy.data.potentialRanks && deploy.data.potentialRanks.length > 0) {
+        const potentialText = new Djs.TextDisplayBuilder()
+            .setContent([
+                '**Potentials**',
+                deploy.data.potentialRanks.map(potential => potential.description).join('\n')
+            ].join('\n'));
+        container.addTextDisplayComponents(potentialText);
+    }
+
+    const trustStats = deploy.data.favorKeyFrames[1].data;
+    const maxStats = deploy.data.phases[deploy.data.phases.length - 1].attributesKeyFrames[deploy.data.phases[deploy.data.phases.length - 1].attributesKeyFrames.length - 1].data;
+    const hp = trustStats.maxHp ? `${maxStats.maxHp + trustStats.maxHp} (+${trustStats.maxHp})` : maxStats.maxHp.toString();
+    const atk = trustStats.atk ? `${maxStats.atk + trustStats.atk} (+${trustStats.atk})` : maxStats.atk.toString();
+    const def = trustStats.def ? `${maxStats.def + trustStats.def} (+${trustStats.def})` : maxStats.def.toString();
+    const res = trustStats.magicResistance ? `${maxStats.magicResistance + trustStats.magicResistance} (+${trustStats.magicResistance})` : maxStats.magicResistance.toString();
+    const dpCost = maxStats.cost;
+    const block = maxStats.blockCnt;
+    const redeploy = maxStats.respawnTime;
+    const atkInterval = maxStats.baseAttackTime;
+    const statText = new Djs.TextDisplayBuilder()
+        .setContent([
+            '**Max Stats (+Trust)**',
+            `❤️ **HP**\t\t\t\t\t  ${hp}`,
+            `⚔️ **ATK**\t\t\t\t\t${atk}`,
+            `🛡️ **DEF**\t\t\t\t\t${def}`,
+            `✨ **RES**\t\t\t\t\t${res}`,
+            `🏁 **DP Cost**\t\t\t${dpCost}`,
+            `✋ **Block**\t\t\t\t ${block}`,
+            `⌛ **Redeploy**\t\t  ${redeploy}`,
+            `⏱️ **Interval**\t\t\t ${atkInterval}`
+        ].join('\n'));
+    container.addTextDisplayComponents(statText);
+
+    return container;
+}
+async function buildSkillContainer(deploy: T.Deployable, level: number): Promise<Djs.ContainerBuilder> {
+    const container = new Djs.ContainerBuilder().setAccentColor(embedColour);
+    const sections = [];
+
+    for (let i = 0; i < deploy.skills.length; i++) {
+        const skill = deploy.skills[i];
+        const skillLevel = skill.levels[level];
+
+        const section = new Djs.SectionBuilder();
+        sections.push(section);
+
+        const skillThumb = new Djs.ThumbnailBuilder({ media: { url: paths.myAssetUrl + `/operator/skills/skill_icon_${skill.iconId ?? skill.skillId}.png` } });
+        section.setThumbnailAccessory(skillThumb);
+
+        const skillText = new Djs.TextDisplayBuilder()
+            .setContent([
+                `### ${skill.levels[0].name}`,
+                `**${gameConsts.spTypes[skillLevel.spData.spType]} - ${gameConsts.skillTypes[skillLevel.skillType]}**`,
+                `***Initial:* ${skillLevel.spData.initSp} SP - *Cost:* ${skillLevel.spData.spCost} SP${(skillLevel.duration && skillLevel.duration > 0) ? ` - *Duration:* ${skillLevel.duration} sec` : ''}**`,
+                insertBlackboard(skillLevel.description, skillLevel.blackboard),
+            ].join('\n'));
+        section.addTextDisplayComponents(skillText);
+
+        if (skillLevel.rangeId) {
+            const range = await api.single('range', { query: skillLevel.rangeId });
+            const rangeText = new Djs.TextDisplayBuilder()
+                .setContent([
+                    '**Range**',
+                    buildRangeField(range).value
+                ].join('\n'));
+            section.addTextDisplayComponents(rangeText);
+        }
+    }
+
+    for (const section of sections) {
+        container.addSectionComponents(section);
+        if (section !== sections[sections.length - 1]) {
+            container.addSeparatorComponents(new Djs.SeparatorBuilder().setSpacing(Djs.SeparatorSpacingSize.Large));
+        }
+    }
+
+    return container;
+}
+function buildModuleContainer(op: T.Operator, level: number): Djs.ContainerBuilder {
+    const container = new Djs.ContainerBuilder().setAccentColor(embedColour);
+    const sections = [];
+
+    for (let i = 0; i < op.modules.length; i++) {
+        const module = op.modules[i];
+
+        let description = [], talentName = null, talentDescription = null;
+        for (const part of module.data.phases[level].parts) {
+            if (part.overrideTraitDataBundle.candidates) {
+                const candidate = part.overrideTraitDataBundle.candidates[part.overrideTraitDataBundle.candidates.length - 1];
+                if (candidate.additionalDescription) {
+                    description.push(`${insertBlackboard(candidate.additionalDescription, candidate.blackboard)}`);
+                }
+                if (candidate.overrideDescripton) {
+                    description.push(`${insertBlackboard(candidate.overrideDescripton, candidate.blackboard)}`);
+                }
+            }
+            if (part.addOrOverrideTalentDataBundle.candidates) {
+                const candidate = part.addOrOverrideTalentDataBundle.candidates[part.addOrOverrideTalentDataBundle.candidates.length - 1];
+                talentName = candidate.name ?? talentName;
+                const upgradeDesc = insertBlackboard(candidate.upgradeDescription, candidate.blackboard);
+                if (upgradeDesc !== '') {
+                    talentDescription = upgradeDesc;
+                }
+            }
+        }
+
+        const section = new Djs.SectionBuilder();
+        sections.push(section);
+
+        const moduleThumb = new Djs.ThumbnailBuilder({ media: { url: paths.myAssetUrl + `/operator/modules/${module.info.uniEquipId}.png` } });
+        section.setThumbnailAccessory(moduleThumb);
+
+        const content = [
+            `### ${module.info.typeIcon.toUpperCase()} - ${module.info.uniEquipName}`,
+            description.join('\n')
+        ];
+        if (talentName && talentDescription) {
+            content.push(
+                '',
+                `**${talentName}**`,
+                talentDescription
+            );
+        }
+        content.push(
+            '',
+            module.data.phases[level].attributeBlackboard.map(attribute => `${attribute.key.toUpperCase()} ${attribute.value > 0 ? '+' : ''}${attribute.value}`).join('\n')
+        );
+
+        const moduleText = new Djs.TextDisplayBuilder()
+            .setContent(content.join('\n'));
+        section.addTextDisplayComponents(moduleText);
+    }
+
+    for (const section of sections) {
+        container.addSectionComponents(section);
+        if (section !== sections[sections.length - 1]) {
+            container.addSeparatorComponents(new Djs.SeparatorBuilder().setSpacing(Djs.SeparatorSpacingSize.Large));
+        }
+    }
+
+    return container;
+}
+function buildBaseContainer(op: T.Operator): Djs.ContainerBuilder {
+    const container = new Djs.ContainerBuilder().setAccentColor(embedColour);
+    const sections = [];
+
+    for (const base of op.bases) {
+        const section = new Djs.SectionBuilder();
+        sections.push(section);
+
+        const baseThumb = new Djs.ThumbnailBuilder({ media: { url: paths.myAssetUrl + `/operator/bases/${base.skill.skillIcon}.png` } });
+        section.setThumbnailAccessory(baseThumb);
+
+        const baseText = new Djs.TextDisplayBuilder()
+            .setContent([
+                `### ${base.skill.buffName} - ${gameConsts.eliteLevels[base.condition.cond.phase]}`,
+                removeStyleTags(base.skill.description)
+            ].join('\n'));
+        section.addTextDisplayComponents(baseText);
+    }
+
+    for (const section of sections) {
+        container.addSectionComponents(section);
+        if (section !== sections[sections.length - 1]) {
+            container.addSeparatorComponents(new Djs.SeparatorBuilder().setSpacing(Djs.SeparatorSpacingSize.Large));
+        }
+    }
+
+    return container;
+}
+async function buildCostContainer(op: T.Operator, level: number): Promise<Djs.ContainerBuilder> {
+    const itemArr = await api.all('item', { include: ['data'] });
+
+    const container = new Djs.ContainerBuilder().setAccentColor(embedColour);
+    const sections = [];
+
+    switch (level) {
+        default:
+        case 0: {
+
+            for (let i = 0; i < op.data.phases.length; i++) {
+                if (op.data.phases[i].evolveCost === null) continue;
+
+                const section = new Djs.SectionBuilder();
+                sections.push(section);
+
+                const eliteThumb = new Djs.ThumbnailBuilder({ media: { url: paths.aceshipImageUrl + `/ui/elite/${i}.png` } });
+                section.setThumbnailAccessory(eliteThumb);
+
+                const costText = new Djs.TextDisplayBuilder()
+                    .setContent([
+                        `### Elite ${i}`,
+                        buildCostString(op.data.phases[i].evolveCost, itemArr).slice(0, -1),
+                        `${getItemEmoji('GOLD')} LMD **x${gameConsts.evolveGoldCost[gameConsts.rarity[op.data.rarity]][i - 1]}**`
+                    ].join('\n'));
+                if (section.components.length < 3) {
+                    section.addTextDisplayComponents(costText);
+                }
+                else {
+                    container.addTextDisplayComponents(costText);
+                }
+            }
+            break;
+        }
+        case 1: {
+            const section = new Djs.SectionBuilder();
+            sections.push(section);
+
+            const costThumb = new Djs.ThumbnailBuilder({ media: { url: paths.myAssetUrl + `/items/MTL_SKILL2.png` } });
+            section.setThumbnailAccessory(costThumb);
+
+            const costText = new Djs.TextDisplayBuilder()
+                .setContent([
+                    '### Skill Upgrades',
+                    ...op.data.allSkillLvlup.map((skill, i) => {
+                        if (skill.lvlUpCost === null) return '';
+                        return `**Level ${i + 2}**\n${buildCostString(skill.lvlUpCost, itemArr).slice(0, -1)}`;
+                    }
+                    ).filter(e => e !== '')
+                ].join('\n'));
+            section.addTextDisplayComponents(costText);
+            break;
+        }
+        case 2: {
+            for (let i = 0; i < op.data.skills.length; i++) {
+                const section = new Djs.SectionBuilder();
+                sections.push(section);
+
+                const masteryThumb = new Djs.ThumbnailBuilder({ media: { url: paths.myAssetUrl + `/operator/skills/skill_icon_${op.skills[i].iconId ?? op.skills[i].skillId}.png` } });
+                section.setThumbnailAccessory(masteryThumb);
+
+                const costText = new Djs.TextDisplayBuilder()
+                    .setContent([
+                        `### ${op.skills[i].levels[0].name}`,
+                        ...op.data.skills[i].levelUpCostCond.map((cond, j) => {
+                            if (cond.levelUpCost === null) return '';
+                            return `**Mastery ${j + 1}**\n${buildCostString(cond.levelUpCost, itemArr).slice(0, -1)}`;
+                        }),
+                    ].join('\n'));
+                if (section.components.length < 3) {
+                    section.addTextDisplayComponents(costText);
+                }
+                else {
+                    container.addTextDisplayComponents(costText);
+                }
+            }
+            break;
+        }
+        case 3: {
+            for (const module of op.modules) {
+                if (module.info.uniEquipId.includes('uniequip_001')) continue;
+
+                const section = new Djs.SectionBuilder();
+                sections.push(section);
+
+                const moduleThumb = new Djs.ThumbnailBuilder({ media: { url: paths.myAssetUrl + `/operator/modules/${module.info.uniEquipId}.png` } });
+                section.setThumbnailAccessory(moduleThumb);
+
+                const costText = new Djs.TextDisplayBuilder()
+                    .setContent([
+                        `### ${module.info.typeIcon.toUpperCase()} - ${module.info.uniEquipName}`,
+                        ...Object.keys(module.info.itemCost).map(key => {
+                            return `**Level ${key}**\n${buildCostString(module.info.itemCost[key], itemArr).slice(0, -1)}`;
+                        }),
+                    ].join('\n'));
+                if (section.components.length < 3) {
+                    section.addTextDisplayComponents(costText);
+                }
+                else {
+                    container.addTextDisplayComponents(costText);
+                }
+            }
+            break;
+        }
+    }
+
+    for (const section of sections) {
+        container.addSectionComponents(section);
+        if (section !== sections[sections.length - 1]) {
+            container.addSeparatorComponents(new Djs.SeparatorBuilder().setSpacing(Djs.SeparatorSpacingSize.Large));
+        }
+    }
+
+    return container;
+}
+function buildArtContainer(op: T.Operator, level: number): Djs.ContainerBuilder {
+    const container = new Djs.ContainerBuilder().setAccentColor(embedColour);
+
+    const section = new Djs.SectionBuilder();
+    container.addSectionComponents(section);
+
+    const displaySkin = op.skins[level].displaySkin;
+    switch (displaySkin.skinGroupId) {
+        case 'ILLUST_0': {
+            const skingroupThumb = new Djs.ThumbnailBuilder({ media: { url: paths.aceshipImageUrl + `/ui/elite/0.png` } });
+            section.setThumbnailAccessory(skingroupThumb);
+            break;
+        }
+        case 'ILLUST_1': {
+            const skingroupThumb = new Djs.ThumbnailBuilder({ media: { url: paths.aceshipImageUrl + `/ui/elite/1.png` } });
+            section.setThumbnailAccessory(skingroupThumb);
+            break;
+        }
+        case 'ILLUST_2': {
+            const skingroupThumb = new Djs.ThumbnailBuilder({ media: { url: paths.aceshipImageUrl + `/ui/elite/2.png` } });
+            section.setThumbnailAccessory(skingroupThumb);
+            break;
+        }
+        case 'ILLUST_3': {
+            const skingroupThumb = new Djs.ThumbnailBuilder({ media: { url: paths.aceshipImageUrl + `/ui/elite/3.png` } });
+            section.setThumbnailAccessory(skingroupThumb);
+            break;
+        }
+        default: {
+            const skingroupThumb = new Djs.ThumbnailBuilder({ media: { url: paths.myAssetUrl + `/skingroups/${encodeURIComponent(displaySkin.skinGroupId.split('#')[1])}.png` } });
+            section.setThumbnailAccessory(skingroupThumb);
+            break;
+        }
+    }
+
+    const artText = new Djs.TextDisplayBuilder()
+        .setContent([
+            `### ${displaySkin.skinGroupName}${displaySkin.skinName ? ` - ${displaySkin.skinName}` : ''}`
+        ].join('\n'));
+    section.addTextDisplayComponents(artText);
+
+    if (displaySkin.drawerList && displaySkin.drawerList.length > 0) {
+        const artistText = new Djs.TextDisplayBuilder()
+            .setContent([
+                `**${displaySkin.drawerList.length > 1 ? 'Artists' : 'Artist'}**`,
+                displaySkin.drawerList.join('\n')
+            ].join('\n'));
+        section.addTextDisplayComponents(artistText);
+    }
+
+    const artGallery = new Djs.MediaGalleryBuilder()
+    container.addMediaGalleryComponents(artGallery);
+
+    artGallery.addItems(new Djs.MediaGalleryItemBuilder()
+        .setURL(paths.myAssetUrl + `/operator/arts/${encodeURIComponent(op.skins[level].portraitId)}.png`)
+    )
+
+    return container;
 }

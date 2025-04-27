@@ -8,9 +8,9 @@
     },
     "author": "",
     "dependencies": {
-        "discord.js": "^14.17.3",
+        "discord.js": "^14.19.1",
         "dotenv": "^16.4.7",
-        "hella-types": "^0.2.4",
+        "hella-types": "^0.2.7",
         "puppeteer": "^24.1.1",
         "simple-git": "^3.27.0",
         "ts-node": "^10.9.2",
