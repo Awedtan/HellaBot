@@ -1,4 +1,4 @@
-import { AutocompleteInteraction, ButtonInteraction, CacheType, ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
+import { AutocompleteInteraction, ButtonInteraction, CacheType, ChatInputCommandInteraction, SlashCommandBuilder, StringSelectMenuInteraction } from 'discord.js';
 import * as api from '../utils/api';
 import { autocompleteOperator } from '../utils/autocomplete';
 import { buildInfoMessage } from '../utils/build';
@@ -36,11 +36,19 @@ export default class InfoCommand {
         return await interaction.editReply(operatorEmbed);
     }
     async buttonResponse(interaction: ButtonInteraction<CacheType>, idArr: string[]) {
-        const op = await api.single('operator', { query: idArr[1], exclude: ['paradox'] });
-        const page = parseInt(idArr[2]);
+        const op = await api.single('operator', { query: idArr[1] });
+        const type = parseInt(idArr[2]);
         const level = parseInt(idArr[3]);
 
-        const infoEmbed = await buildInfoMessage(op, page, level);
+        const infoEmbed = await buildInfoMessage(op, type, level);
+        await interaction.update(infoEmbed);
+    }
+    async selectResponse(interaction: StringSelectMenuInteraction<CacheType>, idArr: string[]) {
+        const op = await api.single('operator', { query: idArr[1] });
+        const level = parseInt(idArr[3]);
+        const type = parseInt(interaction.values[0]);
+
+        const infoEmbed = await buildInfoMessage(op, type, level);
         await interaction.update(infoEmbed);
     }
 }

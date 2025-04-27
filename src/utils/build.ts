@@ -329,30 +329,32 @@ export async function buildDefineListMessage(): Promise<Djs.BaseMessageOptions> 
     return { embeds: [embed] };
 }
 export async function buildDeployMessage(deploy: T.Deployable, type: number, level: number) {
-    const containerArr = [buildTitleContainer(deploy, false)];
+    const container = new Djs.ContainerBuilder();
+
+    const titleSection = await buildTitleSection(deploy, false);
+    container.addSectionComponents(titleSection);
+    container.addSeparatorComponents(new Djs.SeparatorBuilder().setSpacing(Djs.SeparatorSpacingSize.Large));
 
     switch (type) {
         case 0: {
-            const container = buildDeployableContainer(deploy);
-            containerArr.push(container);
-
+            const components = buildDeployableComponents(deploy);
+            container.addTextDisplayComponents(components);
             container.addSeparatorComponents(new Djs.SeparatorBuilder().setSpacing(Djs.SeparatorSpacingSize.Large));
-
             break;
         }
         case 1: {
             if (level === 0) level = Math.max(0, deploy.skills[0].levels.length - 4);
 
-            const container = await buildSkillContainer(deploy, level);
-            containerArr.push(container);
-
-            container.addSeparatorComponents(new Djs.SeparatorBuilder().setSpacing(Djs.SeparatorSpacingSize.Large));
+            const sections = await buildSkillSections(deploy, level);
+            for (const section of sections) {
+                container.addSectionComponents(section);
+                container.addSeparatorComponents(new Djs.SeparatorBuilder().setSpacing(Djs.SeparatorSpacingSize.Large));
+            }
 
             const skillAction = new Djs.ActionRowBuilder<Djs.ButtonBuilder>();
             container.addActionRowComponents(skillAction);
 
             for (let i = Math.max(0, deploy.skills[0].levels.length - 4); i < deploy.skills[0].levels.length; i++) {
-                console.log(createCustomId('deploy', deploy.id, type, i, 'skill'))
                 const button = new Djs.ButtonBuilder()
                     .setCustomId(createCustomId('deploy', deploy.id, type, i, 'skill'))
                     .setLabel(gameConsts.skillLevels[i])
@@ -369,7 +371,7 @@ export async function buildDeployMessage(deploy: T.Deployable, type: number, lev
 
     const typeLabels = [['Stats', 'Skills']];
     const rowArr = [new Djs.ActionRowBuilder<Djs.ButtonBuilder>()];
-    containerArr[1].addActionRowComponents(...rowArr);
+    container.addActionRowComponents(...rowArr);
 
     for (let i = 0; i < typeLabels.length; i++) {
         for (let j = 0; j < typeLabels[i].length; j++) {
@@ -388,7 +390,7 @@ export async function buildDeployMessage(deploy: T.Deployable, type: number, lev
         rowArr[0].components[1].setStyle(Djs.ButtonStyle.Secondary)
             .setDisabled(true);
 
-    return { components: containerArr, flags: Djs.MessageFlags.IsComponentsV2 | Djs.MessageFlags.Ephemeral }; // remove ephemeral once patched
+    return { components: [container], flags: Djs.MessageFlags.IsComponentsV2 | Djs.MessageFlags.Ephemeral }; // remove ephemeral once patched
 }
 export async function buildEnemyMessage(enemy: T.Enemy, level: number): Promise<Djs.BaseMessageOptions> {
     const enemyInfo = enemy.excel;
@@ -619,174 +621,204 @@ export async function buildHelpListMessage(): Promise<Djs.BaseMessageOptions> {
     return { embeds: [embed] };
 }
 export async function buildInfoMessage(op: T.Operator, type: number, level: number) {
-    const containerArr = [buildTitleContainer(op)];
+    const types = {
+        stats: {
+            label: 'Stats', index: 0, value: '0',
+            disabled: false
+        },
+        skills: {
+            label: 'Skills', index: 1, value: '1',
+            disabled: !op.skills || !op.skills.length
+        },
+        modules: {
+            label: 'Modules', index: 2, value: '2',
+            disabled: !op.modules || !op.modules.length
+        },
+        base: {
+            label: 'Base Skills', index: 3, value: '3',
+            disabled: !op.bases || !op.bases.length
+        },
+        costs: {
+            label: 'Upgrade Costs', index: 4, value: '4',
+            disabled: gameConsts.rarity[op.data.rarity] <= 1
+        },
+        outfits: {
+            label: 'Outfits', index: 5, value: '5',
+            disabled: !op.skins || !op.skins.length
+        },
+        paradox: {
+            label: 'Paradox Simulation', index: 6, value: '6',
+            disabled: !op.paradox
+        }
+    };
+
+    const container = new Djs.ContainerBuilder();
+
+    const titleSection = await buildTitleSection(op);
+    container.addSectionComponents(titleSection);
+    container.addSeparatorComponents(new Djs.SeparatorBuilder().setSpacing(Djs.SeparatorSpacingSize.Large));
+
+    const typeText = new Djs.TextDisplayBuilder()
+        .setContent(`## ${types[Object.keys(types)[type]].label}`)
+    container.addTextDisplayComponents(typeText);
 
     switch (type) {
-        case 0: {
-            const container = buildDeployableContainer(op);
-            containerArr.push(container);
-
-            container.addSeparatorComponents(new Djs.SeparatorBuilder().setSpacing(Djs.SeparatorSpacingSize.Large));
-
+        case types.stats.index: {
+            const components = buildDeployableComponents(op);
+            container.addTextDisplayComponents(components);
             break;
         }
-        case 1: {
+        case types.skills.index: {
             if (level === 0) level = 6;
 
-            const container = await buildSkillContainer(op, level);
-            containerArr.push(container);
+            const sections = await buildSkillSections(op, level);
+            container.addSectionComponents(sections);
 
-            container.addSeparatorComponents(new Djs.SeparatorBuilder().setSpacing(Djs.SeparatorSpacingSize.Large));
-
-            const skillAction = new Djs.ActionRowBuilder<Djs.ButtonBuilder>();
-            container.addActionRowComponents(skillAction);
+            const actionRow = new Djs.ActionRowBuilder<Djs.ButtonBuilder>();
+            container.addActionRowComponents(actionRow);
 
             for (let i = 6; i < op.skills[0].levels.length; i++) {
                 const button = new Djs.ButtonBuilder()
                     .setCustomId(createCustomId('info', op.id, type, i, 'skill'))
                     .setLabel(gameConsts.skillLevels[i])
-                    .setStyle(Djs.ButtonStyle.Secondary);
+                    .setStyle(Djs.ButtonStyle.Primary);
                 if (i === level)
                     button.setCustomId('info_level_current')
-                        .setStyle(Djs.ButtonStyle.Primary)
                         .setDisabled(true);
-                skillAction.addComponents(button);
+                actionRow.addComponents(button);
             }
             break;
         }
-        case 2: {
-            const container = buildModuleContainer(op, level);
-            containerArr.push(container);
+        case types.modules.index: {
+            const sections = buildModuleSections(op, level);
+            container.addSectionComponents(sections);
 
-            container.addSeparatorComponents(new Djs.SeparatorBuilder().setSpacing(Djs.SeparatorSpacingSize.Large));
-
-            const moduleAction = new Djs.ActionRowBuilder<Djs.ButtonBuilder>();
-            container.addActionRowComponents(moduleAction);
+            const actionRow = new Djs.ActionRowBuilder<Djs.ButtonBuilder>();
+            container.addActionRowComponents(actionRow);
 
             for (let i = 0; i < 3; i++) {
                 const button = new Djs.ButtonBuilder()
                     .setCustomId(createCustomId('info', op.id, type, i, 'module'))
                     .setLabel(`Level ${i + 1}`)
-                    .setStyle(Djs.ButtonStyle.Secondary);
+                    .setStyle(Djs.ButtonStyle.Primary);
                 if (i === level)
                     button.setCustomId('info_level_current')
-                        .setStyle(Djs.ButtonStyle.Primary)
                         .setDisabled(true);
-                moduleAction.addComponents(button);
+                actionRow.addComponents(button);
             }
             break;
         }
-        case 3: {
-            const container = buildBaseContainer(op);
-            containerArr.push(container);
-
-            container.addSeparatorComponents(new Djs.SeparatorBuilder().setSpacing(Djs.SeparatorSpacingSize.Large));
-
+        case types.base.index: {
+            const sections = buildBaseSections(op);
+            for (const section of sections) {
+                container.addSectionComponents(section);
+                // container.addSeparatorComponents(new Djs.SeparatorBuilder().setSpacing(Djs.SeparatorSpacingSize.Large));
+            }
             break;
         }
-        case 4: {
-            const container = await buildCostContainer(op, level);
-            containerArr.push(container);
+        case types.costs.index: {
+            const sections = await buildCostSections(op, level);
+            container.addSectionComponents(sections);
 
-            container.addSeparatorComponents(new Djs.SeparatorBuilder().setSpacing(Djs.SeparatorSpacingSize.Large));
+            const buttonLabels = ['Promotions', 'Skills', 'Masteries', 'Modules'];
+            const actionRow = new Djs.ActionRowBuilder<Djs.ButtonBuilder>();
+            container.addActionRowComponents(actionRow);
 
-            const costLabels = ['Promotions', 'Skills', 'Masteries', 'Modules'];
-            const costActions = new Djs.ActionRowBuilder<Djs.ButtonBuilder>();
-            container.addActionRowComponents(costActions);
-
-            for (let i = 0; i < 4; i++) {
+            for (let i = 0; i < buttonLabels.length; i++) {
                 const button = new Djs.ButtonBuilder()
                     .setCustomId(createCustomId('info', op.id, type, i, 'cost'))
-                    .setLabel(costLabels[i])
-                    .setStyle(Djs.ButtonStyle.Secondary);
+                    .setLabel(buttonLabels[i])
+                    .setStyle(Djs.ButtonStyle.Primary);
                 if (i === level)
                     button.setCustomId('info_level_current')
-                        .setStyle(Djs.ButtonStyle.Primary)
                         .setDisabled(true);
-                costActions.addComponents(button);
+                actionRow.addComponents(button);
             }
             if (op.data.skills.length == 0)
-                costActions.components[1].setStyle(Djs.ButtonStyle.Secondary)
+                actionRow.components[1].setStyle(Djs.ButtonStyle.Secondary)
                     .setDisabled(true);
             if (gameConsts.rarity[op.data.rarity] <= 2)
-                costActions.components[2].setStyle(Djs.ButtonStyle.Secondary)
+                actionRow.components[2].setStyle(Djs.ButtonStyle.Secondary)
                     .setDisabled(true);
             if (op.modules.length == 0)
-                costActions.components[3].setStyle(Djs.ButtonStyle.Secondary)
+                actionRow.components[3].setStyle(Djs.ButtonStyle.Secondary)
                     .setDisabled(true);
             break;
         }
-        case 5: {
-            const container = buildArtContainer(op, level);
-            containerArr.push(container);
-
-            container.addSeparatorComponents(new Djs.SeparatorBuilder().setSpacing(Djs.SeparatorSpacingSize.Large));
+        case types.outfits.index: {
+            const components = buildOutfitComponents(op, level);
+            container.addSectionComponents(components.section);
+            container.addMediaGalleryComponents(components.gallery);
 
             const rowOne = new Djs.ActionRowBuilder<Djs.ButtonBuilder>();
             const rowTwo = new Djs.ActionRowBuilder<Djs.ButtonBuilder>();
-            const artActionRows = [];
+            const actionRows = [];
 
             for (let i = 0; i < op.skins.length; i++) {
-                const skinGroup = op.skins[i].displaySkin.skinGroupName;
                 const button = new Djs.ButtonBuilder()
-                    .setCustomId(createCustomId('info', op.id, type, i, 'art'))
-                    .setLabel(skinGroup)
-                    .setStyle(Djs.ButtonStyle.Secondary);
+                    .setCustomId(createCustomId('info', op.id, type, i, 'outfit'))
+                    .setLabel(op.skins[i].displaySkin.skinGroupName)
+                    .setStyle(Djs.ButtonStyle.Primary);
                 if (i === level)
                     button.setCustomId('info_level_current')
-                        .setStyle(Djs.ButtonStyle.Primary)
                         .setDisabled(true);
                 if (op.skins[i].battleSkin.skinOrPrefabId === 'DefaultSkin') {
                     rowOne.addComponents(button);
-                    artActionRows[0] = rowOne;
+                    actionRows[0] = rowOne;
                 }
                 else {
                     rowTwo.addComponents(button);
-                    artActionRows[1] = rowTwo;
+                    actionRows[1] = rowTwo;
                 }
             }
-            container.addActionRowComponents(artActionRows);
+            container.addActionRowComponents(actionRows);
+            break;
+        }
+        case types.paradox.index: {
+            const components = await buildParadoxComponents(op, level);
+            container.addTextDisplayComponents(components.text);
+            if (components.gallery)
+                container.addMediaGalleryComponents(components.gallery);
+
+            if (components.galleryExists) {
+                const buttonLabels = ['Preview', 'Diagram'];
+                const actionRow = new Djs.ActionRowBuilder<Djs.ButtonBuilder>();
+                container.addActionRowComponents(actionRow);
+
+                for (let i = 0; i < buttonLabels.length; i++) {
+                    const button = new Djs.ButtonBuilder()
+                        .setCustomId(createCustomId('info', op.id, type, i, 'paradox'))
+                        .setLabel(buttonLabels[i])
+                        .setStyle(Djs.ButtonStyle.Primary);
+                    if (i === level)
+                        button.setCustomId('info_level_current')
+                            .setDisabled(true);
+                    actionRow.addComponents(button);
+                }
+            }
             break;
         }
     }
 
-    const typeLabels = [
-        ['Stats', 'Skills', 'Modules', 'Base Skills', 'Costs'],
-        ['Outfits', 'Paradox']
-    ];
-    const rowArr = [new Djs.ActionRowBuilder<Djs.ButtonBuilder>(), new Djs.ActionRowBuilder<Djs.ButtonBuilder>()];
-    containerArr[1].addActionRowComponents(...rowArr);
+    container.addSeparatorComponents(new Djs.SeparatorBuilder().setSpacing(Djs.SeparatorSpacingSize.Large));
 
-    for (let i = 0; i < typeLabels.length; i++) {
-        for (let j = 0; j < typeLabels[i].length; j++) {
-            const button = new Djs.ButtonBuilder()
-                .setCustomId(createCustomId('info', op.id, i * 5 + j, 0))
-                .setLabel(typeLabels[i][j])
-                .setStyle(Djs.ButtonStyle.Primary);
-            if (i * 5 + j === type)
-                button.setCustomId('info_type_current')
-                    .setStyle(Djs.ButtonStyle.Primary)
-                    .setDisabled(true);
-            rowArr[i].addComponents(button);
-        }
+    const actionRow = new Djs.ActionRowBuilder<Djs.StringSelectMenuBuilder>();
+    container.addActionRowComponents(actionRow);
+
+    const typeSelect = new Djs.StringSelectMenuBuilder()
+        .setCustomId(createCustomId('info', op.id, type, 0));
+    actionRow.addComponents(typeSelect);
+
+    for (const typeLabel of Object.values(types)) {
+        if (typeLabel.disabled) continue;
+        const option = new Djs.StringSelectMenuOptionBuilder()
+            .setLabel(typeLabel.label)
+            .setValue(typeLabel.value)
+            .setDefault(type === typeLabel.index);
+        typeSelect.addOptions(option);
     }
-    if (!op.skills || op.skills.length === 0)
-        rowArr[0].components[1].setStyle(Djs.ButtonStyle.Secondary)
-            .setDisabled(true);
-    if (!op.modules || op.modules.length === 0)
-        rowArr[0].components[2].setStyle(Djs.ButtonStyle.Secondary)
-            .setDisabled(true);
-    if (!op.bases || op.bases.length === 0)
-        rowArr[0].components[3].setStyle(Djs.ButtonStyle.Secondary)
-            .setDisabled(true);
-    if (gameConsts.rarity[op.data.rarity] <= 1)
-        rowArr[0].components[4].setStyle(Djs.ButtonStyle.Secondary)
-            .setDisabled(true);
-    if (!op.skins || op.skins.length === 0)
-        rowArr[1].components[1].setStyle(Djs.ButtonStyle.Secondary)
-            .setDisabled(true);
 
-    return { components: containerArr, flags: Djs.MessageFlags.IsComponentsV2 | Djs.MessageFlags.Ephemeral }; // remove ephemeral once patched
+    return { components: [container], flags: Djs.MessageFlags.IsComponentsV2 | Djs.MessageFlags.Ephemeral }; // remove ephemeral once patched
 }
 export async function buildItemMessage(item: T.Item): Promise<Djs.BaseMessageOptions> {
     const dropStageCount = 6;
@@ -1840,17 +1872,95 @@ async function buildStageEnemyFields(stageData: T.StageData): Promise<Djs.EmbedF
 
     return fieldArr;
 }
+async function buildStageEnemyComponents(stageData: T.StageData): Promise<Djs.TextDisplayBuilder[]> {
+    const waveDict: { [key: string]: number } = {}; // enemyId => enemy quantity
+    for (const wave of stageData.waves) { // Count number of enemies in stage, store results in waveDict
+        for (const fragment of wave.fragments) {
+            for (const action of fragment.actions) {
+                if (typeof action.actionType === 'string' && action.actionType === 'SPAWN' || typeof action.actionType === 'number' && action.actionType === 0)
+                    waveDict[action.key] = (waveDict[action.key] ?? 0) + action.count;
+                // legacy number types:
+                // 0: spawn
+                // 1: skip??
+                // 2: tutorial/story popup
+                // 3: not used
+                // 4: change bgm
+                // 5: enemy intro popup
+                // 6: spawn npc/trap
+                // 7: stage effect (rumble)
+                // 8: environmental effect (blizzards)
+                // 9: some sss tutorial thing idk
+            }
+        }
+    }
 
-function buildTitleContainer(deploy: T.Deployable, rarity: boolean = true): Djs.ContainerBuilder {
-    const container = new Djs.ContainerBuilder().setAccentColor(embedColour);
+    const enemyArr = await api.all('enemy', { include: ['excel.enemyId', 'excel.enemyIndex', 'excel.name', 'excel.enemyLevel', 'levels.Value.level'] })
+    let enemyString = '', eliteString = '', bossString = '';
+    for (const enemyRef of stageData.enemyDbRefs) {
+        const enemy = enemyArr.find(e => e.excel.enemyId === enemyRef.id);
 
-    const titleSection = new Djs.SectionBuilder();
-    container.addSectionComponents(titleSection);
+        if (!enemy) continue;
+
+        let enemyLine = `${enemy.excel.enemyIndex} - ${enemy.excel.name}`;
+        if (enemy.levels.Value.length !== 1) {
+            enemyLine += ` (Lv${enemyRef.level + 1})`; // Add predefine level if enemy has more than one
+        }
+        if (waveDict.hasOwnProperty(enemy.excel.enemyId)) {
+            enemyLine += ` **x${waveDict[enemy.excel.enemyId]}**`; // Enemies like IS3 chests and OD rock slugs don't have predefined quantities, exclude these
+        }
+        enemyLine += '\n';
+
+        switch (enemy.excel.enemyLevel) {
+            case ('NORMAL'):
+                enemyString += enemyLine;
+                break;
+            case ('ELITE'):
+                eliteString += enemyLine;
+                break;
+            case ('BOSS'):
+                bossString += enemyLine;
+                break;
+        }
+    }
+
+    const section: Djs.TextDisplayBuilder[] = [];
+    if (enemyString !== '') {
+        const enemyText = new Djs.TextDisplayBuilder()
+            .setContent([
+                '**Enemies**',
+                enemyString
+            ].join('\n'));
+        section.push(enemyText);
+    }
+    if (eliteString !== '') {
+        const eliteText = new Djs.TextDisplayBuilder()
+            .setContent([
+                '**Elites**',
+                eliteString
+            ].join('\n'));
+        section.push(eliteText);
+    }
+    if (bossString !== '') {
+        const bossText = new Djs.TextDisplayBuilder()
+            .setContent([
+                '**Leaders**',
+                bossString
+            ].join('\n'));
+        section.push(bossText);
+    }
+
+    return section;
+}
+
+async function buildTitleSection(deploy: T.Deployable, rarity: boolean = true): Promise<Djs.SectionBuilder> {
+    const section = new Djs.SectionBuilder();
 
     let avatarThumb = rarity ? paths.myAssetUrl + `/operator/avatars/${deploy.id}.png` : paths.aceshipImageUrl + `/avatars/${deploy.id}.png`;
     if (deploy.id === 'char_1037_amiya3') avatarThumb = paths.myAssetUrl + `/operator/avatars/char_1037_amiya3_2.png`;
-    const titleThumb = new Djs.ThumbnailBuilder({ media: { url: avatarThumb } });
-    titleSection.setThumbnailAccessory(titleThumb);
+    if (await urlExists(avatarThumb)) {
+        const titleThumb = new Djs.ThumbnailBuilder({ media: { url: avatarThumb } });
+        section.setThumbnailAccessory(titleThumb);
+    }
 
     let description = removeStyleTags(deploy.data.description);
     if (deploy.data.trait) {
@@ -1862,16 +1972,16 @@ function buildTitleContainer(deploy: T.Deployable, rarity: boolean = true): Djs.
 
     const titleText = new Djs.TextDisplayBuilder()
         .setContent([
-            `## ${deploy.data.name}${rarity ? ` - ${'★'.repeat(gameConsts.rarity[deploy.data.rarity] + 1)}` : ''}`,
+            `## ${deploy.data.name} - ${'★'.repeat(gameConsts.rarity[deploy.data.rarity] + 1)}`,
             `**${gameConsts.professions[deploy.data.profession]} - ${deploy.archetype}**`,
             description
         ].join('\n'));
-    titleSection.addTextDisplayComponents(titleText);
+    section.addTextDisplayComponents(titleText);
 
-    return container;
+    return section;
 }
-function buildDeployableContainer(deploy: T.Deployable): Djs.ContainerBuilder {
-    const container = new Djs.ContainerBuilder().setAccentColor(embedColour);
+function buildDeployableComponents(deploy: T.Deployable): Djs.TextDisplayBuilder[] {
+    const components: Djs.TextDisplayBuilder[] = [];
 
     if (deploy.range) {
         const rangeText = new Djs.TextDisplayBuilder()
@@ -1879,7 +1989,7 @@ function buildDeployableContainer(deploy: T.Deployable): Djs.ContainerBuilder {
                 '**Range**',
                 buildRangeString(deploy.range)
             ].join('\n'));
-        container.addTextDisplayComponents(rangeText);
+        components.push(rangeText);
     }
 
     if (deploy.data.talents) {
@@ -1892,7 +2002,7 @@ function buildDeployableContainer(deploy: T.Deployable): Djs.ContainerBuilder {
                             `***${candidate.name}***`,
                             removeStyleTags(candidate.description)
                         ].join('\n'));
-                    container.addTextDisplayComponents(talentText);
+                    components.push(talentText);
                 }
             }
         }
@@ -1904,7 +2014,7 @@ function buildDeployableContainer(deploy: T.Deployable): Djs.ContainerBuilder {
                 '**Potentials**',
                 deploy.data.potentialRanks.map(potential => potential.description).join('\n')
             ].join('\n'));
-        container.addTextDisplayComponents(potentialText);
+        components.push(potentialText);
     }
 
     const trustStats = deploy.data.favorKeyFrames?.at(1).data ?? null;
@@ -1929,13 +2039,12 @@ function buildDeployableContainer(deploy: T.Deployable): Djs.ContainerBuilder {
             `⌛ **Redeploy**\t\t  ${redeploy}`,
             `⏱️ **Interval**\t\t\t ${atkInterval}`
         ].join('\n'));
-    container.addTextDisplayComponents(statText);
+    components.push(statText);
 
-    return container;
+    return components;
 }
-async function buildSkillContainer(deploy: T.Deployable, level: number): Promise<Djs.ContainerBuilder> {
-    const container = new Djs.ContainerBuilder().setAccentColor(embedColour);
-    const sections = [];
+async function buildSkillSections(deploy: T.Deployable, level: number): Promise<Djs.SectionBuilder[]> {
+    const sections: Djs.SectionBuilder[] = [];
 
     const seenSkills = new Set();
     for (let i = 0; i < deploy.skills.length; i++) {
@@ -1952,38 +2061,30 @@ async function buildSkillContainer(deploy: T.Deployable, level: number): Promise
         const skillThumb = new Djs.ThumbnailBuilder({ media: { url: paths.myAssetUrl + `/operator/skills/skill_icon_${skill.iconId ?? skill.skillId}.png` } });
         section.setThumbnailAccessory(skillThumb);
 
-        const skillText = new Djs.TextDisplayBuilder()
-            .setContent([
-                `### ${skill.levels[0].name}`,
-                `**${gameConsts.spTypes[skillLevel.spData.spType]} - ${gameConsts.skillTypes[skillLevel.skillType]}**`,
-                `***Initial:* ${skillLevel.spData.initSp} SP - *Cost:* ${skillLevel.spData.spCost} SP${(skillLevel.duration && skillLevel.duration > 0) ? ` - *Duration:* ${skillLevel.duration} sec` : ''}**`,
-                insertBlackboard(skillLevel.description, skillLevel.blackboard),
-            ].join('\n'));
-        section.addTextDisplayComponents(skillText);
-
+        const content = [
+            `### ${skillLevel.name}`,
+            `**${gameConsts.spTypes[skillLevel.spData.spType]} - ${gameConsts.skillTypes[skillLevel.skillType]}**`,
+            `***Initial:* ${skillLevel.spData.initSp} SP - *Cost:* ${skillLevel.spData.spCost} SP${(skillLevel.duration && skillLevel.duration > 0) ? ` - *Duration:* ${skillLevel.duration} sec` : ''}**`,
+            insertBlackboard(skillLevel.description, skillLevel.blackboard)
+        ];
         if (skillLevel.rangeId) {
             const range = await api.single('range', { query: skillLevel.rangeId });
-            const rangeText = new Djs.TextDisplayBuilder()
-                .setContent([
-                    '**Range**',
-                    buildRangeString(range)
-                ].join('\n'));
-            section.addTextDisplayComponents(rangeText);
+            content.push(
+                '',
+                '**Range**',
+                buildRangeString(range)
+            );
         }
+
+        const skillText = new Djs.TextDisplayBuilder()
+            .setContent(content.join('\n'));
+        section.addTextDisplayComponents(skillText);
     }
 
-    for (const section of sections) {
-        container.addSectionComponents(section);
-        if (section !== sections[sections.length - 1]) {
-            container.addSeparatorComponents(new Djs.SeparatorBuilder().setSpacing(Djs.SeparatorSpacingSize.Large));
-        }
-    }
-
-    return container;
+    return sections;
 }
-function buildModuleContainer(op: T.Operator, level: number): Djs.ContainerBuilder {
-    const container = new Djs.ContainerBuilder().setAccentColor(embedColour);
-    const sections = [];
+function buildModuleSections(op: T.Operator, level: number): Djs.SectionBuilder[] {
+    const sections: Djs.SectionBuilder[] = [];
 
     for (let i = 0; i < op.modules.length; i++) {
         const module = op.modules[i];
@@ -2028,6 +2129,7 @@ function buildModuleContainer(op: T.Operator, level: number): Djs.ContainerBuild
         }
         content.push(
             '',
+            '**Stats**',
             module.data.phases[level].attributeBlackboard.map(attribute => `${attribute.key.toUpperCase()} ${attribute.value > 0 ? '+' : ''}${attribute.value}`).join('\n')
         );
 
@@ -2036,17 +2138,9 @@ function buildModuleContainer(op: T.Operator, level: number): Djs.ContainerBuild
         section.addTextDisplayComponents(moduleText);
     }
 
-    for (const section of sections) {
-        container.addSectionComponents(section);
-        if (section !== sections[sections.length - 1]) {
-            container.addSeparatorComponents(new Djs.SeparatorBuilder().setSpacing(Djs.SeparatorSpacingSize.Large));
-        }
-    }
-
-    return container;
+    return sections;
 }
-function buildBaseContainer(op: T.Operator): Djs.ContainerBuilder {
-    const container = new Djs.ContainerBuilder().setAccentColor(embedColour);
+function buildBaseSections(op: T.Operator): Djs.SectionBuilder[] {
     const sections = [];
 
     for (const base of op.bases) {
@@ -2064,25 +2158,16 @@ function buildBaseContainer(op: T.Operator): Djs.ContainerBuilder {
         section.addTextDisplayComponents(baseText);
     }
 
-    for (const section of sections) {
-        container.addSectionComponents(section);
-        if (section !== sections[sections.length - 1]) {
-            container.addSeparatorComponents(new Djs.SeparatorBuilder().setSpacing(Djs.SeparatorSpacingSize.Large));
-        }
-    }
-
-    return container;
+    return sections;
 }
-async function buildCostContainer(op: T.Operator, level: number): Promise<Djs.ContainerBuilder> {
+async function buildCostSections(op: T.Operator, level: number): Promise<Djs.SectionBuilder[]> {
     const itemArr = await api.all('item', { include: ['data'] });
 
-    const container = new Djs.ContainerBuilder().setAccentColor(embedColour);
     const sections = [];
 
     switch (level) {
         default:
         case 0: {
-
             for (let i = 0; i < op.data.phases.length; i++) {
                 if (op.data.phases[i].evolveCost === null) continue;
 
@@ -2098,12 +2183,7 @@ async function buildCostContainer(op: T.Operator, level: number): Promise<Djs.Co
                         buildCostString(op.data.phases[i].evolveCost, itemArr).slice(0, -1),
                         `${getItemEmoji('GOLD')} LMD **x${gameConsts.evolveGoldCost[gameConsts.rarity[op.data.rarity]][i - 1]}**`
                     ].join('\n'));
-                if (section.components.length < 3) {
-                    section.addTextDisplayComponents(costText);
-                }
-                else {
-                    container.addTextDisplayComponents(costText);
-                }
+                section.addTextDisplayComponents(costText);
             }
             break;
         }
@@ -2142,12 +2222,7 @@ async function buildCostContainer(op: T.Operator, level: number): Promise<Djs.Co
                             return `**Mastery ${j + 1}**\n${buildCostString(cond.levelUpCost, itemArr).slice(0, -1)}`;
                         }),
                     ].join('\n'));
-                if (section.components.length < 3) {
-                    section.addTextDisplayComponents(costText);
-                }
-                else {
-                    container.addTextDisplayComponents(costText);
-                }
+                section.addTextDisplayComponents(costText);
             }
             break;
         }
@@ -2168,31 +2243,16 @@ async function buildCostContainer(op: T.Operator, level: number): Promise<Djs.Co
                             return `**Level ${key}**\n${buildCostString(module.info.itemCost[key], itemArr).slice(0, -1)}`;
                         }),
                     ].join('\n'));
-                if (section.components.length < 3) {
-                    section.addTextDisplayComponents(costText);
-                }
-                else {
-                    container.addTextDisplayComponents(costText);
-                }
+                section.addTextDisplayComponents(costText);
             }
             break;
         }
     }
 
-    for (const section of sections) {
-        container.addSectionComponents(section);
-        if (section !== sections[sections.length - 1]) {
-            container.addSeparatorComponents(new Djs.SeparatorBuilder().setSpacing(Djs.SeparatorSpacingSize.Large));
-        }
-    }
-
-    return container;
+    return sections;
 }
-function buildArtContainer(op: T.Operator, level: number): Djs.ContainerBuilder {
-    const container = new Djs.ContainerBuilder().setAccentColor(embedColour);
-
+function buildOutfitComponents(op: T.Operator, level: number): { section: Djs.SectionBuilder, gallery: Djs.MediaGalleryBuilder } {
     const section = new Djs.SectionBuilder();
-    container.addSectionComponents(section);
 
     const displaySkin = op.skins[level].displaySkin;
     switch (displaySkin.skinGroupId) {
@@ -2238,12 +2298,64 @@ function buildArtContainer(op: T.Operator, level: number): Djs.ContainerBuilder 
         section.addTextDisplayComponents(artistText);
     }
 
-    const artGallery = new Djs.MediaGalleryBuilder()
-    container.addMediaGalleryComponents(artGallery);
-
-    artGallery.addItems(new Djs.MediaGalleryItemBuilder()
+    const gallery = new Djs.MediaGalleryBuilder()
+    gallery.addItems(new Djs.MediaGalleryItemBuilder()
         .setURL(paths.myAssetUrl + `/operator/arts/${encodeURIComponent(op.skins[level].portraitId)}.png`)
     )
 
-    return container;
+    return { section, gallery };
+}
+async function buildParadoxComponents(op: T.Operator, level: number): Promise<{ text: Djs.TextDisplayBuilder[], gallery: Djs.MediaGalleryBuilder, galleryExists: boolean }> {
+    const text: Djs.TextDisplayBuilder[] = [];
+
+    const stageInfo = op.paradox.excel;
+    const stageData = op.paradox.levels;
+
+    const titleText = new Djs.TextDisplayBuilder()
+        .setContent([
+            `### ${stageInfo.name}`,
+            removeStyleTags(stageInfo.description)
+        ].join('\n'));
+    text.push(titleText);
+
+    const enemyComponents = await buildStageEnemyComponents(stageData);
+    text.push(...enemyComponents);
+
+    const imagePath = paths.myAssetUrl + `/stages/${stageInfo.stageId}.png`;
+    switch (level) {
+        default:
+        case 0: {
+            if (await urlExists(imagePath)) {
+                const gallery = new Djs.MediaGalleryBuilder()
+                    .addItems(new Djs.MediaGalleryItemBuilder()
+                        .setURL(imagePath)
+                    );
+                return { text, gallery, galleryExists: true }
+            }
+            else {
+                const diagram = buildStageDiagramFields(stageData);
+                const diagramText = new Djs.TextDisplayBuilder()
+                    .setContent([
+                        '**Map**',
+                        diagram[0].value,
+                        '**Legend**',
+                        diagram[1].value
+                    ].join('\n'));
+                text.push(diagramText);
+                return { text, gallery: null, galleryExists: false }
+            }
+        }
+        case 1: {
+            const diagram = buildStageDiagramFields(stageData);
+            const diagramText = new Djs.TextDisplayBuilder()
+                .setContent([
+                    '**Map**',
+                    diagram[0].value,
+                    '**Legend**',
+                    diagram[1].value
+                ].join('\n'));
+            text.push(diagramText);
+            return { text, gallery: null, galleryExists: await urlExists(imagePath) }
+        }
+    }
 }
