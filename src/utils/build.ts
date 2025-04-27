@@ -329,7 +329,7 @@ export async function buildDefineListMessage(): Promise<Djs.BaseMessageOptions> 
     return { embeds: [embed] };
 }
 export async function buildDeployMessage(deploy: T.Deployable, type: number, level: number) {
-    const container = new Djs.ContainerBuilder();
+    const container = new Djs.ContainerBuilder().setAccentColor(embedColour);
 
     const titleSection = await buildTitleSection(deploy, false);
     container.addSectionComponents(titleSection);
@@ -652,7 +652,7 @@ export async function buildInfoMessage(op: T.Operator, type: number, level: numb
         }
     };
 
-    const container = new Djs.ContainerBuilder();
+    const container = new Djs.ContainerBuilder().setAccentColor(embedColour);
 
     const titleSection = await buildTitleSection(op);
     container.addSectionComponents(titleSection);
