@@ -1,11 +1,11 @@
 import { AutocompleteInteraction, ButtonInteraction, CacheType, ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
 import * as api from '../utils/api';
 import { autocompleteOperator } from '../utils/autocomplete';
-import { buildInfoMessageV2 } from '../utils/build';
+import { buildInfoMessage } from '../utils/build';
 
-export default class InfoCommandV2 {
+export default class InfoCommand {
     data = new SlashCommandBuilder()
-        .setName('infov2')
+        .setName('info')
         .setDescription('Show an operator\'s information and attributes')
         .addStringOption(option =>
             option.setName('name')
@@ -13,10 +13,10 @@ export default class InfoCommandV2 {
                 .setRequired(true)
                 .setAutocomplete(true)
         ) as SlashCommandBuilder;
-    name = 'InfoV2';
+    name = 'Info';
     description = ['Show information on an operator, including talents, potentials, stats, skills, and trust bonus. Further information on skills, modules, art, base skills, and material costs can be viewed by clicking their respective buttons.'];
     usage = [
-        '`/infov2 [operator]`'
+        '`/info [operator]`'
     ];
     async autocomplete(interaction: AutocompleteInteraction) {
         const value = interaction.options.getFocused().toLowerCase();
@@ -32,7 +32,7 @@ export default class InfoCommandV2 {
 
         await interaction.deferReply();
 
-        const operatorEmbed = await buildInfoMessageV2(op, 0, 0);
+        const operatorEmbed = await buildInfoMessage(op, 0, 0);
         return await interaction.editReply(operatorEmbed);
     }
     async buttonResponse(interaction: ButtonInteraction<CacheType>, idArr: string[]) {
@@ -40,7 +40,7 @@ export default class InfoCommandV2 {
         const page = parseInt(idArr[2]);
         const level = parseInt(idArr[3]);
 
-        const infoEmbed = await buildInfoMessageV2(op, page, level);
+        const infoEmbed = await buildInfoMessage(op, page, level);
         await interaction.update(infoEmbed);
     }
 }

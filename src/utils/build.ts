@@ -328,7 +328,7 @@ export async function buildDefineListMessage(): Promise<Djs.BaseMessageOptions> 
 
     return { embeds: [embed] };
 }
-export async function buildDeployMessageV2(deploy: T.Deployable, type: number, level: number) {
+export async function buildDeployMessage(deploy: T.Deployable, type: number, level: number) {
     const containerArr = [buildTitleContainer(deploy, false)];
 
     switch (type) {
@@ -352,13 +352,13 @@ export async function buildDeployMessageV2(deploy: T.Deployable, type: number, l
             container.addActionRowComponents(skillAction);
 
             for (let i = Math.max(0, deploy.skills[0].levels.length - 4); i < deploy.skills[0].levels.length; i++) {
-                console.log(createCustomId('deployv2', deploy.id, type, i, 'skill'))
+                console.log(createCustomId('deploy', deploy.id, type, i, 'skill'))
                 const button = new Djs.ButtonBuilder()
-                    .setCustomId(createCustomId('deployv2', deploy.id, type, i, 'skill'))
+                    .setCustomId(createCustomId('deploy', deploy.id, type, i, 'skill'))
                     .setLabel(gameConsts.skillLevels[i])
                     .setStyle(Djs.ButtonStyle.Secondary);
                 if (i === level)
-                    button.setCustomId('deployv2_level_current')
+                    button.setCustomId('deploy_level_current')
                         .setStyle(Djs.ButtonStyle.Primary)
                         .setDisabled(true);
                 skillAction.addComponents(button);
@@ -374,11 +374,11 @@ export async function buildDeployMessageV2(deploy: T.Deployable, type: number, l
     for (let i = 0; i < typeLabels.length; i++) {
         for (let j = 0; j < typeLabels[i].length; j++) {
             const button = new Djs.ButtonBuilder()
-                .setCustomId(createCustomId('deployv2', deploy.id, i * 5 + j, 0))
+                .setCustomId(createCustomId('deploy', deploy.id, i * 5 + j, 0))
                 .setLabel(typeLabels[i][j])
                 .setStyle(Djs.ButtonStyle.Primary);
             if (i * 5 + j === type)
-                button.setCustomId('deployv2_type_current')
+                button.setCustomId('deploy_type_current')
                     .setStyle(Djs.ButtonStyle.Primary)
                     .setDisabled(true);
             rowArr[i].addComponents(button);
@@ -618,7 +618,7 @@ export async function buildHelpListMessage(): Promise<Djs.BaseMessageOptions> {
 
     return { embeds: [embed] };
 }
-export async function buildInfoMessageV2(op: T.Operator, type: number, level: number) {
+export async function buildInfoMessage(op: T.Operator, type: number, level: number) {
     const containerArr = [buildTitleContainer(op)];
 
     switch (type) {
@@ -643,11 +643,11 @@ export async function buildInfoMessageV2(op: T.Operator, type: number, level: nu
 
             for (let i = 6; i < op.skills[0].levels.length; i++) {
                 const button = new Djs.ButtonBuilder()
-                    .setCustomId(createCustomId('infov2', op.id, type, i, 'skill'))
+                    .setCustomId(createCustomId('info', op.id, type, i, 'skill'))
                     .setLabel(gameConsts.skillLevels[i])
                     .setStyle(Djs.ButtonStyle.Secondary);
                 if (i === level)
-                    button.setCustomId('infov2_level_current')
+                    button.setCustomId('info_level_current')
                         .setStyle(Djs.ButtonStyle.Primary)
                         .setDisabled(true);
                 skillAction.addComponents(button);
@@ -665,11 +665,11 @@ export async function buildInfoMessageV2(op: T.Operator, type: number, level: nu
 
             for (let i = 0; i < 3; i++) {
                 const button = new Djs.ButtonBuilder()
-                    .setCustomId(createCustomId('infov2', op.id, type, i, 'module'))
+                    .setCustomId(createCustomId('info', op.id, type, i, 'module'))
                     .setLabel(`Level ${i + 1}`)
                     .setStyle(Djs.ButtonStyle.Secondary);
                 if (i === level)
-                    button.setCustomId('infov2_level_current')
+                    button.setCustomId('info_level_current')
                         .setStyle(Djs.ButtonStyle.Primary)
                         .setDisabled(true);
                 moduleAction.addComponents(button);
@@ -696,11 +696,11 @@ export async function buildInfoMessageV2(op: T.Operator, type: number, level: nu
 
             for (let i = 0; i < 4; i++) {
                 const button = new Djs.ButtonBuilder()
-                    .setCustomId(createCustomId('infov2', op.id, type, i, 'cost'))
+                    .setCustomId(createCustomId('info', op.id, type, i, 'cost'))
                     .setLabel(costLabels[i])
                     .setStyle(Djs.ButtonStyle.Secondary);
                 if (i === level)
-                    button.setCustomId('infov2_level_current')
+                    button.setCustomId('info_level_current')
                         .setStyle(Djs.ButtonStyle.Primary)
                         .setDisabled(true);
                 costActions.addComponents(button);
@@ -729,11 +729,11 @@ export async function buildInfoMessageV2(op: T.Operator, type: number, level: nu
             for (let i = 0; i < op.skins.length; i++) {
                 const skinGroup = op.skins[i].displaySkin.skinGroupName;
                 const button = new Djs.ButtonBuilder()
-                    .setCustomId(createCustomId('infov2', op.id, type, i, 'art'))
+                    .setCustomId(createCustomId('info', op.id, type, i, 'art'))
                     .setLabel(skinGroup)
                     .setStyle(Djs.ButtonStyle.Secondary);
                 if (i === level)
-                    button.setCustomId('infov2_level_current')
+                    button.setCustomId('info_level_current')
                         .setStyle(Djs.ButtonStyle.Primary)
                         .setDisabled(true);
                 if (op.skins[i].battleSkin.skinOrPrefabId === 'DefaultSkin') {
@@ -760,11 +760,11 @@ export async function buildInfoMessageV2(op: T.Operator, type: number, level: nu
     for (let i = 0; i < typeLabels.length; i++) {
         for (let j = 0; j < typeLabels[i].length; j++) {
             const button = new Djs.ButtonBuilder()
-                .setCustomId(createCustomId('infov2', op.id, i * 5 + j, 0))
+                .setCustomId(createCustomId('info', op.id, i * 5 + j, 0))
                 .setLabel(typeLabels[i][j])
                 .setStyle(Djs.ButtonStyle.Primary);
             if (i * 5 + j === type)
-                button.setCustomId('infov2_type_current')
+                button.setCustomId('info_type_current')
                     .setStyle(Djs.ButtonStyle.Primary)
                     .setDisabled(true);
             rowArr[i].addComponents(button);
@@ -1712,7 +1712,7 @@ function buildEventField(event: T.GameEvent): Djs.EmbedField {
     }
     return { name: event.name, value: eventString, inline: false };
 }
-function buildRangeField(range: T.GridRange): Djs.EmbedField {
+function buildRangeString(range: T.GridRange): string {
     let left = 0, right = 0, top = 0, bottom = 0;
     for (const square of range.grids) {
         if (square.col < left)
@@ -1753,7 +1753,7 @@ function buildRangeField(range: T.GridRange): Djs.EmbedField {
         }
         rangeString += '\n';
     }
-    return { name: 'Range', value: rangeString, inline: false };
+    return rangeString;
 }
 function buildStageDiagramFields(stageData: T.StageData): Djs.EmbedField[] {
     const map = stageData.mapData.map;
@@ -1877,7 +1877,7 @@ function buildDeployableContainer(deploy: T.Deployable): Djs.ContainerBuilder {
         const rangeText = new Djs.TextDisplayBuilder()
             .setContent([
                 '**Range**',
-                buildRangeField(deploy.range).value
+                buildRangeString(deploy.range)
             ].join('\n'));
         container.addTextDisplayComponents(rangeText);
     }
@@ -1966,7 +1966,7 @@ async function buildSkillContainer(deploy: T.Deployable, level: number): Promise
             const rangeText = new Djs.TextDisplayBuilder()
                 .setContent([
                     '**Range**',
-                    buildRangeField(range).value
+                    buildRangeString(range)
                 ].join('\n'));
             section.addTextDisplayComponents(rangeText);
         }

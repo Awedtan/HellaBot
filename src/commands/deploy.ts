@@ -2,11 +2,11 @@ import { AutocompleteInteraction, ButtonInteraction, ChatInputCommandInteraction
 import Command from '../structures/Command';
 import * as api from '../utils/api';
 import { autocompleteDeployable } from '../utils/autocomplete';
-import { buildDeployMessageV2 } from '../utils/build';
+import { buildDeployMessage } from '../utils/build';
 
-export default class DeployCommandV2 implements Command {
+export default class DeployCommand implements Command {
     data = new SlashCommandBuilder()
-        .setName('deployv2')
+        .setName('deploy')
         .setDescription('Show an deployable\'s information and attributes')
         .addStringOption(option =>
             option.setName('name')
@@ -14,10 +14,10 @@ export default class DeployCommandV2 implements Command {
                 .setRequired(true)
                 .setAutocomplete(true)
         ) as SlashCommandBuilder;
-    name = 'DeployV2';
+    name = 'Deploy';
     description = ['Show information on a deployable.'];
     usage = [
-        '`/deployv2 [deployable]`'
+        '`/deploy [deployable]`'
     ];
     async autocomplete(interaction: AutocompleteInteraction) {
         const value = interaction.options.getFocused().toLowerCase();
@@ -33,7 +33,7 @@ export default class DeployCommandV2 implements Command {
 
         await interaction.deferReply();
 
-        const deployEmbed = await buildDeployMessageV2(deploy, 0, 0,);
+        const deployEmbed = await buildDeployMessage(deploy, 0, 0,);
         return await interaction.editReply(deployEmbed);
     }
     async buttonResponse(interaction: ButtonInteraction, idArr: string[]) {
@@ -41,7 +41,7 @@ export default class DeployCommandV2 implements Command {
         const type = parseInt(idArr[2]);
         const level = parseInt(idArr[3]);
 
-        const deployEmbed = await buildDeployMessageV2(deploy, type, level);
+        const deployEmbed = await buildDeployMessage(deploy, type, level);
         return await interaction.update(deployEmbed);
     }
 }
