@@ -1,8 +1,8 @@
-import { AutocompleteInteraction, ButtonInteraction, ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
+import { AutocompleteInteraction, ButtonInteraction, CacheType, ChatInputCommandInteraction, SlashCommandBuilder, StringSelectMenuInteraction } from 'discord.js';
 import Command from '../structures/Command';
 import * as api from '../utils/api';
 import { autocompleteDeployable } from '../utils/autocomplete';
-import { buildDeployMessage } from '../utils/build';
+import { buildDeployMessage, buildInfoMessage } from '../utils/build';
 
 export default class DeployCommand implements Command {
     data = new SlashCommandBuilder()
@@ -43,5 +43,13 @@ export default class DeployCommand implements Command {
 
         const deployEmbed = await buildDeployMessage(deploy, type, level);
         return await interaction.update(deployEmbed);
+    }
+    async selectResponse(interaction: StringSelectMenuInteraction<CacheType>, idArr: string[]) {
+        const deploy = await api.single('deployable', { query: idArr[1] });
+        const level = parseInt(idArr[3]);
+        const type = parseInt(interaction.values[0]);
+
+        const infoEmbed = await buildDeployMessage(deploy, type, level);
+        await interaction.update(infoEmbed);
     }
 }

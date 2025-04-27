@@ -329,6 +329,17 @@ export async function buildDefineListMessage(): Promise<Djs.BaseMessageOptions> 
     return { embeds: [embed] };
 }
 export async function buildDeployMessage(deploy: T.Deployable, type: number, level: number) {
+    const types = {
+        stats: {
+            label: 'Stats', index: 0, value: '0',
+            disabled: false
+        },
+        skills: {
+            label: 'Skills', index: 1, value: '1',
+            disabled: !deploy.skills || !deploy.skills.length || deploy.skills.every(s => !s)
+        }
+    };
+
     const container = new Djs.ContainerBuilder().setAccentColor(embedColour);
 
     const titleSection = await buildTitleSection(deploy, false);
@@ -336,20 +347,17 @@ export async function buildDeployMessage(deploy: T.Deployable, type: number, lev
     container.addSeparatorComponents(new Djs.SeparatorBuilder().setSpacing(Djs.SeparatorSpacingSize.Large));
 
     switch (type) {
-        case 0: {
+        default:
+        case types.stats.index: {
             const components = buildDeployableComponents(deploy);
             container.addTextDisplayComponents(components);
-            container.addSeparatorComponents(new Djs.SeparatorBuilder().setSpacing(Djs.SeparatorSpacingSize.Large));
             break;
         }
-        case 1: {
+        case types.skills.index: {
             if (level === 0) level = Math.max(0, deploy.skills[0].levels.length - 4);
 
             const sections = await buildSkillSections(deploy, level);
-            for (const section of sections) {
-                container.addSectionComponents(section);
-                container.addSeparatorComponents(new Djs.SeparatorBuilder().setSpacing(Djs.SeparatorSpacingSize.Large));
-            }
+            container.addSectionComponents(sections);
 
             const skillAction = new Djs.ActionRowBuilder<Djs.ButtonBuilder>();
             container.addActionRowComponents(skillAction);
@@ -358,10 +366,9 @@ export async function buildDeployMessage(deploy: T.Deployable, type: number, lev
                 const button = new Djs.ButtonBuilder()
                     .setCustomId(createCustomId('deploy', deploy.id, type, i, 'skill'))
                     .setLabel(gameConsts.skillLevels[i])
-                    .setStyle(Djs.ButtonStyle.Secondary);
+                    .setStyle(Djs.ButtonStyle.Primary);
                 if (i === level)
                     button.setCustomId('deploy_level_current')
-                        .setStyle(Djs.ButtonStyle.Primary)
                         .setDisabled(true);
                 skillAction.addComponents(button);
             }
@@ -369,26 +376,23 @@ export async function buildDeployMessage(deploy: T.Deployable, type: number, lev
         }
     }
 
-    const typeLabels = [['Stats', 'Skills']];
-    const rowArr = [new Djs.ActionRowBuilder<Djs.ButtonBuilder>()];
-    container.addActionRowComponents(...rowArr);
+    container.addSeparatorComponents(new Djs.SeparatorBuilder().setSpacing(Djs.SeparatorSpacingSize.Large));
 
-    for (let i = 0; i < typeLabels.length; i++) {
-        for (let j = 0; j < typeLabels[i].length; j++) {
-            const button = new Djs.ButtonBuilder()
-                .setCustomId(createCustomId('deploy', deploy.id, i * 5 + j, 0))
-                .setLabel(typeLabels[i][j])
-                .setStyle(Djs.ButtonStyle.Primary);
-            if (i * 5 + j === type)
-                button.setCustomId('deploy_type_current')
-                    .setStyle(Djs.ButtonStyle.Primary)
-                    .setDisabled(true);
-            rowArr[i].addComponents(button);
-        }
+    const actionRow = new Djs.ActionRowBuilder<Djs.StringSelectMenuBuilder>();
+    container.addActionRowComponents(actionRow);
+
+    const typeSelect = new Djs.StringSelectMenuBuilder()
+        .setCustomId(createCustomId('deploy', deploy.id, type, 0));
+    actionRow.addComponents(typeSelect);
+
+    for (const typeLabel of Object.values(types)) {
+        if (typeLabel.disabled) continue;
+        const option = new Djs.StringSelectMenuOptionBuilder()
+            .setLabel(typeLabel.label)
+            .setValue(typeLabel.value)
+            .setDefault(type === typeLabel.index);
+        typeSelect.addOptions(option);
     }
-    if (!deploy.skills || deploy.skills.filter(s => s).length === 0)
-        rowArr[0].components[1].setStyle(Djs.ButtonStyle.Secondary)
-            .setDisabled(true);
 
     return { components: [container], flags: Djs.MessageFlags.IsComponentsV2 | Djs.MessageFlags.Ephemeral }; // remove ephemeral once patched
 }
@@ -1902,10 +1906,11 @@ async function buildTitleSection(deploy: T.Deployable, rarity: boolean = true): 
 
     let avatarThumb = rarity ? paths.myAssetUrl + `/operator/avatars/${deploy.id}.png` : paths.aceshipImageUrl + `/avatars/${deploy.id}.png`;
     if (deploy.id === 'char_1037_amiya3') avatarThumb = paths.myAssetUrl + `/operator/avatars/char_1037_amiya3_2.png`;
-    if (await urlExists(avatarThumb)) {
-        const titleThumb = new Djs.ThumbnailBuilder({ media: { url: avatarThumb } });
-        section.setThumbnailAccessory(titleThumb);
-    }
+    // sections MUST have a thumbnail/button, for now add it in even if it doesnt exist
+    // if (await urlExists(avatarThumb)) {
+    const titleThumb = new Djs.ThumbnailBuilder({ media: { url: avatarThumb } });
+    section.setThumbnailAccessory(titleThumb);
+    // }
 
     let description = removeStyleTags(deploy.data.description);
     if (deploy.data.trait) {
