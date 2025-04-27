@@ -917,61 +917,6 @@ export async function buildNewMessage(): Promise<Djs.BaseMessageOptions> {
 
     return { embeds: [embed] };
 }
-export async function buildParadoxMessage(op: T.Operator, page: number): Promise<Djs.BaseMessageOptions> {
-    const paradox = op.paradox;
-    const stageInfo = paradox.excel;
-    const stageData = paradox.levels;
-
-    const authorField = buildAuthorField(op);
-    const title = `Paradox Simulation - ${stageInfo.name}`;
-    const description = removeStyleTags(stageInfo.description);
-
-    const embed = new Djs.EmbedBuilder()
-        .setColor(embedColour)
-        .setAuthor(authorField)
-        .setTitle(title)
-        .setDescription(description);
-
-    embed.addFields(await buildStageEnemyFields(stageData));
-
-    const imageButton = new Djs.ButtonBuilder()
-        .setCustomId(createCustomId('paradox', stageInfo.charId, 0))
-        .setLabel('Preview')
-        .setStyle(Djs.ButtonStyle.Primary);
-    const diagramButton = new Djs.ButtonBuilder()
-        .setCustomId(createCustomId('paradox', stageInfo.charId, 1))
-        .setLabel('Diagram')
-        .setStyle(Djs.ButtonStyle.Primary);
-    const buttonRow = new Djs.ActionRowBuilder<Djs.ButtonBuilder>().addComponents(imageButton, diagramButton);
-
-    switch (page) {
-        case 0:
-            imageButton.setDisabled(true);
-            break;
-        case 1:
-            diagramButton.setDisabled(true);
-            break;
-    }
-
-    if (page === 0) {
-        const imagePath = paths.myAssetUrl + `/stages/${stageInfo.stageId}.png`;
-        if (await urlExists(imagePath)) {
-            embed.setImage(imagePath)
-
-            return { embeds: [embed], components: [buttonRow] };
-        }
-        else {
-            embed.addFields(buildStageDiagramFields(stageData));
-
-            return { embeds: [embed] };
-        }
-    }
-    else {
-        embed.addFields(buildStageDiagramFields(stageData));
-
-        return { embeds: [embed], components: [buttonRow] };
-    }
-}
 export async function buildPingMessage(): Promise<Djs.BaseMessageOptions> {
     const embed = new Djs.EmbedBuilder()
         .setColor(embedColour)
