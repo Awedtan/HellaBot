@@ -47,50 +47,6 @@ function insertBlackboard(text: string, blackboard: T.Blackboard[]) {
     return textArr.join('').replaceAll('-`', '`-').replaceAll('+`', '`+');
 }
 
-export async function buildArtMessage(op: T.Operator, page: number): Promise<Djs.BaseMessageOptions> {
-    const embed = buildArtEmbed(op, page);
-
-    const rowOne = new Djs.ActionRowBuilder();
-    const rowTwo = new Djs.ActionRowBuilder();
-    const components = [];
-
-    for (let i = 0; i < op.skins.length; i++) {
-        const skinGroup = op.skins[i].displaySkin.skinGroupName;
-        const button = new Djs.ButtonBuilder()
-            .setCustomId(createCustomId('art', op.id, i))
-            .setLabel(skinGroup)
-            .setStyle(Djs.ButtonStyle.Primary);
-        if (i === page)
-            button.setDisabled(true);
-        if (op.skins[i].battleSkin.skinOrPrefabId === 'DefaultSkin') {
-            rowOne.addComponents(button);
-            components[0] = rowOne;
-        }
-        else {
-            rowTwo.addComponents(button);
-            components[1] = rowTwo;
-        }
-    }
-
-    return { embeds: [embed], components: components };
-}
-export async function buildBaseMessage(op: T.Operator, page: number): Promise<Djs.BaseMessageOptions> {
-    const baseInfo = op.bases[page].condition;
-    const base = op.bases[page].skill;
-
-    const authorField = buildAuthorField(op);
-    const title = `${base.buffName} - ${gameConsts.eliteLevels[baseInfo.cond.phase]} Lv${baseInfo.cond.level}`;
-    const description = removeStyleTags(base.description);
-
-    const embed = new Djs.EmbedBuilder()
-        .setColor(embedColour)
-        .setAuthor(authorField)
-        .setTitle(title)
-        .setThumbnail(paths.myAssetUrl + `/operator/bases/${base.skillIcon}.png`)
-        .setDescription(description);
-
-    return { embeds: [embed] };
-}
 export async function buildCCMessage(stage: T.CCStageLegacy, page: number): Promise<Djs.BaseMessageOptions> {
     const stageInfo = stage.const;
     const stageData = stage.levels;
@@ -282,62 +238,6 @@ export async function buildCCBLegacySelectMessage(season: string): Promise<Djs.B
 
     return { content: `Please select a stage from CCB#${season} below:`, components: [componentRow] };
 }
-export async function buildCostMessage(op: T.Operator, page: number): Promise<Djs.BaseMessageOptions> {
-    const embed = await buildCostEmbed(op, page);
-
-    const eliteButton = new Djs.ButtonBuilder()
-        .setCustomId(createCustomId('costs', op.id, 0))
-        .setLabel('Promotions')
-        .setStyle(Djs.ButtonStyle.Primary);
-    const skillButton = new Djs.ButtonBuilder()
-        .setCustomId(createCustomId('costs', op.id, 1))
-        .setLabel('Skills')
-        .setStyle(Djs.ButtonStyle.Primary);
-    const masteryButton = new Djs.ButtonBuilder()
-        .setCustomId(createCustomId('costs', op.id, 2))
-        .setLabel('Masteries')
-        .setStyle(Djs.ButtonStyle.Primary);
-    const moduleButton = new Djs.ButtonBuilder()
-        .setCustomId(createCustomId('costs', op.id, 3))
-        .setLabel('Modules')
-        .setStyle(Djs.ButtonStyle.Primary);
-    const buttonRow = new Djs.ActionRowBuilder<Djs.ButtonBuilder>().addComponents(eliteButton, skillButton, masteryButton, moduleButton);
-
-    if (op.data.skills.length == 0) {
-        skillButton.setStyle(Djs.ButtonStyle.Secondary);
-        skillButton.setDisabled(true);
-    }
-    if (gameConsts.rarity[op.data.rarity] <= 2) {
-        masteryButton.setStyle(Djs.ButtonStyle.Secondary);
-        masteryButton.setDisabled(true);
-    }
-    if (op.modules.length == 0) {
-        moduleButton.setStyle(Djs.ButtonStyle.Secondary);
-        moduleButton.setDisabled(true);
-    }
-
-    switch (page) {
-        default:
-        case 0: {
-            eliteButton.setDisabled(true);
-            break;
-        }
-        case 1: {
-            skillButton.setDisabled(true);
-            break;
-        }
-        case 2: {
-            masteryButton.setDisabled(true);
-            break;
-        }
-        case 3: {
-            moduleButton.setDisabled(true);
-            break;
-        }
-    }
-
-    return { embeds: [embed], components: [buttonRow] };
-}
 export async function buildCurrentMessage(): Promise<Djs.BaseMessageOptions> {
     const skipLoginEvents = ['LOGIN_ONLY', 'CHECKIN_ONLY', 'FLOAT_PARADE', 'PRAY_ONLY', 'GRID_GACHA_V2', 'GRID_GACHA', 'BLESS_ONLY', 'CHECKIN_ACCESS'];
 
@@ -428,59 +328,67 @@ export async function buildDefineListMessage(): Promise<Djs.BaseMessageOptions> 
 
     return { embeds: [embed] };
 }
-export async function buildDeployMessage(deploy: T.Deployable, type: number, page, level): Promise<Djs.BaseMessageOptions> {
-    const embedArr = [], fileArr = [], rowArr = [];
-    const getMessageComponents = (message: Djs.BaseMessageOptions) => {
-        if (message.embeds) embedArr.push(...message.embeds);
-        if (message.files) fileArr.push(...message.files);
-        if (message.components) rowArr.push(...message.components);
-    };
+export async function buildDeployMessageV2(deploy: T.Deployable, type: number, level: number) {
+    const containerArr = [buildTitleContainer(deploy, false)];
 
-    const embed = buildDeployableEmbed(deploy, false);
-    embedArr.push(embed);
-
-    const typeLabels = ['Skills'];
-    const typeRow = new Djs.ActionRowBuilder<Djs.ButtonBuilder>();
-
-    for (let i = 0; i < 1; i++) {
-        const button = new Djs.ButtonBuilder()
-            .setCustomId(createCustomId('deploy', deploy.id, i + 1, 0, 0))
-            .setLabel(typeLabels[i])
-            .setStyle(Djs.ButtonStyle.Success);
-        if (i + 1 === type)
-            button.setCustomId('deploy_type_current')
-                .setDisabled(true);
-        typeRow.addComponents(button);
-    }
-    if (!deploy.skills || deploy.skills.length === 0)
-        typeRow.components[0].setStyle(Djs.ButtonStyle.Secondary)
-            .setDisabled(true);
     switch (type) {
+        case 0: {
+            const container = buildDeployableContainer(deploy);
+            containerArr.push(container);
+
+            container.addSeparatorComponents(new Djs.SeparatorBuilder().setSpacing(Djs.SeparatorSpacingSize.Large));
+
+            break;
+        }
         case 1: {
-            getMessageComponents(await buildDeploySkillMessage(deploy, type, page, level));
+            if (level === 0) level = Math.max(0, deploy.skills[0].levels.length - 4);
 
-            if (deploy.skills.length <= 1) break;
+            const container = await buildSkillContainer(deploy, level);
+            containerArr.push(container);
 
-            const pageRow = new Djs.ActionRowBuilder<Djs.ButtonBuilder>();
-            for (let i = 0; i < deploy.skills.length; i++) {
-                if (!deploy.skills[i]) continue;
+            container.addSeparatorComponents(new Djs.SeparatorBuilder().setSpacing(Djs.SeparatorSpacingSize.Large));
 
+            const skillAction = new Djs.ActionRowBuilder<Djs.ButtonBuilder>();
+            container.addActionRowComponents(skillAction);
+
+            for (let i = Math.max(0, deploy.skills[0].levels.length - 4); i < deploy.skills[0].levels.length; i++) {
+                console.log(createCustomId('deployv2', deploy.id, type, i, 'skill'))
                 const button = new Djs.ButtonBuilder()
-                    .setCustomId(createCustomId('deploy', deploy.id, type, i, level))
-                    .setLabel(`Skill ${i + 1}`)
-                    .setStyle(Djs.ButtonStyle.Primary);
-                if (i === page)
-                    button.setCustomId('deploy_page_current')
+                    .setCustomId(createCustomId('deployv2', deploy.id, type, i, 'skill'))
+                    .setLabel(gameConsts.skillLevels[i])
+                    .setStyle(Djs.ButtonStyle.Secondary);
+                if (i === level)
+                    button.setCustomId('deployv2_level_current')
+                        .setStyle(Djs.ButtonStyle.Primary)
                         .setDisabled(true);
-                pageRow.addComponents(button);
+                skillAction.addComponents(button);
             }
-            rowArr.push(pageRow);
             break;
         }
     }
 
-    rowArr.push(typeRow);
-    return { embeds: embedArr, files: fileArr, components: rowArr };
+    const typeLabels = [['Stats', 'Skills']];
+    const rowArr = [new Djs.ActionRowBuilder<Djs.ButtonBuilder>()];
+    containerArr[1].addActionRowComponents(...rowArr);
+
+    for (let i = 0; i < typeLabels.length; i++) {
+        for (let j = 0; j < typeLabels[i].length; j++) {
+            const button = new Djs.ButtonBuilder()
+                .setCustomId(createCustomId('deployv2', deploy.id, i * 5 + j, 0))
+                .setLabel(typeLabels[i][j])
+                .setStyle(Djs.ButtonStyle.Primary);
+            if (i * 5 + j === type)
+                button.setCustomId('deployv2_type_current')
+                    .setStyle(Djs.ButtonStyle.Primary)
+                    .setDisabled(true);
+            rowArr[i].addComponents(button);
+        }
+    }
+    if (!deploy.skills || deploy.skills.filter(s => s).length === 0)
+        rowArr[0].components[1].setStyle(Djs.ButtonStyle.Secondary)
+            .setDisabled(true);
+
+    return { components: containerArr, flags: Djs.MessageFlags.IsComponentsV2 | Djs.MessageFlags.Ephemeral }; // remove ephemeral once patched
 }
 export async function buildEnemyMessage(enemy: T.Enemy, level: number): Promise<Djs.BaseMessageOptions> {
     const enemyInfo = enemy.excel;
@@ -723,7 +631,7 @@ export async function buildInfoMessageV2(op: T.Operator, type: number, level: nu
             break;
         }
         case 1: {
-            if (level < 6) level = 6;
+            if (level === 0) level = 6;
 
             const container = await buildSkillContainer(op, level);
             containerArr.push(container);
@@ -844,7 +752,7 @@ export async function buildInfoMessageV2(op: T.Operator, type: number, level: nu
 
     const typeLabels = [
         ['Stats', 'Skills', 'Modules', 'Base Skills', 'Costs'],
-        ['Outfits']
+        ['Outfits', 'Paradox']
     ];
     const rowArr = [new Djs.ActionRowBuilder<Djs.ButtonBuilder>(), new Djs.ActionRowBuilder<Djs.ButtonBuilder>()];
     containerArr[1].addActionRowComponents(...rowArr);
@@ -880,108 +788,6 @@ export async function buildInfoMessageV2(op: T.Operator, type: number, level: nu
 
     return { components: containerArr, flags: Djs.MessageFlags.IsComponentsV2 | Djs.MessageFlags.Ephemeral }; // remove ephemeral once patched
 }
-export async function buildInfoMessage(op: T.Operator, type: number, page: number, level: number): Promise<Djs.BaseMessageOptions> {
-    const embedArr = [], fileArr = [], rowArr = [];
-    const getMessageComponents = (message: Djs.BaseMessageOptions) => {
-        if (message.embeds) embedArr.push(...message.embeds);
-        if (message.files) fileArr.push(...message.files);
-        if (message.components) rowArr.push(...message.components);
-    };
-
-    const embed = buildDeployableEmbed(op);
-    embedArr.push(embed);
-
-    const typeLabels = ['Skills', 'Modules', 'Art', 'Base Skills', 'Costs'];
-    const typeRow = new Djs.ActionRowBuilder<Djs.ButtonBuilder>();
-
-    for (let i = 0; i < 5; i++) {
-        const button = new Djs.ButtonBuilder()
-            .setCustomId(createCustomId('info', op.id, i + 1, 0, 0))
-            .setLabel(typeLabels[i])
-            .setStyle(Djs.ButtonStyle.Success);
-        if (i + 1 === type)
-            button.setCustomId('info_type_current')
-                .setDisabled(true);
-        typeRow.addComponents(button);
-    }
-    if (!op.skills || op.skills.length === 0)
-        typeRow.components[0].setStyle(Djs.ButtonStyle.Secondary)
-            .setDisabled(true);
-    if (!op.modules || op.modules.length === 0)
-        typeRow.components[1].setStyle(Djs.ButtonStyle.Secondary)
-            .setDisabled(true);
-    if (!op.skins || op.skins.length === 0)
-        typeRow.components[2].setStyle(Djs.ButtonStyle.Secondary)
-            .setDisabled(true);
-    if (!op.bases || op.bases.length === 0)
-        typeRow.components[3].setStyle(Djs.ButtonStyle.Secondary)
-            .setDisabled(true);
-    if (gameConsts.rarity[op.data.rarity] <= 1)
-        typeRow.components[4].setStyle(Djs.ButtonStyle.Secondary)
-            .setDisabled(true);
-
-    switch (type) {
-        case 1: {
-            if (level === 0) level = 6;
-            getMessageComponents(await buildInfoSkillMessage(op, type, page, level));
-
-            if (op.skills.length <= 1) break;
-
-            const pageRow = new Djs.ActionRowBuilder<Djs.ButtonBuilder>();
-            for (let i = 0; i < op.skills.length; i++) {
-                if (!op.skills[i]) continue;
-
-                const button = new Djs.ButtonBuilder()
-                    .setCustomId(createCustomId('info', op.id, type, i, level))
-                    .setLabel(`Skill ${i + 1}`)
-                    .setStyle(Djs.ButtonStyle.Primary);
-                if (i === page)
-                    button.setCustomId('info_page_current')
-                        .setDisabled(true);
-                pageRow.addComponents(button);
-            }
-            rowArr.push(pageRow);
-            break;
-        }
-        case 2: {
-            getMessageComponents(buildInfoModuleMessage(op, type, page, level));
-
-            if (op.modules.length <= 1) break;
-
-            const pageRow = new Djs.ActionRowBuilder<Djs.ButtonBuilder>();
-            for (let i = 0; i < op.modules.length; i++) {
-                const button = new Djs.ButtonBuilder()
-                    .setCustomId(createCustomId('info', op.id, type, i, level))
-                    .setLabel(`Module ${i + 1}`)
-                    .setStyle(Djs.ButtonStyle.Primary);
-                if (i === page)
-                    button.setCustomId('info_page_current')
-                        .setDisabled(true);
-                pageRow.addComponents(button);
-            }
-            rowArr.push(pageRow);
-            break;
-        }
-        case 3: {
-            getMessageComponents(buildInfoArtMessage(op, type, page, level));
-            break;
-        }
-        case 4: {
-            for (let i = 0; i < op.bases.length; i++) {
-                getMessageComponents(await buildBaseMessage(op, i));
-            }
-            break;
-        }
-        case 5: {
-            getMessageComponents(await buildInfoCostMessage(op, type, page, level));
-            break;
-        }
-    }
-
-    rowArr.push(typeRow);
-
-    return { embeds: embedArr, files: fileArr, components: rowArr };
-}
 export async function buildItemMessage(item: T.Item): Promise<Djs.BaseMessageOptions> {
     const dropStageCount = 6;
 
@@ -1008,37 +814,6 @@ export async function buildItemMessage(item: T.Item): Promise<Djs.BaseMessageOpt
         embed.setThumbnail(imagePath);
 
     return { embeds: [embed] };
-}
-export async function buildModuleMessage(op: T.Operator, page: number, level: number): Promise<Djs.BaseMessageOptions> {
-    const embed = buildModuleEmbed(op, page, level);
-
-    const lOne = new Djs.ButtonBuilder()
-        .setCustomId(createCustomId('modules', op.id, page, 0))
-        .setLabel('Lv1')
-        .setStyle(Djs.ButtonStyle.Secondary);
-    const lTwo = new Djs.ButtonBuilder()
-        .setCustomId(createCustomId('modules', op.id, page, 1))
-        .setLabel('Lv2')
-        .setStyle(Djs.ButtonStyle.Secondary);
-    const lThree = new Djs.ButtonBuilder()
-        .setCustomId(createCustomId('modules', op.id, page, 2))
-        .setLabel('Lv3')
-        .setStyle(Djs.ButtonStyle.Secondary);
-    const rowOne = new Djs.ActionRowBuilder<Djs.ButtonBuilder>().addComponents(lOne, lTwo, lThree);
-
-    switch (level) {
-        case 0:
-            lOne.setDisabled(true);
-            break;
-        case 1:
-            lTwo.setDisabled(true);
-            break;
-        case 2:
-            lThree.setDisabled(true);
-            break;
-    }
-
-    return { embeds: [embed], components: [rowOne] };
 }
 export async function buildNewMessage(): Promise<Djs.BaseMessageOptions> {
     const opName = (op: T.Operator) => getOpPrettyName(op);
@@ -1631,28 +1406,6 @@ export async function buildSandboxWeatherMessage(theme: number, weather: T.Sandb
 
     return { embeds: [embed] };
 }
-export async function buildSkillMessage(op: T.Operator, page: number, level: number): Promise<Djs.BaseMessageOptions> {
-    const embed = await buildSkillEmbed(op, page, level);
-
-    const rowOne = new Djs.ActionRowBuilder<Djs.ButtonBuilder>();
-    const rowTwo = new Djs.ActionRowBuilder<Djs.ButtonBuilder>();
-
-    for (let i = 0; i < op.skills[page].levels.length; i++) {
-        if (i >= 0 && i <= 5) continue;
-
-        const button = new Djs.ButtonBuilder()
-            .setCustomId(createCustomId('skills', op.id, page, i))
-            .setLabel(gameConsts.skillLevels[i])
-            .setStyle(i < 7 ? Djs.ButtonStyle.Secondary : Djs.ButtonStyle.Danger);
-        if (i === level) {
-            button.setDisabled(true);
-        }
-        if (i < 5) rowOne.addComponents(button);
-        else rowTwo.addComponents(button);
-    }
-
-    return { embeds: [embed], components: [rowTwo] };
-}
 export async function buildSpineEnemyMessage(gifFile: string, enemy: T.Enemy, animArr: string[], anim: string): Promise<Djs.BaseMessageOptions> {
     const id = enemy.excel.enemyId;
 
@@ -1845,118 +1598,6 @@ export async function buildStageSelectMessage(stageArr: T.Stage[] | T.RogueStage
     }
 
     return { content: 'Multiple stages with that code were found, please select a stage below:', components: [componentRow] };
-}
-
-function buildInfoArtMessage(op: T.Operator, type: number, page: number, level: number): Djs.BaseMessageOptions {
-    const embed = buildArtEmbed(op, page);
-
-    const rowOne = new Djs.ActionRowBuilder<Djs.ButtonBuilder>();
-    const rowTwo = new Djs.ActionRowBuilder<Djs.ButtonBuilder>();
-    const components = [];
-
-    for (let i = 0; i < op.skins.length; i++) {
-        const skinGroup = op.skins[i].displaySkin.skinGroupName;
-        const button = new Djs.ButtonBuilder()
-            .setCustomId(createCustomId('info', op.id, type, i, level, 'skin'))
-            .setLabel(skinGroup)
-            .setStyle(Djs.ButtonStyle.Primary);
-        if (i === page)
-            button.setCustomId(`info_page_current`)
-                .setDisabled(true);
-        if (op.skins[i].battleSkin.skinOrPrefabId === 'DefaultSkin') {
-            rowOne.addComponents(button);
-            components[0] = rowOne;
-        }
-        else {
-            rowTwo.addComponents(button);
-            components[1] = rowTwo;
-        }
-    }
-
-    return { embeds: [embed], components: components };
-}
-async function buildInfoCostMessage(op: T.Operator, type: number, page: number, level: number): Promise<Djs.BaseMessageOptions> {
-    const embed = await buildCostEmbed(op, page);
-
-    const costLabels = ['Promotions', 'Skills', 'Masteries', 'Modules'];
-    const buttonRow = new Djs.ActionRowBuilder<Djs.ButtonBuilder>();
-    for (let i = 0; i < 4; i++) {
-        const button = new Djs.ButtonBuilder()
-            .setCustomId(createCustomId('info', op.id, type, i, level, 'cost'))
-            .setLabel(costLabels[i])
-            .setStyle(Djs.ButtonStyle.Primary);
-        if (i === page)
-            button.setCustomId('info_page_current')
-                .setDisabled(true);
-        buttonRow.addComponents(button);
-    }
-    if (op.data.skills.length == 0)
-        buttonRow.components[1].setStyle(Djs.ButtonStyle.Secondary)
-            .setDisabled(true);
-    if (gameConsts.rarity[op.data.rarity] <= 2)
-        buttonRow.components[2].setStyle(Djs.ButtonStyle.Secondary)
-            .setDisabled(true);
-    if (op.modules.length == 0)
-        buttonRow.components[3].setStyle(Djs.ButtonStyle.Secondary)
-            .setDisabled(true);
-
-    return { embeds: [embed], components: [buttonRow] };
-}
-function buildInfoModuleMessage(op: T.Operator, type: number, page: number, level: number): Djs.BaseMessageOptions {
-    const embed = buildModuleEmbed(op, page, level);
-
-    const buttonRow = new Djs.ActionRowBuilder<Djs.ButtonBuilder>();
-
-    for (let i = 0; i < 3; i++) {
-        const button = new Djs.ButtonBuilder()
-            .setCustomId(createCustomId('info', op.id, type, page, i, 'module'))
-            .setLabel(gameConsts.skillLevels[i])
-            .setStyle(Djs.ButtonStyle.Secondary);
-        if (i === level)
-            button.setCustomId('info_level_current')
-                .setDisabled(true);
-        buttonRow.addComponents(button);
-    }
-
-    return { embeds: [embed], components: [buttonRow] };
-}
-async function buildInfoSkillMessage(op: T.Operator, type: number, page: number, level: number): Promise<Djs.BaseMessageOptions> {
-    const embed = await buildSkillEmbed(op, page, level);
-
-    const rowOne = new Djs.ActionRowBuilder<Djs.ButtonBuilder>();
-
-    for (let i = 0; i < op.skills[page].levels.length; i++) {
-        if (i >= 0 && i <= 5) continue;
-
-        const button = new Djs.ButtonBuilder()
-            .setCustomId(createCustomId('info', op.id, type, page, i, 'skill'))
-            .setLabel(gameConsts.skillLevels[i])
-            .setStyle(i < 7 ? Djs.ButtonStyle.Secondary : Djs.ButtonStyle.Danger);
-        if (i === level)
-            button.setCustomId('info_level_current')
-                .setDisabled(true);
-        rowOne.addComponents(button)
-    }
-
-    return { embeds: [embed], components: [rowOne] };
-}
-async function buildDeploySkillMessage(deploy: T.Deployable, type: number, page: number, level: number): Promise<Djs.BaseMessageOptions> {
-    const embed = await buildSkillEmbed(deploy, page, level);
-
-    const rowOne = new Djs.ActionRowBuilder<Djs.ButtonBuilder>();
-
-    for (let i = 0; i < deploy.skills[page].levels.length; i++) {
-        const button = new Djs.ButtonBuilder()
-            .setCustomId(createCustomId('deploy', deploy.id, type, page, i, 'skill'))
-            .setLabel(gameConsts.skillLevels[i])
-            .setStyle(i < 7 ? Djs.ButtonStyle.Secondary : Djs.ButtonStyle.Danger);
-        if (i === level)
-            button.setCustomId('deploy_level_current')
-                .setDisabled(true);
-        rowOne.addComponents(button)
-    }
-
-    return { embeds: [embed], components: [rowOne] };
 }
 
 function buildAuthorField(char: T.Enemy | T.Deployable, url: boolean = true): Djs.EmbedAuthorOptions {
@@ -2200,239 +1841,7 @@ async function buildStageEnemyFields(stageData: T.StageData): Promise<Djs.EmbedF
     return fieldArr;
 }
 
-function buildArtEmbed(op: T.Operator, page: number): Djs.EmbedBuilder {
-    const displaySkin = op.skins[page].displaySkin;
-
-    const embed = new Djs.EmbedBuilder()
-        .setColor(embedColour)
-        .setAuthor(buildAuthorField(op))
-        .setTitle(`${displaySkin.skinGroupName}${displaySkin.skinName ? ` - ${displaySkin.skinName}` : ''}`)
-        .setImage(paths.myAssetUrl + `/operator/arts/${encodeURIComponent(op.skins[page].portraitId)}.png`);
-
-    switch (displaySkin.skinGroupId) {
-        case 'ILLUST_0': {
-            embed.setThumbnail(paths.aceshipImageUrl + `/ui/elite/0.png`);
-            break;
-        }
-        case 'ILLUST_1': {
-            embed.setThumbnail(paths.aceshipImageUrl + `/ui/elite/1.png`);
-            break;
-        }
-        case 'ILLUST_2': {
-            embed.setThumbnail(paths.aceshipImageUrl + `/ui/elite/2.png`);
-            break;
-        }
-        case 'ILLUST_3': {
-            embed.setThumbnail(paths.aceshipImageUrl + `/ui/elite/3.png`);
-            break;
-        }
-        default: {
-            embed.setThumbnail(paths.myAssetUrl + `/skingroups/${encodeURIComponent(displaySkin.skinGroupId.split('#')[1])}.png`);
-            break;
-        }
-    }
-
-    if (displaySkin.drawerList && displaySkin.drawerList.length > 0) {
-        const artistString = displaySkin.drawerList.join('\n');
-        embed.addFields({ name: displaySkin.drawerList.length > 1 ? 'Artists' : 'Artist', value: artistString });
-    }
-
-    return embed;
-}
-async function buildCostEmbed(op: T.Operator, page: number): Promise<Djs.EmbedBuilder> {
-    const embed = new Djs.EmbedBuilder()
-        .setColor(embedColour)
-        .setAuthor(buildAuthorField(op));
-
-    const itemArr = await api.all('item', { include: ['data'] });
-    switch (page) {
-        default:
-        case 0: {
-            embed.setTitle('Promotion Costs')
-                .setThumbnail(paths.myAssetUrl + `/items/sprite_exp_card_t4.png`);
-            for (let i = 0; i < op.data.phases.length; i++) {
-                if (op.data.phases[i].evolveCost === null) continue;
-
-                const description = buildCostString(op.data.phases[i].evolveCost, itemArr) + `${getItemEmoji('GOLD')} LMD **x${gameConsts.evolveGoldCost[gameConsts.rarity[op.data.rarity]][i - 1]}**\n`;
-                embed.addFields({ name: `Elite ${i}`, value: description, inline: true });
-            }
-            break;
-        }
-        case 1: {
-            embed.setTitle('Skill Upgrade Costs')
-                .setThumbnail(paths.myAssetUrl + `/items/MTL_SKILL2.png`);
-            for (let i = 0; i < op.data.allSkillLvlup.length; i++) {
-                if (op.data.allSkillLvlup[i].lvlUpCost === null) continue;
-
-                const description = buildCostString(op.data.allSkillLvlup[i].lvlUpCost, itemArr);
-                embed.addFields({ name: `Level ${i + 2}`, value: description, inline: true });
-            }
-            break;
-        }
-        case 2: {
-            embed.setTitle('Skill Mastery Costs')
-                .setThumbnail(paths.myAssetUrl + `/items/MTL_SKILL3.png`);
-            for (let i = 0; i < op.data.skills.length; i++) {
-                embed.addFields({ name: blankChar, value: `**Skill ${i + 1} - ${op.skills[i].levels[0].name}**` });
-                for (let j = 0; j < op.data.skills[i].levelUpCostCond.length; j++) {
-                    if (op.data.skills[i].levelUpCostCond[j].levelUpCost === null) continue;
-
-                    const description = buildCostString(op.data.skills[i].levelUpCostCond[j].levelUpCost, itemArr);
-                    embed.addFields({ name: `Mastery ${j + 1}`, value: description, inline: true });
-                }
-            }
-            break;
-        }
-        case 3: {
-            embed.setTitle('Module Upgrade Costs')
-                .setThumbnail(paths.myAssetUrl + `/items/mod_unlock_token.png`);
-            for (const module of op.modules) {
-                if (module.info.uniEquipId.includes('uniequip_001')) continue;
-
-                embed.addFields({ name: blankChar, value: `**${module.info.typeIcon.toUpperCase()} - ${module.info.uniEquipName}**` });
-                for (const key of Object.keys(module.info.itemCost)) {
-                    const description = buildCostString(module.info.itemCost[key], itemArr);
-                    embed.addFields({ name: `Level ${key}`, value: description, inline: true });
-                }
-            }
-            break;
-        }
-    }
-
-    return embed;
-}
-function buildModuleEmbed(op: T.Operator, page: number, level: number): Djs.EmbedBuilder {
-    const module = op.modules[page];
-
-    const embed = new Djs.EmbedBuilder()
-        .setColor(embedColour)
-        .setAuthor(buildAuthorField(op))
-        .setTitle(`${module.info.typeIcon.toUpperCase()} ${module.info.uniEquipName} - Lv${level + 1}`)
-        .setThumbnail(paths.myAssetUrl + `/operator/modules/${module.info.uniEquipId}.png`);
-
-    let description = '', talentName = null, talentDescription = null;
-    for (const part of module.data.phases[level].parts) {
-        if (part.overrideTraitDataBundle.candidates) {
-            const candidate = part.overrideTraitDataBundle.candidates[part.overrideTraitDataBundle.candidates.length - 1];
-            if (candidate.additionalDescription) {
-                description += `${insertBlackboard(candidate.additionalDescription, candidate.blackboard)}\n`;
-            }
-            if (candidate.overrideDescripton) {
-                description += `${insertBlackboard(candidate.overrideDescripton, candidate.blackboard)}\n`;
-            }
-        }
-        if (part.addOrOverrideTalentDataBundle.candidates) {
-            const candidate = part.addOrOverrideTalentDataBundle.candidates[part.addOrOverrideTalentDataBundle.candidates.length - 1];
-            talentName = candidate.name ?? talentName;
-            const upgradeDesc = insertBlackboard(candidate.upgradeDescription, candidate.blackboard);
-            if (upgradeDesc !== '') {
-                talentDescription = upgradeDesc;
-            }
-        }
-    }
-    embed.setDescription(description);
-    if (talentName && talentDescription) {
-        embed.addFields({ name: talentName, value: talentDescription });
-    }
-
-    const statDescription = module.data.phases[level].attributeBlackboard.map(attribute => `${attribute.key.toUpperCase()} ${attribute.value > 0 ? '+' : ''}${attribute.value}`).join('\n');
-    embed.addFields({ name: `Stats`, value: statDescription });
-
-    return embed;
-}
-function buildDeployableEmbed(deploy: T.Deployable, rarity: boolean = true): Djs.EmbedBuilder {
-    let avatarThumb = rarity ? paths.myAssetUrl + `/operator/avatars/${deploy.id}.png` : paths.aceshipImageUrl + `/avatars/${deploy.id}.png`;
-    if (deploy.id === 'char_1037_amiya3') avatarThumb = paths.myAssetUrl + `/operator/avatars/char_1037_amiya3_2.png`
-
-    const embed = new Djs.EmbedBuilder()
-        .setColor(embedColour)
-        .setTitle(rarity ? `${deploy.data.name} - ${'★'.repeat(gameConsts.rarity[deploy.data.rarity] + 1)}` : deploy.data.name)
-        .setURL(buildAuthorField(deploy, rarity).url)
-        .setThumbnail(avatarThumb);
-
-    let description = removeStyleTags(deploy.data.description);
-    if (deploy.data.trait) {
-        const candidate = deploy.data.trait.candidates[deploy.data.trait.candidates.length - 1];
-        if (candidate.overrideDescripton) {
-            description = insertBlackboard(candidate.overrideDescripton, candidate.blackboard);
-        }
-    }
-    if (description == '') description = blankChar;
-    embed.addFields({ name: `${gameConsts.professions[deploy.data.profession]} - ${deploy.archetype}`, value: description });
-    if (deploy.range) {
-        embed.addFields(buildRangeField(deploy.range));
-    }
-    if (deploy.data.talents) {
-        for (const talent of deploy.data.talents) {
-            if (talent.candidates) {
-                const candidate = talent.candidates[talent.candidates.length - 1];
-                if (candidate.name) {
-                    embed.addFields({ name: `*${candidate.name}*`, value: removeStyleTags(candidate.description) });
-                }
-            }
-        }
-    }
-    if (deploy.data.potentialRanks && deploy.data.potentialRanks.length > 0) {
-        const potentialString = deploy.data.potentialRanks.map(potential => potential.description).join('\n');
-        embed.addFields({ name: 'Potentials', value: potentialString, inline: true });
-    }
-    if (deploy.data.favorKeyFrames) {
-        const trustString = Object.entries(deploy.data.favorKeyFrames[1].data)
-            .filter(([key, bonus]) => bonus)
-            .map(([key, bonus]) => `${key.toUpperCase()} +${bonus}`)
-            .join('\n');
-        if (trustString !== '') {
-            embed.addFields({ name: 'Trust Bonus', value: trustString, inline: true });
-        }
-    }
-
-    const maxStats = deploy.data.phases[deploy.data.phases.length - 1].attributesKeyFrames[deploy.data.phases[deploy.data.phases.length - 1].attributesKeyFrames.length - 1].data;
-    const hp = maxStats.maxHp.toString();
-    const atk = maxStats.atk.toString();
-    const def = maxStats.def.toString();
-    const res = maxStats.magicResistance.toString();
-    const dpCost = maxStats.cost.toString();
-    const block = maxStats.blockCnt.toString();
-    const redeploy = maxStats.respawnTime.toString();
-    const atkInterval = maxStats.baseAttackTime.toString();
-    embed.addFields(
-        { name: blankChar, value: '**Max Stats**' },
-        { name: '❤️ HP', value: hp, inline: true },
-        { name: '⚔️ ATK', value: atk, inline: true },
-        { name: '🛡️ DEF', value: def, inline: true },
-        { name: '✨ RES', value: res, inline: true },
-        { name: '🏁 DP', value: dpCost, inline: true },
-        { name: '✋ Block', value: block, inline: true },
-        { name: '⌛ Redeploy Time', value: redeploy, inline: true },
-        { name: '⏱️ Attack Interval', value: atkInterval, inline: true },
-    );
-
-    return embed;
-}
-async function buildSkillEmbed(op: T.Deployable, page: number, level: number): Promise<Djs.EmbedBuilder> {
-    const skill = op.skills[page];
-    const skillLevel = skill.levels[level];
-
-    const description = `**${gameConsts.spTypes[skillLevel.spData.spType]} - ${gameConsts.skillTypes[skillLevel.skillType]}**` +
-        `\n***Initial:* ${skillLevel.spData.initSp} SP - *Cost:* ${skillLevel.spData.spCost} SP${(skillLevel.duration && skillLevel.duration > 0) ? ` - *Duration:* ${skillLevel.duration} sec` : ''}**` +
-        `\n${insertBlackboard(skillLevel.description, skillLevel.blackboard.concat({ key: 'duration', value: skillLevel.duration }))}`;
-
-    const embed = new Djs.EmbedBuilder()
-        .setColor(embedColour)
-        .setAuthor(buildAuthorField(op))
-        .setTitle(`${skillLevel.name} - ${gameConsts.skillLevels[level]}`)
-        .setThumbnail(paths.myAssetUrl + `/operator/skills/skill_icon_${skill.iconId ?? skill.skillId}.png`)
-        .setDescription(description);
-
-    if (skillLevel.rangeId) {
-        const range = await api.single('range', { query: skillLevel.rangeId });
-        embed.addFields(buildRangeField(range));
-    }
-
-    return embed;
-}
-
-function buildTitleContainer(deploy: T.Operator, rarity: boolean = true): Djs.ContainerBuilder {
+function buildTitleContainer(deploy: T.Deployable, rarity: boolean = true): Djs.ContainerBuilder {
     const container = new Djs.ContainerBuilder().setAccentColor(embedColour);
 
     const titleSection = new Djs.SectionBuilder();
@@ -2453,7 +1862,7 @@ function buildTitleContainer(deploy: T.Operator, rarity: boolean = true): Djs.Co
 
     const titleText = new Djs.TextDisplayBuilder()
         .setContent([
-            `## ${deploy.data.name} - ${'★'.repeat(gameConsts.rarity[deploy.data.rarity] + 1)}`,
+            `## ${deploy.data.name}${rarity ? ` - ${'★'.repeat(gameConsts.rarity[deploy.data.rarity] + 1)}` : ''}`,
             `**${gameConsts.professions[deploy.data.profession]} - ${deploy.archetype}**`,
             description
         ].join('\n'));
@@ -2461,7 +1870,7 @@ function buildTitleContainer(deploy: T.Operator, rarity: boolean = true): Djs.Co
 
     return container;
 }
-function buildDeployableContainer(deploy: T.Deployable, rarity: boolean = true): Djs.ContainerBuilder {
+function buildDeployableContainer(deploy: T.Deployable): Djs.ContainerBuilder {
     const container = new Djs.ContainerBuilder().setAccentColor(embedColour);
 
     if (deploy.range) {
@@ -2498,12 +1907,12 @@ function buildDeployableContainer(deploy: T.Deployable, rarity: boolean = true):
         container.addTextDisplayComponents(potentialText);
     }
 
-    const trustStats = deploy.data.favorKeyFrames[1].data;
+    const trustStats = deploy.data.favorKeyFrames?.at(1).data ?? null;
     const maxStats = deploy.data.phases[deploy.data.phases.length - 1].attributesKeyFrames[deploy.data.phases[deploy.data.phases.length - 1].attributesKeyFrames.length - 1].data;
-    const hp = trustStats.maxHp ? `${maxStats.maxHp + trustStats.maxHp} (+${trustStats.maxHp})` : maxStats.maxHp.toString();
-    const atk = trustStats.atk ? `${maxStats.atk + trustStats.atk} (+${trustStats.atk})` : maxStats.atk.toString();
-    const def = trustStats.def ? `${maxStats.def + trustStats.def} (+${trustStats.def})` : maxStats.def.toString();
-    const res = trustStats.magicResistance ? `${maxStats.magicResistance + trustStats.magicResistance} (+${trustStats.magicResistance})` : maxStats.magicResistance.toString();
+    const hp = trustStats?.maxHp ? `${maxStats.maxHp + trustStats?.maxHp} (+${trustStats?.maxHp})` : maxStats.maxHp.toString();
+    const atk = trustStats?.atk ? `${maxStats.atk + trustStats?.atk} (+${trustStats?.atk})` : maxStats.atk.toString();
+    const def = trustStats?.def ? `${maxStats.def + trustStats?.def} (+${trustStats?.def})` : maxStats.def.toString();
+    const res = trustStats?.magicResistance ? `${maxStats.magicResistance + trustStats?.magicResistance} (+${trustStats?.magicResistance})` : maxStats.magicResistance.toString();
     const dpCost = maxStats.cost;
     const block = maxStats.blockCnt;
     const redeploy = maxStats.respawnTime;
@@ -2528,8 +1937,13 @@ async function buildSkillContainer(deploy: T.Deployable, level: number): Promise
     const container = new Djs.ContainerBuilder().setAccentColor(embedColour);
     const sections = [];
 
+    const seenSkills = new Set();
     for (let i = 0; i < deploy.skills.length; i++) {
         const skill = deploy.skills[i];
+
+        if (seenSkills.has(skill.skillId)) continue;
+        seenSkills.add(skill.skillId);
+
         const skillLevel = skill.levels[level];
 
         const section = new Djs.SectionBuilder();
