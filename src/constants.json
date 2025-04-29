@@ -531,6 +531,18 @@
             "M2",
             "M3"
         ],
+        "longSkillLevels": [
+            "Level 1",
+            "Level 2",
+            "Level 3",
+            "Level 4",
+            "Level 5",
+            "Level 6",
+            "Level 7",
+            "Mastery 1",
+            "Mastery 2",
+            "Mastery 3"
+        ],
         "skillTypes": {
             "AUTO": "Auto Trigger",
             "MANUAL": "Manual Trigger",
@@ -542,7 +554,7 @@
             "INCREASE_WITH_TIME": "Per Second",
             "8": "Passive"
         },
-        "supplyDrops":{
+        "supplyDrops": {
             "Aerial Threat": "Skill Summaries",
             "Cargo Escort": "LMD",
             "Fearless Protection": "Guard & Specialist Chips",

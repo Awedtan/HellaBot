@@ -45,10 +45,11 @@ export default class InfoCommand {
     }
     async selectResponse(interaction: StringSelectMenuInteraction<CacheType>, idArr: string[]) {
         const op = await api.single('operator', { query: idArr[1] });
-        const level = parseInt(idArr[3]);
-        const type = parseInt(interaction.values[0]);
+        const type = idArr[2];
+        const level = idArr[3];
+        const value = parseInt(interaction.values[0]);
 
-        const infoEmbed = await buildInfoMessage(op, type, level);
+        const infoEmbed = await buildInfoMessage(op, type === 'select' ? value : parseInt(type), level === 'select' ? value : parseInt(level));
         await interaction.update(infoEmbed);
     }
 }

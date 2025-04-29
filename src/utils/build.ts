@@ -329,69 +329,81 @@ export async function buildDefineListMessage(): Promise<Djs.BaseMessageOptions> 
     return { embeds: [embed] };
 }
 export async function buildDeployMessage(deploy: T.Deployable, type: number, level: number) {
-    const types = {
+    const typesDict = {
         stats: {
             label: 'Stats', index: 0, value: '0',
-            disabled: false
+            disabled: false,
+            extendedStats: true
         },
         skills: {
             label: 'Skills', index: 1, value: '1',
-            disabled: !deploy.skills || !deploy.skills.length || deploy.skills.every(s => !s)
+            disabled: !deploy.skills || !deploy.skills.length || deploy.skills.every(s => !s),
+            extendedStats: true
         }
     };
+    const typesArr = Object.values(typesDict);
 
     const container = new Djs.ContainerBuilder().setAccentColor(embedColour);
 
-    const titleSection = await buildTitleSection(deploy, false);
+    const titleSection = await buildTitleSection(deploy, typesArr[type].extendedStats);
     container.addSectionComponents(titleSection);
     container.addSeparatorComponents(new Djs.SeparatorBuilder().setSpacing(Djs.SeparatorSpacingSize.Large));
 
+    // const typeText = new Djs.TextDisplayBuilder()
+    //     .setContent(`## ${typesArr[type].label} `)
+    // container.addTextDisplayComponents(typeText);
+
     switch (type) {
         default:
-        case types.stats.index: {
+        case typesDict.stats.index: {
+            level = 0;
+
             const components = buildDeployableComponents(deploy);
             container.addTextDisplayComponents(components);
             break;
         }
-        case types.skills.index: {
-            if (level === 0) level = Math.max(0, deploy.skills[0].levels.length - 4);
+        case typesDict.skills.index: {
+            if (level < 0) level = 0;
+            else if (level >= deploy.skills[0].levels.length) level = deploy.skills[0].levels.length - 1;
 
             const sections = await buildSkillSections(deploy, level);
-            container.addSectionComponents(sections);
+            for (const section of sections) {
+                container.addSectionComponents(section);
+                container.addSeparatorComponents(new Djs.SeparatorBuilder().setSpacing(Djs.SeparatorSpacingSize.Large));
+            }
 
-            const skillAction = new Djs.ActionRowBuilder<Djs.ButtonBuilder>();
-            container.addActionRowComponents(skillAction);
+            const levelRow = new Djs.ActionRowBuilder<Djs.StringSelectMenuBuilder>();
+            container.addActionRowComponents(levelRow);
 
-            for (let i = Math.max(0, deploy.skills[0].levels.length - 4); i < deploy.skills[0].levels.length; i++) {
-                const button = new Djs.ButtonBuilder()
-                    .setCustomId(createCustomId('deploy', deploy.id, type, i, 'skill'))
-                    .setLabel(gameConsts.skillLevels[i])
-                    .setStyle(Djs.ButtonStyle.Primary);
-                if (i === level)
-                    button.setCustomId('deploy_level_current')
-                        .setDisabled(true);
-                skillAction.addComponents(button);
+            const levelSelect = new Djs.StringSelectMenuBuilder()
+                .setCustomId(createCustomId('deploy', deploy.id, type, 'select'));
+            levelRow.addComponents(levelSelect);
+
+            for (let i = deploy.skills[0].levels.length - 1; i >= 0; i--) {
+                const levelOption = new Djs.StringSelectMenuOptionBuilder()
+                    .setLabel(gameConsts.longSkillLevels[i])
+                    .setValue(i.toString())
+                    .setDefault(i === level);
+                levelSelect.addOptions(levelOption);
             }
             break;
         }
     }
 
-    container.addSeparatorComponents(new Djs.SeparatorBuilder().setSpacing(Djs.SeparatorSpacingSize.Large));
-
-    const actionRow = new Djs.ActionRowBuilder<Djs.StringSelectMenuBuilder>();
-    container.addActionRowComponents(actionRow);
+    const typeRow = new Djs.ActionRowBuilder<Djs.StringSelectMenuBuilder>();
+    container.addActionRowComponents(typeRow);
 
     const typeSelect = new Djs.StringSelectMenuBuilder()
-        .setCustomId(createCustomId('deploy', deploy.id, type, 0));
-    actionRow.addComponents(typeSelect);
+        .setCustomId(createCustomId('deploy', deploy.id, 'select', 99));
+    typeRow.addComponents(typeSelect);
 
-    for (const typeLabel of Object.values(types)) {
+    for (const typeLabel of Object.values(typesDict)) {
         if (typeLabel.disabled) continue;
-        const option = new Djs.StringSelectMenuOptionBuilder()
+        const typeOption = new Djs.StringSelectMenuOptionBuilder()
             .setLabel(typeLabel.label)
             .setValue(typeLabel.value)
             .setDefault(type === typeLabel.index);
-        typeSelect.addOptions(option);
+        typeSelect.addOptions(typeOption);
     }
 
     return { components: [container], flags: Djs.MessageFlags.IsComponentsV2 | Djs.MessageFlags.Ephemeral }; // remove ephemeral once patched
@@ -625,201 +637,246 @@ export async function buildHelpListMessage(): Promise<Djs.BaseMessageOptions> {
     return { embeds: [embed] };
 }
 export async function buildInfoMessage(op: T.Operator, type: number, level: number) {
-    const types = {
+    const typesDict = {
         stats: {
             label: 'Stats', index: 0, value: '0',
-            disabled: false
+            disabled: false,
+            extendedStats: true
         },
         skills: {
             label: 'Skills', index: 1, value: '1',
-            disabled: !op.skills || !op.skills.length
+            disabled: !op.skills || !op.skills.length,
+            extendedStats: true
         },
         modules: {
             label: 'Modules', index: 2, value: '2',
-            disabled: !op.modules || !op.modules.length
+            disabled: !op.modules || !op.modules.length,
+            extendedStats: true
         },
         base: {
             label: 'Base Skills', index: 3, value: '3',
-            disabled: !op.bases || !op.bases.length
+            disabled: !op.bases || !op.bases.length,
+            extendedStats: false
         },
         costs: {
             label: 'Upgrade Costs', index: 4, value: '4',
-            disabled: gameConsts.rarity[op.data.rarity] <= 1
+            disabled: gameConsts.rarity[op.data.rarity] <= 1,
+            extendedStats: false
         },
         outfits: {
             label: 'Outfits', index: 5, value: '5',
-            disabled: !op.skins || !op.skins.length
+            disabled: !op.skins || !op.skins.length,
+            extendedStats: false
         },
         paradox: {
             label: 'Paradox Simulation', index: 6, value: '6',
-            disabled: !op.paradox
+            disabled: !op.paradox,
+            extendedStats: false
         }
     };
+    const typesArr = Object.values(typesDict);
 
     const container = new Djs.ContainerBuilder().setAccentColor(embedColour);
 
-    const titleSection = await buildTitleSection(op);
+    const titleSection = await buildTitleSection(op, typesArr[type].extendedStats);
     container.addSectionComponents(titleSection);
     container.addSeparatorComponents(new Djs.SeparatorBuilder().setSpacing(Djs.SeparatorSpacingSize.Large));
 
-    const typeText = new Djs.TextDisplayBuilder()
-        .setContent(`## ${types[Object.keys(types)[type]].label}`)
-    container.addTextDisplayComponents(typeText);
+    // const typeText = new Djs.TextDisplayBuilder()
+    //     .setContent(`## ${typesArr[type].label} `)
+    // container.addTextDisplayComponents(typeText);
 
     switch (type) {
-        case types.stats.index: {
+        default:
+        case typesDict.stats.index: {
+            level = 0;
+
             const components = buildDeployableComponents(op);
             container.addTextDisplayComponents(components);
             break;
         }
-        case types.skills.index: {
-            if (level === 0) level = 6;
+        case typesDict.skills.index: {
+            if (level < 0) level = 0;
+            else if (level >= op.skills[0].levels.length) level = op.skills[0].levels.length - 1;
 
             const sections = await buildSkillSections(op, level);
-            container.addSectionComponents(sections);
+            for (const section of sections) {
+                container.addSectionComponents(section);
+                container.addSeparatorComponents(new Djs.SeparatorBuilder().setSpacing(Djs.SeparatorSpacingSize.Large));
+            }
 
-            const actionRow = new Djs.ActionRowBuilder<Djs.ButtonBuilder>();
-            container.addActionRowComponents(actionRow);
+            const levelRow = new Djs.ActionRowBuilder<Djs.StringSelectMenuBuilder>();
+            container.addActionRowComponents(levelRow);
 
-            for (let i = 6; i < op.skills[0].levels.length; i++) {
-                const button = new Djs.ButtonBuilder()
-                    .setCustomId(createCustomId('info', op.id, type, i, 'skill'))
-                    .setLabel(gameConsts.skillLevels[i])
-                    .setStyle(Djs.ButtonStyle.Primary);
-                if (i === level)
-                    button.setCustomId('info_level_current')
-                        .setDisabled(true);
-                actionRow.addComponents(button);
+            const levelSelect = new Djs.StringSelectMenuBuilder()
+                .setCustomId(createCustomId('info', op.id, type, 'select'));
+            levelRow.addComponents(levelSelect);
+
+            for (let i = op.skills[0].levels.length - 1; i >= 0; i--) {
+                const levelOption = new Djs.StringSelectMenuOptionBuilder()
+                    .setLabel(gameConsts.longSkillLevels[i])
+                    .setValue(i.toString())
+                    .setDefault(i === level);
+                levelSelect.addOptions(levelOption);
             }
             break;
         }
-        case types.modules.index: {
+        case typesDict.modules.index: {
+            if (level < 0) level = 0;
+            else if (level >= op.modules.length) level = 2;
+
             const sections = buildModuleSections(op, level);
-            container.addSectionComponents(sections);
+            for (const section of sections) {
+                container.addSectionComponents(section);
+                container.addSeparatorComponents(new Djs.SeparatorBuilder().setSpacing(Djs.SeparatorSpacingSize.Large));
+            }
 
-            const actionRow = new Djs.ActionRowBuilder<Djs.ButtonBuilder>();
-            container.addActionRowComponents(actionRow);
+            const levelRow = new Djs.ActionRowBuilder<Djs.StringSelectMenuBuilder>();
+            container.addActionRowComponents(levelRow);
 
-            for (let i = 0; i < 3; i++) {
-                const button = new Djs.ButtonBuilder()
-                    .setCustomId(createCustomId('info', op.id, type, i, 'module'))
-                    .setLabel(`Level ${i + 1}`)
-                    .setStyle(Djs.ButtonStyle.Primary);
-                if (i === level)
-                    button.setCustomId('info_level_current')
-                        .setDisabled(true);
-                actionRow.addComponents(button);
+            const levelSelect = new Djs.StringSelectMenuBuilder()
+                .setCustomId(createCustomId('info', op.id, type, 'select'));
+            levelRow.addComponents(levelSelect);
+
+            for (let i = 2; i >= 0; i--) {
+                const levelOption = new Djs.StringSelectMenuOptionBuilder()
+                    .setLabel(`Level ${i + 1} `)
+                    .setValue(i.toString())
+                    .setDefault(i === level);
+                levelSelect.addOptions(levelOption);
             }
             break;
         }
-        case types.base.index: {
+        case typesDict.base.index: {
+            level = 0;
+
             const sections = buildBaseSections(op);
             for (const section of sections) {
                 container.addSectionComponents(section);
-                // container.addSeparatorComponents(new Djs.SeparatorBuilder().setSpacing(Djs.SeparatorSpacingSize.Large));
+                container.addSeparatorComponents(new Djs.SeparatorBuilder().setSpacing(Djs.SeparatorSpacingSize.Large));
             }
             break;
         }
-        case types.costs.index: {
+        case typesDict.costs.index: {
+            const levelsDict = {
+                promotions: {
+                    label: 'Promotions', index: 0, value: '0',
+                    disabled: false
+                },
+                skills: {
+                    label: 'Skills', index: 1, value: '1',
+                    disabled: !op.skills || !op.skills.length
+                },
+                masteries: {
+                    label: 'Masteries', index: 2, value: '2',
+                    disabled: gameConsts.rarity[op.data.rarity] <= 3
+                },
+                modules: {
+                    label: 'Modules', index: 3, value: '3',
+                    disabled: !op.modules || !op.modules.length
+                }
+            }
+            const levelsArr = Object.values(levelsDict);
+
+            if (!levelsArr[level] || levelsArr[level].disabled) level = 0;
+
             const sections = await buildCostSections(op, level);
-            container.addSectionComponents(sections);
-
-            const buttonLabels = ['Promotions', 'Skills', 'Masteries', 'Modules'];
-            const actionRow = new Djs.ActionRowBuilder<Djs.ButtonBuilder>();
-            container.addActionRowComponents(actionRow);
-
-            for (let i = 0; i < buttonLabels.length; i++) {
-                const button = new Djs.ButtonBuilder()
-                    .setCustomId(createCustomId('info', op.id, type, i, 'cost'))
-                    .setLabel(buttonLabels[i])
-                    .setStyle(Djs.ButtonStyle.Primary);
-                if (i === level)
-                    button.setCustomId('info_level_current')
-                        .setDisabled(true);
-                actionRow.addComponents(button);
+            for (const section of sections) {
+                container.addSectionComponents(section);
+                container.addSeparatorComponents(new Djs.SeparatorBuilder().setSpacing(Djs.SeparatorSpacingSize.Large));
             }
-            if (op.data.skills.length == 0)
-                actionRow.components[1].setStyle(Djs.ButtonStyle.Secondary)
-                    .setDisabled(true);
-            if (gameConsts.rarity[op.data.rarity] <= 2)
-                actionRow.components[2].setStyle(Djs.ButtonStyle.Secondary)
-                    .setDisabled(true);
-            if (op.modules.length == 0)
-                actionRow.components[3].setStyle(Djs.ButtonStyle.Secondary)
-                    .setDisabled(true);
+
+            const levelRow = new Djs.ActionRowBuilder<Djs.StringSelectMenuBuilder>();
+            container.addActionRowComponents(levelRow);
+
+            const levelSelect = new Djs.StringSelectMenuBuilder()
+                .setCustomId(createCustomId('info', op.id, type, 'select'));
+            levelRow.addComponents(levelSelect);
+
+            for (let i = 0; i < levelsArr.length; i++) {
+                if (levelsArr[i].disabled) continue;
+
+                const levelOption = new Djs.StringSelectMenuOptionBuilder()
+                    .setLabel(levelsArr[i].label)
+                    .setValue(i.toString())
+                    .setDefault(i === level);
+                levelSelect.addOptions(levelOption);
+            }
             break;
         }
-        case types.outfits.index: {
+        case typesDict.outfits.index: {
+            if (level < 0) level = 0;
+            else if (level >= op.skins.length) level = 0;
+
             const components = buildOutfitComponents(op, level);
             container.addSectionComponents(components.section);
             container.addMediaGalleryComponents(components.gallery);
+            container.addSeparatorComponents(new Djs.SeparatorBuilder().setSpacing(Djs.SeparatorSpacingSize.Large));
 
-            const rowOne = new Djs.ActionRowBuilder<Djs.ButtonBuilder>();
-            const rowTwo = new Djs.ActionRowBuilder<Djs.ButtonBuilder>();
-            const actionRows = [];
+            const levelRow = new Djs.ActionRowBuilder<Djs.StringSelectMenuBuilder>();
+            container.addActionRowComponents(levelRow);
+
+            const levelSelect = new Djs.StringSelectMenuBuilder()
+                .setCustomId(createCustomId('info', op.id, type, 'select'));
+            levelRow.addComponents(levelSelect);
 
             for (let i = 0; i < op.skins.length; i++) {
-                const button = new Djs.ButtonBuilder()
-                    .setCustomId(createCustomId('info', op.id, type, i, 'outfit'))
+                const levelOption = new Djs.StringSelectMenuOptionBuilder()
                     .setLabel(op.skins[i].displaySkin.skinGroupName)
-                    .setStyle(Djs.ButtonStyle.Primary);
-                if (i === level)
-                    button.setCustomId('info_level_current')
-                        .setDisabled(true);
-                if (op.skins[i].battleSkin.skinOrPrefabId === 'DefaultSkin') {
-                    rowOne.addComponents(button);
-                    actionRows[0] = rowOne;
-                }
-                else {
-                    rowTwo.addComponents(button);
-                    actionRows[1] = rowTwo;
-                }
+                    .setValue(i.toString())
+                    .setDefault(i === level);
+                levelSelect.addOptions(levelOption);
             }
-            container.addActionRowComponents(actionRows);
             break;
         }
-        case types.paradox.index: {
+        case typesDict.paradox.index: {
+            if (level < 0) level = 0;
+            else if (level > 1) level = 0;
+
             const components = await buildParadoxComponents(op, level);
             container.addTextDisplayComponents(components.text);
-            if (components.gallery)
+            if (components.gallery) {
                 container.addMediaGalleryComponents(components.gallery);
+            }
+
+            container.addSeparatorComponents(new Djs.SeparatorBuilder().setSpacing(Djs.SeparatorSpacingSize.Large));
 
             if (components.galleryExists) {
                 const buttonLabels = ['Preview', 'Diagram'];
-                const actionRow = new Djs.ActionRowBuilder<Djs.ButtonBuilder>();
-                container.addActionRowComponents(actionRow);
+
+                const levelRow = new Djs.ActionRowBuilder<Djs.StringSelectMenuBuilder>();
+                container.addActionRowComponents(levelRow);
+
+                const levelSelect = new Djs.StringSelectMenuBuilder()
+                    .setCustomId(createCustomId('info', op.id, type, 'select'));
+                levelRow.addComponents(levelSelect);
 
                 for (let i = 0; i < buttonLabels.length; i++) {
-                    const button = new Djs.ButtonBuilder()
-                        .setCustomId(createCustomId('info', op.id, type, i, 'paradox'))
+                    const levelOption = new Djs.StringSelectMenuOptionBuilder()
                         .setLabel(buttonLabels[i])
-                        .setStyle(Djs.ButtonStyle.Primary);
-                    if (i === level)
-                        button.setCustomId('info_level_current')
-                            .setDisabled(true);
-                    actionRow.addComponents(button);
+                        .setValue(i.toString())
+                        .setDefault(i === level);
+                    levelSelect.addOptions(levelOption);
                 }
             }
             break;
         }
     }
 
-    container.addSeparatorComponents(new Djs.SeparatorBuilder().setSpacing(Djs.SeparatorSpacingSize.Large));
-
-    const actionRow = new Djs.ActionRowBuilder<Djs.StringSelectMenuBuilder>();
-    container.addActionRowComponents(actionRow);
+    const typeRow = new Djs.ActionRowBuilder<Djs.StringSelectMenuBuilder>();
+    container.addActionRowComponents(typeRow);
 
     const typeSelect = new Djs.StringSelectMenuBuilder()
-        .setCustomId(createCustomId('info', op.id, type, 0));
-    actionRow.addComponents(typeSelect);
+        .setCustomId(createCustomId('info', op.id, 'select', 99));
+    typeRow.addComponents(typeSelect);
 
-    for (const typeLabel of Object.values(types)) {
+    for (const typeLabel of Object.values(typesDict)) {
         if (typeLabel.disabled) continue;
-        const option = new Djs.StringSelectMenuOptionBuilder()
+        const typeOption = new Djs.StringSelectMenuOptionBuilder()
             .setLabel(typeLabel.label)
             .setValue(typeLabel.value)
             .setDefault(type === typeLabel.index);
-        typeSelect.addOptions(option);
+        typeSelect.addOptions(typeOption);
     }
 
     return { components: [container], flags: Djs.MessageFlags.IsComponentsV2 | Djs.MessageFlags.Ephemeral }; // remove ephemeral once patched
@@ -827,7 +884,7 @@ export async function buildInfoMessage(op: T.Operator, type: number, level: numb
 export async function buildItemMessage(item: T.Item): Promise<Djs.BaseMessageOptions> {
     const dropStageCount = 6;
 
-    const description = item.data.description !== null ? `${item.data.usage}\n\n${item.data.description}` : item.data.usage;
+    const description = item.data.description !== null ? `${item.data.usage} \n\n${item.data.description} ` : item.data.usage;
 
     const embed = new Djs.EmbedBuilder()
         .setColor(embedColour)
@@ -837,7 +894,7 @@ export async function buildItemMessage(item: T.Item): Promise<Djs.BaseMessageOpt
     const sanityString = (await pstats.getItemAverageSanity(item))
         .sort((a, b) => a.sanity - b.sanity)
         .slice(0, dropStageCount)
-        .map(s => `${s.code} - **${s.sanity.toFixed(2)}**`).join('\n');
+        .map(s => `${s.code} - ** ${s.sanity.toFixed(2)}** `).join('\n');
     if (sanityString !== '') {
         embed.addFields({ name: 'Drop Stages (Sanity/Item)', value: sanityString, inline: true });
     }
@@ -845,7 +902,7 @@ export async function buildItemMessage(item: T.Item): Promise<Djs.BaseMessageOpt
         const formulaString = buildCostString(item.formula.costs, await api.all('item'));
         embed.addFields({ name: 'Crafting Formula', value: formulaString, inline: true });
     }
-    const imagePath = paths.myAssetUrl + `/items/${item.data.iconId}.png`;
+    const imagePath = paths.myAssetUrl + `/ items / ${item.data.iconId}.png`;
     if (await urlExists(imagePath))
         embed.setThumbnail(imagePath);
 
@@ -1901,10 +1958,12 @@ async function buildStageEnemyComponents(stageData: T.StageData): Promise<Djs.Te
     return section;
 }
 
-async function buildTitleSection(deploy: T.Deployable, rarity: boolean = true): Promise<Djs.SectionBuilder> {
+async function buildTitleSection(deploy: T.Deployable, extendedStats: boolean = false): Promise<Djs.SectionBuilder> {
     const section = new Djs.SectionBuilder();
 
-    let avatarThumb = rarity ? paths.myAssetUrl + `/operator/avatars/${deploy.id}.png` : paths.aceshipImageUrl + `/avatars/${deploy.id}.png`;
+    const opThumb = `${paths.myAssetUrl}/operator/avatars/${deploy.id}.png`;
+    const deployThumb = `${paths.aceshipImageUrl}/avatars/${deploy.id}.png`;
+    let avatarThumb = await urlExists(opThumb) ? opThumb : deployThumb;
     if (deploy.id === 'char_1037_amiya3') avatarThumb = paths.myAssetUrl + `/operator/avatars/char_1037_amiya3_2.png`;
     // sections MUST have a thumbnail/button, for now add it in even if it doesnt exist
     // if (await urlExists(avatarThumb)) {
@@ -1920,12 +1979,37 @@ async function buildTitleSection(deploy: T.Deployable, rarity: boolean = true): 
         }
     }
 
+    const titleContent = [
+        `## ${deploy.data.name} - ${'★'.repeat(gameConsts.rarity[deploy.data.rarity] + 1)}`,
+        `**${gameConsts.professions[deploy.data.profession]} - ${deploy.archetype}**`,
+        description
+    ]
+    if (extendedStats) {
+        if (deploy.range) {
+            titleContent.push(
+                '',
+                '**Range**',
+                buildRangeString(deploy.range).slice(0, -1),
+            );
+        }
+        if (deploy.data.talents) {
+            for (const talent of deploy.data.talents) {
+                if (talent.candidates) {
+                    const candidate = talent.candidates[talent.candidates.length - 1];
+                    if (candidate.name) {
+                        titleContent.push(
+                            '',
+                            `***${candidate.name}***`,
+                            insertBlackboard(candidate.description, candidate.blackboard)
+                        )
+                    }
+                }
+            }
+        }
+    }
+
     const titleText = new Djs.TextDisplayBuilder()
-        .setContent([
-            `## ${deploy.data.name} - ${'★'.repeat(gameConsts.rarity[deploy.data.rarity] + 1)}`,
-            `**${gameConsts.professions[deploy.data.profession]} - ${deploy.archetype}**`,
-            description
-        ].join('\n'));
+        .setContent(titleContent.join('\n'));
     section.addTextDisplayComponents(titleText);
 
     return section;
@@ -1933,38 +2017,13 @@ async function buildTitleSection(deploy: T.Deployable, rarity: boolean = true): 
 function buildDeployableComponents(deploy: T.Deployable): Djs.TextDisplayBuilder[] {
     const components: Djs.TextDisplayBuilder[] = [];
 
-    if (deploy.range) {
-        const rangeText = new Djs.TextDisplayBuilder()
-            .setContent([
-                '**Range**',
-                buildRangeString(deploy.range)
-            ].join('\n'));
-        components.push(rangeText);
-    }
-
-    if (deploy.data.talents) {
-        for (const talent of deploy.data.talents) {
-            if (talent.candidates) {
-                const candidate = talent.candidates[talent.candidates.length - 1];
-                if (candidate.name) {
-                    const talentText = new Djs.TextDisplayBuilder()
-                        .setContent([
-                            `***${candidate.name}***`,
-                            removeStyleTags(candidate.description)
-                        ].join('\n'));
-                    components.push(talentText);
-                }
-            }
-        }
-    }
+    const deployableContent = [];
 
     if (deploy.data.potentialRanks && deploy.data.potentialRanks.length > 0) {
-        const potentialText = new Djs.TextDisplayBuilder()
-            .setContent([
-                '**Potentials**',
-                deploy.data.potentialRanks.map(potential => potential.description).join('\n')
-            ].join('\n'));
-        components.push(potentialText);
+        deployableContent.push(
+            '\n**Potentials**',
+            deploy.data.potentialRanks.map(potential => potential.description).join('\n')
+        );
     }
 
     const trustStats = deploy.data.favorKeyFrames?.at(1).data ?? null;
@@ -1977,19 +2036,23 @@ function buildDeployableComponents(deploy: T.Deployable): Djs.TextDisplayBuilder
     const block = maxStats.blockCnt;
     const redeploy = maxStats.respawnTime;
     const atkInterval = maxStats.baseAttackTime;
-    const statText = new Djs.TextDisplayBuilder()
-        .setContent([
-            '**Max Stats (+Trust)**',
-            `❤️ **HP**\t\t\t\t\t  ${hp}`,
-            `⚔️ **ATK**\t\t\t\t\t${atk}`,
-            `🛡️ **DEF**\t\t\t\t\t${def}`,
-            `✨ **RES**\t\t\t\t\t${res}`,
-            `🏁 **DP Cost**\t\t\t${dpCost}`,
-            `✋ **Block**\t\t\t\t ${block}`,
-            `⌛ **Redeploy**\t\t  ${redeploy}`,
-            `⏱️ **Interval**\t\t\t ${atkInterval}`
-        ].join('\n'));
-    components.push(statText);
+
+    deployableContent.push(
+        '',
+        '**Max Stats (+Trust)**',
+        `❤️ **HP**\t\t\t\t\t  ${hp}`,
+        `⚔️ **ATK**\t\t\t\t\t${atk}`,
+        `🛡️ **DEF**\t\t\t\t\t${def}`,
+        `✨ **RES**\t\t\t\t\t${res}`,
+        `🏁 **DP Cost**\t\t\t${dpCost}`,
+        `✋ **Block**\t\t\t\t ${block}`,
+        `⌛ **Redeploy**\t\t  ${redeploy}`,
+        `⏱️ **Interval**\t\t\t ${atkInterval}`
+    );
+
+    const deployableText = new Djs.TextDisplayBuilder()
+        .setContent(deployableContent.join('\n'));
+    components.push(deployableText);
 
     return components;
 }
@@ -2073,7 +2136,7 @@ function buildModuleSections(op: T.Operator, level: number): Djs.SectionBuilder[
         if (talentName && talentDescription) {
             content.push(
                 '',
-                `**${talentName}**`,
+                `***${talentName}***`,
                 talentDescription
             );
         }
@@ -2146,10 +2209,10 @@ async function buildCostSections(op: T.Operator, level: number): Promise<Djs.Sec
 
             const costText = new Djs.TextDisplayBuilder()
                 .setContent([
-                    '### Skill Upgrades',
+                    '### Skills',
                     ...op.data.allSkillLvlup.map((skill, i) => {
                         if (skill.lvlUpCost === null) return '';
-                        return `**Level ${i + 2}**\n${buildCostString(skill.lvlUpCost, itemArr).slice(0, -1)}`;
+                        return `\n**Level ${i + 2}**\n${buildCostString(skill.lvlUpCost, itemArr).slice(0, -1)}`;
                     }
                     ).filter(e => e !== '')
                 ].join('\n'));
@@ -2169,7 +2232,7 @@ async function buildCostSections(op: T.Operator, level: number): Promise<Djs.Sec
                         `### ${op.skills[i].levels[0].name}`,
                         ...op.data.skills[i].levelUpCostCond.map((cond, j) => {
                             if (cond.levelUpCost === null) return '';
-                            return `**Mastery ${j + 1}**\n${buildCostString(cond.levelUpCost, itemArr).slice(0, -1)}`;
+                            return `\n**Mastery ${j + 1}**\n${buildCostString(cond.levelUpCost, itemArr).slice(0, -1)}`;
                         }),
                     ].join('\n'));
                 section.addTextDisplayComponents(costText);
@@ -2190,7 +2253,7 @@ async function buildCostSections(op: T.Operator, level: number): Promise<Djs.Sec
                     .setContent([
                         `### ${module.info.typeIcon.toUpperCase()} - ${module.info.uniEquipName}`,
                         ...Object.keys(module.info.itemCost).map(key => {
-                            return `**Level ${key}**\n${buildCostString(module.info.itemCost[key], itemArr).slice(0, -1)}`;
+                            return `\n**Level ${key}**\n${buildCostString(module.info.itemCost[key], itemArr).slice(0, -1)}`;
                         }),
                     ].join('\n'));
                 section.addTextDisplayComponents(costText);

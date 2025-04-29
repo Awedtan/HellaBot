@@ -46,10 +46,11 @@ export default class DeployCommand implements Command {
     }
     async selectResponse(interaction: StringSelectMenuInteraction<CacheType>, idArr: string[]) {
         const deploy = await api.single('deployable', { query: idArr[1] });
-        const level = parseInt(idArr[3]);
-        const type = parseInt(interaction.values[0]);
+        const type = idArr[2];
+        const level = idArr[3];
+        const value = parseInt(interaction.values[0]);
 
-        const infoEmbed = await buildDeployMessage(deploy, type, level);
-        await interaction.update(infoEmbed);
+        const deployEmbed = await buildDeployMessage(deploy, type === 'select' ? value : parseInt(type), level === 'select' ? value : parseInt(level));
+        await interaction.update(deployEmbed);
     }
 }

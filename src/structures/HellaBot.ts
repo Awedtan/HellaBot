@@ -15,12 +15,14 @@ export default class HellaBot {
     client: Client;
     commands = new Collection<string, Command>();
 
-    public static async create(token: string, clientId: string, disabled: { [key: string]: boolean }) {
+    public static async create(token: string, clientId: string, disabled: { [key: string]: boolean }, skipRegister: boolean = false) {
         const bot = new HellaBot(token, clientId, disabled);
         bot.client.once(Events.ClientReady, async client => {
             client.user.setActivity('CC#13', { type: ActivityType.Competing });
-            await bot.registerCommands();
-            await bot.registerEmojis();
+            await Promise.all([
+                bot.registerCommands(skipRegister),
+                bot.registerEmojis(skipRegister)
+            ]);
             console.log(`Ready! Logged in as ${bot.client.user.tag}`);
         });
         await bot.client.login(token);
@@ -81,7 +83,7 @@ export default class HellaBot {
         });
     }
 
-    private async registerCommands() {
+    private async registerCommands(skipRegister: boolean) {
         const commandArr = [];
         const commandFiles = readdirSync(join(__dirname, '..', 'commands')).filter(file => file.endsWith('.ts'));
         for (const file of commandFiles) {
@@ -100,61 +102,71 @@ export default class HellaBot {
             commandArr.push(command.data.toJSON());
         }
 
-        try {
-            const rest = new REST().setToken(this.token);
-            await rest.put(Routes.applicationCommands(this.clientId), { body: commandArr },);
-        } catch (err) {
-            console.error(err);
-        }
-
-        console.log('Registered application commands');
-    }
-
-    private async registerEmojis() {
-        const emojis = await this.client.application.emojis.fetch();
-        const emojiDict = Object.fromEntries(emojis.map(emoji => [emoji.name, true]));
-
-        const operators = await api.all('operator', { include: ['id', 'data.name'] });
-        for (const op of operators) {
-            if (op.id === 'char_1037_amiya3') op.id = 'char_1037_amiya3_2';
-            if (!emojiDict[op.id]) {
-                try {
-                    await this.client.application.emojis.create({ attachment: `${paths.myAssetUrl}/operator/avatars/${op.id}.png`, name: op.id });
-                } catch (err) {
-                    console.error(err);
-                }
-            }
-        }
-
-        const items = (await api.searchV2('item', { filter: { 'data.itemType': { 'in': ['MATERIAL', 'CARD_EXP'] } }, include: ['data'] }))
-            .filter(item => !item.data.name.includes('Token') && !item.data.itemId.includes('token') && !item.data.iconId.includes('token'))
-            .sort((a, b) => a.data.sortId - b.data.sortId);
-
-        for (const item of items) {
-            if (!item.data.iconId) continue;
-            if (!emojiDict[item.data.iconId]) {
-                try {
-                    await this.client.application.emojis.create({ attachment: `${paths.myAssetUrl}/items/${item.data.iconId}.png`, name: item.data.iconId });
-                } catch (err) {
-                    console.error(err);
-                }
-            }
-        }
-
-        const lmd = await api.single('item', { query: '4001' });
-        if (!emojiDict[lmd.data.iconId]) {
+        if (!skipRegister) {
             try {
-                await this.client.application.emojis.create({ attachment: `${paths.myAssetUrl}/items/${lmd.data.iconId}.png`, name: lmd.data.iconId });
+                const rest = new REST().setToken(this.token);
+                await rest.put(Routes.applicationCommands(this.clientId), { body: commandArr },);
             } catch (err) {
                 console.error(err);
             }
+
+            console.log('Registered application commands');
+        }
+        else {
+            console.log('Skipped command registration');
+        }
+    }
+
+    private async registerEmojis(skipRegister: boolean) {
+        const emojis = await this.client.application.emojis.fetch();
+        const emojiDict = Object.fromEntries(emojis.map(emoji => [emoji.name, true]));
+
+        if (!skipRegister) {
+            const operators = await api.all('operator', { include: ['id', 'data.name'] });
+            for (const op of operators) {
+                if (op.id === 'char_1037_amiya3') op.id = 'char_1037_amiya3_2';
+                if (!emojiDict[op.id]) {
+                    try {
+                        await this.client.application.emojis.create({ attachment: `${paths.myAssetUrl}/operator/avatars/${op.id}.png`, name: op.id });
+                    } catch (err) {
+                        console.error(err);
+                    }
+                }
+            }
+
+            const items = (await api.searchV2('item', { filter: { 'data.itemType': { 'in': ['MATERIAL', 'CARD_EXP'] } }, include: ['data'] }))
+                .filter(item => !item.data.name.includes('Token') && !item.data.itemId.includes('token') && !item.data.iconId.includes('token'))
+                .sort((a, b) => a.data.sortId - b.data.sortId);
+
+            for (const item of items) {
+                if (!item.data.iconId) continue;
+                if (!emojiDict[item.data.iconId]) {
+                    try {
+                        await this.client.application.emojis.create({ attachment: `${paths.myAssetUrl}/items/${item.data.iconId}.png`, name: item.data.iconId });
+                    } catch (err) {
+                        console.error(err);
+                    }
+                }
+            }
+
+            const lmd = await api.single('item', { query: '4001' });
+            if (!emojiDict[lmd.data.iconId]) {
+                try {
+                    await this.client.application.emojis.create({ attachment: `${paths.myAssetUrl}/items/${lmd.data.iconId}.png`, name: lmd.data.iconId });
+                } catch (err) {
+                    console.error(err);
+                }
+            }
+
+            console.log('Registered application emojis');
+        }
+        else {
+            console.log('Skipped emoji registration');
         }
 
         const finalEmojis = await this.client.application.emojis.fetch();
         for (const emoji of finalEmojis) {
             globalEmojis[emoji[1].name] = emoji[1];
         }
-
-        console.log('Registered application emojis');
     }
 }
