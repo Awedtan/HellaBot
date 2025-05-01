@@ -27,6 +27,8 @@ function getOpPrettyName(op: T.Operator, { rarity = true, emoji = true, name = t
     return string;
 }
 function insertBlackboard(text: string, blackboard: T.Blackboard[]) {
+    if (!text || text.length === 0) return '';
+
     const formatVariable = (chunk: string, blackboard: T.Blackboard[]) => {
         // {tag} {tag:0} {tag:0%} {tag:0.0} {tag:0.0%}
         const tag = chunk.split(':')[0].toLowerCase();
@@ -350,7 +352,7 @@ export async function buildDeployMessage(deploy: T.Deployable, type: number, lev
     container.addSeparatorComponents(new Djs.SeparatorBuilder().setSpacing(Djs.SeparatorSpacingSize.Large));
 
     // const typeText = new Djs.TextDisplayBuilder()
-    //     .setContent(`## ${typesArr[type].label} `)
+    //     .setContent(`## ${typesArr[type].label}`)
     // container.addTextDisplayComponents(typeText);
 
     switch (type) {
@@ -364,7 +366,7 @@ export async function buildDeployMessage(deploy: T.Deployable, type: number, lev
         }
         case typesDict.skills.index: {
             if (level < 0) level = 0;
-            else if (level >= deploy.skills[0].levels.length) level = deploy.skills[0].levels.length - 1;
+            else if (level >= deploy.skills[0].excel.levels.length) level = deploy.skills[0].excel.levels.length - 1;
 
             const sections = await buildSkillSections(deploy, level);
             for (const section of sections) {
@@ -379,7 +381,7 @@ export async function buildDeployMessage(deploy: T.Deployable, type: number, lev
                 .setCustomId(createCustomId('deploy', deploy.id, type, 'select'));
             levelRow.addComponents(levelSelect);
 
-            for (let i = deploy.skills[0].levels.length - 1; i >= 0; i--) {
+            for (let i = 0; i < deploy.skills[0].excel.levels.length; i++) {
                 const levelOption = new Djs.StringSelectMenuOptionBuilder()
                     .setLabel(gameConsts.longSkillLevels[i])
                     .setValue(i.toString())
@@ -636,7 +638,7 @@ export async function buildHelpListMessage(): Promise<Djs.BaseMessageOptions> {
 
     return { embeds: [embed] };
 }
-export async function buildInfoMessage(op: T.Operator, type: number, level: number) {
+export async function buildInfoMessage(op: T.Operator, type: number = 0, level: number = 0, extras: number[] = []) {
     const typesDict = {
         stats: {
             label: 'Stats', index: 0, value: '0',
@@ -647,6 +649,11 @@ export async function buildInfoMessage(op: T.Operator, type: number, level: numb
             label: 'Skills', index: 1, value: '1',
             disabled: !op.skills || !op.skills.length,
             extendedStats: true
+        },
+        deploy: {
+            label: 'Deployables', index: 7, value: '7',
+            disabled: !op.data.displayTokenDict && Object.values(op.data.displayTokenDict).every(s => !s),
+            extendedStats: false
         },
         modules: {
             label: 'Modules', index: 2, value: '2',
@@ -683,7 +690,7 @@ export async function buildInfoMessage(op: T.Operator, type: number, level: numb
     container.addSeparatorComponents(new Djs.SeparatorBuilder().setSpacing(Djs.SeparatorSpacingSize.Large));
 
     // const typeText = new Djs.TextDisplayBuilder()
-    //     .setContent(`## ${typesArr[type].label} `)
+    //     .setContent(`## ${typesArr[type].label}`)
     // container.addTextDisplayComponents(typeText);
 
     switch (type) {
@@ -697,7 +704,7 @@ export async function buildInfoMessage(op: T.Operator, type: number, level: numb
         }
         case typesDict.skills.index: {
             if (level < 0) level = 0;
-            else if (level >= op.skills[0].levels.length) level = op.skills[0].levels.length - 1;
+            else if (level >= op.skills[0].excel.levels.length) level = op.skills[0].excel.levels.length - 1;
 
             const sections = await buildSkillSections(op, level);
             for (const section of sections) {
@@ -712,12 +719,176 @@ export async function buildInfoMessage(op: T.Operator, type: number, level: numb
                 .setCustomId(createCustomId('info', op.id, type, 'select'));
             levelRow.addComponents(levelSelect);
 
-            for (let i = op.skills[0].levels.length - 1; i >= 0; i--) {
+            for (let i = 0; i < op.skills[0].excel.levels.length; i++) {
                 const levelOption = new Djs.StringSelectMenuOptionBuilder()
                     .setLabel(gameConsts.longSkillLevels[i])
                     .setValue(i.toString())
                     .setDefault(i === level);
                 levelSelect.addOptions(levelOption);
+            }
+            break;
+        }
+        case typesDict.deploy.index: { // holy shit this is a mess
+            if (op.skills.every(s => !s.deploy.overrideTokenKey)) { // if an operator does not have summons that are tied to a skill, assume they only have one summon (eg. Deepcolor)
+                extras = [extras?.[0] ?? 0, extras?.[1] ?? 0, extras?.[2] ?? 0];
+
+                let deploySkill = extras[0];
+                const deployType = extras[1];
+                let deployLevel = extras[2];
+
+                if (deploySkill < 0) deploySkill = 0;
+                else if (deploySkill >= op.skills.length) deploySkill = 0;
+                if (deployLevel < 0) deployLevel = 0;
+                else if (deployLevel >= op.skills[0].excel.levels.length) deployLevel = op.skills[0].excel.levels.length - 1;
+
+                const deploy = await api.single('deployable', { query: Object.keys(op.data.displayTokenDict)[0] });
+
+                const deployMessage = await buildDeployMessage(deploy, deployType, deployLevel);
+                for (const component of deployMessage.components[0].components) {
+                    switch (component.data.type) {
+                        case Djs.ComponentType.Section: {
+                            container.addSectionComponents(component as Djs.SectionBuilder);
+                            break;
+                        }
+                        case Djs.ComponentType.TextDisplay: {
+                            container.addTextDisplayComponents(component as Djs.TextDisplayBuilder);
+                            break;
+                        }
+                        case Djs.ComponentType.Separator: {
+                            container.addSeparatorComponents(component as Djs.SeparatorBuilder);
+                            break;
+                        }
+                        default: {
+                            break;
+                        }
+                    }
+                }
+            }
+            else {
+                extras = [extras?.[0] ?? 0, extras?.[1] ?? 0, extras?.[2] ?? 0];
+
+                let deploySkill = extras[0];
+                const deployType = extras[1];
+                let deployLevel = extras[2];
+
+                if (deploySkill < 0) deploySkill = 0;
+                else if (deploySkill >= op.skills.length) deploySkill = 0;
+                if (deployLevel < 0) deployLevel = 0;
+                else if (deployLevel >= op.skills[0].excel.levels.length) deployLevel = op.skills[0].excel.levels.length - 1;
+
+                const deploy = await api.single('deployable', { query: op.skills[deploySkill].deploy.overrideTokenKey });
+
+                const deployMessage = await buildDeployMessage(deploy, deployType, deployLevel);
+                switch (deployType) {
+                    case typesDict.stats.index: {
+                        for (const component of deployMessage.components[0].components) {
+                            switch (component.data.type) {
+                                case Djs.ComponentType.Section: {
+                                    container.addSectionComponents(component as Djs.SectionBuilder);
+                                    break;
+                                }
+                                case Djs.ComponentType.TextDisplay: {
+                                    container.addTextDisplayComponents(component as Djs.TextDisplayBuilder);
+                                    break;
+                                }
+                                case Djs.ComponentType.Separator: {
+                                    container.addSeparatorComponents(component as Djs.SeparatorBuilder);
+                                    break;
+                                }
+                                default: {
+                                    break;
+                                }
+                            }
+                        }
+                        break;
+                    }
+                    case typesDict.skills.index: {
+                        const skillSections = await buildSkillSections(op, deployLevel, deploySkill);
+                        for (const section of skillSections) {
+                            container.addSectionComponents(section);
+                            container.addSeparatorComponents(new Djs.SeparatorBuilder().setSpacing(Djs.SeparatorSpacingSize.Large));
+                        }
+
+                        const firstSkip = Array(20).fill(true);
+                        for (const component of deployMessage.components[0].components) {
+                            switch (component.data.type) {
+                                case Djs.ComponentType.Section: {
+                                    if (firstSkip[component.data.type]) {
+                                        firstSkip[component.data.type] = false;
+                                        continue;
+                                    }
+                                    container.addSectionComponents(component as Djs.SectionBuilder);
+                                    break;
+                                }
+                                case Djs.ComponentType.TextDisplay: {
+                                    if (firstSkip[component.data.type]) {
+                                        firstSkip[component.data.type] = false;
+                                        continue;
+                                    }
+                                    container.addTextDisplayComponents(component as Djs.TextDisplayBuilder);
+                                    break;
+                                }
+                                case Djs.ComponentType.Separator: {
+                                    if (firstSkip[component.data.type]) {
+                                        firstSkip[component.data.type] = false;
+                                        continue;
+                                    }
+                                    container.addSeparatorComponents(component as Djs.SeparatorBuilder);
+                                    break;
+                                }
+                                default: {
+                                    break;
+                                }
+                            }
+                        }
+
+                        const deployLevelRow = new Djs.ActionRowBuilder<Djs.StringSelectMenuBuilder>();
+                        container.addActionRowComponents(deployLevelRow);
+
+                        const deployLevelSelect = new Djs.StringSelectMenuBuilder()
+                            .setCustomId(createCustomId('info', op.id, type, level, deploySkill, deployType, 'select'));
+                        deployLevelRow.addComponents(deployLevelSelect);
+
+                        for (let i = 0; i < op.skills[0].excel.levels.length; i++) {
+                            const deployLevelOption = new Djs.StringSelectMenuOptionBuilder()
+                                .setLabel(`${gameConsts.longSkillLevels[i]}`)
+                                .setValue(i.toString())
+                                .setDefault(i === deployLevel);
+                            deployLevelSelect.addOptions(deployLevelOption);
+                        }
+                    }
+                }
+
+                const deployTypeRow = new Djs.ActionRowBuilder<Djs.StringSelectMenuBuilder>();
+                container.addActionRowComponents(deployTypeRow);
+
+                const typeSelect = new Djs.StringSelectMenuBuilder()
+                    .setCustomId(createCustomId('info', op.id, type, level, deploySkill, 'select', 99));
+                deployTypeRow.addComponents(typeSelect);
+
+                for (const typeLabel of Object.values(typesDict).splice(0, 2)) {
+                    if (typeLabel.disabled) continue;
+                    const deployTypeOption = new Djs.StringSelectMenuOptionBuilder()
+                        .setLabel(`Deployable - ${typeLabel.label}`)
+                        .setValue(typeLabel.value)
+                        .setDefault(typeLabel.index === deployType);
+                    typeSelect.addOptions(deployTypeOption);
+                }
+
+                const deploySkillRow = new Djs.ActionRowBuilder<Djs.StringSelectMenuBuilder>();
+                container.addActionRowComponents(deploySkillRow);
+
+                const deploySkillSelect = new Djs.StringSelectMenuBuilder()
+                    .setCustomId(createCustomId('info', op.id, type, level, 'select', deployType, deployLevel));
+                deploySkillRow.addComponents(deploySkillSelect);
+
+                for (let i = 0; i < op.skills.length; i++) {
+                    const deploySkillOption = new Djs.StringSelectMenuOptionBuilder()
+                        .setLabel(`Skill ${i + 1}`)
+                        .setValue(i.toString())
+                        .setDefault(i === deploySkill);
+                    deploySkillSelect.addOptions(deploySkillOption);
+                }
             }
             break;
         }
@@ -738,9 +909,9 @@ export async function buildInfoMessage(op: T.Operator, type: number, level: numb
                 .setCustomId(createCustomId('info', op.id, type, 'select'));
             levelRow.addComponents(levelSelect);
 
-            for (let i = 2; i >= 0; i--) {
+            for (let i = 0; i < 3; i++) {
                 const levelOption = new Djs.StringSelectMenuOptionBuilder()
-                    .setLabel(`Level ${i + 1} `)
+                    .setLabel(`Level ${i + 1}`)
                     .setValue(i.toString())
                     .setDefault(i === level);
                 levelSelect.addOptions(levelOption);
@@ -884,7 +1055,7 @@ export async function buildInfoMessage(op: T.Operator, type: number, level: numb
 export async function buildItemMessage(item: T.Item): Promise<Djs.BaseMessageOptions> {
     const dropStageCount = 6;
 
-    const description = item.data.description !== null ? `${item.data.usage} \n\n${item.data.description} ` : item.data.usage;
+    const description = item.data.description !== null ? `${item.data.usage} \n\n${item.data.description}` : item.data.usage;
 
     const embed = new Djs.EmbedBuilder()
         .setColor(embedColour)
@@ -2014,9 +2185,7 @@ async function buildTitleSection(deploy: T.Deployable, extendedStats: boolean = 
 
     return section;
 }
-function buildDeployableComponents(deploy: T.Deployable): Djs.TextDisplayBuilder[] {
-    const components: Djs.TextDisplayBuilder[] = [];
-
+function buildDeployableComponents(deploy: T.Deployable): Djs.TextDisplayBuilder {
     const deployableContent = [];
 
     if (deploy.data.potentialRanks && deploy.data.potentialRanks.length > 0) {
@@ -2052,16 +2221,15 @@ function buildDeployableComponents(deploy: T.Deployable): Djs.TextDisplayBuilder
 
     const deployableText = new Djs.TextDisplayBuilder()
         .setContent(deployableContent.join('\n'));
-    components.push(deployableText);
 
-    return components;
+    return deployableText;
 }
-async function buildSkillSections(deploy: T.Deployable, level: number): Promise<Djs.SectionBuilder[]> {
+async function buildSkillSections(deploy: T.Deployable, level: number, index: number = null): Promise<Djs.SectionBuilder[]> {
     const sections: Djs.SectionBuilder[] = [];
 
     const seenSkills = new Set();
-    for (let i = 0; i < deploy.skills.length; i++) {
-        const skill = deploy.skills[i];
+    for (let i = index ?? 0; i <= (index ?? deploy.skills.length - 1); i++) {
+        const skill = deploy.skills[i].excel;
 
         if (seenSkills.has(skill.skillId)) continue;
         seenSkills.add(skill.skillId);
@@ -2224,12 +2392,12 @@ async function buildCostSections(op: T.Operator, level: number): Promise<Djs.Sec
                 const section = new Djs.SectionBuilder();
                 sections.push(section);
 
-                const masteryThumb = new Djs.ThumbnailBuilder({ media: { url: paths.myAssetUrl + `/operator/skills/skill_icon_${op.skills[i].iconId ?? op.skills[i].skillId}.png` } });
+                const masteryThumb = new Djs.ThumbnailBuilder({ media: { url: paths.myAssetUrl + `/operator/skills/skill_icon_${op.skills[i].excel.iconId ?? op.skills[i].excel.skillId}.png` } });
                 section.setThumbnailAccessory(masteryThumb);
 
                 const costText = new Djs.TextDisplayBuilder()
                     .setContent([
-                        `### ${op.skills[i].levels[0].name}`,
+                        `### ${op.skills[i].excel.levels[0].name}`,
                         ...op.data.skills[i].levelUpCostCond.map((cond, j) => {
                             if (cond.levelUpCost === null) return '';
                             return `\n**Mastery ${j + 1}**\n${buildCostString(cond.levelUpCost, itemArr).slice(0, -1)}`;

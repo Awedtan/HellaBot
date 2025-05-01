@@ -32,24 +32,17 @@ export default class InfoCommand {
 
         await interaction.deferReply();
 
-        const operatorEmbed = await buildInfoMessage(op, 0, 0);
+        const operatorEmbed = await buildInfoMessage(op);
         return await interaction.editReply(operatorEmbed);
-    }
-    async buttonResponse(interaction: ButtonInteraction<CacheType>, idArr: string[]) {
-        const op = await api.single('operator', { query: idArr[1] });
-        const type = parseInt(idArr[2]);
-        const level = parseInt(idArr[3]);
-
-        const infoEmbed = await buildInfoMessage(op, type, level);
-        await interaction.update(infoEmbed);
     }
     async selectResponse(interaction: StringSelectMenuInteraction<CacheType>, idArr: string[]) {
         const op = await api.single('operator', { query: idArr[1] });
-        const type = idArr[2];
-        const level = idArr[3];
-        const value = parseInt(interaction.values[0]);
+        const value = interaction.values[0];
+        const type = parseInt(idArr[2] === 'select' ? value : idArr[2]);
+        const level = parseInt(idArr[3] === 'select' ? value : idArr[3]);
+        const extras = idArr.slice(4).map(value => parseInt(value === 'select' ? interaction.values[0] : value));
 
-        const infoEmbed = await buildInfoMessage(op, type === 'select' ? value : parseInt(type), level === 'select' ? value : parseInt(level));
+        const infoEmbed = await buildInfoMessage(op, type, level, extras);
         await interaction.update(infoEmbed);
     }
 }
