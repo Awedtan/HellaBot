@@ -652,7 +652,7 @@ export async function buildInfoMessage(op: T.Operator, type: number = 0, level: 
         },
         deploy: {
             label: 'Deployables', index: 7, value: '7',
-            disabled: !op.data.displayTokenDict && Object.values(op.data.displayTokenDict).every(s => !s),
+            disabled: !op.data.displayTokenDict || Object.values(op.data.displayTokenDict).every(s => !s),
             extendedStats: false
         },
         modules: {
