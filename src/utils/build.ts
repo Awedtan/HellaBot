@@ -366,7 +366,7 @@ export async function buildDeployMessage(deploy: T.Deployable, type: number, lev
         }
         case typesDict.skills.index: {
             if (level < 0) level = 0;
-            else if (level >= deploy.skills[0].excel.levels.length) level = deploy.skills[0].excel.levels.length - 1;
+            else if (level >= deploy.skills.find(s => s?.excel).excel.levels.length) level = deploy.skills.find(s => s?.excel).excel.levels.length - 1;
 
             const sections = await buildSkillSections(deploy, level);
             for (const section of sections) {
@@ -381,7 +381,7 @@ export async function buildDeployMessage(deploy: T.Deployable, type: number, lev
                 .setCustomId(createCustomId('deploy', deploy.id, type, 'select'));
             levelRow.addComponents(levelSelect);
 
-            for (let i = 0; i < deploy.skills[0].excel.levels.length; i++) {
+            for (let i = 0; i < deploy.skills.find(s => s?.excel).excel.levels.length; i++) {
                 const levelOption = new Djs.StringSelectMenuOptionBuilder()
                     .setLabel(gameConsts.longSkillLevels[i])
                     .setValue(i.toString())
@@ -773,6 +773,8 @@ export async function buildInfoMessage(op: T.Operator, type: number = 0, level: 
 
                 if (deploySkill < 0) deploySkill = 0;
                 else if (deploySkill >= op.skills.length) deploySkill = 0;
+                if (deploySkill < op.skills.findIndex(s => s.deploy.overrideTokenKey)) deploySkill = op.skills.findIndex(s => s.deploy.overrideTokenKey);
+                else if (deploySkill > op.skills.findLastIndex(s => s.deploy.overrideTokenKey)) deploySkill = op.skills.findLastIndex(s => s.deploy.overrideTokenKey);
                 if (deployLevel < 0) deployLevel = 0;
                 else if (deployLevel >= op.skills[0].excel.levels.length) deployLevel = op.skills[0].excel.levels.length - 1;
 
@@ -883,6 +885,8 @@ export async function buildInfoMessage(op: T.Operator, type: number = 0, level: 
                 deploySkillRow.addComponents(deploySkillSelect);
 
                 for (let i = 0; i < op.skills.length; i++) {
+                    if (!op.skills[i].deploy.overrideTokenKey) continue;
+
                     const deploySkillOption = new Djs.StringSelectMenuOptionBuilder()
                         .setLabel(`Skill ${i + 1}`)
                         .setValue(i.toString())
@@ -2229,9 +2233,12 @@ async function buildSkillSections(deploy: T.Deployable, level: number, index: nu
 
     const seenSkills = new Set();
     for (let i = index ?? 0; i <= (index ?? deploy.skills.length - 1); i++) {
+        if (!deploy.skills[i]) continue;
+
         const skill = deploy.skills[i].excel;
 
         if (seenSkills.has(skill.skillId)) continue;
+
         seenSkills.add(skill.skillId);
 
         const skillLevel = skill.levels[level];
