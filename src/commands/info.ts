@@ -14,7 +14,7 @@ export default class InfoCommand {
                 .setAutocomplete(true)
         ) as SlashCommandBuilder;
     name = 'Info';
-    description = ['Show information on an operator, including talents, potentials, stats, skills, and trust bonus. Further information on skills, modules, art, base skills, and material costs can be viewed by clicking their respective buttons.'];
+    description = ['Show information on an operator, including stats, talents, skills, modules, and more.'];
     usage = [
         '`/info [operator]`'
     ];

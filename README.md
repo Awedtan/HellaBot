@@ -2,13 +2,11 @@
 
 An Arknights Discord bot that provides information on operators, enemies, stages, and more! 
 
-[Click here to invite a me-hosted instance of the bot to a server!](https://discord.com/application-directory/1277141603575922710)
+[Click here to invite the bot to a server (also available in DMs).](https://discord.com/application-directory/1277141603575922710)
 
-> Note: the `spine` command is disabled for this instance because it's quite compute-intensive and the bot's running on a low-power system. If you'd like that functionality, you can install and run the bot yourself :^)
+> Note: the `spine` command is disabled because it's quite compute-intensive. If you'd like that functionality, feel free to run the bot for yourself :^)
 
 A work-in-progress personal project. Game data is fetched from [HellaAPI](https://github.com/Awedtan/HellaAPI).
-
-<img src="https://raw.githubusercontent.com/Awedtan/HellaBot-Assets/main/readme/demo.gif" height="600"/>
 
 ## Installation
 
@@ -64,11 +62,8 @@ All command interactions are event-driven, so buttons and other interactables wi
 
 | Command | Description                                                      |
 |---------|------------------------------------------------------------------|
-| art     | Show an operator's artwork                                       |
-| base    | Show an operator's base skills                                   |
 | cc      | Show information on a Contingency Contract stage or season       |
 | ccb     | Show information on a CC Battleplan stage or season              |
-| costs   | Show an operator's elite, skill, mastery, and module costs       |
 | current | Show what's currently happening in the game                      |
 | define  | Show definitions for in-game terms                               |
 | deploy  | Show information on a deployable                                 |
@@ -76,19 +71,16 @@ All command interactions are event-driven, so buttons and other interactables wi
 | events  | Show a list of in-game events                                    |
 | gacha   | Show a list of gacha banners and rate-ups                        |
 | help    | Show help info on commands                                       |
-| info    | Show an operator's information and attributes                    |
+| info    | Show an operator's stats, skills, modules, and more              |
 | is2     | Show information on IS2: Phantom & Crimson Solitaire             |
 | is3     | Show information on IS3: Mizuki & Caerula Arbor                  |
 | is4     | Show information on IS4: Expeditioner's Jǫklumarkar              |
 | is5     | Show information on IS5: Sarkaz's Furnaceside Fables             |
 | item    | Show information on an item                                      |
-| modules | Show an operator's modules                                       |
 | new     | Show newly updated game data                                     |
-| paradox | Show an operator's Paradox Simulation stage                      |
 | ping    | Get bot network latency                                          |
 | ra2     | Show information on RA2: Tales Within the Sand                   |
 | recruit | Find recruitable operators from recruitment tags                 |
-| skills  | Show an operator's skills                                        |
 | spine   | Render and display spine animations                              |
 | stage   | Show information on a stage                                      |
 
