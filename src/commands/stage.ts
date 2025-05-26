@@ -2,7 +2,7 @@ import { AutocompleteInteraction, ButtonInteraction, CacheType, ChatInputCommand
 import Command from '../structures/Command';
 import * as api from '../utils/api';
 import { autocompleteStage, autocompleteToughStage } from '../utils/autocomplete';
-import { buildStageMessage, buildStageSelectMessage } from '../utils/build';
+import { buildStageMessage } from '../utils/build';
 import { Stage } from '../utils/canon';
 
 export default class StageCommand implements Command {
@@ -64,22 +64,14 @@ export default class StageCommand implements Command {
                 if (!stageArr || stageArr.length === 0)
                     return await interaction.reply({ content: 'That stage doesn\'t exist!', ephemeral: true });
 
-                if (stageArr.length === 1) {
-                    const stage = stageArr[0];
-                    if (!Stage.isValid(stage))
-                        return await interaction.reply({ content: 'That stage data doesn\'t exist!', ephemeral: true });
+                const stage = stageArr[0];
+                if (!Stage.isValid(stage))
+                    return await interaction.reply({ content: 'That stage data doesn\'t exist!', ephemeral: true });
 
-                    await interaction.deferReply();
+                await interaction.deferReply();
 
-                    const stageEmbed = await buildStageMessage(stage, 0);
-                    return await interaction.editReply(stageEmbed);
-                }
-                else {
-                    await interaction.deferReply();
-
-                    const stageSelectEmbed = await buildStageSelectMessage(stageArr);
-                    return await interaction.editReply(stageSelectEmbed);
-                }
+                const stageEmbed = await buildStageMessage(stage, 0);
+                return await interaction.editReply(stageEmbed);
             }
             case 'challenge': {
                 const stageArr = await api.single('toughstage', { query: code });
@@ -87,36 +79,27 @@ export default class StageCommand implements Command {
                 if (!stageArr || stageArr.length === 0)
                     return await interaction.reply({ content: 'That stage doesn\'t exist!', ephemeral: true });
 
-                if (stageArr.length == 1) {
-                    const stage = stageArr[0];
-                    if (!Stage.isValid(stage))
-                        return await interaction.reply({ content: 'That stage data doesn\'t exist!', ephemeral: true });
+                const stage = stageArr[0];
+                if (!Stage.isValid(stage))
+                    return await interaction.reply({ content: 'That stage data doesn\'t exist!', ephemeral: true });
 
-                    await interaction.deferReply();
+                await interaction.deferReply();
 
-                    const stageEmbed = await buildStageMessage(stage, 0);
-                    return await interaction.editReply(stageEmbed);
-                }
-                else {
-                    await interaction.deferReply();
-
-                    const stageSelectEmbed = await buildStageSelectMessage(stageArr);
-                    return await interaction.editReply(stageSelectEmbed);
-                }
+                const stageEmbed = await buildStageMessage(stage, 0);
+                return await interaction.editReply(stageEmbed);
             }
         }
     }
-    async buttonResponse(interaction: ButtonInteraction<CacheType>, idArr: string[]) {
-        const stage = idArr[3] === 'true' ? (await api.single('toughstage', { query: idArr[1] }))[parseInt(idArr[2])] : (await api.single('stage', { query: idArr[1] }))[parseInt(idArr[2])];
-        const page = parseInt(idArr[4]);
-
-        const stageEmbed = await buildStageMessage(stage, page);
-        await interaction.update(stageEmbed);
-    }
     async selectResponse(interaction: StringSelectMenuInteraction<CacheType>, idArr: string[]) {
-        const stage = (await api.single('stage', { query: idArr[2] }))[interaction.values[0]];
+        const value = parseInt(interaction.values[0]);
+        const id = idArr[1];
+        const index = parseInt(idArr[2]);
+        const isTough = idArr[3] === 'true';
+        const stage = isTough
+            ? (await api.single('toughstage', { query: id }))[index]
+            : (await api.single('stage', { query: id }))[index];
 
-        const stageEmbed = await buildStageMessage(stage, 0);
+        const stageEmbed = await buildStageMessage(stage, value);
         await interaction.update(stageEmbed);
     }
 };

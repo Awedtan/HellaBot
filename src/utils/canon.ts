@@ -133,11 +133,6 @@ export class Operator extends Deployable {
         if (module > maxIndex) return maxIndex;
         return module;
     }
-    static clampParadoxIndex(op: T.Operator, paradox: number): number {
-        if (paradox < 0) return 0;
-        if (paradox > 1) return 1;
-        return paradox;
-    }
     static clampSkinIndex(op: T.Operator, skin: number): number {
         if (skin < 0) return 0;
         const maxIndex = op.skins.findLastIndex(s => Skin.isValid(s));
@@ -158,6 +153,14 @@ export class Operator extends Deployable {
     }
     static hasParadox(op: T.Operator): boolean {
         return !!op.paradox;
+    }
+}
+
+export class Paradox {
+    static clampIndex(index: number) {
+        if (index < 0) return 0;
+        if (index > 1) return 1;
+        return index;
     }
 }
 
@@ -213,7 +216,15 @@ export class Skin {
 }
 
 export class Stage {
+    static isChallenge(stage: T.Stage): boolean {
+        return stage.excel.diffGroup === 'TOUGH' || stage.excel.difficulty === 'FOUR_STAR';
+    }
     static isValid(stage: T.Stage): boolean {
         return !!stage && !!stage.excel && !!stage.levels;
+    }
+    static clampIndex(index: number) {
+        if (index < 0) return 0;
+        if (index > 1) return 1;
+        return index;
     }
 }

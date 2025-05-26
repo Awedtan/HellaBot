@@ -984,9 +984,9 @@ export async function buildInfoMessage(op: T.Operator, type: number = 0, level: 
             break;
         }
         case typesDict.paradox.index: {
-            level = C.Operator.clampParadoxIndex(op, level);
+            level = C.Paradox.clampIndex(level);
 
-            const components = await buildParadoxComponents(op, level);
+            const components = await buildStageComponents(op.paradox, level);
             container.addTextDisplayComponents(components.text);
             if (components.gallery) {
                 container.addMediaGalleryComponents(components.gallery);
@@ -1684,111 +1684,42 @@ export async function buildSpineDeployMessage(gifFile: string, deploy: T.Deploya
 
     return { content: '', embeds: [embed], files: [gif], components: [componentRow] };
 }
-export async function buildStageMessage(stage: T.Stage, page: number): Promise<Djs.BaseMessageOptions> {
-    const stageInfo = stage.excel;
-    const stageData = stage.levels;
-    const isChallenge = stageInfo.diffGroup === 'TOUGH' || stageInfo.difficulty === 'FOUR_STAR'
+export async function buildStageMessage(stage: T.Stage, level: number) {
+    const container = new Djs.ContainerBuilder().setAccentColor(embedColour);
 
-    const title = isChallenge ? `Challenge ${stageInfo.code} - ${stageInfo.name}` : `${stageInfo.code} - ${stageInfo.name}`;
-    const description = removeStyleTags(stageInfo.description);
+    level = C.Stage.clampIndex(level);
 
-    const embed = new Djs.EmbedBuilder()
-        .setColor(embedColour)
-        .setTitle(title)
-        .setURL(`${paths.stageViewerUrl}?level=${stage.excel.stageId.toLowerCase()}`)
-        .setDescription(description);
+    const components = await buildStageComponents(stage, level);
+    container.addTextDisplayComponents(components.text);
+    if (components.gallery) {
+        container.addMediaGalleryComponents(components.gallery);
+    }
+    if (components.galleryExists) {
+        container.addSeparatorComponents(new Djs.SeparatorBuilder().setSpacing(Djs.SeparatorSpacingSize.Large));
 
-    let regularString = '', specialString = '';
-    for (const reward of stageInfo.stageDropInfo.displayDetailRewards) {
-        switch (reward.dropType) {
-            case 'NORMAL': {
-                const item = await api.single('item', { query: reward.id });
-                regularString += `${getItemEmoji(item)} ${item.data.name}\n`;
-                break;
-            }
-            case 'SPECIAL': {
-                const item = await api.single('item', { query: reward.id });
-                specialString += `${getItemEmoji(item)} ${item.data.name}\n`;
-                break;
-            }
+        const buttonLabels = ['Preview', 'Diagram'];
+
+        const levelRow = new Djs.ActionRowBuilder<Djs.StringSelectMenuBuilder>();
+        container.addActionRowComponents(levelRow);
+
+        const stageIndex = C.Stage.isChallenge(stage)
+            ? (await api.single('toughstage', { query: stage.excel.code.toLowerCase() })).findIndex(x => x.excel.stageId === stage.excel.stageId)
+            : (await api.single('stage', { query: stage.excel.code.toLowerCase() })).findIndex(x => x.excel.stageId === stage.excel.stageId)
+
+        const levelSelect = new Djs.StringSelectMenuBuilder()
+            .setCustomId(createCustomId('stage', stage.excel.code, stageIndex, C.Stage.isChallenge(stage)));
+        levelRow.addComponents(levelSelect);
+
+        for (let i = 0; i < buttonLabels.length; i++) {
+            const levelOption = new Djs.StringSelectMenuOptionBuilder()
+                .setLabel(buttonLabels[i])
+                .setValue(i.toString())
+                .setDefault(i === level);
+            levelSelect.addOptions(levelOption);
         }
     }
-    if (regularString !== '') {
-        embed.addFields({ name: 'Regular Drops', value: regularString });
-    }
-    if (specialString !== '') {
-        embed.addFields({ name: 'Special Drops', value: specialString });
-    }
 
-    embed.addFields(await buildStageEnemyFields(stageData));
-
-    const stageIndex = isChallenge
-        ? (await api.single('toughstage', { query: stage.excel.code.toLowerCase() })).findIndex(x => x.excel.stageId === stage.excel.stageId)
-        : (await api.single('stage', { query: stage.excel.code.toLowerCase() })).findIndex(x => x.excel.stageId === stage.excel.stageId)
-
-    const imageButton = new Djs.ButtonBuilder()
-        .setCustomId(createCustomId('stage', stage.excel.code, stageIndex, isChallenge, 0))
-        .setLabel('Preview')
-        .setStyle(Djs.ButtonStyle.Primary);
-    const diagramButton = new Djs.ButtonBuilder()
-        .setCustomId(createCustomId('stage', stage.excel.code, stageIndex, isChallenge, 1))
-        .setLabel('Diagram')
-        .setStyle(Djs.ButtonStyle.Primary);
-    const buttonRow = new Djs.ActionRowBuilder<Djs.ButtonBuilder>().addComponents(imageButton, diagramButton);
-
-    switch (page) {
-        case 0:
-            imageButton.setDisabled(true);
-            break;
-        case 1:
-            diagramButton.setDisabled(true);
-            break;
-    }
-
-    if (page === 0) {
-        const imagePath = paths.myAssetUrl + `/stages/${stageInfo.stageId}.png`;
-        const toughPath = paths.myAssetUrl + `/stages/${stageInfo.stageId.replace('tough', 'main')}.png`;
-        const newPath = paths.myAssetUrl + `/stages/${stageInfo.stageId.substring(0, stageInfo.stageId.length - 3)}.png`;
-
-        if (await urlExists(imagePath)) {
-            embed.setImage(imagePath)
-            return { content: '', embeds: [embed], components: [buttonRow] };
-        }
-        else if (await urlExists(toughPath)) {
-            embed.setImage(toughPath)
-            return { content: '', embeds: [embed], components: [buttonRow] };
-        }
-        else if (await urlExists(newPath)) {
-            embed.setImage(newPath)
-            return { content: '', embeds: [embed], components: [buttonRow] };
-        }
-        else {
-            embed.addFields(buildStageDiagramFields(stageData));
-            return { content: '', embeds: [embed], components: [] };
-        }
-    }
-    else {
-        embed.addFields(buildStageDiagramFields(stageData));
-        return { content: '', embeds: [embed], components: [buttonRow] };
-    }
-}
-export async function buildStageSelectMessage(stageArr: T.Stage[] | T.RogueStage[]): Promise<Djs.BaseMessageOptions> {
-    const stageSelector = new Djs.StringSelectMenuBuilder()
-        .setCustomId(createCustomId('stage', 'select', stageArr[0].excel.code))
-        .setPlaceholder('Select a stage!');
-    const componentRow = new Djs.ActionRowBuilder<Djs.StringSelectMenuBuilder>().addComponents(stageSelector);
-
-    for (let i = 0; i < stageArr.length; i++) {
-        const stage = stageArr[i];
-        const name = `${stage.excel.code} - ${stage.excel.name}`;
-
-        stageSelector.addOptions(new Djs.StringSelectMenuOptionBuilder()
-            .setLabel(name)
-            .setValue(`${i}`)
-        );
-    }
-
-    return { content: 'Multiple stages with that code were found, please select a stage below:', components: [componentRow] };
+    return { components: [container], flags: Djs.MessageFlags.IsComponentsV2 | Djs.MessageFlags.Ephemeral }; // remove ephemeral once patched
 }
 
 function buildDeployableAuthorField(deploy: T.Deployable): Djs.EmbedAuthorOptions {
@@ -2463,11 +2394,11 @@ function buildOutfitComponents(op: T.Operator, level: number): { section: Djs.Se
 
     return { section, gallery };
 }
-async function buildParadoxComponents(op: T.Operator, level: number): Promise<{ text: Djs.TextDisplayBuilder[], gallery: Djs.MediaGalleryBuilder, galleryExists: boolean }> {
+async function buildStageComponents(stage: T.Stage | T.Paradox, level: number): Promise<{ text: Djs.TextDisplayBuilder[], gallery: Djs.MediaGalleryBuilder, galleryExists: boolean }> {
     const text: Djs.TextDisplayBuilder[] = [];
 
-    const stageInfo = op.paradox.excel;
-    const stageData = op.paradox.levels;
+    const stageInfo = stage.excel;
+    const stageData = stage.levels;
 
     const titleText = new Djs.TextDisplayBuilder()
         .setContent([
