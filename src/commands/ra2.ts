@@ -3,6 +3,7 @@ import Command from '../structures/Command';
 import * as api from '../utils/api';
 import { autocompleteSandboxItem, autocompleteSandboxStage, autocompleteSandboxWeather } from '../utils/autocomplete';
 import { buildSandboxItemMessage, buildSandboxStageMessage, buildSandboxWeatherMessage } from '../utils/build';
+import { SandboxItem, SandboxStage, SandboxWeather } from '../utils/canon';
 
 const innerIndex = 0;
 const outerIndex = innerIndex + 2;
@@ -80,10 +81,8 @@ export default class RA2Command implements Command {
             case 'stage': {
                 const stage = await api.single(`sandbox/stage/${innerIndex}`, { query: name });
 
-                if (!stage)
+                if (!SandboxStage.isValid(stage))
                     return await interaction.reply({ content: 'That stage doesn\'t exist!', ephemeral: true });
-                if (!stage.excel || !stage.levels)
-                    return await interaction.reply({ content: 'That stage data doesn\'t exist!', ephemeral: true });
 
                 await interaction.deferReply();
 
@@ -93,7 +92,7 @@ export default class RA2Command implements Command {
             case 'item': {
                 const item = await api.single(`sandbox/item/${innerIndex}`, { query: name });
 
-                if (!item)
+                if (!SandboxItem.isValid(item))
                     return await interaction.reply({ content: 'That item doesn\'t exist!', ephemeral: true });
 
                 await interaction.deferReply();
@@ -104,7 +103,7 @@ export default class RA2Command implements Command {
             case 'weather': {
                 const weather = await api.single(`sandbox/weather/${innerIndex}`, { query: name });
 
-                if (!weather)
+                if (!SandboxWeather.isValid(weather))
                     return await interaction.reply({ content: 'That weather effect doesn\'t exist!', ephemeral: true });
 
                 await interaction.deferReply();

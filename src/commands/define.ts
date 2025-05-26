@@ -3,6 +3,7 @@ import Command from '../structures/Command';
 import * as api from '../utils/api';
 import { autocompleteDefine } from '../utils/autocomplete';
 import { buildDefineListMessage, buildDefineMessage } from '../utils/build';
+import { Definition } from '../utils/canon';
 
 export default class DefineCommand implements Command {
     data = new SlashCommandBuilder()
@@ -37,7 +38,7 @@ export default class DefineCommand implements Command {
         else {
             const definition = await api.single('define', { query: term });
 
-            if (!definition)
+            if (!Definition.isValid(definition))
                 return await interaction.reply({ content: 'That term doesn\'t exist!', ephemeral: true });
 
             await interaction.deferReply();

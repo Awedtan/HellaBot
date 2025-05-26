@@ -3,6 +3,7 @@ import Command from '../structures/Command';
 import * as api from '../utils/api';
 import { autocompleteEnemy } from '../utils/autocomplete';
 import { buildEnemyMessage } from '../utils/build';
+import { Enemy } from '../utils/canon';
 
 export default class EnemyCommand implements Command {
     data = new SlashCommandBuilder()
@@ -28,7 +29,7 @@ export default class EnemyCommand implements Command {
         const name = interaction.options.getString('name').toLowerCase();
         const enemy = await api.single('enemy', { query: name });
 
-        if (!enemy)
+        if (!Enemy.isValid(enemy))
             return await interaction.reply({ content: 'That enemy doesn\'t exist!', ephemeral: true });
 
         await interaction.deferReply();

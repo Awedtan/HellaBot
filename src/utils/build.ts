@@ -3,6 +3,7 @@ import type * as T from "hella-types";
 import { join } from 'path';
 import { globalCommands, globalEmojis } from '../structures/HellaBot';
 import * as api from './api';
+import * as C from './canon';
 import * as pstats from './penguin-stats';
 const { embedColour, paths, gameConsts } = require('../constants');
 
@@ -276,7 +277,7 @@ export async function buildCurrentMessage(): Promise<Djs.BaseMessageOptions> {
     }
     if (currBanners.length > 0) {
         for (const banner of currBanners) {
-            embed.addFields(buildBannerField(opNames, banner, true));
+            embed.addFields(buildBannerField(opNames, banner));
         }
     }
 
@@ -334,12 +335,12 @@ export async function buildDeployMessage(deploy: T.Deployable, type: number, lev
     const typesDict = {
         stats: {
             label: 'Stats', index: 0, value: '0',
-            disabled: false,
+            enabled: C.Deployable.hasStats(deploy),
             extendedStats: true
         },
         skills: {
             label: 'Skills', index: 1, value: '1',
-            disabled: !deploy.skills || !deploy.skills.length || deploy.skills.every(s => !s),
+            enabled: C.Deployable.hasSkills(deploy),
             extendedStats: true
         }
     };
@@ -365,8 +366,7 @@ export async function buildDeployMessage(deploy: T.Deployable, type: number, lev
             break;
         }
         case typesDict.skills.index: {
-            if (level < 0) level = 0;
-            else if (level >= deploy.skills.find(s => s?.excel).excel.levels.length) level = deploy.skills.find(s => s?.excel).excel.levels.length - 1;
+            level = C.Deployable.clampSkillLevelIndex(deploy, level);
 
             const sections = await buildSkillSections(deploy, level);
             for (const section of sections) {
@@ -400,7 +400,7 @@ export async function buildDeployMessage(deploy: T.Deployable, type: number, lev
     typeRow.addComponents(typeSelect);
 
     for (const typeLabel of Object.values(typesDict)) {
-        if (typeLabel.disabled) continue;
+        if (!typeLabel.enabled) continue;
         const typeOption = new Djs.StringSelectMenuOptionBuilder()
             .setLabel(typeLabel.label)
             .setValue(typeLabel.value)
@@ -642,42 +642,42 @@ export async function buildInfoMessage(op: T.Operator, type: number = 0, level: 
     const typesDict = {
         stats: {
             label: 'Stats', index: 0, value: '0',
-            disabled: false,
+            enabled: C.Operator.hasStats(op),
             extendedStats: true
         },
         skills: {
             label: 'Skills', index: 1, value: '1',
-            disabled: !op.skills || !op.skills.length,
+            enabled: C.Operator.hasSkills(op),
             extendedStats: true
         },
         deploy: {
             label: 'Deployables', index: 7, value: '7',
-            disabled: !op.data.displayTokenDict || Object.values(op.data.displayTokenDict).every(s => !s),
+            enabled: C.Operator.hasDeployables(op),
             extendedStats: false
         },
         modules: {
             label: 'Modules', index: 2, value: '2',
-            disabled: !op.modules || !op.modules.length,
+            enabled: C.Operator.hasModules(op),
             extendedStats: true
         },
         base: {
             label: 'Base Skills', index: 3, value: '3',
-            disabled: !op.bases || !op.bases.length,
+            enabled: C.Operator.hasBases(op),
             extendedStats: false
         },
         costs: {
             label: 'Upgrade Costs', index: 4, value: '4',
-            disabled: gameConsts.rarity[op.data.rarity] <= 1,
+            enabled: C.Operator.hasCosts(op),
             extendedStats: false
         },
         outfits: {
             label: 'Outfits', index: 5, value: '5',
-            disabled: !op.skins || !op.skins.length,
+            enabled: C.Operator.hasSkins(op),
             extendedStats: false
         },
         paradox: {
             label: 'Paradox Simulation', index: 6, value: '6',
-            disabled: !op.paradox,
+            enabled: C.Operator.hasParadox(op),
             extendedStats: false
         }
     };
@@ -703,8 +703,7 @@ export async function buildInfoMessage(op: T.Operator, type: number = 0, level: 
             break;
         }
         case typesDict.skills.index: {
-            if (level < 0) level = 0;
-            else if (level >= op.skills[0].excel.levels.length) level = op.skills[0].excel.levels.length - 1;
+            level = C.Operator.clampSkillLevelIndex(op, level);
 
             const sections = await buildSkillSections(op, level);
             for (const section of sections) {
@@ -729,18 +728,11 @@ export async function buildInfoMessage(op: T.Operator, type: number = 0, level: 
             break;
         }
         case typesDict.deploy.index: { // holy shit this is a mess
-            if (op.skills.every(s => !s.deploy.overrideTokenKey)) { // if an operator does not have summons that are tied to a skill, assume they only have one summon (eg. Deepcolor)
-                extras = [extras?.[0] ?? 0, extras?.[1] ?? 0, extras?.[2] ?? 0];
+            extras = [extras?.[0] ?? 0, extras?.[1] ?? 0, extras?.[2] ?? 0];
 
-                let deploySkill = extras[0];
+            if (op.skills.every(s => !C.Skill.hasDeployable(s))) { // if an operator does not have summons that are tied to a skill, assume they only have one summon (eg. Deepcolor)
                 const deployType = extras[1];
-                let deployLevel = extras[2];
-
-                if (deploySkill < 0) deploySkill = 0;
-                else if (deploySkill >= op.skills.length) deploySkill = 0;
-                if (deployLevel < 0) deployLevel = 0;
-                else if (deployLevel >= op.skills[0].excel.levels.length) deployLevel = op.skills[0].excel.levels.length - 1;
-
+                const deployLevel = C.Operator.clampSkillLevelIndex(op, extras[2]);
                 const deploy = await api.single('deployable', { query: Object.keys(op.data.displayTokenDict)[0] });
 
                 const deployMessage = await buildDeployMessage(deploy, deployType, deployLevel);
@@ -765,19 +757,9 @@ export async function buildInfoMessage(op: T.Operator, type: number = 0, level: 
                 }
             }
             else {
-                extras = [extras?.[0] ?? 0, extras?.[1] ?? 0, extras?.[2] ?? 0];
-
-                let deploySkill = extras[0];
+                const deploySkill = C.Operator.clampSkillHasDeployableIndex(op, extras[0]);
                 const deployType = extras[1];
-                let deployLevel = extras[2];
-
-                if (deploySkill < 0) deploySkill = 0;
-                else if (deploySkill >= op.skills.length) deploySkill = 0;
-                if (deploySkill < op.skills.findIndex(s => s.deploy.overrideTokenKey)) deploySkill = op.skills.findIndex(s => s.deploy.overrideTokenKey);
-                else if (deploySkill > op.skills.findLastIndex(s => s.deploy.overrideTokenKey)) deploySkill = op.skills.findLastIndex(s => s.deploy.overrideTokenKey);
-                if (deployLevel < 0) deployLevel = 0;
-                else if (deployLevel >= op.skills[0].excel.levels.length) deployLevel = op.skills[0].excel.levels.length - 1;
-
+                const deployLevel = C.Operator.clampSkillLevelIndex(op, extras[2]);
                 const deploy = await api.single('deployable', { query: op.skills[deploySkill].deploy.overrideTokenKey });
 
                 const deployMessage = await buildDeployMessage(deploy, deployType, deployLevel);
@@ -869,7 +851,7 @@ export async function buildInfoMessage(op: T.Operator, type: number = 0, level: 
                 deployTypeRow.addComponents(typeSelect);
 
                 for (const typeLabel of Object.values(typesDict).splice(0, 2)) {
-                    if (typeLabel.disabled) continue;
+                    if (!typeLabel.enabled) continue;
                     const deployTypeOption = new Djs.StringSelectMenuOptionBuilder()
                         .setLabel(`Deployable - ${typeLabel.label}`)
                         .setValue(typeLabel.value)
@@ -885,7 +867,7 @@ export async function buildInfoMessage(op: T.Operator, type: number = 0, level: 
                 deploySkillRow.addComponents(deploySkillSelect);
 
                 for (let i = 0; i < op.skills.length; i++) {
-                    if (!op.skills[i].deploy.overrideTokenKey) continue;
+                    if (!C.Skill.hasDeployable(op.skills[i])) continue;
 
                     const deploySkillOption = new Djs.StringSelectMenuOptionBuilder()
                         .setLabel(`Skill ${i + 1}`)
@@ -897,8 +879,7 @@ export async function buildInfoMessage(op: T.Operator, type: number = 0, level: 
             break;
         }
         case typesDict.modules.index: {
-            if (level < 0) level = 0;
-            else if (level >= op.modules.length) level = 2;
+            level = C.Operator.clampModuleLevelIndex(op, level);
 
             const sections = buildModuleSections(op, level);
             for (const section of sections) {
@@ -933,27 +914,26 @@ export async function buildInfoMessage(op: T.Operator, type: number = 0, level: 
             break;
         }
         case typesDict.costs.index: {
-            const levelsDict = {
-                promotions: {
-                    label: 'Promotions', index: 0, value: '0',
+            const levelsArr = [
+                {
+                    label: 'Promotions',
                     disabled: false
                 },
-                skills: {
-                    label: 'Skills', index: 1, value: '1',
+                {
+                    label: 'Skills',
                     disabled: !op.skills || !op.skills.length
                 },
-                masteries: {
-                    label: 'Masteries', index: 2, value: '2',
+                {
+                    label: 'Masteries',
                     disabled: gameConsts.rarity[op.data.rarity] <= 3
                 },
-                modules: {
-                    label: 'Modules', index: 3, value: '3',
+                {
+                    label: 'Modules',
                     disabled: !op.modules || !op.modules.length
                 }
-            }
-            const levelsArr = Object.values(levelsDict);
+            ];
 
-            if (!levelsArr[level] || levelsArr[level].disabled) level = 0;
+            if (level < 0 || level >= levelsArr.length || levelsArr[level].disabled) level = 0;
 
             const sections = await buildCostSections(op, level);
             for (const section of sections) {
@@ -980,8 +960,7 @@ export async function buildInfoMessage(op: T.Operator, type: number = 0, level: 
             break;
         }
         case typesDict.outfits.index: {
-            if (level < 0) level = 0;
-            else if (level >= op.skins.length) level = 0;
+            level = C.Operator.clampSkinIndex(op, level);
 
             const components = buildOutfitComponents(op, level);
             container.addSectionComponents(components.section);
@@ -1005,8 +984,7 @@ export async function buildInfoMessage(op: T.Operator, type: number = 0, level: 
             break;
         }
         case typesDict.paradox.index: {
-            if (level < 0) level = 0;
-            else if (level > 1) level = 0;
+            level = C.Operator.clampParadoxIndex(op, level);
 
             const components = await buildParadoxComponents(op, level);
             container.addTextDisplayComponents(components.text);
@@ -1046,7 +1024,7 @@ export async function buildInfoMessage(op: T.Operator, type: number = 0, level: 
     typeRow.addComponents(typeSelect);
 
     for (const typeLabel of Object.values(typesDict)) {
-        if (typeLabel.disabled) continue;
+        if (!typeLabel.enabled) continue;
         const typeOption = new Djs.StringSelectMenuOptionBuilder()
             .setLabel(typeLabel.label)
             .setValue(typeLabel.value)
@@ -1073,7 +1051,7 @@ export async function buildItemMessage(item: T.Item): Promise<Djs.BaseMessageOpt
     if (sanityString !== '') {
         embed.addFields({ name: 'Drop Stages (Sanity/Item)', value: sanityString, inline: true });
     }
-    if (item.formula !== null && item.formula.costs.length > 0) {
+    if (C.Item.hasFormula(item)) {
         const formulaString = buildCostString(item.formula.costs, await api.all('item'));
         embed.addFields({ name: 'Crafting Formula', value: formulaString, inline: true });
     }
@@ -1546,7 +1524,7 @@ export async function buildSandboxItemMessage(theme: number, item: T.SandboxItem
             embed.addFields({ name: 'Recipe', value: recipeString, inline: true });
         });
     }
-    if (item.drink && !item.food) {
+    if (item.drink) {
         embed.addFields({ name: 'Energy', value: item.drink.count.toString() });
     }
 
@@ -1622,7 +1600,7 @@ export async function buildSandboxWeatherMessage(theme: number, weather: T.Sandb
 export async function buildSpineEnemyMessage(gifFile: string, enemy: T.Enemy, animArr: string[], anim: string): Promise<Djs.BaseMessageOptions> {
     const id = enemy.excel.enemyId;
 
-    const authorField = buildAuthorField(enemy);
+    const authorField = buildEnemyAuthorField(enemy);
 
     const gifPath = join(__dirname, 'spine', gifFile);
     const gif = new Djs.AttachmentBuilder(gifPath);
@@ -1651,7 +1629,7 @@ export async function buildSpineEnemyMessage(gifFile: string, enemy: T.Enemy, an
 export async function buildSpineOperatorMessage(gifFile: string, op: T.Operator, skin: string, set: string, animArr: string[], anim: string): Promise<Djs.BaseMessageOptions> {
     const id = op.id;
 
-    const authorField = buildAuthorField(op);
+    const authorField = buildDeployableAuthorField(op);
 
     const gifPath = join(__dirname, 'spine', gifFile);
     const gif = new Djs.AttachmentBuilder(gifPath);
@@ -1677,10 +1655,10 @@ export async function buildSpineOperatorMessage(gifFile: string, op: T.Operator,
 
     return { content: '', embeds: [embed], files: [gif], components: [componentRow] };
 }
-export async function buildSpineDeployMessage(gifFile: string, deploy: T.Deployable, skin: string, set: string, animARr: string[], anim: string): Promise<Djs.BaseMessageOptions> {
+export async function buildSpineDeployMessage(gifFile: string, deploy: T.Deployable, skin: string, set: string, animArr: string[], anim: string): Promise<Djs.BaseMessageOptions> {
     const id = deploy.id;
 
-    const authorField = buildAuthorField(deploy);
+    const authorField = buildDeployableAuthorField(deploy);
 
     const gifPath = join(__dirname, 'spine', gifFile);
     const gif = new Djs.AttachmentBuilder(gifPath);
@@ -1690,12 +1668,12 @@ export async function buildSpineDeployMessage(gifFile: string, deploy: T.Deploya
         .setPlaceholder(anim);
     const componentRow = new Djs.ActionRowBuilder<Djs.StringSelectMenuBuilder>().addComponents(animSelector);
 
-    for (let i = 0; i < Math.min(animARr.length, 25); i++) {
-        if (animARr[i] === 'Default') continue; // Default animations are a single frame that lasts forever, they do not work and should not be shown
+    for (let i = 0; i < Math.min(animArr.length, 25); i++) {
+        if (animArr[i] === 'Default') continue; // Default animations are a single frame that lasts forever, they do not work and should not be shown
 
         animSelector.addOptions(new Djs.StringSelectMenuOptionBuilder()
-            .setLabel(animARr[i])
-            .setValue(animARr[i])
+            .setLabel(animArr[i])
+            .setValue(animArr[i])
         );
     }
 
@@ -1813,39 +1791,29 @@ export async function buildStageSelectMessage(stageArr: T.Stage[] | T.RogueStage
     return { content: 'Multiple stages with that code were found, please select a stage below:', components: [componentRow] };
 }
 
-function buildAuthorField(char: T.Enemy | T.Deployable, url: boolean = true): Djs.EmbedAuthorOptions {
-    if ((char as T.Deployable).id && (char as T.Deployable).data) {
-        const op = (char as T.Deployable);
-        const urlName = op.data.name.toLowerCase().split(' the ').join('-').split(/'|,/).join('').split(' ').join('-').split('ë').join('e').split('ł').join('l');// Unholy dumbness
-        const authorField = { name: op.data.name, iconURL: paths.myAssetUrl + `/operator/avatars/${op.id}.png` };
-        if (url) {
-            authorField['url'] = `https://gamepress.gg/arknights/operator/${urlName}`
-        }
-        return authorField;
-    }
-    else if ((char as T.Enemy).excel) {
-        const enem = (char as T.Enemy);
-        const authorField = { name: enem.excel.name, iconURL: paths.myAssetUrl + `/enemy/${enem.excel.enemyId}.png` };
-        return authorField;
-    }
-    return null;
+function buildDeployableAuthorField(deploy: T.Deployable): Djs.EmbedAuthorOptions {
+    const authorField = { name: deploy.data.name, iconURL: paths.myAssetUrl + `/operator/avatars/${deploy.id}.png` };
+    return authorField;
 }
-function buildBannerField(opNames: T.Operator[], banner: T.GachaPool, timeLeft: boolean = false): Djs.EmbedField {
+function buildEnemyAuthorField(enemy: T.Enemy): Djs.EmbedAuthorOptions {
+    const authorField = { name: enemy.excel.name, iconURL: paths.myAssetUrl + `/enemy/${enemy.excel.enemyId}.png` };
+    return authorField;
+}
+function buildBannerField(opNames: T.Operator[], banner: T.GachaPool): Djs.EmbedField {
     let bannerName = banner.client.gachaPoolName === 'Rare Operators useful in all kinds of stages'
         ? banner.client.gachaRuleType === 'CLASSIC'
             ? 'Kernel Banner'
             : 'Standard Banner'
         : banner.client.gachaPoolName;
-    const currTime = Math.floor(Date.now() / 1000);
     let bannerDates = `<t:${banner.client.openTime}> to <t:${banner.client.endTime}>`;
-    if (banner.client.openTime < currTime && banner.client.endTime > currTime) {
+    if (C.GachaPool.isCurrent(banner)) {
         bannerDates += ' - Ends <t:' + banner.client.endTime + ':R>';
     }
-    else if (banner.client.openTime > currTime) {
+    else if (C.GachaPool.isFuture(banner)) {
         bannerDates += ` - Starts <t:${banner.client.openTime}:R>`;
     }
     let bannerDesc = '';
-    if (bannerName === 'Joint Operation') {
+    if (C.GachaPool.isJointOperation(banner)) {
         const ops6 = [], ops5 = [];
         for (const charId of banner.details.detailInfo.availCharInfo.perAvailList[0].charIdList) {
             const char = opNames.find(char => char.id === charId);
@@ -1857,7 +1825,7 @@ function buildBannerField(opNames: T.Operator[], banner: T.GachaPool, timeLeft: 
         }
         bannerDesc = `6★ ${ops6.join(', ')}\n5★ ${ops5.join(', ')}`;
     }
-    else if (['NORMAL', 'CLASSIC', 'LINKAGE', 'LIMITED', 'SINGLE'].includes(banner.client.gachaRuleType)) {
+    else if (C.GachaPool.isNormal(banner)) {
         const ops6 = [], ops5 = [];
         for (const charList of banner.details.detailInfo.upCharInfo.perCharList) {
             for (const charId of charList.charIdList) {
@@ -1902,6 +1870,9 @@ function buildBannerField(opNames: T.Operator[], banner: T.GachaPool, timeLeft: 
                 bannerDesc = `Select and lock-in three 6★ and three 5★ operators from a pool.\n6★ ${ops6.join(', ')}`;
                 break;
             }
+            default: {
+                throw new Error(`Unknown banner type: ${banner.client.gachaPoolId}, ${banner.client.gachaRuleType}`);
+            }
         }
     }
     return { name: bannerName, value: `${bannerDates}\n${bannerDesc}`, inline: false };
@@ -1915,12 +1886,11 @@ function buildCostString(costs: T.LevelUpCost[], itemArr: T.Item[]): string {
     return description;
 }
 function buildEventField(event: T.GameEvent): Djs.EmbedField {
-    const currTime = Math.floor(Date.now() / 1000);
     let eventString = `<t:${event.startTime}> to <t:${event.endTime}>`;
-    if (event.startTime < currTime && event.endTime > currTime) {
+    if (C.GameEvent.isCurrent(event)) {
         eventString += ' - Ends <t:' + event.endTime + ':R>';
     }
-    else if (event.startTime > currTime) {
+    else if (C.GameEvent.isFuture(event)) {
         eventString += ` - Starts <t:${event.startTime}:R>`;
     }
     return { name: event.name, value: eventString, inline: false };
@@ -2019,7 +1989,7 @@ async function buildStageEnemyFields(stageData: T.StageData): Promise<Djs.EmbedF
         if (!enemy) continue;
 
         let enemyLine = `${enemy.excel.enemyIndex} - ${enemy.excel.name}`;
-        if (enemy.levels.Value.length !== 1) {
+        if (C.Enemy.hasLevels(enemy)) {
             enemyLine += ` (Lv${enemyRef.level + 1})`; // Add predefine level if enemy has more than one
         }
         if (waveDict.hasOwnProperty(enemy.excel.enemyId)) {
@@ -2083,7 +2053,7 @@ async function buildStageEnemyComponents(stageData: T.StageData): Promise<Djs.Te
         if (!enemy) continue;
 
         let enemyLine = `${enemy.excel.enemyIndex} - ${enemy.excel.name}`;
-        if (enemy.levels.Value.length !== 1) {
+        if (C.Enemy.hasLevels(enemy)) {
             enemyLine += ` (Lv${enemyRef.level + 1})`; // Add predefine level if enemy has more than one
         }
         if (waveDict.hasOwnProperty(enemy.excel.enemyId)) {
@@ -2147,7 +2117,7 @@ async function buildTitleSection(deploy: T.Deployable, extendedStats: boolean = 
     // }
 
     let description = removeStyleTags(deploy.data.description);
-    if (deploy.data.trait) {
+    if (C.Deployable.hasTrait(deploy)) {
         const candidate = deploy.data.trait.candidates[deploy.data.trait.candidates.length - 1];
         if (candidate.overrideDescripton) {
             description = insertBlackboard(candidate.overrideDescripton, candidate.blackboard);
@@ -2160,14 +2130,14 @@ async function buildTitleSection(deploy: T.Deployable, extendedStats: boolean = 
         description
     ]
     if (extendedStats) {
-        if (deploy.range) {
+        if (C.Deployable.hasRange(deploy)) {
             titleContent.push(
                 '',
                 '**Range**',
                 buildRangeString(deploy.range).slice(0, -1),
             );
         }
-        if (deploy.data.talents) {
+        if (C.Deployable.hasTalents(deploy)) {
             for (const talent of deploy.data.talents) {
                 if (talent.candidates) {
                     const candidate = talent.candidates[talent.candidates.length - 1];
@@ -2192,7 +2162,7 @@ async function buildTitleSection(deploy: T.Deployable, extendedStats: boolean = 
 function buildDeployableComponents(deploy: T.Deployable): Djs.TextDisplayBuilder {
     const deployableContent = [];
 
-    if (deploy.data.potentialRanks && deploy.data.potentialRanks.length > 0) {
+    if (C.Deployable.hasPotentials(deploy)) {
         deployableContent.push(
             '\n**Potentials**',
             deploy.data.potentialRanks.map(potential => potential.description).join('\n')
@@ -2233,7 +2203,7 @@ async function buildSkillSections(deploy: T.Deployable, level: number, index: nu
 
     const seenSkills = new Set();
     for (let i = index ?? 0; i <= (index ?? deploy.skills.length - 1); i++) {
-        if (!deploy.skills[i]) continue;
+        if (!C.Skill.isValid(deploy.skills[i])) continue;
 
         const skill = deploy.skills[i].excel;
 
@@ -2416,7 +2386,7 @@ async function buildCostSections(op: T.Operator, level: number): Promise<Djs.Sec
         }
         case 3: {
             for (const module of op.modules) {
-                if (module.info.uniEquipId.includes('uniequip_001')) continue;
+                if (C.Module.isDefault(module)) continue;
 
                 const section = new Djs.SectionBuilder();
                 sections.push(section);

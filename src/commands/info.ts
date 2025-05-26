@@ -2,6 +2,7 @@ import { AutocompleteInteraction, ButtonInteraction, CacheType, ChatInputCommand
 import * as api from '../utils/api';
 import { autocompleteOperator } from '../utils/autocomplete';
 import { buildInfoMessage } from '../utils/build';
+import { Operator } from '../utils/canon';
 
 export default class InfoCommand {
     data = new SlashCommandBuilder()
@@ -27,7 +28,7 @@ export default class InfoCommand {
         const name = interaction.options.getString('name').toLowerCase();
         const op = await api.single('operator', { query: name, exclude: ['paradox'] });
 
-        if (!op)
+        if (!Operator.isValid(op))
             return await interaction.reply({ content: 'That operator doesn\'t exist!', ephemeral: true });
 
         await interaction.deferReply();

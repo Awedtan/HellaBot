@@ -5,6 +5,7 @@ import Command from '../structures/Command';
 import * as api from '../utils/api';
 import { autocompleteDeployable, autocompleteEnemy, autocompleteOperator } from '../utils/autocomplete';
 import { buildSpineDeployMessage, buildSpineEnemyMessage, buildSpineOperatorMessage } from '../utils/build';
+import { Deployable, Enemy, Operator } from '../utils/canon';
 import * as spineHelper from '../utils/spine/spineHelper';
 const { gameConsts, paths } = require('../constants');
 
@@ -187,9 +188,9 @@ export default class SpineCommand implements Command {
                 const set = interaction.options.getString('set')?.toLowerCase() ?? 'front';
                 const op = await api.single('operator', { query: name, include: ['id', 'data', 'skins'] });
 
-                if (!op)
+                if (!Operator.isValid(op))
                     return await interaction.reply({ content: `That ${type} doesn\'t exist!`, ephemeral: true });
-                if (skin !== 'default' && !op.skins.some(s => s.battleSkin.skinOrPrefabId.toLowerCase() === skin || s.displaySkin.skinName?.toLowerCase() === skin))
+                if (!Operator.containsSkin(op, skin))
                     return await interaction.reply({ content: 'That skin doesn\'t exist!', ephemeral: true });
 
                 const skinId = op.skins.find(s => s.battleSkin.skinOrPrefabId.toLowerCase() === skin || s.displaySkin.skinName?.toLowerCase() === skin)?.battleSkin.skinOrPrefabId.toLowerCase() ?? op.id;
@@ -199,9 +200,6 @@ export default class SpineCommand implements Command {
                     return await interaction.reply({ content: 'There was an error while loading the spine data!', ephemeral: true });
 
                 const animArr = getSkelAnims(skelData);
-
-                if (animArr.length === 0)
-                    return await interaction.reply({ content: 'That operator has no animations!', ephemeral: true });
 
                 await interaction.deferReply();
 
@@ -221,7 +219,7 @@ export default class SpineCommand implements Command {
             case 'enemy': {
                 const enemy = await api.single('enemy', { query: name, include: ['excel'] });
 
-                if (!enemy)
+                if (!Enemy.isValid(enemy))
                     return await interaction.reply({ content: `That ${type} doesn\'t exist!`, ephemeral: true });
 
                 const id = enemy.excel.enemyId;
@@ -231,9 +229,6 @@ export default class SpineCommand implements Command {
                     return await interaction.reply({ content: 'There was an error while loading the spine data!', ephemeral: true });
 
                 const animArr = getSkelAnims(skelData);
-
-                if (animArr.length === 0)
-                    return await interaction.reply({ content: 'That enemy has no animations!', ephemeral: true });
 
                 await interaction.deferReply();
 
@@ -255,9 +250,9 @@ export default class SpineCommand implements Command {
                 const set = interaction.options.getString('set')?.toLowerCase() ?? 'front';
                 const deploy = await api.single('deployable', { query: name });
 
-                if (!deploy)
+                if (!Deployable.isValid(deploy))
                     return await interaction.reply({ content: `That ${type} doesn\'t exist!`, ephemeral: true });
-                if (skin !== 'default' && !deploy.skins.some(s => s.battleSkin.skinOrPrefabId?.toLowerCase() === skin))
+                if (!Deployable.containsSkin(deploy, skin))
                     return await interaction.reply({ content: 'That skin doesn\'t exist!', ephemeral: true });
 
                 const skinId = deploy.skins.find(s => s.battleSkin.skinOrPrefabId?.toLowerCase() === skin)?.battleSkin.skinOrPrefabId?.toLowerCase() ?? deploy.id;
@@ -267,9 +262,6 @@ export default class SpineCommand implements Command {
                     return await interaction.reply({ content: 'There was an error while loading the spine data!', ephemeral: true });
 
                 const animArr = getSkelAnims(skelData);
-
-                if (animArr.length === 0)
-                    return await interaction.reply({ content: 'That deployable has no animations!', ephemeral: true });
 
                 await interaction.deferReply();
 

@@ -3,6 +3,7 @@ import Command from '../structures/Command';
 import * as api from '../utils/api';
 import { autocompleteRogueRelic, autocompleteRogueStage, autocompleteRogueToughStage } from '../utils/autocomplete';
 import { buildRogueRelicListMessage, buildRogueRelicMessage, buildRogueStageMessage } from '../utils/build';
+import { RogueRelic, RogueStage } from '../utils/canon';
 
 const innerIndex = 3;
 const outerIndex = innerIndex + 2;
@@ -85,10 +86,8 @@ export default class IS5Command implements Command {
             case 'normal': {
                 const stage = await api.single(`rogue/stage/${innerIndex}`, { query: name });
 
-                if (!stage)
+                if (!RogueStage.isValid(stage))
                     return await interaction.reply({ content: 'That stage doesn\'t exist!', ephemeral: true });
-                if (!stage.excel || !stage.levels)
-                    return await interaction.reply({ content: 'That stage data doesn\'t exist!', ephemeral: true });
 
                 await interaction.deferReply();
 
@@ -98,10 +97,8 @@ export default class IS5Command implements Command {
             case 'emergency': {
                 const stage = await api.single(`rogue/toughstage/${innerIndex}`, { query: name });
 
-                if (!stage)
+                if (!RogueStage.isValid(stage))
                     return await interaction.reply({ content: 'That stage doesn\'t exist!', ephemeral: true });
-                if (!stage.excel || !stage.levels)
-                    return await interaction.reply({ content: 'That stage data doesn\'t exist!', ephemeral: true });
 
                 await interaction.deferReply();
 
@@ -118,7 +115,7 @@ export default class IS5Command implements Command {
 
                 const relic = await api.single(`rogue/relic/${innerIndex}`, { query: name });
 
-                if (!relic)
+                if (!RogueRelic.isValid(relic))
                     return await interaction.reply({ content: 'That relic doesn\'t exist!', ephemeral: true });
 
                 await interaction.deferReply();
