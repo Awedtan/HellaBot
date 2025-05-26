@@ -55,7 +55,7 @@ export class Deployable {
         return true;
     }
     static hasSkills(deploy: T.Deployable): boolean {
-        return !!deploy.skills && !!deploy.skills.length && deploy.skills.some(s => s);
+        return !!deploy.skills && !!deploy.skills.length && deploy.skills.some(s => Skill.isValid(s));
     }
     static hasSkins(deploy: T.Deployable): boolean {
         return !!deploy.skins && !!deploy.skins.length;
