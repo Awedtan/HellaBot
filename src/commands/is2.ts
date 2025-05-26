@@ -3,6 +3,7 @@ import Command from '../structures/Command';
 import * as api from '../utils/api';
 import { autocompleteRogueRelic, autocompleteRogueStage, autocompleteRogueToughStage, autocompleteRogueVariation } from '../utils/autocomplete';
 import { buildRogueRelicListMessage, buildRogueRelicMessage, buildRogueStageMessage, buildRogueVariationListMessage, buildRogueVariationMessage } from '../utils/build';
+import { RogueRelic, RogueStage, RogueVariation } from '../utils/canon';
 
 const innerIndex = 0;
 const outerIndex = innerIndex + 2;
@@ -102,10 +103,8 @@ export default class IS2Command implements Command {
             case 'normal': {
                 const stage = await api.single(`rogue/stage/${innerIndex}`, { query: name });
 
-                if (!stage)
+                if (!RogueStage.isValid(stage))
                     return await interaction.reply({ content: 'That stage doesn\'t exist!', ephemeral: true });
-                if (!stage.excel || !stage.levels)
-                    return await interaction.reply({ content: 'That stage data doesn\'t exist!', ephemeral: true });
 
                 await interaction.deferReply();
 
@@ -115,10 +114,8 @@ export default class IS2Command implements Command {
             case 'emergency': {
                 const stage = await api.single(`rogue/toughstage/${innerIndex}`, { query: name });
 
-                if (!stage)
+                if (!RogueStage.isValid(stage))
                     return await interaction.reply({ content: 'That stage doesn\'t exist!', ephemeral: true });
-                if (!stage.excel || !stage.levels)
-                    return await interaction.reply({ content: 'That stage data doesn\'t exist!', ephemeral: true });
 
                 await interaction.deferReply();
 
@@ -135,7 +132,7 @@ export default class IS2Command implements Command {
 
                 const relic = await api.single(`rogue/relic/${innerIndex}`, { query: name });
 
-                if (!relic)
+                if (!RogueRelic.isValid(relic))
                     return await interaction.reply({ content: 'That relic doesn\'t exist!', ephemeral: true });
 
                 await interaction.deferReply();
@@ -153,7 +150,7 @@ export default class IS2Command implements Command {
 
                 const variation = await api.single(`rogue/variation/${innerIndex}`, { query: name });
 
-                if (!variation)
+                if (!RogueVariation.isValid(variation))
                     return await interaction.reply({ content: 'That variation doesn\'t exist!', ephemeral: true });
 
                 await interaction.deferReply();

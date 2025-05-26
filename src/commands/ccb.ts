@@ -3,6 +3,7 @@ import Command from '../structures/Command';
 import * as api from '../utils/api';
 import { autocompleteCCB, autocompleteCCBLegacy } from '../utils/autocomplete';
 import { buildCCBLegacyMessage, buildCCBLegacySelectMessage, buildCCBMessage } from '../utils/build';
+import { CCStage, CCStageLegacy } from '../utils/canon';
 const { gameConsts } = require('../constants');
 
 export default class CCBCommand implements Command {
@@ -60,7 +61,7 @@ export default class CCBCommand implements Command {
                 if (gameConsts.ccbStages.find(stage => [stage.name.toLowerCase(), stage.levelId.split('/')[stage.levelId.split('/').length - 1]].includes(name))) {
                     const stage = await api.single('ccb/legacy', { query: name });
 
-                    if (!stage || !stage.const || !stage.levels)
+                    if (!CCStageLegacy.isValid(stage))
                         return await interaction.reply({ content: 'That stage data doesn\'t exist!', ephemeral: true });
 
                     await interaction.deferReply();
@@ -71,7 +72,7 @@ export default class CCBCommand implements Command {
                 else {
                     const stage = await api.single('ccb/stage', { query: name });
 
-                    if (!stage || !stage.excel || !stage.levels)
+                    if (!CCStage.isValid(stage))
                         return await interaction.reply({ content: 'That stage data doesn\'t exist!', ephemeral: true });
 
                     await interaction.deferReply();

@@ -3,6 +3,7 @@ import Command from '../structures/Command';
 import * as api from '../utils/api';
 import { autocompleteItem } from '../utils/autocomplete';
 import { buildItemMessage } from '../utils/build';
+import { Item } from '../utils/canon';
 
 export default class ItemCommand implements Command {
     data = new SlashCommandBuilder()
@@ -28,7 +29,7 @@ export default class ItemCommand implements Command {
         const name = interaction.options.getString('name').toLowerCase();
         const item = await api.single('item', { query: name });
 
-        if (!item)
+        if (!Item.isValid(item))
             return await interaction.reply({ content: 'That item doesn\'t exist!', ephemeral: true });
 
         await interaction.deferReply();

@@ -3,6 +3,7 @@ import Command from '../structures/Command';
 import * as api from '../utils/api';
 import { autocompleteStage, autocompleteToughStage } from '../utils/autocomplete';
 import { buildStageMessage, buildStageSelectMessage } from '../utils/build';
+import { Stage } from '../utils/canon';
 
 export default class StageCommand implements Command {
     data = new SlashCommandBuilder()
@@ -63,9 +64,9 @@ export default class StageCommand implements Command {
                 if (!stageArr || stageArr.length === 0)
                     return await interaction.reply({ content: 'That stage doesn\'t exist!', ephemeral: true });
 
-                if (stageArr.length == 1) {
+                if (stageArr.length === 1) {
                     const stage = stageArr[0];
-                    if (!stage.excel || !stage.levels)
+                    if (!Stage.isValid(stage))
                         return await interaction.reply({ content: 'That stage data doesn\'t exist!', ephemeral: true });
 
                     await interaction.deferReply();
@@ -88,7 +89,7 @@ export default class StageCommand implements Command {
 
                 if (stageArr.length == 1) {
                     const stage = stageArr[0];
-                    if (!stage.excel || !stage.levels)
+                    if (!Stage.isValid(stage))
                         return await interaction.reply({ content: 'That stage data doesn\'t exist!', ephemeral: true });
 
                     await interaction.deferReply();

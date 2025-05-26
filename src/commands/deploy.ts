@@ -1,8 +1,9 @@
-import { AutocompleteInteraction, ButtonInteraction, CacheType, ChatInputCommandInteraction, SlashCommandBuilder, StringSelectMenuInteraction } from 'discord.js';
+import { AutocompleteInteraction, CacheType, ChatInputCommandInteraction, SlashCommandBuilder, StringSelectMenuInteraction } from 'discord.js';
 import Command from '../structures/Command';
 import * as api from '../utils/api';
 import { autocompleteDeployable } from '../utils/autocomplete';
-import { buildDeployMessage, buildInfoMessage } from '../utils/build';
+import { buildDeployMessage } from '../utils/build';
+import { Deployable } from '../utils/canon';
 
 export default class DeployCommand implements Command {
     data = new SlashCommandBuilder()
@@ -28,7 +29,7 @@ export default class DeployCommand implements Command {
         const name = interaction.options.getString('name').toLowerCase();
         const deploy = await api.single('deployable', { query: name });
 
-        if (!deploy)
+        if (!Deployable.isValid(deploy))
             return await interaction.reply({ content: 'That deployable doesn\'t exist!', ephemeral: true });
 
         await interaction.deferReply();

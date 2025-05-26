@@ -3,6 +3,7 @@ import Command from '../structures/Command';
 import * as api from '../utils/api';
 import { autocompleteCC } from '../utils/autocomplete';
 import { buildCCMessage, buildCCSelectMessage } from '../utils/build';
+import { CCStageLegacy } from '../utils/canon';
 const { gameConsts } = require('../constants');
 
 export default class CCCommand implements Command {
@@ -67,7 +68,7 @@ export default class CCCommand implements Command {
                 const name = interaction.options.getString('name').toLowerCase();
                 const stage = await api.single('cc', { query: name });
 
-                if (!stage || !stage.const || !stage.levels)
+                if (!CCStageLegacy.isValid(stage))
                     return await interaction.reply({ content: 'That stage data doesn\'t exist!', ephemeral: true });
 
                 await interaction.deferReply();
