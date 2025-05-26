@@ -183,7 +183,6 @@ export class SandboxItem {
     static isValid(item: T.SandboxItem): boolean {
         return !!item;
     }
-    static
 }
 
 export class SandboxStage {
