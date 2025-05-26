@@ -135,7 +135,7 @@ export class Operator extends Deployable {
     }
     static clampParadoxIndex(op: T.Operator, paradox: number): number {
         if (paradox < 0) return 0;
-        if (paradox > 1) return 0;
+        if (paradox > 1) return 1;
         return paradox;
     }
     static clampSkinIndex(op: T.Operator, skin: number): number {

@@ -1871,8 +1871,7 @@ function buildBannerField(opNames: T.Operator[], banner: T.GachaPool): Djs.Embed
                 break;
             }
             default: {
-                console.log(`Unknown banner type: ${banner.client.gachaPoolId}, ${banner.client.gachaRuleType}`);
-                break;
+                throw new Error(`Unknown banner type: ${banner.client.gachaPoolId}, ${banner.client.gachaRuleType}`);
             }
         }
     }
