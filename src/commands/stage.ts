@@ -57,38 +57,19 @@ export default class StageCommand implements Command {
         const type = interaction.options.getSubcommand();
         const code = interaction.options.getString('code').toLowerCase();
 
-        switch (type) {
-            case 'normal': {
-                const stageArr = await api.single('stage', { query: code });
+        const stageArr = await api.single(type === 'normal' ? 'stage' : 'toughstage', { query: code });
 
-                if (!stageArr || stageArr.length === 0)
-                    return await interaction.reply({ content: 'That stage doesn\'t exist!', ephemeral: true });
+        if (!stageArr || stageArr.length === 0)
+            return await interaction.reply({ content: 'That stage doesn\'t exist!', ephemeral: true });
 
-                const stage = stageArr[0];
-                if (!Stage.isValid(stage))
-                    return await interaction.reply({ content: 'That stage data doesn\'t exist!', ephemeral: true });
+        const stage = stageArr[0];
+        if (!Stage.isValid(stage))
+            return await interaction.reply({ content: 'That stage data doesn\'t exist!', ephemeral: true });
 
-                await interaction.deferReply();
+        await interaction.deferReply();
 
-                const stageEmbed = await buildStageMessage(stage, 0);
-                return await interaction.editReply(stageEmbed);
-            }
-            case 'challenge': {
-                const stageArr = await api.single('toughstage', { query: code });
-
-                if (!stageArr || stageArr.length === 0)
-                    return await interaction.reply({ content: 'That stage doesn\'t exist!', ephemeral: true });
-
-                const stage = stageArr[0];
-                if (!Stage.isValid(stage))
-                    return await interaction.reply({ content: 'That stage data doesn\'t exist!', ephemeral: true });
-
-                await interaction.deferReply();
-
-                const stageEmbed = await buildStageMessage(stage, 0);
-                return await interaction.editReply(stageEmbed);
-            }
-        }
+        const stageEmbed = await buildStageMessage(stage, 0);
+        return await interaction.editReply(stageEmbed);
     }
     async selectResponse(interaction: StringSelectMenuInteraction<CacheType>, idArr: string[]) {
         const value = parseInt(interaction.values[0]);
