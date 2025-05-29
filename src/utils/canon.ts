@@ -171,6 +171,9 @@ export class RogueRelic {
 }
 
 export class RogueStage {
+    static isChallenge(stage: T.RogueStage): boolean {
+        return stage.excel.difficulty !== 'NORMAL';
+    }
     static isValid(stage: T.RogueStage): boolean {
         return !!stage && !!stage.excel && !!stage.levels;
     }

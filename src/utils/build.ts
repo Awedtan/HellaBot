@@ -1418,10 +1418,9 @@ export async function buildRogueRelicListMessage(theme: number, index: number): 
 export async function buildRogueStageMessage(theme: number, stage: T.RogueStage, page: number): Promise<Djs.BaseMessageOptions> {
     const stageInfo = stage.excel;
     const stageData = stage.levels;
-    const isChallenge = stageInfo.difficulty !== 'NORMAL';
 
-    const title = isChallenge ? `Emergency ${stageInfo.code} - ${stageInfo.name}` : `${stageInfo.code} - ${stageInfo.name}`;
-    const description = isChallenge ? removeStyleTags(`${stageInfo.description}\n${stageInfo.eliteDesc}`) : removeStyleTags(stageInfo.description);
+    const title = C.RogueStage.isChallenge(stage) ? `Emergency ${stageInfo.code} - ${stageInfo.name}` : `${stageInfo.code} - ${stageInfo.name}`;
+    const description = C.RogueStage.isChallenge(stage) ? removeStyleTags(`${stageInfo.description}\n${stageInfo.eliteDesc}`) : removeStyleTags(stageInfo.description);
 
     const embed = new Djs.EmbedBuilder()
         .setColor(embedColour)
@@ -1432,11 +1431,11 @@ export async function buildRogueStageMessage(theme: number, stage: T.RogueStage,
     embed.addFields(await buildStageEnemyFields(stageData));
 
     const imageButton = new Djs.ButtonBuilder()
-        .setCustomId(createCustomId(`is${theme + 2}`, 'stage', isChallenge, stageInfo.id, 0))
+        .setCustomId(createCustomId(`is${theme + 2}`, 'stage', C.RogueStage.isChallenge(stage), stageInfo.id, 0))
         .setLabel('Preview')
         .setStyle(Djs.ButtonStyle.Primary);
     const diagramButton = new Djs.ButtonBuilder()
-        .setCustomId(createCustomId(`is${theme + 2}`, 'stage', isChallenge, stageInfo.id, 1))
+        .setCustomId(createCustomId(`is${theme + 2}`, 'stage', C.RogueStage.isChallenge(stage), stageInfo.id, 1))
         .setLabel('Diagram')
         .setStyle(Djs.ButtonStyle.Primary);
     const buttonRow = new Djs.ActionRowBuilder<Djs.ButtonBuilder>().addComponents(imageButton, diagramButton);
@@ -2411,6 +2410,8 @@ async function buildStageComponents(stage: T.Stage | T.Paradox, level: number): 
     text.push(...enemyComponents);
 
     const imagePath = paths.myAssetUrl + `/stages/${stageInfo.stageId}.png`;
+    const toughPath = paths.myAssetUrl + `/stages/${stageInfo.stageId.replace('tough', 'main')}.png`;
+    const newPath = paths.myAssetUrl + `/stages/${stageInfo.stageId.substring(0, stageInfo.stageId.length - 3)}.png`;
     switch (level) {
         default:
         case 0: {
@@ -2418,6 +2419,20 @@ async function buildStageComponents(stage: T.Stage | T.Paradox, level: number): 
                 const gallery = new Djs.MediaGalleryBuilder()
                     .addItems(new Djs.MediaGalleryItemBuilder()
                         .setURL(imagePath)
+                    );
+                return { text, gallery, galleryExists: true }
+            }
+            else if (await urlExists(toughPath)) {
+                const gallery = new Djs.MediaGalleryBuilder()
+                    .addItems(new Djs.MediaGalleryItemBuilder()
+                        .setURL(toughPath)
+                    );
+                return { text, gallery, galleryExists: true }
+            }
+            else if (await urlExists(newPath)) {
+                const gallery = new Djs.MediaGalleryBuilder()
+                    .addItems(new Djs.MediaGalleryItemBuilder()
+                        .setURL(newPath)
                     );
                 return { text, gallery, galleryExists: true }
             }
@@ -2444,7 +2459,7 @@ async function buildStageComponents(stage: T.Stage | T.Paradox, level: number): 
                     diagram[1].value
                 ].join('\n'));
             text.push(diagramText);
-            return { text, gallery: null, galleryExists: await urlExists(imagePath) }
+            return { text, gallery: null, galleryExists: await urlExists(imagePath) || await urlExists(toughPath) || await urlExists(newPath) };
         }
     }
 }
