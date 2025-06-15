@@ -700,6 +700,7 @@ export async function buildInfoMessage(op: T.Operator, type: number = 0, level: 
 
             const components = buildDeployableComponents(op);
             container.addTextDisplayComponents(components);
+            container.addSeparatorComponents(new Djs.SeparatorBuilder().setSpacing(Djs.SeparatorSpacingSize.Large));
             break;
         }
         case typesDict.skills.index: {
@@ -960,6 +961,7 @@ export async function buildInfoMessage(op: T.Operator, type: number = 0, level: 
             break;
         }
         case typesDict.outfits.index: {
+            if (level === 99) level = 0;
             level = C.Operator.clampSkinIndex(op, level);
 
             const components = buildOutfitComponents(op, level);
