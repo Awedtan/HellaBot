@@ -1099,7 +1099,7 @@ export async function buildInfoMessage(op: T.Operator, type: number = 0, level: 
 
             for (let i = 0; i < op.skins.length; i++) {
                 const levelOption = new Djs.StringSelectMenuOptionBuilder()
-                    .setLabel(op.skins[i].displaySkin.skinGroupName)
+                    .setLabel(`${op.skins[i].displaySkin.skinGroupName} - ${op.skins[i].displaySkin.skinName ?? `E${Math.floor((i + 1) / 2) * 2}`}`)
                     .setValue(i.toString())
                     .setDefault(i === level);
                 levelSelect.addOptions(levelOption);
