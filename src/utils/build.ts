@@ -8,11 +8,6 @@ import * as api from './api';
 import * as C from './canon';
 import * as pstats from './penguin-stats';
 
-const skipLoginEvents = [
-    'LOGIN_ONLY', 'CHECKIN_ONLY', 'FLOAT_PARADE', 'PRAY_ONLY', 'GRID_GACHA_V2',
-    'GRID_GACHA', 'BLESS_ONLY', 'CHECKIN_ACCESS', 'CHECKIN_VS', 'SWITCH_ONLY',
-    'UNIQUE_ONLY', 'COLLECTION', 'RECRUIT_ONLY', 'TEAM_QUEST'
-];
 const blankChar = '\u200B';
 const cleanFilename = (text: string) => text.split(/%|[#\+]|&|\[|\]/).join(''); // Remove special characters that discord doesn't like (%, #, etc.)
 const createCustomId = (...args: (string | number | boolean)[]): string => args.join('ඞ').toLowerCase();
@@ -624,7 +619,7 @@ export async function buildFactionListMessage(): Promise<Djs.InteractionEditRepl
     return { embeds: [embed] };
 }
 export async function buildEventListMessage(index: number): Promise<Djs.InteractionEditReplyOptions> {
-    const pastEventLimit = 6;
+    const pastEventLimit = 3;
 
     const now = new Date();
     const currTime = Math.floor(now.getTime() / 1000);
@@ -635,7 +630,7 @@ export async function buildEventListMessage(index: number): Promise<Djs.Interact
                 'startTime': { '>': currTime },
             },
             sort: {
-                'startTime': 'desc',
+                'startTime': 'asc',
             }
         }),
         api.searchV2('event', {
@@ -644,7 +639,7 @@ export async function buildEventListMessage(index: number): Promise<Djs.Interact
                 'endTime': { '>=': currTime }
             },
             sort: {
-                'endTime': 'desc'
+                'endTime': 'asc'
             }
         }),
         api.searchV2('event', {
@@ -688,19 +683,19 @@ export async function buildEventListMessage(index: number): Promise<Djs.Interact
     }
 
     const preverButton = new Djs.ButtonBuilder()
-        .setCustomId(createCustomId('events', index - 5))
+        .setCustomId(createCustomId('events', index - 5, 'prever'))
         .setLabel('<<')
         .setStyle(Djs.ButtonStyle.Primary);
     const prevButton = new Djs.ButtonBuilder()
-        .setCustomId(createCustomId('events', index - 1))
+        .setCustomId(createCustomId('events', index - 1, 'prev'))
         .setLabel('Newer')
         .setStyle(Djs.ButtonStyle.Primary);
     const nextButton = new Djs.ButtonBuilder()
-        .setCustomId(createCustomId('events', index + 1))
+        .setCustomId(createCustomId('events', index + 1, 'next'))
         .setLabel('Older')
         .setStyle(Djs.ButtonStyle.Primary);
     const nexterButton = new Djs.ButtonBuilder()
-        .setCustomId(createCustomId('events', index + 5))
+        .setCustomId(createCustomId('events', index + 5, 'nexter'))
         .setLabel('>>')
         .setStyle(Djs.ButtonStyle.Primary);
     const componentRow = new Djs.ActionRowBuilder<Djs.ButtonBuilder>().addComponents(preverButton, prevButton, nextButton, nexterButton);
@@ -730,27 +725,68 @@ export async function buildEventListMessage(index: number): Promise<Djs.Interact
     return { components: [container], flags: Djs.MessageFlags.IsComponentsV2 };
 }
 export async function buildGachaListMessage(index: number): Promise<Djs.InteractionEditReplyOptions> {
-    const bannerCount = 6;
-    const timeArr = (await api.all('gacha', {
-        include: ['client.gachaPoolId', 'client.openTime'],
-        sort: {
-            'client.openTime': 'desc',
-            'client.endTime': 'desc'
-        }
-    }));
-    const bannerArr = await Promise.all(
-        timeArr.slice(index * bannerCount, (index + 1) * bannerCount)
-            .map(async time => await api.single('gacha', { query: time.client.gachaPoolId.toLowerCase() }))
-    );
+    const pastBannerLimit = 3;
+
+    const now = new Date();
+    const currTime = Math.floor(now.getTime() / 1000);
+
     const opNames = await api.all('operator', { include: ['id', 'data.name'] });
+    const [futureBanners, currBanners, pastBanners] = await Promise.all([
+        api.searchV2('gacha', {
+            filter: {
+                'client.openTime': { '>': currTime },
+            },
+            sort: {
+                'client.openTime': 'asc',
+            }
+        }),
+        api.searchV2('gacha', {
+            filter: {
+                'client.openTime': { '<=': currTime },
+                'client.endTime': { '>=': currTime }
+            },
+            sort: {
+                'client.endTime': 'asc'
+            }
+        }),
+        api.searchV2('gacha', {
+            filter: {
+                'client.endTime': { '<': currTime },
+            },
+            sort: {
+                'client.openTime': 'desc',
+            }
+        }),
+    ]);
 
-    const embed = new Djs.EmbedBuilder()
-        .setColor(embedColour)
-        .setTitle('Gacha Banners')
-        .setDescription(`**Page ${index + 1} of ${Math.ceil(timeArr.length / bannerCount)}**`);
+    const container = new Djs.ContainerBuilder().setAccentColor(embedColour);
 
-    for (const banner of bannerArr) {
-        embed.addFields(buildBannerField(opNames, banner));
+    container.addTextDisplayComponents(new Djs.TextDisplayBuilder().setContent('## Upcoming Banners'));
+    if (futureBanners.length > 0) {
+        for (const event of futureBanners) {
+            container.addTextDisplayComponents(buildBannerComponents(opNames, event));
+        }
+    }
+    else {
+        container.addTextDisplayComponents(new Djs.TextDisplayBuilder().setContent('There\'s nothing here...'));
+    }
+    container.addSeparatorComponents(new Djs.SeparatorBuilder().setSpacing(Djs.SeparatorSpacingSize.Large));
+
+    container.addTextDisplayComponents(new Djs.TextDisplayBuilder().setContent('## Current Banners'));
+    if (currBanners.length > 0) {
+        for (const event of currBanners) {
+            container.addTextDisplayComponents(buildBannerComponents(opNames, event));
+        }
+    }
+    else {
+        container.addTextDisplayComponents(new Djs.TextDisplayBuilder().setContent('There\'s nothing here...'));
+    }
+    container.addSeparatorComponents(new Djs.SeparatorBuilder().setSpacing(Djs.SeparatorSpacingSize.Large));
+
+    container.addTextDisplayComponents(new Djs.TextDisplayBuilder().setContent('## Past Banners'));
+    container.addTextDisplayComponents(new Djs.TextDisplayBuilder().setContent(`**Page ${index + 1} of ${Math.ceil(pastBanners.length / pastBannerLimit)}**`));
+    for (let i = index * pastBannerLimit; i < index * pastBannerLimit + pastBannerLimit && i < pastBanners.length; i++) {
+        container.addTextDisplayComponents(buildBannerComponents(opNames, pastBanners[i]));
     }
 
     const preverButton = new Djs.ButtonBuilder()
@@ -770,8 +806,9 @@ export async function buildGachaListMessage(index: number): Promise<Djs.Interact
         .setLabel('>>')
         .setStyle(Djs.ButtonStyle.Primary);
     const componentRow = new Djs.ActionRowBuilder<Djs.ButtonBuilder>().addComponents(preverButton, prevButton, nextButton, nexterButton);
+    container.addActionRowComponents(componentRow);
 
-    const maxPage = Math.ceil(timeArr.length / bannerCount) - 1;
+    const maxPage = Math.ceil(pastBanners.length / pastBannerLimit) - 1;
 
     if (index < 5) {
         preverButton.setCustomId(createCustomId('gacha', 0, 'prever'));
@@ -792,7 +829,7 @@ export async function buildGachaListMessage(index: number): Promise<Djs.Interact
         nexterButton.setCustomId(createCustomId('gacha', maxPage, 'newer'));
     }
 
-    return { embeds: [embed], components: [componentRow] };
+    return { components: [container], flags: Djs.MessageFlags.IsComponentsV2 };
 }
 export async function buildHelpMessage(command: Command): Promise<Djs.InteractionEditReplyOptions> {
     const embed = new Djs.EmbedBuilder()
