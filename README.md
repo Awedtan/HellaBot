@@ -1,12 +1,44 @@
 # HellaBot
 
-An Arknights Discord bot that provides information on operators, enemies, stages, and more! 
+An Arknights Discord bot that provides information on operators, enemies, stages, and more! Fetches game data from [HellaAPI](https://github.com/Awedtan/HellaAPI).
 
 [Click here to invite the bot to a server (also available in DMs).](https://discord.com/application-directory/1277141603575922710)
 
 > Note: the `spine` command is disabled because it's quite compute-intensive. If you'd like that functionality, feel free to run the bot for yourself :^)
 
-A work-in-progress personal project. Game data is fetched from [HellaAPI](https://github.com/Awedtan/HellaAPI).
+## Usage
+
+HellaBot uses slash commands. To use a command, just type in Discord: `/command`
+
+All command interactions are event-driven, so buttons and other interactables will never expire!
+
+### Command List
+
+| Command | Description                                                      |
+|---------|------------------------------------------------------------------|
+| cc      | Show information on a Contingency Contract stage or season       |
+| ccb     | Show information on a CC Battleplan stage or season              |
+| current | Show what's currently happening in the game                      |
+| define  | Show definitions for in-game terms                               |
+| deploy  | Show information on a deployable                                 |
+| enemy   | Show an enemy's information and abilities                        |
+| events  | Show a list of in-game events                                    |
+| faction | Show all operators in a faction                                  |
+| gacha   | Show a list of gacha banners and rate-ups                        |
+| help    | Show help info on commands                                       |
+| info    | Show an operator's stats, skills, modules, and more              |
+| is2     | Show information on IS2: Phantom & Crimson Solitaire             |
+| is3     | Show information on IS3: Mizuki & Caerula Arbor                  |
+| is4     | Show information on IS4: Expeditioner's Jǫklumarkar              |
+| is5     | Show information on IS5: Sarkaz's Furnaceside Fables             |
+| is6     | Show information on IS6: Sui's Garden of Grotesqueries           |
+| item    | Show information on an item                                      |
+| new     | Show newly updated game data                                     |
+| ping    | Get bot network latency                                          |
+| ra2     | Show information on RA2: Tales Within the Sand                   |
+| recruit | Find recruitable operators from recruitment tags                 |
+| spine   | Render and display spine animations (self-host only)             |
+| stage   | Show information on a stage                                      |
 
 ## Installation
 
@@ -52,44 +84,10 @@ HellaBot/
 npm start
 ```
 
-## Usage
-
-HellaBot uses slash commands. To use a command, just type: `/[command]`
-
-All command interactions are event-driven, so buttons and other interactables will never expire!
-
-### Command List
-
-| Command | Description                                                      |
-|---------|------------------------------------------------------------------|
-| cc      | Show information on a Contingency Contract stage or season       |
-| ccb     | Show information on a CC Battleplan stage or season              |
-| current | Show what's currently happening in the game                      |
-| define  | Show definitions for in-game terms                               |
-| deploy  | Show information on a deployable                                 |
-| enemy   | Show an enemy's information and abilities                        |
-| events  | Show a list of in-game events                                    |
-| gacha   | Show a list of gacha banners and rate-ups                        |
-| help    | Show help info on commands                                       |
-| info    | Show an operator's stats, skills, modules, and more              |
-| is2     | Show information on IS2: Phantom & Crimson Solitaire             |
-| is3     | Show information on IS3: Mizuki & Caerula Arbor                  |
-| is4     | Show information on IS4: Expeditioner's Jǫklumarkar              |
-| is5     | Show information on IS5: Sarkaz's Furnaceside Fables             |
-| item    | Show information on an item                                      |
-| new     | Show newly updated game data                                     |
-| ping    | Get bot network latency                                          |
-| ra2     | Show information on RA2: Tales Within the Sand                   |
-| recruit | Find recruitable operators from recruitment tags                 |
-| spine   | Render and display spine animations                              |
-| stage   | Show information on a stage                                      |
-
 ## Acknowledgements
-
-[Kengxxiao/ArknightsGameData_YoStar](https://github.com/Kengxxiao/ArknightsGameData_YoStar) for providing the raw game data.
-
-[Aceship/Arknight-Images](https://github.com/Aceship/Arknight-Images) for providing game images.
 
 [Penguin Statistics](https://penguin-stats.io/) for providing item drop rates.
 
 [MrJAwesome](https://www.youtube.com/@MrJAwesomeYT) for making videos on Discord.js that helped me get started on this project.
+
+See also [HellaAPI's acknowledgements](https://github.com/HellaOrg/HellaAPI#acknowledgements).
