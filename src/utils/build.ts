@@ -952,7 +952,7 @@ export async function buildInfoMessage(op: T.Operator, type: number = 0, level: 
             const skillAttachedDeploys = !op.skills.every(s => !C.Skill.hasDeployable(s));
             const skillIndex = C.Operator.clampSkillIndex(op, extras[0]);
             const deploy = await api.single('deployable', { query: skillAttachedDeploys ? op.skills[skillIndex]?.deploy.overrideTokenKey : Object.keys(op.data.displayTokenDict)[0] });
-            const skillLevel = C.Deployable.clampSkillLevelIndex(deploy, 99);
+            const skillLevel = C.Deployable.clampSkillLevelIndex(deploy, C.Operator.clampSkillLevelIndex(op, 99));
 
             const opSkillSections = await buildSkillSections(op, skillLevel, skillIndex);
             for (const skillSection of opSkillSections) {
