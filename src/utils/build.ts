@@ -11,7 +11,7 @@ import * as pstats from './penguin-stats';
 const blankChar = '\u200B';
 const cleanFilename = (text: string) => text.split(/%|[#\+]|&|\[|\]/).join(''); // Remove special characters that discord doesn't like (%, #, etc.)
 const createCustomId = (...args: (string | number | boolean)[]): string => args.join('ඞ').toLowerCase();
-const removeStyleTags = (text: string) => text ? text.replace(/<.[a-z]{2,5}?\.[^<]+>|<\/[^<]*>|<color=[^>]+>/g, '') : ''; // cant use something like /<[^>]+>/g since stage hazards are also marked by <>, gotta be specific ¯\_(ツ)_/¯
+const removeStyleTags = (text: string) => text ? text.replace(/<.[a-z]{2,5}?\.[^<]+>|<\/[^<]*>|<color[^>]+>/g, '') : ''; // cant use something like /<[^>]+>/g since stage hazards are also marked by <>, gotta be specific ¯\_(ツ)_/¯
 const urlExists = async (url: string) => (await fetch(url)).status === 200;
 function getItemEmoji(item: T.Item | string): string {
     if (typeof item === 'string')
@@ -1087,7 +1087,7 @@ export async function buildInfoMessage(op: T.Operator, type: number = 0, level: 
 
             const components = buildOutfitComponents(op, level);
             container.addSectionComponents(components.section);
-            container.addMediaGalleryComponents(components.gallery);
+            container.addMediaGalleryComponents(...components.galleries);
             container.addSeparatorComponents(new Djs.SeparatorBuilder().setSpacing(Djs.SeparatorSpacingSize.Large));
 
             const levelRow = new Djs.ActionRowBuilder<Djs.StringSelectMenuBuilder>();
@@ -1099,7 +1099,7 @@ export async function buildInfoMessage(op: T.Operator, type: number = 0, level: 
 
             for (let i = 0; i < op.skins.length; i++) {
                 const levelOption = new Djs.StringSelectMenuOptionBuilder()
-                    .setLabel(`${op.skins[i].displaySkin.skinGroupName} - ${op.skins[i].displaySkin.skinName ?? `E${Math.floor((i + 1) / 2) * 2}`}`)
+                    .setLabel(`${op.skins[i].displaySkin.skinGroupName}${op.skins[i].displaySkin.skinName ? ` - ${op.skins[i].displaySkin.skinName}` : ''}`)
                     .setValue(i.toString())
                     .setDefault(i === level);
                 levelSelect.addOptions(levelOption);
@@ -2761,7 +2761,7 @@ async function buildCostSections(op: T.Operator, level: number): Promise<Djs.Sec
 
     return sections;
 }
-function buildOutfitComponents(op: T.Operator, level: number): { section: Djs.SectionBuilder, gallery: Djs.MediaGalleryBuilder } {
+function buildOutfitComponents(op: T.Operator, level: number): { section: Djs.SectionBuilder, galleries: Djs.MediaGalleryBuilder[] } {
     const section = new Djs.SectionBuilder();
 
     const displaySkin = op.skins[level].displaySkin;
@@ -2795,7 +2795,7 @@ function buildOutfitComponents(op: T.Operator, level: number): { section: Djs.Se
 
     const artText = new Djs.TextDisplayBuilder()
         .setContent([
-            `### ${displaySkin.skinGroupName}${displaySkin.skinName ? ` - ${displaySkin.skinName}` : ''}`
+            `### ${displaySkin.skinGroupName}${displaySkin.skinName ? ` - ${displaySkin.skinName}` : ''}`,
         ].join('\n'));
     section.addTextDisplayComponents(artText);
 
@@ -2808,12 +2808,30 @@ function buildOutfitComponents(op: T.Operator, level: number): { section: Djs.Se
         section.addTextDisplayComponents(artistText);
     }
 
-    const gallery = new Djs.MediaGalleryBuilder()
-    gallery.addItems(new Djs.MediaGalleryItemBuilder()
-        .setURL(paths.myAssetUrl + `/operator/arts/${encodeURIComponent(op.skins[level].portraitId)}.png`)
-    )
+    if (displaySkin.usage || displaySkin.description || displaySkin.content) {
+        const artDesc = new Djs.TextDisplayBuilder()
+            .setContent([
+                removeStyleTags(displaySkin.content),
+                '',
+                displaySkin.usage,
+                '',
+                displaySkin.description
+            ].join('\n'));
+        section.addTextDisplayComponents(artDesc);
+    }
 
-    return { section, gallery };
+    const galleries: Djs.MediaGalleryBuilder[] = [];
+    galleries.push(new Djs.MediaGalleryBuilder()
+        .addItems(new Djs.MediaGalleryItemBuilder()
+            .setURL(paths.myAssetUrl + `/operator/arts/${encodeURIComponent(op.skins[level].portraitId)}.png`)
+        ));
+    if (op.skins[level].spPortraitId)
+        galleries.push(new Djs.MediaGalleryBuilder()
+            .addItems(new Djs.MediaGalleryItemBuilder()
+                .setURL(paths.myAssetUrl + `/operator/arts/${encodeURIComponent(op.skins[level].spPortraitId.slice(3))}_sp.png`)
+            ))
+
+    return { section, galleries: galleries.reverse() };
 }
 async function buildStageComponents(stage: T.Stage | T.Paradox, level: number): Promise<{ text: Djs.TextDisplayBuilder[], gallery: Djs.MediaGalleryBuilder, galleryExists: boolean }> {
     const text: Djs.TextDisplayBuilder[] = [];
